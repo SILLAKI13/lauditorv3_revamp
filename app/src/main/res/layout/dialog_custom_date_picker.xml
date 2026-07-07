@@ -1,0 +1,162 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="wrap_content"
+    android:layout_height="wrap_content"
+    android:layout_margin="@dimen/twenty_dp"
+    android:background="@drawable/rectangle_light_grey"
+    android:elevation="@dimen/four_dp"
+    android:gravity="center"
+    android:orientation="vertical">
+
+    <!-- Close icon -->
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content">
+
+        <TextView
+            android:id="@+id/tv_title"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="center"
+            android:layout_marginStart="@dimen/ten_dp"
+            android:layout_weight="1"
+            android:background="@drawable/background_transparent"
+            android:fontFamily="@font/gill_sans_bold"
+            android:padding="@dimen/four_dp"
+            android:text="Select Date"
+            android:textAllCaps="false"
+            android:textColor="@color/blue"
+            android:textSize="@dimen/Fifteen_dp" />
+
+        <ImageView
+            android:id="@+id/iv_close"
+            android:layout_width="@dimen/thirty_dp"
+            android:layout_height="@dimen/thirty_dp"
+            android:layout_gravity="end"
+            android:src="@drawable/simple_icons" />
+    </LinearLayout>
+
+    <View
+        android:layout_width="match_parent"
+        android:layout_height="@dimen/one_dp"
+        android:background="@color/dark_grey" />
+
+    <!-- Month / Day / Year pickers -->
+    <LinearLayout
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="@dimen/ten_dp"
+        android:gravity="center"
+        android:orientation="horizontal"
+        android:padding="@dimen/four_dp">
+
+        <LinearLayout
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="@dimen/ten_dp"
+            android:gravity="center"
+            android:orientation="vertical">
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_gravity="center"
+                android:fontFamily="@font/gill_sans"
+                android:text="Month"
+                android:textColor="@color/blue"
+                android:textSize="@dimen/Fifteen_dp" />
+
+            <NumberPicker
+                android:id="@+id/np_month"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:fontFamily="@font/gill_sans"
+                android:theme="@style/Theme.AppCompat.Light.Dialog" />
+        </LinearLayout>
+
+        <LinearLayout
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="@dimen/ten_dp"
+            android:layout_marginEnd="@dimen/ten_dp"
+            android:gravity="center"
+            android:orientation="vertical">
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:fontFamily="@font/gill_sans"
+                android:text="Day"
+                android:textColor="@color/blue"
+                android:textSize="@dimen/Fifteen_dp" />
+
+            <NumberPicker
+                android:id="@+id/np_day"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:fontFamily="@font/gill_sans"
+                android:theme="@style/Theme.AppCompat.Light.Dialog" />
+        </LinearLayout>
+
+        <LinearLayout
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginEnd="@dimen/ten_dp"
+            android:gravity="center"
+            android:orientation="vertical">
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:fontFamily="@font/gill_sans"
+                android:text="Year"
+                android:textColor="@color/blue"
+                android:textSize="@dimen/Fifteen_dp" />
+
+            <NumberPicker
+                android:id="@+id/np_year"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:fontFamily="@font/gill_sans"
+                android:theme="@style/Theme.AppCompat.Light.Dialog" />
+        </LinearLayout>
+
+    </LinearLayout>
+
+    <!-- Cancel / OK buttons -->
+    <View
+        android:layout_width="match_parent"
+        android:layout_height="@dimen/one_dp"
+        android:background="@color/dark_grey" />
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_margin="@dimen/four_dp"
+        android:gravity="center"
+        android:orientation="horizontal">
+
+        <androidx.appcompat.widget.AppCompatButton
+            android:id="@+id/btn_cancel"
+            android:layout_width="wrap_content"
+            android:layout_height="@dimen/forty_dp"
+            android:layout_weight="1"
+            android:background="@drawable/background_transparent"
+            android:fontFamily="@font/gill_sans"
+            android:padding="@dimen/five_dp"
+            android:text="Clear"
+            android:textColor="@color/blue" />
+
+        <androidx.appcompat.widget.AppCompatButton
+            android:id="@+id/btn_ok"
+            android:layout_width="wrap_content"
+            android:layout_height="@dimen/forty_dp"
+            android:layout_weight="1"
+            android:background="@drawable/background_transparent"
+            android:fontFamily="@font/gill_sans"
+            android:padding="@dimen/five_dp"
+            android:text="@string/ok"
+            android:textColor="@color/blue" />
+    </LinearLayout>
+
+</LinearLayout>

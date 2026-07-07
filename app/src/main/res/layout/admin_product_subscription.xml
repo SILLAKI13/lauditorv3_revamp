@@ -1,0 +1,103 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:id="@+id/subscription_card"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:layout_margin="@dimen/ten_dp"
+    android:background="@drawable/rectangular_white_background"
+    android:elevation="@dimen/four_dp"
+    android:orientation="vertical"
+    android:padding="@dimen/ten_dp">
+
+
+    <androidx.appcompat.widget.LinearLayoutCompat
+        android:id="@+id/ll_1"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:gravity="start"
+        android:orientation="horizontal">
+
+        <ImageView
+            android:id="@+id/iv_lauditor"
+            android:layout_width="@dimen/forty_dp"
+            android:layout_height="@dimen/forty_dp"
+            android:layout_marginStart="@dimen/ten_dp"
+            android:layout_marginTop="@dimen/twenty_dp"
+            android:layout_marginEnd="@dimen/ten_dp"
+            android:layout_marginBottom="@dimen/ten_dp"
+            android:contentDescription="@string/todo"
+            android:src="@drawable/product_subscription" />
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical">
+
+            <include
+                android:id="@+id/tv_product_subscription"
+                layout="@layout/blue_normal_txt"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content" />
+
+            <include
+                android:id="@+id/tv_message"
+                layout="@layout/black_normal_txt"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content" />
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:baselineAligned="false"
+                android:orientation="horizontal">
+
+                <LinearLayout
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_gravity="center"
+                    android:layout_weight="1"
+                    android:orientation="vertical">
+
+                    <include
+                        android:id="@+id/tv_ps_year"
+                        layout="@layout/count_green_normal_txt"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_gravity="center"
+                        android:layout_marginBottom="@dimen/ten_dp" />
+
+                    <include
+                        android:id="@+id/btn_pay_now"
+                        layout="@layout/submit_button" />
+                </LinearLayout>
+
+                <include
+                    layout="@layout/side_line_layout"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_gravity="center" />
+
+                <LinearLayout
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_gravity="center"
+                    android:orientation="vertical">
+
+                    <include
+                        android:id="@+id/tv_user"
+                        layout="@layout/blue_normal_txt" />
+
+                    <include
+                        android:id="@+id/tv_user_count"
+                        layout="@layout/count_green_normal_txt"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_gravity="center" />
+
+                </LinearLayout>
+            </LinearLayout>
+        </LinearLayout>
+    </androidx.appcompat.widget.LinearLayoutCompat>
+</LinearLayout>

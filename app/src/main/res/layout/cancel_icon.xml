@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="utf-8"?>
+<ImageView xmlns:android="http://schemas.android.com/apk/res/android"
+    android:id="@+id/close_edit_docs"
+    android:layout_width="@dimen/thirty_dp"
+    android:layout_height="@dimen/thirty_dp"
+    android:layout_gravity="center_vertical"
+    android:layout_margin="@dimen/four_dp"
+    android:contentDescription="@string/tag"
+    android:src="@drawable/cancel_icon"
+    android:visibility="visible" />

@@ -1,0 +1,128 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:layout_margin="@dimen/ten_dp"
+    android:background="@drawable/rectangular_white_background"
+    android:elevation="@dimen/four_dp"
+    android:orientation="vertical">
+
+    <include
+        android:id="@+id/iv_close"
+        layout="@layout/simple_cancel_icon"
+        android:layout_width="@dimen/thirty_dp"
+        android:layout_height="@dimen/thirty_dp"
+        android:layout_gravity="end" />
+
+    <include
+        android:id="@+id/tv_update_group"
+        layout="@layout/blue_bold_txt"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="@dimen/twenty_dp" />
+
+    <LinearLayout
+        android:id="@+id/ll_notify_msg"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_gravity="center_vertical"
+        android:layout_marginStart="@dimen/twenty_dp"
+        android:layout_marginTop="@dimen/ten_dp"
+        android:layout_marginEnd="@dimen/twenty_dp"
+        android:layout_marginBottom="@dimen/ten_dp"
+        android:orientation="horizontal">
+
+        <ImageView
+            android:id="@+id/warning_icon"
+            android:layout_width="@dimen/twenty_five"
+            android:layout_height="@dimen/twenty_five"
+            android:padding="@dimen/two_dp"
+            android:src="@drawable/warning_icon" />
+
+        <RelativeLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical">
+
+            <include
+                android:id="@+id/tv_warning_msg"
+                layout="@layout/black_normal_txt"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_toEndOf="@+id/warning_icon"
+                tools:ignore="NotSibling" />
+
+<!--            <include-->
+<!--                android:id="@+id/tv_matter_title"-->
+<!--                layout="@layout/black_bold_txt"-->
+<!--                android:layout_width="wrap_content"-->
+<!--                android:layout_height="wrap_content"-->
+<!--                android:layout_toEndOf="@+id/tv_warning_msg" />-->
+
+<!--            <include-->
+<!--                android:id="@+id/tv_warning_msg2"-->
+<!--                layout="@layout/black_normal_txt"-->
+<!--                android:layout_width="wrap_content"-->
+<!--                android:layout_height="wrap_content"-->
+<!--                android:layout_toEndOf="@+id/tv_matter_title" />-->
+
+<!--            <include-->
+<!--                android:id="@+id/tv_warning_msg3"-->
+<!--                layout="@layout/black_normal_txt"-->
+<!--                android:layout_width="wrap_content"-->
+<!--                android:layout_height="wrap_content"-->
+<!--                android:layout_below="@+id/tv_warning_msg" />-->
+        </RelativeLayout>
+
+    </LinearLayout>
+
+    <LinearLayout
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal">
+
+        <include
+            android:id="@+id/tv_assign_group"
+            layout="@layout/title_name_layout"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="@dimen/Fifteen_dp" />
+
+        <include layout="@layout/astrick_layout" />
+    </LinearLayout>
+
+    <include
+        android:id="@+id/tv_search_groups"
+        layout="@layout/normal_search_layout" />
+
+    <ScrollView
+        android:layout_width="match_parent"
+        android:layout_height="@dimen/one_fifty_dp">
+
+        <include
+            android:id="@+id/rv_groups_view"
+            layout="@layout/recyclerview"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:layout_margin="@dimen/ten_dp" />
+    </ScrollView>
+
+    <androidx.appcompat.widget.LinearLayoutCompat
+        android:id="@+id/ll_buttons"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_margin="@dimen/ten_dp"
+        android:orientation="horizontal">
+
+        <include
+            android:id="@+id/Cancel"
+            layout="@layout/cancel_button" />
+
+        <include
+            android:id="@+id/Delete"
+            layout="@layout/submit_button" />
+
+    </androidx.appcompat.widget.LinearLayoutCompat>
+
+</LinearLayout>

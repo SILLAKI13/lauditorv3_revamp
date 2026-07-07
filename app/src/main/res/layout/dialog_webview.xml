@@ -1,0 +1,66 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="vertical"
+    android:background="@android:color/white">
+
+    <LinearLayout
+        android:id="@+id/toolbar"
+        android:layout_width="match_parent"
+        android:layout_height="?attr/actionBarSize"
+        android:background="@color/blue">
+
+        <TextView
+            android:id="@+id/tv_title"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_gravity="center"
+            android:layout_weight="1"
+            android:gravity="center"
+            android:fontFamily="@font/gill_sans"
+            android:textColor="@android:color/white"
+            android:textSize="@dimen/eighteen_sp"
+            android:textStyle="bold" />
+
+        <ImageView
+            android:id="@+id/iv_close"
+            android:layout_width="@dimen/thirty_dp"
+            android:layout_height="@dimen/thirty_dp"
+            android:layout_gravity="center"
+            android:layout_marginEnd="@dimen/ten_dp"
+            android:src="@drawable/close_circle" />
+
+    </LinearLayout>
+
+    <FrameLayout
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        android:layout_weight="1">
+
+        <com.github.barteksc.pdfviewer.PDFView
+            android:id="@+id/pdfView"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:visibility="gone" />
+
+        <ProgressBar
+            android:id="@+id/progressBar"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="center"
+            android:visibility="visible" />
+
+        <TextView
+            android:id="@+id/tv_error"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:gravity="center"
+            android:fontFamily="@font/gill_sans"
+            android:text="Failed to load PDF"
+            android:textSize="@dimen/Fifteen_dp"
+            android:visibility="gone" />
+
+    </FrameLayout>
+
+</LinearLayout>

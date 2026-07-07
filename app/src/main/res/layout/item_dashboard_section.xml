@@ -1,0 +1,65 @@
+<?xml version="1.0" encoding="utf-8"?><!--
+    item_dashboard_section.xml
+    One row of the outer vertical RecyclerView.
+    Contains:
+      • Section title  (e.g. "Today's Activities")
+      • Badge count bubble
+      • Horizontal RecyclerView of cards
+-->
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:orientation="vertical"
+    android:paddingBottom="@dimen/four_dp">
+
+    <!-- ── Section header ─────────────────────────────────────────────── -->
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:gravity="center_vertical"
+        android:orientation="horizontal"
+        android:paddingHorizontal="@dimen/Fifteen_dp"
+        android:paddingTop="@dimen/Fifteen_dp"
+        android:paddingBottom="@dimen/ten_dp">
+
+        <TextView
+            android:id="@+id/tv_section_title"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginEnd="@dimen/ten_dp"
+            android:fontFamily="@font/gill_sans_bold"
+            android:text="Section Title"
+            android:textColor="@color/black"
+            android:textSize="@dimen/seventeen_dp" />
+
+        <!-- Rounded count badge — hidden when count == 0 -->
+        <TextView
+            android:id="@+id/tv_section_badge"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:background="@drawable/rectangle_blue_bg"
+            android:fontFamily="@font/gill_sans"
+            android:gravity="center"
+            android:minWidth="@dimen/thirty_dp"
+            android:minHeight="@dimen/twenty_five"
+            android:paddingHorizontal="@dimen/ten_dp"
+            android:paddingVertical="@dimen/two_dp"
+            android:text="100"
+            android:textColor="@color/white"
+            android:textSize="@dimen/Fifteen_dp"
+            android:textStyle="bold"
+            android:visibility="visible" />
+
+    </LinearLayout>
+
+    <!-- ── Horizontal card scroll ──────────────────────────────────────── -->
+    <androidx.recyclerview.widget.RecyclerView
+        android:id="@+id/rv_section_cards"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:clipToPadding="false"
+        android:orientation="horizontal"
+        android:paddingStart="@dimen/ten_dp"
+        android:paddingEnd="@dimen/ten_dp" />
+
+</LinearLayout>

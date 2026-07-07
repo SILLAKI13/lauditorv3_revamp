@@ -1,0 +1,124 @@
+<?xml version="1.0" encoding="utf-8"?>
+<ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    tools:context=".MainActivity">
+
+    <androidx.constraintlayout.widget.ConstraintLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content">
+
+        <LinearLayout
+            android:id="@+id/ll_documents"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            android:visibility="visible"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toTopOf="parent">
+
+
+            <androidx.appcompat.widget.LinearLayoutCompat
+                android:id="@+id/linearLayoutCompat2"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="vertical"
+                android:padding="@dimen/four_dp"
+                android:paddingBottom="@dimen/thirty_dp">
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:background="@color/Blue_text_color"
+                    android:orientation="horizontal">
+
+                    <ImageView
+                        android:id="@+id/close_groups"
+                        android:layout_width="@dimen/thirty_dp"
+                        android:layout_height="@dimen/thirty_dp"
+                        android:layout_gravity="center"
+                        android:layout_margin="@dimen/ten_dp"
+                        android:src="@drawable/cancel_icon" />
+
+                    <TextView
+                        android:id="@+id/header_name_group"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_gravity="center"
+                        android:fontFamily="@font/gill_sans"
+                        android:gravity="center_horizontal"
+                        android:padding="@dimen/ten_dp"
+                        android:layout_marginRight="@dimen/thirty_dp"
+                        android:text="@string/select_groups"
+                        android:textColor="@color/white"
+                        android:textSize="@dimen/Fifteen_dp"
+                        android:visibility="visible" />
+                </LinearLayout>
+
+                <LinearLayout
+                    android:id="@+id/ll_hide_data"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="vertical">
+
+
+                    <TextView
+                        android:id="@+id/message"
+                        android:layout_width="match_parent"
+                        android:layout_height="match_parent"
+                        android:layout_gravity="center"
+                        android:fontFamily="@font/gill_sans"
+                        android:gravity="center"
+
+                        android:text="No Documents to Show"
+                        android:textColor="@color/Blue_text_color"
+                        android:textSize="@dimen/twenty_dp"
+                        android:visibility="gone">
+
+                    </TextView>
+
+
+                    <ScrollView
+                        android:layout_width="match_parent"
+                        android:layout_height="@dimen/two_hundred"
+                        tools:context=".MainActivity">
+
+
+                        <androidx.recyclerview.widget.RecyclerView
+                            android:id="@+id/rv_relationship_documents"
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:layout_margin="@dimen/four_dp"
+                            android:orientation="vertical"
+                            android:scrollbars="vertical"
+                            app:layoutManager="androidx.recyclerview.widget.LinearLayoutManager" />
+                    </ScrollView>
+                </LinearLayout>
+
+                <androidx.appcompat.widget.LinearLayoutCompat
+                    android:id="@+id/ll_buttons"
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent"
+                    android:layout_margin="@dimen/ten_dp"
+                    android:orientation="horizontal"
+
+                    >
+
+                    <include
+                        android:id="@+id/btn_groups_cancel"
+                        layout="@layout/cancel_button" />
+
+                    <include
+                        android:id="@+id/btn_save_group"
+                        layout="@layout/submit_button" />
+                </androidx.appcompat.widget.LinearLayoutCompat>
+
+            </androidx.appcompat.widget.LinearLayoutCompat>
+        </LinearLayout>
+
+    </androidx.constraintlayout.widget.ConstraintLayout>
+</ScrollView>

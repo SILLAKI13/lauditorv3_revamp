@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+  drawable/subscription_banner_bg.xml
+  Blue rounded rectangle used for the plan banner inside the subscription card.
+  Color matches the screenshot's vivid blue (#1565C0 / material blue 800).
+-->
+<shape xmlns:android="http://schemas.android.com/apk/res/android"
+    android:shape="rectangle">
+
+    <solid android:color="#1565C0"/>
+
+    <corners android:radius="12dp"/>
+
+</shape>

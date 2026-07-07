@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    xmlns:app="http://schemas.android.com/apk/res-auto">
+    <com.google.android.material.textfield.TextInputLayout
+        android:id="@+id/filledTextField3"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:background="@drawable/rectangle_light_grey"
+        android:hint="@string/description"
+        app:hintAnimationEnabled="true"
+        android:padding="@dimen/ten_dp"
+        android:textColorHint="@color/black">
+
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:fontFamily="@font/gill_sans"
+            android:textSize="@dimen/Fifteen_dp"
+            android:textColor="@color/black"
+            android:text="@string/select_team_member">
+
+        </TextView>
+    </com.google.android.material.textfield.TextInputLayout>
+
+</RelativeLayout>

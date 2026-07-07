@@ -1,0 +1,338 @@
+<?xml version="1.0" encoding="utf-8"?><!--
+    view_documents_list.xml
+    Matches the design in the attached screenshots exactly:
+      - Top row  : blue document icon | bold file name (2 lines) | 3-dot icon
+      - Info card: rounded light-grey bg with Client Name / Uploaded On / Expiration
+      - Icons row: lock_open | lock_close | divider | iv_deleteEnabled(download) | iv_deleteDisabled(download) | 3-dot
+-->
+<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:clipChildren="false"
+    android:clipToPadding="false"
+    android:paddingStart="@dimen/five_dp"
+    android:paddingEnd="@dimen/five_dp"
+    android:paddingBottom="@dimen/ten_dp">
+
+    <!-- ═══════════════════════════════════════════════════════════════════
+         MAIN CARD  (white, rounded, subtle shadow)
+         ═══════════════════════════════════════════════════════════════════ -->
+    <androidx.cardview.widget.CardView
+        android:id="@+id/cv_view_documents"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        app:cardBackgroundColor="@color/white"
+        app:cardCornerRadius="12dp"
+        app:cardElevation="3dp"
+        app:cardUseCompatPadding="false"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent">
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            android:padding="12dp">
+
+            <!-- ── TOP ROW : icon  |  name block  |  icons (lock + download + 3-dot) ── -->
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:gravity="center_vertical"
+                android:orientation="horizontal">
+
+                <!-- Blue doc icon -->
+                <ImageView
+                    android:id="@+id/iv_doc_image"
+                    android:layout_width="@dimen/forty_dp"
+                    android:layout_height="@dimen/forty_dp"
+                    android:scaleType="fitCenter"
+                    android:src="@drawable/doc_pale_blue" />
+
+                <!-- File name (bold, up to 2 lines) -->
+                <TextView
+                    android:id="@+id/tv_document_display_name"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_marginStart="@dimen/ten_dp"
+                    android:layout_marginEnd="6dp"
+                    android:layout_weight="1"
+                    android:ellipsize="end"
+                    android:fontFamily="@font/gill_sans_bold"
+                    android:lineSpacingExtra="2dp"
+                    android:maxLines="2"
+                    android:textColor="@color/black"
+                    android:textSize="@dimen/Fifteen_dp" />
+
+                <!-- ── RIGHT-SIDE ACTION ICONS ───────────────────────────── -->
+                <!-- Lock OPEN icon (shown when document is NOT encrypted) -->
+                <ImageView
+                    android:id="@+id/lock_open"
+                    android:layout_width="@dimen/twenty_five"
+                    android:layout_height="@dimen/twenty_five"
+                    android:layout_marginEnd="2dp"
+                    android:padding="2dp"
+                    android:scaleType="fitCenter"
+                    android:src="@drawable/unlock"
+                    android:visibility="visible" />
+
+                <!-- Lock CLOSED icon (shown when document IS encrypted) -->
+                <ImageView
+                    android:id="@+id/lock_close"
+                    android:layout_width="@dimen/twenty_five"
+                    android:layout_height="@dimen/twenty_five"
+                    android:layout_marginEnd="2dp"
+                    android:padding="2dp"
+                    android:scaleType="fitCenter"
+                    android:src="@drawable/close"
+                    android:visibility="gone" />
+
+                <!-- Vertical divider between lock and download -->
+                <View
+                    android:id="@+id/divider_lock_download"
+                    android:layout_width="@dimen/one_point_five"
+                    android:layout_height="@dimen/twenty_five"
+                    android:layout_marginStart="2dp"
+                    android:layout_marginEnd="2dp"
+                    android:background="@color/light_grey" />
+
+                <!-- Download ENABLED icon (shown when download is allowed) -->
+                <ImageView
+                    android:id="@+id/iv_deleteEnabled"
+                    android:layout_width="@dimen/twenty_two_dp"
+                    android:layout_height="@dimen/twenty_two_dp"
+                    android:layout_marginEnd="2dp"
+                    android:background="@drawable/down_enabled"
+                    android:padding="2dp"
+                    android:scaleType="fitCenter"
+                    android:visibility="visible" />
+
+                <!-- Download DISABLED icon (shown when download is NOT allowed) -->
+                <ImageView
+                    android:id="@+id/iv_deleteDisabled"
+                    android:layout_width="@dimen/twenty_two_dp"
+                    android:layout_height="@dimen/twenty_two_dp"
+                    android:layout_marginEnd="2dp"
+                    android:background="@drawable/down_disable"
+                    android:padding="2dp"
+                    android:scaleType="fitCenter"
+                    android:visibility="gone" />
+
+                <!-- 3-dot vertical menu icon -->
+                <ImageView
+                    android:id="@+id/custom_spinner_cardview"
+                    android:layout_width="32dp"
+                    android:layout_height="32dp"
+                    android:padding="4dp"
+                    android:scaleType="fitCenter"
+                    android:src="@drawable/img_17" />
+
+            </LinearLayout>
+
+            <!-- ── INFO BAND : light grey rounded box ───────────────────── -->
+            <LinearLayout
+                android:id="@+id/ll_view_icons"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="@dimen/ten_dp"
+                android:background="@drawable/rectangle_light_grey"
+                android:orientation="vertical"
+                android:padding="@dimen/ten_dp">
+
+                <!-- Client Name row -->
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="horizontal">
+
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:fontFamily="@font/gill_sans_regular"
+                        android:text="@string/uploaded_by"
+                        android:textColor="@color/black"
+                        android:textSize="@dimen/Twelve_dp" />
+
+                    <TextView
+                        android:id="@+id/tv_client_name"
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:layout_weight="1"
+                        android:ellipsize="end"
+                        android:fontFamily="@font/gill_sans"
+                        android:maxLines="1"
+                        android:textColor="@color/black"
+                        android:textSize="@dimen/Twelve_dp" />
+
+                </LinearLayout>
+
+                <!-- Uploaded On row -->
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="2dp"
+                    android:orientation="horizontal">
+
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:fontFamily="@font/gill_sans_regular"
+                        android:text="@string/uploaded_on"
+                        android:textColor="@color/black"
+                        android:textSize="@dimen/Twelve_dp" />
+
+                    <TextView
+                        android:id="@+id/tv_created_date"
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:layout_weight="1"
+                        android:fontFamily="@font/gill_sans"
+                        android:textColor="@color/black"
+                        android:textSize="@dimen/Twelve_dp" />
+
+                </LinearLayout>
+
+                <!-- Expiration row -->
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="2dp"
+                    android:orientation="horizontal">
+
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:fontFamily="@font/gill_sans_regular"
+                        android:text="@string/expiration_"
+                        android:textColor="@color/black"
+                        android:textSize="@dimen/Twelve_dp" />
+
+                    <TextView
+                        android:id="@+id/tv_Expiration_date"
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:layout_weight="1"
+                        android:fontFamily="@font/gill_sans"
+                        android:textColor="@color/black"
+                        android:textSize="@dimen/Twelve_dp" />
+
+                </LinearLayout>
+
+                <!-- Tags row (hidden when no tags) -->
+                <LinearLayout
+                    android:id="@+id/ll_added_tags"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="2dp"
+                    android:orientation="horizontal"
+                    android:visibility="gone">
+
+                    <TextView
+                        android:id="@+id/tv_tags"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:fontFamily="@font/gill_sans_regular"
+                        android:text="Tags: "
+                        android:textColor="@color/black"
+                        android:textSize="@dimen/Twelve_dp" />
+
+                    <TextView
+                        android:id="@+id/tv_added_tags"
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:layout_weight="1"
+                        android:fontFamily="@font/gill_sans"
+                        android:textColor="@color/black"
+                        android:textSize="@dimen/Twelve_dp" />
+
+                </LinearLayout>
+
+            </LinearLayout>
+
+            <!-- ── HIDDEN fields kept for full adapter compatibility ───── -->
+            <TextView
+                android:id="@+id/tv_client_name_one"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:visibility="gone" />
+
+            <TextView
+                android:id="@+id/tv_image_name"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:visibility="gone" />
+
+            <TextView
+                android:id="@+id/tv_doc_description"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:visibility="gone" />
+
+            <TextView
+                android:id="@+id/tv_Expiration"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:visibility="gone" />
+
+            <!-- Hidden download_icon kept for adapter backward-compatibility -->
+            <ImageView
+                android:id="@+id/download_icon"
+                android:layout_width="0dp"
+                android:layout_height="0dp"
+                android:visibility="gone" />
+
+            <!-- Hidden uv_delete_document kept for adapter backward-compatibility -->
+            <ImageView
+                android:id="@+id/uv_delete_document"
+                android:layout_width="0dp"
+                android:layout_height="0dp"
+                android:visibility="gone" />
+
+            <!-- Hidden iv_edit_document kept for adapter backward-compatibility -->
+            <ImageView
+                android:id="@+id/iv_edit_document"
+                android:layout_width="0dp"
+                android:layout_height="0dp"
+                android:visibility="gone" />
+
+            <!-- Hidden tag_icon kept for adapter backward-compatibility -->
+            <ImageView
+                android:id="@+id/tag_icon"
+                android:layout_width="0dp"
+                android:layout_height="0dp"
+                android:visibility="gone" />
+
+        </LinearLayout>
+
+    </androidx.cardview.widget.CardView>
+
+    <!-- ═══════════════════════════════════════════════════════════════════
+         FLOATING ACTION DROPDOWN
+         Anchored top-end below the 3-dot icon
+         ═══════════════════════════════════════════════════════════════════ -->
+    <androidx.cardview.widget.CardView
+        android:id="@+id/action_list_card"
+        android:layout_width="180dp"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="52dp"
+        android:layout_marginEnd="@dimen/ten_dp"
+        android:elevation="50dp"
+        android:translationZ="50dp"
+        android:visibility="gone"
+        app:cardBackgroundColor="@color/white"
+        app:cardCornerRadius="@dimen/ten_dp"
+        app:cardElevation="@dimen/Fifteen_dp"
+        app:cardUseCompatPadding="false"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintTop_toTopOf="@+id/cv_view_documents">
+
+        <include
+            layout="@layout/action_layout_list"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content" />
+
+    </androidx.cardview.widget.CardView>
+
+</androidx.constraintlayout.widget.ConstraintLayout>

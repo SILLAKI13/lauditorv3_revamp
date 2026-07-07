@@ -1,0 +1,144 @@
+<?xml version="1.0" encoding="utf-8"?>
+<manifest xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools">
+
+    <uses-feature
+        android:name="android.hardware.camera"
+        android:required="false" />
+
+    <uses-permission
+        android:name="android.permission.WAKE_LOCK"
+        tools:node="replace" />
+    <uses-permission android:name="android.permission.INTERNET" />
+    <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
+    <uses-permission
+        android:name="android.permission.WRITE_EXTERNAL_STORAGE"
+        android:maxSdkVersion="33"
+        tools:ignore="ScopedStorage" />
+    <uses-permission android:name="android.permission.READ_MEDIA_AUDIO" />
+    <uses-permission
+        android:name="android.permission.READ_EXTERNAL_STORAGE"
+        android:maxSdkVersion="32" />
+
+    <uses-permission android:name="android.permission.RECORD_AUDIO" />
+    <uses-permission android:name="android.permission.MODIFY_AUDIO_SETTINGS" />
+
+    <uses-permission android:name="android.permission.READ_PHONE_STATE" />
+    <uses-permission android:name="android.permission.CAMERA" />
+    <uses-permission android:name="com.sec.android.provider.badge.permission.READ" />
+    <uses-permission android:name="com.sec.android.provider.badge.permission.WRITE" />
+    <uses-permission android:name="com.sonyericsson.home.permission.BROADCAST_BADGE" />
+    <uses-permission android:name="com.htc.launcher.permission.READ_SETTINGS" />
+    <uses-permission android:name="com.htc.launcher.permission.UPDATE_SHORTCUT" />
+    <uses-permission android:name="android.permission.POST_NOTIFICATIONS" />
+    <!-- ↑ Already exists — required for FCM on Android 13+ ✅ -->
+
+    <application
+        android:allowBackup="true"
+        android:dataExtractionRules="@xml/data_extraction_rules"
+        android:debuggable="false"
+        android:fullBackupContent="@xml/backup_rules"
+        android:icon="@mipmap/ic_launcher"
+        android:label="@string/app_name"
+        android:roundIcon="@mipmap/ic_launcher"
+        android:supportsRtl="true"
+        android:theme="@style/Theme.MyApplication"
+        android:usesCleartextTraffic="true"
+        tools:ignore="HardcodedDebugMode"
+        tools:targetApi="36">
+
+        <!-- ── EXISTING ACTIVITIES — NO CHANGES ───────────────────────── -->
+        <activity
+            android:name=".LoginActivity.ViewModels.biometric_page"
+            android:exported="false"
+            android:screenOrientation="portrait" />
+        <activity
+            android:name=".FirmProfile.ProfilePhotoEditorActivity"
+
+            android:screenOrientation="portrait"
+            android:exported="false" />
+
+        <activity
+            android:name=".LoginActivity.ViewModels.ForgetPassword"
+            android:exported="true"
+            android:screenOrientation="portrait" />
+
+        <activity
+            android:name=".LoginActivity.ViewModels.reset_password_file"
+            android:exported="true"
+            android:screenOrientation="portrait" />
+        <activity
+            android:name=".Relationships.ExchangeInformationActivity"
+            android:exported="true"
+            android:screenOrientation="portrait"
+           />
+
+        <activity
+            android:name=".Relationships.ShareDocumentsActivity"
+            android:exported="true"
+            android:screenOrientation="portrait"
+            />
+        <activity
+            android:name=".LoginActivity.ViewModels.UserFormActivity"
+            android:exported="true"
+            android:screenOrientation="portrait" />
+
+        <activity
+            android:name=".LoginActivity.ViewModels.OtpVerificationActivity"
+            android:exported="true"
+            android:screenOrientation="portrait" />
+
+        <activity
+            android:name=".MainActivity"
+            android:exported="false"
+            android:launchMode="singleTop"
+            android:screenOrientation="portrait"
+            android:windowSoftInputMode="adjustResize">
+            <meta-data
+                android:name="android.support.PARENT_ACTIVITY"
+                android:exported="false"
+                android:screenOrientation="portrait"
+                android:value=".LoginActivity.ViewModels.LoginActivity" />
+        </activity>
+
+        <activity
+            android:name=".LoginActivity.ViewModels.LoginActivity"
+            android:exported="true"
+            android:screenOrientation="portrait">
+            <intent-filter>
+                <action android:name="android.intent.action.MAIN" />
+                <category android:name="android.intent.category.LAUNCHER" />
+            </intent-filter>
+        </activity>
+
+        <!-- ── FCM SERVICE ─────────────────────────────────────────────── -->
+        <!-- ADD THIS — Handles foreground messages + token refresh        -->
+        <service
+            android:name=".CommonFiles.PushNotifications.MyFirebaseMessagingService"
+            android:exported="false">
+            <intent-filter>
+                <action android:name="com.google.firebase.MESSAGING_EVENT" />
+            </intent-filter>
+        </service>
+
+        <!-- ── FCM DEFAULT NOTIFICATION ICON ──────────────────────────── -->
+        <!-- ADD THIS — Icon shown for all FCM notifications               -->
+        <meta-data
+            android:name="com.google.firebase.messaging.default_notification_icon"
+            android:resource="@mipmap/ic_launcher" />
+
+        <!-- ── FCM DEFAULT NOTIFICATION COLOR ─────────────────────────── -->
+        <!-- ADD THIS — Color used for notification icon tint              -->
+        <meta-data
+            android:name="com.google.firebase.messaging.default_notification_color"
+            android:resource="@color/scheduled_text" />
+
+        <!-- ── FCM DEFAULT CHANNEL ID ──────────────────────────────────── -->
+        <!-- ADD THIS — Must match CHANNEL_ID in MyFirebaseMessagingService -->
+        <meta-data
+            android:name="com.google.firebase.messaging.default_notification_channel_id"
+            android:value="lauditor_channel" />
+
+    </application>
+
+</manifest>

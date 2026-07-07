@@ -1,0 +1,70 @@
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:id="@+id/dayCard"
+    android:layout_width="wrap_content"
+    android:layout_height="wrap_content"
+    android:layout_gravity="center"
+    android:layout_margin="@dimen/four_dp"
+    android:background="@drawable/rectangle_light_grey"
+    android:elevation="@dimen/six_dp"
+    android:gravity="center"
+    android:orientation="vertical">
+
+    <TextView
+        android:id="@+id/dayText"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_gravity="center"
+        android:layout_margin="@dimen/two_dp"
+        android:autoSizeMaxTextSize="@dimen/Fifteen_dp"
+        android:autoSizeMinTextSize="@dimen/one_dp"
+        android:autoSizeTextType="uniform"
+        android:fontFamily="@font/gill_sans"
+        android:gravity="center"
+        android:maxLines="1"
+        android:padding="@dimen/four_dp"
+        android:text="@string/accept"
+        android:textColor="@color/blue"
+        android:textSize="@dimen/Fifteen_dp"
+        android:visibility="gone" />
+
+    <LinearLayout
+        android:id="@+id/ll_dotView"
+        android:layout_width="@dimen/thirty_five_dp"
+        android:layout_height="@dimen/Fifty_five_dp"
+        android:layout_gravity="center"
+        android:gravity="center"
+        android:orientation="vertical">
+
+        <TextView
+            android:id="@+id/dateText"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:autoSizeMaxTextSize="@dimen/Fifteen_dp"
+            android:autoSizeMinTextSize="@dimen/one_dp"
+            android:autoSizeTextType="uniform"
+            android:fontFamily="@font/gill_sans"
+            android:gravity="center"
+            android:maxLines="1"
+            android:padding="@dimen/four_dp"
+            android:text="@string/_12"
+            android:textColor="@android:color/black"
+            android:textSize="@dimen/Fifteen_dp" />
+
+        <TextView
+            android:id="@+id/dotView"
+            android:layout_width="@dimen/twenty_dp"
+            android:layout_height="@dimen/twenty_dp"
+            android:autoSizeMaxTextSize="@dimen/Fifteen_dp"
+            android:autoSizeMinTextSize="@dimen/one_dp"
+            android:autoSizeTextType="uniform"
+            android:background="@drawable/sample_three_icons"
+            android:backgroundTint="@color/white"
+            android:gravity="center"
+            android:padding="@dimen/four_dp"
+            android:text="a"
+            android:textAlignment="center"
+            android:textColor="@color/scheduled_text"
+            android:textSize="@dimen/Fifteen_dp"
+            android:visibility="visible" />
+    </LinearLayout>
+</LinearLayout>

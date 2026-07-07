@@ -1,0 +1,95 @@
+<?xml version="1.0" encoding="utf-8"?><!--  card_billable.xml  –  Total Billable Hours (Business Metrics) -->
+<androidx.cardview.widget.CardView xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:id="@+id/Card_Layout"
+    android:layout_width="@dimen/ThreeHundred_dp"
+    android:layout_height="@dimen/one_sixty"
+    android:layout_margin="@dimen/six_dp"
+    app:cardBackgroundColor="@color/white"
+    app:cardCornerRadius="@dimen/eighteen_sp"
+    app:cardElevation="@dimen/four_dp">
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        android:padding="@dimen/Fifteen_dp">
+
+        <!-- ── Row 1 : icon + % chip ─────────────────────────────────── -->
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:gravity="center_vertical"
+            android:orientation="horizontal">
+
+            <FrameLayout
+                android:layout_width="@dimen/forty_dp"
+                android:layout_height="@dimen/forty_dp">
+
+                <ImageView
+                    android:layout_width="@dimen/forty_dp"
+                    android:layout_height="@dimen/forty_dp"
+                    android:src="@drawable/stat_box_light_blue" />
+
+                <ImageView
+                    android:layout_width="22dp"
+                    android:layout_height="22dp"
+                    android:layout_gravity="center"
+                    android:scaleType="fitCenter"
+                    android:src="@drawable/ic_clock"
+                    app:tint="@color/blue_dark" />
+            </FrameLayout>
+
+            <View
+                android:layout_width="0dp"
+                android:layout_height="1dp"
+                android:layout_weight="1" />
+
+            <!-- Percentage change chip (green = positive) -->
+            <TextView
+                android:id="@+id/tv_bh_percentage"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:background="@drawable/completed_badge"
+                android:fontFamily="@font/gill_sans_bold"
+                android:paddingHorizontal="@dimen/ten_dp"
+                android:paddingVertical="4dp"
+                android:text="+0.00%"
+                android:textColor="@color/chart_green"
+                android:textSize="@dimen/Twelve_dp" />
+        </LinearLayout>
+
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="@dimen/Fifteen_dp"
+            android:fontFamily="@font/gill_sans"
+            android:text="Total Billable Hours"
+            android:textColor="@color/grey_text"
+            android:textSize="@dimen/Twelve_dp" />
+
+        <!-- ── Row 3 : big number ─────────────────────────────────────── -->
+        <TextView
+            android:id="@+id/tv_billing_hours"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:ellipsize="end"
+            android:fontFamily="@font/gill_sans_bold"
+            android:maxLines="1"
+            android:text="0:00"
+            android:textColor="@color/black"
+            android:textSize="28sp" />
+
+        <!-- ── Row 4 : date range ─────────────────────────────────────── -->
+        <TextView
+            android:id="@+id/tv_date_range"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:fontFamily="@font/gill_sans"
+            android:text="Jan 2026 - Feb 2026"
+            android:textColor="@color/grey_color_dark"
+            android:textSize="@dimen/Twelve_dp" />
+
+    </LinearLayout>
+</androidx.cardview.widget.CardView>

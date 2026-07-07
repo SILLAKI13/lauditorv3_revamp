@@ -1,0 +1,385 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="vertical">
+
+    <androidx.appcompat.widget.LinearLayoutCompat
+        android:id="@+id/ll_matter_type"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_gravity="center"
+        android:gravity="center"
+        android:orientation="horizontal"
+        android:padding="@dimen/four_dp"
+        android:paddingTop="@dimen/twenty_dp"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent">
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:visibility="gone">
+
+            <include
+                android:id="@+id/tv_legal_matter"
+                layout="@layout/left_title_layout" />
+
+            <include
+                android:id="@+id/tv_general_matter"
+                layout="@layout/right_title_layout" />
+        </LinearLayout>
+
+        <LinearLayout
+            android:id="@+id/ll_title"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="@dimen/ten_dp"
+            android:layout_marginEnd="@dimen/ten_dp"
+            android:layout_weight="1"
+            android:gravity="end"
+            android:orientation="vertical"
+            android:textStyle="bold"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintTop_toBottomOf="@id/ll_create_view">
+
+            <include
+                android:id="@+id/tv_create_matter1"
+                layout="@layout/common_title_icon" />
+
+            <include
+                android:id="@+id/tv_view_matter1"
+                layout="@layout/common_title_icon" />
+        </LinearLayout>
+
+    </androidx.appcompat.widget.LinearLayoutCompat>
+
+    <androidx.appcompat.widget.LinearLayoutCompat
+        android:id="@+id/ll_create_view"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_gravity="center"
+        android:layout_marginTop="@dimen/ten_dp"
+        android:gravity="center"
+        android:orientation="horizontal"
+        android:padding="@dimen/four_dp"
+        android:paddingTop="@dimen/twenty_dp"
+        android:visibility="gone"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintHorizontal_bias="0.0"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@id/ll_create_view"
+        app:layout_constraintVertical_bias="0.03">
+
+        <include
+            android:id="@+id/tv_create_matter"
+            layout="@layout/left_title_layout"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginEnd="@dimen/one_dp"
+            android:textStyle="bold" />
+
+        <include
+            android:id="@+id/tv_view_matter"
+            layout="@layout/right_title_layout"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:textStyle="bold" />
+
+    </androidx.appcompat.widget.LinearLayoutCompat>
+
+    <LinearLayout
+        android:id="@+id/create_matter_view"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="@dimen/four_dp"
+        android:layout_marginTop="@dimen/ten_dp"
+        android:layout_marginEnd="@dimen/four_dp"
+        android:orientation="vertical"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@id/ll_matter_type"
+        app:layout_constraintVertical_bias="0.013">
+
+        <FrameLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content">
+
+            <!-- Progress line layer (behind) -->
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="@dimen/forty_dp"
+                android:gravity="center_vertical"
+                android:orientation="horizontal">
+
+                <!-- Left half-column spacer -->
+                <View
+                    android:layout_width="0dp"
+                    android:layout_height="1dp"
+                    android:layout_weight="0.5" />
+
+                <FrameLayout
+                    android:id="@+id/progress_container"
+                    android:layout_width="0dp"
+                    android:layout_height="@dimen/forty_dp"
+                    android:layout_weight="2">
+
+                    <!-- Grey background track -->
+                    <View
+                        android:id="@+id/progress_track"
+                        android:layout_width="match_parent"
+                        android:layout_height="2dp"
+                        android:layout_gravity="center_vertical"
+                        android:background="@color/silver" />
+
+                    <!-- Blue fill — animated in Java -->
+                    <View
+                        android:id="@+id/progress_fill"
+                        android:layout_width="0dp"
+                        android:layout_height="2dp"
+                        android:layout_gravity="start|center_vertical"
+                        android:background="@color/blue" />
+
+                </FrameLayout>
+
+                <!-- Right half-column spacer -->
+                <View
+                    android:layout_width="0dp"
+                    android:layout_height="1dp"
+                    android:layout_weight="0.5" />
+
+            </LinearLayout>
+
+            <!-- Icon columns layer (in front of line) -->
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="horizontal">
+
+                <!-- Step 1: Matter Info -->
+                <RelativeLayout
+                    android:id="@+id/ll_matter_info"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:gravity="center">
+
+                    <com.google.android.material.imageview.ShapeableImageView
+                        android:id="@+id/siv_matter_icon"
+                        android:layout_width="@dimen/forty_dp"
+                        android:layout_height="@dimen/forty_dp"
+                        android:layout_centerHorizontal="true"
+                        android:clickable="true"
+                        android:fontFamily="@font/gill_sans"
+                        android:src="@drawable/single_document_icon"
+                        android:textColor="@color/black"
+                        android:textSize="@dimen/Fifteen_dp"
+                        app:shapeAppearanceOverlay="@style/Circula" />
+
+                    <include
+                        android:id="@+id/matter_info_txt"
+                        layout="@layout/white_textview"
+                        android:layout_width="match_parent"
+                        android:layout_height="@dimen/forty_dp"
+                        android:layout_below="@+id/siv_matter_icon"
+                        android:layout_marginTop="@dimen/ten_dp" />
+
+                </RelativeLayout>
+
+                <!-- Timeline -->
+                <RelativeLayout
+                    android:id="@+id/ll_timeline"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:gravity="center"
+                    android:visibility="visible">
+
+                    <com.google.android.material.imageview.ShapeableImageView
+                        android:id="@+id/siv_timeline_icon"
+                        android:layout_width="@dimen/forty_dp"
+                        android:layout_height="@dimen/forty_dp"
+                        android:layout_centerHorizontal="true"
+                        android:clickable="true"
+                        android:fontFamily="@font/gill_sans"
+                        android:src="@drawable/timeline_new"
+                        android:text="@string/create_group"
+                        android:textColor="@color/black"
+                        android:textSize="@dimen/Fifteen_dp"
+                        app:contentPadding="@dimen/five_dp"
+                        app:shapeAppearanceOverlay="@style/Circula" />
+
+                    <include
+                        android:id="@+id/matter_timeline_txt"
+                        layout="@layout/white_textview"
+                        android:layout_width="match_parent"
+                        android:layout_height="@dimen/forty_dp"
+                        android:layout_below="@+id/siv_timeline_icon"
+                        android:layout_marginTop="@dimen/ten_dp" />
+
+                </RelativeLayout>
+
+                <!-- Step 2: GCT -->
+                <RelativeLayout
+                    android:id="@+id/ll_gct"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:gravity="center">
+
+                    <com.google.android.material.imageview.ShapeableImageView
+                        android:id="@+id/siv_groups"
+                        android:layout_width="@dimen/forty_dp"
+                        android:layout_height="@dimen/forty_dp"
+                        android:layout_centerHorizontal="true"
+                        android:clickable="true"
+                        android:fontFamily="@font/gill_sans"
+                        android:src="@drawable/gct_new"
+                        android:textColor="@color/black"
+                        android:textSize="@dimen/Fifteen_dp"
+                        app:contentPadding="@dimen/five_dp"
+                        app:shapeAppearanceOverlay="@style/Circula" />
+
+                    <include
+                        android:id="@+id/matter_gct_txt"
+                        layout="@layout/white_textview"
+                        android:layout_width="match_parent"
+                        android:layout_height="@dimen/forty_dp"
+                        android:layout_below="@+id/siv_groups"
+                        android:layout_marginTop="@dimen/ten_dp" />
+
+                </RelativeLayout>
+
+                <!-- Step 3: Documents -->
+                <RelativeLayout
+                    android:id="@+id/ll_documents"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:gravity="center">
+
+                    <com.google.android.material.imageview.ShapeableImageView
+                        android:id="@+id/siv_documents"
+                        android:layout_width="@dimen/forty_dp"
+                        android:layout_height="@dimen/forty_dp"
+                        android:layout_centerHorizontal="true"
+                        android:clickable="true"
+                        android:fontFamily="@font/gill_sans"
+                        android:src="@drawable/documents_new"
+                        android:textColor="@color/black"
+                        android:textSize="@dimen/Fifteen_dp"
+                        app:contentPadding="@dimen/five_dp"
+                        app:shapeAppearanceOverlay="@style/Circula" />
+
+                    <include
+                        android:id="@+id/matter_doc_txt"
+                        layout="@layout/white_textview"
+                        android:layout_width="match_parent"
+                        android:layout_height="@dimen/forty_dp"
+                        android:layout_below="@+id/siv_documents"
+                        android:layout_marginTop="@dimen/ten_dp" />
+
+                </RelativeLayout>
+
+            </LinearLayout>
+
+        </FrameLayout>
+
+    </LinearLayout>
+
+    <ScrollView
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        android:layout_marginTop="@dimen/ten_dp"
+        android:scrollbarStyle="insideInset"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintHorizontal_bias="1.0"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@id/create_matter_view"
+        app:layout_constraintVertical_bias="0.016">
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical">
+
+            <!-- ══════════════════════════════════════════════════════════
+                 EMPTY STATE VIEW
+                 Visible only when no matters exist.
+                 Hidden automatically when real content loads.
+            ══════════════════════════════════════════════════════════ -->
+            <LinearLayout
+                android:id="@+id/empty_state_view"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:gravity="center"
+                android:orientation="vertical"
+                android:paddingTop="60dp"
+                android:paddingBottom="40dp"
+                android:visibility="gone">
+
+                <!-- Blob background + icon layered in FrameLayout -->
+                <FrameLayout
+                    android:layout_width="180dp"
+                    android:layout_height="160dp"
+                    android:layout_gravity="center">
+
+
+
+                    <!-- Folder + magnifier icon centred on the blob -->
+                    <ImageView
+                        android:id="@+id/iv_empty_icon"
+                        android:layout_width="130dp"
+                        android:layout_height="130dp"
+                        android:layout_gravity="center"
+                        android:scaleType="fitCenter"
+                        android:src="@drawable/empty_matter" />
+
+                </FrameLayout>
+
+                <!-- Title: "No Matters Yet!" -->
+                <TextView
+                    android:id="@+id/tv_empty_title"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="20dp"
+                    android:text="No Matters Yet!"
+                    android:textColor="@color/black"
+                    android:textSize="18sp"
+                    android:textStyle="bold" />
+
+                <!-- Subtitle -->
+                <TextView
+                    android:id="@+id/tv_empty_subtitle"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="8dp"
+                    android:gravity="center"
+                    android:paddingStart="32dp"
+                    android:paddingEnd="32dp"
+                    android:text="Secure and organize your matters by start creating it."
+                    android:textColor="@color/dark_grey_new"
+
+                    android:textSize="13sp" />
+
+            </LinearLayout>
+
+            <!-- ══════════════════════════════════════════════════════════
+                 FRAGMENT CONTAINER
+                 Holds all child fragments (MatterInformation, GCT,
+                 Documents, TimeLine, ViewMatter).
+            ══════════════════════════════════════════════════════════ -->
+            <FrameLayout
+                android:id="@+id/child_container"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent" />
+
+        </LinearLayout>
+    </ScrollView>
+
+</androidx.constraintlayout.widget.ConstraintLayout>

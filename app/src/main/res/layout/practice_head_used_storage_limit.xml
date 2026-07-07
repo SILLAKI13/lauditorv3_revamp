@@ -1,0 +1,117 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_margin="@dimen/ten_dp"
+    android:padding="@dimen/ten_dp"
+    android:background="@drawable/dashboard_screens_background"
+    android:layout_height="wrap_content">
+
+    <androidx.appcompat.widget.LinearLayoutCompat
+        android:id="@+id/ll_1"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:gravity="start"
+        android:orientation="vertical"
+
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintHorizontal_bias="0.0"
+        app:layout_constraintStart_toEndOf="@id/imageView5"
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintVertical_bias="0.033"
+        tools:ignore="MissingConstraints">
+
+
+        <TextView
+            android:id="@+id/tv_client_name"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="start"
+            android:layout_weight="1"
+            android:fontFamily="@font/gill_sans"
+            android:gravity="start"
+            android:text="Used Storage Limit"
+            android:textColor="@color/Blue_text_color"
+            android:textSize="@dimen/twenty_dp" />
+
+
+
+    </androidx.appcompat.widget.LinearLayoutCompat>
+
+    <ImageView
+        android:id="@+id/imageView5"
+        android:layout_width="@dimen/forty_dp"
+        android:layout_height="100dp"
+        android:layout_margin="@dimen/ten_dp"
+        android:layout_gravity="center"
+        android:contentDescription="@string/todo"
+
+        android:src="@drawable/used_storage_limit"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toStartOf="@+id/guideline8"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent" />
+    <androidx.appcompat.widget.LinearLayoutCompat
+        android:id="@+id/ll_2"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:gravity="start"
+        android:orientation="horizontal"
+        android:layout_margin="@dimen/ten_dp"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintHorizontal_bias="0.0"
+        app:layout_constraintStart_toEndOf="@id/imageView5"
+        app:layout_constraintTop_toBottomOf="@id/ll_1"
+        app:layout_constraintVertical_bias="0.033"
+        tools:ignore="MissingConstraints">
+        <TextView
+            android:id="@+id/tv_storage"
+            android:layout_width="wrap_content"
+            android:layout_height="63dp"
+            android:layout_gravity="bottom"
+            android:padding="@dimen/four_dp"
+            android:layout_marginBottom="@dimen/eight_dp"
+            android:fontFamily="@font/gill_sans"
+            android:text="4"
+            android:textColor="@color/scheduled_text"
+            android:textSize="@dimen/forty_dp">
+
+        </TextView>
+        <TextView
+            android:id="@+id/tv_requested_time"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="@dimen/four_dp"
+            android:padding="@dimen/four_dp"
+            android:layout_gravity="center"
+            android:fontFamily="@font/gill_sans"
+            android:text="GB"
+            android:textColor="@color/black"
+            android:textSize="@dimen/Fifteen_dp"/>
+    </androidx.appcompat.widget.LinearLayoutCompat>
+
+
+
+    <androidx.constraintlayout.widget.Guideline
+        android:id="@+id/guideline8"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        app:layout_constraintGuide_percent="0.17" />
+
+    <androidx.constraintlayout.widget.Guideline
+        android:id="@+id/guideline6"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        app:layout_constraintGuide_percent="1.0" />
+
+    <androidx.constraintlayout.widget.Guideline
+        android:id="@+id/guideline7"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        app:layout_constraintGuide_begin="336dp" />
+</androidx.constraintlayout.widget.ConstraintLayout>

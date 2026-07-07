@@ -1,0 +1,255 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:background="@color/dashboard_background_color"
+    android:layout_height="wrap_content">
+
+    <androidx.appcompat.widget.LinearLayoutCompat
+        android:id="@+id/ll_timesheet_type"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_gravity="center"
+        android:layout_marginTop="@dimen/ten_dp"
+        android:gravity="center"
+        android:orientation="horizontal"
+        android:padding="@dimen/four_dp"
+        android:paddingTop="@dimen/twenty_dp"
+        android:visibility="visible">
+
+        <include
+            android:id="@+id/tv_aggregated_ts"
+            layout="@layout/left_title_layout"
+            android:layout_marginTop="@dimen/two_dp"
+            android:layout_marginBottom="@dimen/two_dp"
+            android:layout_marginEnd="@dimen/two_dp"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content" />
+
+        <include
+            android:id="@+id/tv_my_ts"
+            layout="@layout/right_title_layout"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="@dimen/two_dp"
+            android:layout_marginBottom="@dimen/two_dp"
+            android:layout_marginEnd="@dimen/two_dp"
+            android:layout_marginStart="@dimen/one_dp" />
+    </androidx.appcompat.widget.LinearLayoutCompat>
+
+    <androidx.appcompat.widget.LinearLayoutCompat
+        android:id="@+id/ll_submitted_type"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_below="@id/ll_timesheet_type"
+        android:layout_gravity="center"
+        android:layout_marginTop="@dimen/ten_dp"
+        android:gravity="center"
+        android:orientation="horizontal"
+        android:padding="@dimen/four_dp"
+        android:paddingTop="@dimen/twenty_dp">
+
+        <include
+            android:id="@+id/tv_ns_timesheet"
+            layout="@layout/left_title_layout"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content" />
+
+        <include
+            android:id="@+id/tv_submitted"
+            layout="@layout/right_title_layout"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="@dimen/one_dp" />
+    </androidx.appcompat.widget.LinearLayoutCompat>
+
+    <androidx.cardview.widget.CardView
+        android:id="@+id/cv_week_month"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_below="@id/ll_submitted_type"
+        android:layout_margin="@dimen/Fifteen_dp"
+        app:cardBackgroundColor="@color/white"
+        app:cardCornerRadius="@dimen/eight_dp"
+        app:cardElevation="@dimen/four_dp"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@id/ll_submitted_type"
+        app:layout_constraintVertical_bias="0.03">
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:background="@color/white"
+            android:orientation="vertical"
+            android:padding="@dimen/ten_dp">
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:baselineAligned="false"
+                android:orientation="horizontal">
+
+                <LinearLayout
+                    android:layout_width="@dimen/forty_dp"
+                    android:layout_height="@dimen/forty_dp"
+                    android:layout_gravity="center_vertical"
+                    android:background="@drawable/rectangle_light_grey"
+                    android:padding="@dimen/four_dp">
+
+                    <include layout="@layout/previous_week_img" />
+                </LinearLayout>
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_gravity="center"
+                    android:layout_weight="1"
+                    android:gravity="center">
+
+                    <LinearLayout
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_marginStart="@dimen/ten_dp"
+                        android:layout_marginEnd="@dimen/twenty_dp"
+                        android:orientation="vertical">
+
+                        <include
+                            android:id="@+id/from_id"
+                            layout="@layout/black_bold_txt"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:layout_marginBottom="@dimen/five_dp" />
+
+                        <!--                        <LinearLayout-->
+                        <!--                            android:id="@+id/ll_from_date"-->
+                        <!--                            android:layout_width="wrap_content"-->
+                        <!--                            android:layout_height="wrap_content"-->
+                        <!--                            android:layout_gravity="center_vertical"-->
+                        <!--                            android:padding="@dimen/four_dp"-->
+                        <!--                            android:background="@drawable/rectangle_light_grey_bg"-->
+                        <!--                            android:gravity="center_vertical"-->
+                        <!--                            android:orientation="horizontal">-->
+
+                        <include
+                            android:id="@+id/tv_from_date_timesheet"
+                            layout="@layout/black_bold_txt" />
+
+                        <!--                            <ImageView-->
+                        <!--                                android:id="@+id/iv_calendar"-->
+                        <!--                                android:layout_width="@dimen/twenty_dp"-->
+                        <!--                                android:layout_height="@dimen/twenty_dp"-->
+                        <!--                                android:layout_marginStart="@dimen/ten_dp"-->
+                        <!--                                android:visibility="gone"-->
+                        <!--                                android:src="@drawable/calendar_icon_xsmall" />-->
+                        <!--                        </LinearLayout>-->
+                    </LinearLayout>
+
+                    <LinearLayout
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_marginEnd="@dimen/ten_dp"
+                        android:orientation="vertical">
+
+                        <include
+                            android:id="@+id/to_id"
+                            layout="@layout/black_bold_txt"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:layout_marginBottom="@dimen/five_dp" />
+
+                        <include
+                            android:id="@+id/tv_to_date_timesheet"
+                            layout="@layout/black_bold_txt" />
+                    </LinearLayout>
+                </LinearLayout>
+
+                <LinearLayout
+                    android:layout_width="@dimen/forty_dp"
+                    android:layout_height="@dimen/forty_dp"
+                    android:layout_gravity="center_vertical"
+                    android:background="@drawable/rectangle_light_grey"
+                    android:padding="@dimen/four_dp">
+
+                    <include
+                        android:id="@+id/iv_next_week"
+                        layout="@layout/previous_week_img" />
+                </LinearLayout>
+
+            </LinearLayout>
+
+
+            <androidx.appcompat.widget.LinearLayoutCompat
+                android:id="@+id/ll_week_month"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_gravity="center"
+                android:layout_marginTop="@dimen/ten_dp"
+                android:gravity="center"
+                android:orientation="horizontal"
+                android:padding="@dimen/four_dp"
+                android:paddingTop="@dimen/twenty_dp"
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintHorizontal_bias="0.0"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintTop_toBottomOf="@id/ll_matter_type"
+                app:layout_constraintVertical_bias="0.03">
+
+                <include
+                    android:id="@+id/tv_week"
+                    layout="@layout/left_title_layout"
+                    android:layout_width="wrap_content"
+                    android:layout_marginTop="@dimen/two_dp"
+                    android:layout_marginBottom="@dimen/two_dp"
+                    android:layout_marginEnd="@dimen/two_dp"
+                    android:layout_height="wrap_content" />
+
+                <include
+                    android:id="@+id/tv_month"
+                    layout="@layout/right_title_layout"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginStart="@dimen/one_dp"
+                    android:layout_marginTop="@dimen/two_dp"
+                    android:layout_marginBottom="@dimen/two_dp"
+                    android:layout_marginEnd="@dimen/two_dp"/>
+            </androidx.appcompat.widget.LinearLayoutCompat>
+
+        </LinearLayout>
+
+    </androidx.cardview.widget.CardView>
+
+    <include
+        android:id="@+id/tl_search_matter"
+        style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox"
+        layout="@layout/search_layout_new"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_below="@id/cv_week_month"
+        android:layout_marginStart="@dimen/Fifteen_dp"
+        android:layout_marginTop="@dimen/four_dp"
+        android:layout_marginEnd="@dimen/Fifteen_dp"
+        android:layout_marginBottom="@dimen/four_dp"
+        android:visibility="visible" />
+
+    <ScrollView
+        android:id="@+id/sv_fragment"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:layout_below="@id/tl_search_matter"
+        android:background="@color/dashboard_background_color"
+        android:scrollbarStyle="insideInset">
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical">
+
+            <FrameLayout
+                android:id="@+id/child_container_timesheets"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content" />
+        </LinearLayout>
+
+    </ScrollView>
+</RelativeLayout>

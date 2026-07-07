@@ -1,0 +1,110 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.core.widget.NestedScrollView xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:id="@+id/scrollView"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:layout_marginBottom="@dimen/forty_dp"
+    android:background="@drawable/background_transparent"
+    tools:context=".MainActivity">
+
+    <androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent">
+
+        <androidx.appcompat.widget.LinearLayoutCompat
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_weight="0"
+            android:background="@color/white"
+            android:orientation="horizontal"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintHorizontal_bias="0.0"
+            app:layout_constraintLeft_toLeftOf="parent"
+            app:layout_constraintRight_toRightOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toTopOf="parent"
+            app:layout_constraintVertical_bias="0.0">
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="@dimen/ten_dp"
+                android:layout_weight="1"
+                android:orientation="vertical">
+
+                <include
+                    android:id="@+id/tv_notify_layout"
+                    layout="@layout/dropdown_spinner_layout" />
+
+                <include
+                    android:id="@+id/sp_minutes"
+                    layout="@layout/spinner_list"
+                    android:layout_width="match_parent"
+                    android:layout_height="@dimen/one_fifty_dp"
+                    android:layout_below="@+id/tv_sp_minutes"
+                    android:layout_marginStart="@dimen/four_dp"
+                    android:layout_marginEnd="@dimen/four_dp" />
+
+                <include
+                    android:id="@+id/error_msg1"
+                    layout="@layout/title_name_layout"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginStart="@dimen/ten_dp"
+                    android:layout_marginEnd="@dimen/ten_dp"
+                    android:visibility="gone" />
+            </LinearLayout>
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:orientation="vertical">
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:orientation="horizontal">
+
+                    <include
+                        android:id="@+id/tv_numbers"
+                        layout="@layout/title_description_layout"
+                        android:layout_width="match_parent"
+                        android:layout_height="@dimen/forty_dp"
+                        android:layout_marginTop="@dimen/ten_dp"
+                        android:layout_marginEnd="@dimen/four_dp"
+                        android:layout_weight="1" />
+
+                    <!--                    <ImageView-->
+                    <!--                        android:id="@+id/iv_delete_notification"-->
+                    <!--                        android:layout_width="@dimen/thirty_five_dp"-->
+                    <!--                        android:layout_height="@dimen/thirty_five_dp"-->
+                    <!--                        android:layout_marginLeft="-25dp"-->
+                    <!--                        android:background="@drawable/cancel_red_icon" />-->
+                    <ImageView
+                        android:id="@+id/iv_delete_notification"
+                        android:layout_width="@dimen/twenty_dp"
+                        android:layout_height="@dimen/twenty_dp"
+                        android:layout_gravity="center"
+                        android:layout_marginBottom="-5dp"
+                      app:tint="@color/Red"
+                    android:src="@drawable/delete_de"/>
+
+                </LinearLayout>
+
+                <include
+                    android:id="@+id/error_msg"
+                    layout="@layout/title_name_layout"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginStart="@dimen/ten_dp"
+                    android:layout_marginEnd="@dimen/ten_dp"
+                    android:visibility="gone" />
+            </LinearLayout>
+        </androidx.appcompat.widget.LinearLayoutCompat>
+    </androidx.constraintlayout.widget.ConstraintLayout>
+</androidx.core.widget.NestedScrollView>

@@ -1,0 +1,134 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:layout_gravity="center"
+    android:layout_margin="@dimen/twenty_dp"
+    android:background="@drawable/rectangular_white_background"
+    android:elevation="@dimen/Fifteen_dp"
+    android:orientation="vertical">
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_gravity="center"
+        android:background="@drawable/background_transparent"
+        android:gravity="center"
+        android:orientation="vertical">
+
+        <include
+            android:id="@+id/tv_choose_file"
+            layout="@layout/borderless_btn"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content" />
+
+        <!--            <androidx.cardview.widget.CardView-->
+        <!--                android:id="@+id/cv_camera"-->
+        <!--                android:layout_width="match_parent"-->
+        <!--                android:layout_height="wrap_content"-->
+        <!--                android:layout_gravity="center"-->
+        <!--                app:cardCornerRadius="@dimen/zero_dp"-->
+        <!--                app:cardElevation="@dimen/four_dp">-->
+        <include
+            android:id="@+id/tv_camera"
+            layout="@layout/borderless_btn"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:visibility="gone" />
+
+        <include
+            layout="@layout/horizontal_split_line"
+            android:layout_width="match_parent"
+            android:layout_height="@dimen/point_five"
+            android:visibility="gone" />
+        <!--        <Button-->
+        <!--            android:id="@+id/bt_camera"-->
+        <!--            android:layout_width="match_parent"-->
+        <!--            android:layout_height="wrap_content"-->
+        <!--            android:background="@color/white"-->
+        <!--            android:fontFamily="@font/gill_sans"-->
+        <!--            android:text="Camera"-->
+        <!--            android:textAllCaps="false"-->
+        <!--            android:textColor="@color/black"-->
+        <!--            android:visibility="gone"-->
+        <!--            app:backgroundTint="@color/white"-->
+        <!--            tools:ignore="TextContrastCheck">-->
+
+        <!--        </Button>-->
+
+
+        <!--                &lt;!&ndash;                <TextView&ndash;&gt;-->
+        <!--                &lt;!&ndash;                    android:id="@+id/care_plan_desired_outcome"&ndash;&gt;-->
+        <!--                &lt;!&ndash;                    android:layout_width="match_parent"&ndash;&gt;-->
+        <!--                &lt;!&ndash;                    android:layout_height="wrap_content"&ndash;&gt;-->
+        <!--                &lt;!&ndash;                    android:layout_below="@+id/careplan_title"&ndash;&gt;-->
+        <!--                &lt;!&ndash;                    android:padding="@dimen/four_dp"&ndash;&gt;-->
+        <!--                &lt;!&ndash;                    android:text="@string/careplan"&ndash;&gt;-->
+        <!--                &lt;!&ndash;                    android:textColor="@color/textcolor_san_heavy"&ndash;&gt;-->
+        <!--                &lt;!&ndash;                    android:textSize="@dimen/Fifteen_dp" />&ndash;&gt;-->
+
+
+        <!--            </androidx.cardview.widget.CardView>-->
+
+        <!--                <TextView-->
+        <!--                    android:id="@+id/care_plan_desired_outcome"-->
+        <!--                    android:layout_width="match_parent"-->
+        <!--                    android:layout_height="wrap_content"-->
+        <!--                    android:layout_below="@+id/careplan_title"-->
+        <!--                    android:padding="@dimen/four_dp"-->
+        <!--                    android:text="@string/careplan"-->
+        <!--                    android:textColor="@color/textcolor_san_heavy"-->
+        <!--                    android:textSize="@dimen/Fifteen_dp" />-->
+
+        <include
+            android:id="@+id/tv_document_lib"
+            layout="@layout/borderless_btn"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content" />
+
+        <include
+            layout="@layout/horizontal_split_line"
+            android:layout_width="match_parent"
+            android:layout_height="@dimen/point_five" />
+
+        <include
+            android:id="@+id/tv_photo_lib"
+            layout="@layout/borderless_btn"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content" />
+
+        <include
+            layout="@layout/horizontal_split_line"
+            android:layout_width="match_parent"
+            android:layout_height="@dimen/point_five" />
+
+
+        <!--                <TextView-->
+        <!--                    android:id="@+id/care_plan_desired_outcome"-->
+        <!--                    android:layout_width="match_parent"-->
+        <!--                    android:layout_height="wrap_content"-->
+        <!--                    android:layout_below="@+id/careplan_title"-->
+        <!--                    android:padding="@dimen/four_dp"-->
+        <!--                    android:text="@string/careplan"-->
+        <!--                    android:textColor="@color/textcolor_san_heavy"-->
+        <!--                    android:textSize="@dimen/Fifteen_dp" />-->
+        <include
+            android:id="@+id/tv_cancel"
+            layout="@layout/borderless_btn"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content" />
+
+
+        <!--                <TextView-->
+        <!--                    android:id="@+id/care_plan_desired_outcome"-->
+        <!--                    android:layout_width="match_parent"-->
+        <!--                    android:layout_height="wrap_content"-->
+        <!--                    android:layout_below="@+id/careplan_title"-->
+        <!--                    android:padding="@dimen/four_dp"-->
+        <!--                    android:text="@string/careplan"-->
+        <!--                    android:textColor="@color/textcolor_san_heavy"-->
+        <!--                    android:textSize="@dimen/Fifteen_dp" />-->
+    </LinearLayout>
+</LinearLayout>

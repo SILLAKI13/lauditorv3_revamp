@@ -1,0 +1,166 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:id="@+id/scrollView"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    tools:context=".MainActivity">
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:layout_margin="@dimen/four_dp"
+        android:orientation="vertical"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent">
+
+        <androidx.cardview.widget.CardView
+            android:id="@+id/card_view3"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_gravity="center_vertical"
+            android:layout_marginStart="@dimen/ten_dp"
+            android:layout_marginTop="@dimen/four_dp"
+            android:layout_marginEnd="@dimen/ten_dp"
+            android:clickable="true"
+            app:cardBackgroundColor="@color/white"
+            app:cardCornerRadius="@dimen/eight_dp"
+            app:cardElevation="@dimen/ten_dp">
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_margin="@dimen/ten_dp"
+                android:gravity="center"
+                android:orientation="vertical">
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="horizontal"
+                    android:padding="@dimen/four_dp">
+
+                    <LinearLayout
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:background="@drawable/rectangle_light_grey"
+                        android:padding="@dimen/four_dp">
+
+                        <include layout="@layout/previous_week_img" />
+                    </LinearLayout>
+
+                    <LinearLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_gravity="center"
+                        android:layout_weight="1"
+                        android:gravity="center"
+                        android:orientation="vertical">
+
+                        <include layout="@layout/black_bold_txt" />
+                    </LinearLayout>
+
+                    <TextView
+                        android:id="@+id/view_line"
+                        android:layout_width="@dimen/one_point_five"
+                        android:layout_height="wrap_content"
+                        android:layout_gravity="center" />
+
+                    <LinearLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_gravity="center"
+                        android:layout_weight="1"
+                        android:gravity="center"
+                        android:orientation="vertical">
+
+                        <include
+                            android:id="@+id/tv_to_date_timesheet"
+                            layout="@layout/black_bold_txt" />
+                    </LinearLayout>
+
+                    <LinearLayout
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:background="@drawable/rectangle_light_grey"
+                        android:padding="@dimen/four_dp">
+
+                        <include
+                            android:id="@+id/iv_next_week"
+                            layout="@layout/previous_week_img" />
+                    </LinearLayout>
+                </LinearLayout>
+
+                <androidx.recyclerview.widget.RecyclerView
+                    android:id="@+id/rv_week_dates"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_gravity="center"
+                    android:layout_marginTop="@dimen/ten_dp"
+                    android:layout_marginBottom="@dimen/ten_dp"
+                    android:layout_weight="1"
+                    android:paddingStart="@dimen/twenty_dp" />
+            </LinearLayout>
+        </androidx.cardview.widget.CardView>
+
+        <androidx.appcompat.widget.LinearLayoutCompat
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_margin="@dimen/four_dp"
+            android:layout_weight="1"
+            android:orientation="vertical">
+
+            <!-- Empty State -->
+            <LinearLayout
+                android:id="@+id/layout_empty_state"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:gravity="center"
+                android:orientation="vertical"
+                android:paddingTop="40dp"
+                android:paddingBottom="40dp"
+                android:visibility="gone">
+
+                <ImageView
+                    android:layout_width="130dp"
+                    android:layout_height="130dp"
+                    android:contentDescription="No events found"
+                    android:src="@drawable/empty_appointments" />
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="16dp"
+                    android:fontFamily="@font/gill_sans_regular"
+                    android:text="No Events Yet!"
+                    android:textColor="@color/black"
+                    android:textSize="18sp"
+                    android:textStyle="bold" />
+
+                <TextView
+                    android:id="@+id/tv_empty_subtitle"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="8dp"
+                    android:fontFamily="@font/gill_sans_regular"
+                    android:text="There are no events for this date."
+                    android:textColor="@color/dark_grey_new"
+                    android:textSize="14sp" />
+
+            </LinearLayout>
+
+            <!-- Events List -->
+            <androidx.recyclerview.widget.RecyclerView
+                android:id="@+id/rv_events"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_margin="@dimen/four_dp" />
+
+        </androidx.appcompat.widget.LinearLayoutCompat>
+
+    </LinearLayout>
+
+</androidx.constraintlayout.widget.ConstraintLayout>

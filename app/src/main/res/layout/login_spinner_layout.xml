@@ -1,0 +1,52 @@
+<?xml version="1.0" encoding="utf-8"?>
+    <LinearLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+        android:id="@+id/firm_layout"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        android:visibility="visible">
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_gravity="center_vertical"
+            android:layout_marginTop="@dimen/ten_dp"
+            android:layout_marginStart="@dimen/ten_dp"
+            android:layout_marginEnd="@dimen/ten_dp"
+            android:background="@drawable/rectangle_light_grey"
+            android:elevation="@dimen/four_dp"
+            android:orientation="horizontal">
+
+            <TextView
+                android:id="@+id/spinner_firm_view"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:fontFamily="@font/gill_sans"
+                android:gravity="center_vertical"
+                android:hint="Select Firm"
+                android:padding="@dimen/Twelve_dp"
+                android:textColor="@color/black"
+                android:textColorHint="@color/grey_color_dark"
+                android:textSize="@dimen/Fifteen_dp" />
+
+            <ImageView
+                android:layout_width="wrap_content"
+                android:layout_height="@dimen/forty_dp"
+                android:layout_gravity="center"
+                android:layout_marginEnd="@dimen/ten_dp"
+                android:padding="@dimen/four_dp"
+                android:src="@drawable/down_arrow"
+                android:contentDescription="Select Firm" />
+        </LinearLayout>
+
+        <ListView
+            android:id="@+id/sp_firm"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="@dimen/ten_dp"
+            android:layout_marginEnd="@dimen/ten_dp"
+            android:background="@drawable/rectangle_light_grey"
+            android:visibility="visible" />
+    </LinearLayout>

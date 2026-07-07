@@ -1,0 +1,25 @@
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="@dimen/thirty_dp"
+    android:height="@dimen/thirty_dp"
+    android:viewportWidth="24"
+    android:viewportHeight="24">
+
+    <!-- White circular background -->
+    <path
+        android:fillColor="@android:color/white"
+        android:pathData="M12,2A10,10 0 1,1 2,12A10,10 0 0,1 12,2Z" />
+
+    <!-- Circle stroke -->
+    <path
+        android:fillColor="@android:color/transparent"
+        android:pathData="M12,2A10,10 0 1,1 2,12A10,10 0 0,1 12,2Z"
+        android:strokeWidth="1.5"
+        android:strokeColor="@color/grey_medium" />
+
+    <!-- X icon -->
+    <path
+        android:pathData="M8,8 L16,16 M16,8 L8,16"
+        android:strokeWidth="1"
+        android:strokeColor="@color/grey_medium"
+        android:strokeLineCap="round" />
+</vector>

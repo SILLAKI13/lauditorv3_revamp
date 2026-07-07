@@ -1,0 +1,113 @@
+<?xml version="1.0" encoding="utf-8"?><!--  res/layout/dashboard_date_header.xml  -->
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:layout_margin="@dimen/ten_dp"
+    android:background="@drawable/blue_gradient_card"
+    android:gravity="center"
+    android:orientation="horizontal"
+    android:padding="@dimen/Twelve_dp">
+
+    <!-- Month -->
+    <LinearLayout
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:layout_weight="1"
+        android:gravity="center"
+        android:orientation="vertical">
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginBottom="@dimen/two_dp"
+            android:fontFamily="@font/gill_sans"
+            android:letterSpacing="0.05"
+            android:text="Month"
+            android:textColor="@color/white"
+            android:textSize="@dimen/Twelve_dp" />
+
+        <TextClock
+            android:id="@+id/tv_month"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:fontFamily="@font/gill_sans"
+            android:format12Hour="MMM"
+            android:format24Hour="MMM"
+            android:textColor="@color/white"
+            android:textSize="@dimen/twenty_five"
+            android:textStyle="bold" />
+    </LinearLayout>
+
+    <!-- Divider -->
+    <View
+        android:layout_width="1dp"
+        android:layout_height="40dp"
+        android:background="#44FFFFFF" />
+
+    <!-- Date -->
+    <LinearLayout
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:layout_weight="1"
+        android:gravity="center"
+        android:orientation="vertical">
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginBottom="@dimen/two_dp"
+            android:letterSpacing="0.05"
+            android:text="Date"
+            android:textColor="@color/white"
+            android:textSize="@dimen/Twelve_dp" />
+
+        <TextClock
+            android:id="@+id/tv_date"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:fontFamily="@font/gill_sans"
+            android:format12Hour="dd"
+            android:format24Hour="dd"
+            android:textColor="@color/white"
+            android:textSize="@dimen/twenty_five"
+            android:textStyle="bold" />
+    </LinearLayout>
+
+    <!-- Divider -->
+    <View
+        android:layout_width="1dp"
+        android:layout_height="40dp"
+        android:background="#44FFFFFF" />
+
+    <!-- Year -->
+    <LinearLayout
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:layout_weight="1"
+        android:gravity="center"
+        android:orientation="vertical">
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginBottom="@dimen/two_dp"
+            android:letterSpacing="0.05"
+            android:text="Year"
+            android:textColor="@color/white"
+            android:textSize="@dimen/Twelve_dp" />
+        <!--            android:textColor="@color/white"-->
+        <!--            android:textSize="@dimen/Twelve_dp" />-->
+
+        <TextClock
+            android:id="@+id/tv_year"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:fontFamily="@font/gill_sans"
+            android:format12Hour="yyyy"
+            android:format24Hour="yyyy"
+            android:textColor="@color/white"
+            android:textSize="@dimen/twenty_five"
+            android:textStyle="bold" />
+    </LinearLayout>
+
+</LinearLayout>

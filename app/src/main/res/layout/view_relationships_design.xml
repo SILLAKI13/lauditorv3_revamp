@@ -1,0 +1,581 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+    Root is a FrameLayout so the action-list CardView can overlap (float over)
+    the main card when expanded.
+-->
+<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:layout_marginEnd="@dimen/ten_dp"
+    android:layout_marginStart="@dimen/ten_dp"
+    android:layout_marginTop="@dimen/ten_dp"
+    android:clipChildren="false"
+    android:clipToPadding="false"
+    android:elevation="@dimen/four_dp">
+
+    <!--
+        MAIN CARD
+        • layout_gravity="top"  => anchored to top of FrameLayout,
+          never grows when action_list_card becomes VISIBLE
+    -->
+    <androidx.cardview.widget.CardView
+        android:id="@+id/cv_relationships_details"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_gravity="top"
+        app:cardBackgroundColor="@color/white"
+        app:cardCornerRadius="@dimen/eight_dp"
+        app:cardElevation="@dimen/four_dp">
+
+        <RelativeLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:padding="@dimen/ten_dp">
+
+            <!-- ── THREE-DOT MENU ICON ── top|end ─────────────────────────── -->
+            <ImageView
+                android:id="@+id/custom_spinner_cardview"
+                android:layout_width="30dp"
+                android:layout_height="30dp"
+                android:layout_alignParentEnd="true"
+                android:layout_alignParentTop="true"
+                android:layout_marginEnd="4dp"
+                android:layout_marginTop="2dp"
+                android:background="?attr/selectableItemBackgroundBorderless"
+                android:contentDescription="Actions"
+                android:padding="2dp"
+                android:src="@drawable/img_17" />
+
+            <!-- Hidden compat view — Java code references iv_initiated -->
+            <ImageView
+                android:id="@+id/iv_initiated"
+                android:layout_width="0dp"
+                android:layout_height="0dp"
+                android:visibility="gone" />
+
+            <!-- ── RELATIONSHIP NAME ── left side, top ────────────────────── -->
+            <include
+                android:id="@+id/tv_relationship_name"
+                layout="@layout/title_name_layout"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_alignParentStart="true"
+                android:layout_marginEnd="@dimen/four_dp"
+                android:layout_marginStart="@dimen/four_dp"
+                android:layout_toStartOf="@id/custom_spinner_cardview" />
+
+            <!-- ── CREATED DATE ── below relationship name ───────────────── -->
+            <include
+                android:id="@+id/tv_created_date"
+                layout="@layout/owner_layout"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_alignParentStart="true"
+                android:layout_below="@id/tv_relationship_name"
+                android:layout_marginStart="@dimen/four_dp"
+                android:layout_marginTop="@dimen/four_dp"
+                android:layout_toStartOf="@id/custom_spinner_cardview" />
+
+            <!-- ── DELETED BY ── visible only for deleted items ──────────── -->
+            <include
+                android:id="@+id/deletedBy"
+                layout="@layout/owner_layout"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_alignParentStart="true"
+                android:layout_below="@id/tv_created_date"
+                android:layout_marginStart="@dimen/four_dp"
+                android:visibility="gone" />
+
+            <!-- ── CONSUMER LABEL ── below deletedBy ─────────────────────── -->
+            <include
+                android:id="@+id/tv_consumer"
+                layout="@layout/black_small_bold_txt"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_alignParentStart="true"
+                android:layout_below="@id/deletedBy"
+                android:layout_margin="@dimen/eight_dp"
+                android:layout_marginTop="@dimen/four_dp" />
+
+            <!-- ── MORE DETAILS LINK ── below consumer ───────────────────── -->
+            <include
+                android:id="@+id/tv_more_details"
+                layout="@layout/title_name_layout"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_alignParentStart="true"
+                android:layout_below="@id/tv_consumer"
+                android:layout_margin="@dimen/four_dp" />
+
+            <!-- ── ACCEPT BUTTON ── for pending invitations ──────────────── -->
+            <include
+                android:id="@+id/accept"
+                layout="@layout/submit_button"
+                android:layout_width="@dimen/module_btn_size"
+                android:layout_height="@dimen/forty_dp"
+                android:layout_alignParentEnd="true"
+                android:layout_below="@id/tv_more_details"
+                android:layout_marginTop="@dimen/ten_dp"
+                android:visibility="gone" />
+
+            <!-- ── ICON ROW ── groups / send invite / TM / activate / restore / delete ── -->
+            <LinearLayout
+                android:id="@+id/ll_icons"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_alignParentEnd="true"
+                android:layout_below="@id/tv_more_details"
+                android:layout_marginStart="@dimen/thirty_dp"
+                android:layout_marginTop="@dimen/ten_dp"
+                android:gravity="end"
+                android:orientation="horizontal"
+                android:visibility="gone">
+
+                <ImageView
+                    android:id="@+id/iv_groups_relationships"
+                    android:layout_width="@dimen/forty_dp"
+                    android:layout_height="@dimen/forty_dp"
+                    android:layout_marginStart="@dimen/four_dp"
+                    android:padding="@dimen/four_dp"
+                    android:src="@drawable/three_grp_icon"
+                    android:visibility="gone" />
+
+                <ImageView
+                    android:id="@+id/iv_send_invite"
+                    android:layout_width="@dimen/forty_dp"
+                    android:layout_height="@dimen/forty_dp"
+                    android:layout_gravity="top"
+                    android:src="@drawable/send_icon"
+                    android:visibility="gone" />
+
+                <ImageView
+                    android:id="@+id/iv_tm_relationships"
+                    android:layout_width="@dimen/thirty_dp"
+                    android:layout_height="@dimen/thirty_dp"
+                    android:layout_gravity="center"
+                    android:layout_margin="@dimen/four_dp"
+                    android:src="@drawable/modify_tm_icon"
+                    android:visibility="visible" />
+
+                <ImageView
+                    android:id="@+id/iv_activate_relationships"
+                    android:layout_width="@dimen/thirty_dp"
+                    android:layout_height="@dimen/thirty_dp"
+                    android:layout_gravity="center"
+                    android:layout_margin="@dimen/four_dp"
+                    android:src="@drawable/tick_circle"
+                    android:visibility="gone"
+                    app:tint="@color/green_color" />
+
+                <ImageView
+                    android:id="@+id/iv_restore_relationships"
+                    android:layout_width="@dimen/thirty_dp"
+                    android:layout_height="@dimen/thirty_dp"
+                    android:layout_gravity="center"
+                    android:src="@drawable/refresh_icon"
+                    android:visibility="gone" />
+
+                <include
+                    android:id="@+id/iv_delete_relationships"
+                    layout="@layout/delete_icon"
+                    android:visibility="visible" />
+            </LinearLayout>
+
+            <!-- ── STATUS CHIP ── bottom|end of card ─────────────────────── -->
+            <TextView
+                android:id="@+id/tv_initiated"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_alignParentBottom="true"
+                android:layout_alignParentEnd="true"
+                android:layout_marginBottom="@dimen/eight_dp"
+                android:layout_marginEnd="@dimen/eight_dp"
+                android:background="@drawable/chip_active"
+                android:fontFamily="@font/gill_sans"
+                android:gravity="center"
+                android:paddingStart="@dimen/ten_dp"
+                android:paddingTop="4dp"
+                android:paddingEnd="@dimen/ten_dp"
+                android:paddingBottom="4dp"
+                android:text="Active"
+                android:textColor="@color/white"
+                android:textSize="@dimen/Twelve_dp" />
+
+        </RelativeLayout>
+    </androidx.cardview.widget.CardView>
+
+    <!--
+        ACTION LIST CARD — floats OVER the main card
+        KEY POINTS:
+          • Sibling of cv_relationships_details inside FrameLayout
+          • layout_gravity="top|end" pins it to the top-right corner
+          • elevation="24dp" draws it on top of everything
+          • GONE by default; adapter sets VISIBLE on three-dot click
+          • clipChildren="false" on root FrameLayout means making this
+            VISIBLE does NOT resize or push any sibling view at all
+    -->
+    <androidx.cardview.widget.CardView
+        android:id="@+id/action_list_card"
+        android:layout_width="@dimen/action_list_width"
+        android:layout_height="wrap_content"
+        android:layout_gravity="top|end"
+        android:layout_marginTop="36dp"
+        android:layout_marginEnd="@dimen/ten_dp"
+        android:elevation="24dp"
+        android:visibility="gone"
+        app:cardBackgroundColor="@color/white"
+        app:cardCornerRadius="6dp"
+        app:cardElevation="24dp">
+
+        <ListView
+            android:id="@+id/list_client"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:divider="@android:color/darker_gray"
+            android:dividerHeight="0.5dp"
+            android:scrollbars="none" />
+
+    </androidx.cardview.widget.CardView>
+
+    <!--
+        EXPANDABLE SECTION — Profile / Share / Groups etc.
+        • layout_gravity="top" measured from top of FrameLayout
+        • layout_marginTop="150dp" pushes it visually below the main card
+        • GONE by default; shown only when user taps Profile / Share tabs
+        • Completely independent of action_list_card toggling
+    -->
+    <LinearLayout
+        android:id="@+id/ll_expandable_layout"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_gravity="top"
+        android:layout_marginTop="150dp"
+        android:orientation="vertical"
+        android:visibility="gone">
+
+        <!-- ── PROFILE / SHARE TOGGLE BUTTONS ─────────────────────────── -->
+        <LinearLayout
+            android:id="@+id/profile"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="center"
+            android:layout_margin="@dimen/ten_dp"
+            android:gravity="center"
+            android:orientation="horizontal"
+            android:visibility="visible">
+
+            <include android:id="@+id/rb_profile" layout="@layout/left_title_layout" />
+            <include android:id="@+id/rb_share_button" layout="@layout/right_title_layout" />
+            <include
+                android:id="@+id/rb_share_matter"
+                layout="@layout/left_title_layout"
+                android:visibility="gone" />
+            <include
+                android:id="@+id/tv_add_entity"
+                layout="@layout/right_title_layout"
+                android:visibility="gone" />
+        </LinearLayout>
+
+        <!-- ── PROFILE DETAIL CARD ────────────────────────────────────── -->
+        <androidx.cardview.widget.CardView
+            android:id="@+id/cv_profile"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:layout_gravity="center"
+            android:layout_margin="@dimen/one_dp"
+            android:elevation="@dimen/four_dp"
+            android:visibility="visible"
+            app:cardBackgroundColor="@color/white"
+            app:cardCornerRadius="@dimen/eight_dp">
+
+            <!-- INDIVIDUAL profile fields -->
+            <LinearLayout
+                android:id="@+id/ll_individual_profile"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="vertical"
+                android:padding="@dimen/ten_dp">
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="@dimen/ten_dp"
+                    android:orientation="horizontal">
+                    <include android:id="@+id/individual_first_name" layout="@layout/relationship_name" />
+                    <include android:id="@+id/tv_individual_first_name" layout="@layout/relationship_name" />
+                </LinearLayout>
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="@dimen/ten_dp"
+                    android:orientation="horizontal">
+                    <include android:id="@+id/individual_last_name" layout="@layout/relationship_name" />
+                    <include android:id="@+id/tv_individual_last_name" layout="@layout/relationship_name" />
+                </LinearLayout>
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="@dimen/ten_dp"
+                    android:orientation="horizontal">
+                    <include android:id="@+id/individual_email" layout="@layout/relationship_name" />
+                    <include android:id="@+id/tv_individual_email" layout="@layout/relationship_name" />
+                </LinearLayout>
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="@dimen/ten_dp"
+                    android:orientation="horizontal">
+                    <include android:id="@+id/individual_mobile" layout="@layout/relationship_name" />
+                    <include android:id="@+id/tv_individual_mobile" layout="@layout/relationship_name" />
+                </LinearLayout>
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="@dimen/ten_dp"
+                    android:orientation="horizontal">
+                    <include android:id="@+id/individual_country" layout="@layout/relationship_name" />
+                    <include android:id="@+id/tv_individual_country" layout="@layout/relationship_name" />
+                </LinearLayout>
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="@dimen/ten_dp"
+                    android:orientation="horizontal">
+                    <include android:id="@+id/individual_home_address" layout="@layout/relationship_name" />
+                    <include android:id="@+id/tv_individual_home_address" layout="@layout/relationship_name" />
+                </LinearLayout>
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="@dimen/ten_dp"
+                    android:orientation="horizontal">
+                    <include android:id="@+id/individual_work_phone" layout="@layout/relationship_name" />
+                    <include android:id="@+id/tv_individual_work_phone" layout="@layout/relationship_name" />
+                </LinearLayout>
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="@dimen/ten_dp"
+                    android:orientation="horizontal">
+                    <include android:id="@+id/individual_alt_phone" layout="@layout/relationship_name" />
+                    <include android:id="@+id/tv_individual_alt_phone" layout="@layout/relationship_name" />
+                </LinearLayout>
+            </LinearLayout>
+
+            <!-- ENTITY / CORPORATE profile fields -->
+            <LinearLayout
+                android:id="@+id/ll_entity_profile"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="vertical"
+                android:padding="@dimen/ten_dp"
+                android:visibility="gone">
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="@dimen/ten_dp"
+                    android:orientation="vertical">
+                    <include android:id="@+id/first_name" layout="@layout/relationship_name" />
+                    <include android:id="@+id/tv_first_name" layout="@layout/relationship_name" />
+                </LinearLayout>
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="@dimen/ten_dp"
+                    android:orientation="vertical">
+                    <include android:id="@+id/email" layout="@layout/relationship_name" />
+                    <include android:id="@+id/tv_email" layout="@layout/relationship_name" />
+                </LinearLayout>
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="@dimen/ten_dp"
+                    android:orientation="vertical">
+                    <include android:id="@+id/country" layout="@layout/relationship_name" />
+                    <include android:id="@+id/tv_country" layout="@layout/relationship_name" />
+                </LinearLayout>
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="@dimen/ten_dp"
+                    android:orientation="vertical">
+                    <include android:id="@+id/contact_name" layout="@layout/relationship_name" />
+                    <include android:id="@+id/tv_contact_name" layout="@layout/relationship_name" />
+                </LinearLayout>
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="@dimen/ten_dp"
+                    android:orientation="vertical">
+                    <include android:id="@+id/mobile" layout="@layout/relationship_name" />
+                    <include android:id="@+id/tv_mobile" layout="@layout/relationship_name" />
+                </LinearLayout>
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="@dimen/ten_dp"
+                    android:orientation="vertical">
+                    <include android:id="@+id/website" layout="@layout/relationship_name" />
+                    <include android:id="@+id/tv_website" layout="@layout/relationship_name" />
+                </LinearLayout>
+
+                <LinearLayout
+                    android:id="@+id/ll_billing_currency"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="@dimen/ten_dp"
+                    android:orientation="vertical"
+                    android:visibility="gone">
+                    <include android:id="@+id/billing_currency" layout="@layout/relationship_name" />
+                    <include android:id="@+id/tv_billing_currency" layout="@layout/relationship_name" />
+                </LinearLayout>
+            </LinearLayout>
+        </androidx.cardview.widget.CardView>
+
+        <!-- ── SEARCH BAR ─────────────────────────────────────────────── -->
+        <include
+            android:id="@+id/et_search_relationships"
+            layout="@layout/search_layout"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_gravity="center_vertical"
+            android:layout_marginTop="@dimen/ten_dp"
+            android:layout_marginBottom="@dimen/ten_dp" />
+
+        <!-- ── SHARED STATUS / UPLOAD ICON ROW ───────────────────────── -->
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_gravity="center"
+            android:layout_margin="@dimen/ten_dp"
+            android:gravity="center">
+
+            <LinearLayout
+                android:id="@+id/shared_status"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:gravity="center_vertical"
+                android:orientation="horizontal"
+                android:visibility="gone">
+
+                <include
+                    android:id="@+id/rb_shared_with_us"
+                    layout="@layout/left_title_layout"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginEnd="@dimen/one_dp" />
+                <include android:id="@+id/rb_shared_by_us" layout="@layout/right_title_layout" />
+            </LinearLayout>
+
+            <com.google.android.material.imageview.ShapeableImageView
+                android:id="@+id/iv_share_docs"
+                android:layout_width="@dimen/thirty_five_dp"
+                android:layout_height="@dimen/thirty_five_dp"
+                android:layout_marginStart="@dimen/twenty_dp"
+                android:src="@drawable/circle_upload_icon"
+                android:visibility="gone"
+                app:shapeAppearanceOverlay="@style/Circula" />
+        </LinearLayout>
+
+        <!-- ── DOC SHARE LAYOUT ───────────────────────────────────────── -->
+        <include
+            android:id="@+id/ll_shared_with_us"
+            layout="@layout/doc_share_layout"
+            android:visibility="gone" />
+
+        <!-- ── SHARED TYPE TOGGLE ─────────────────────────────────────── -->
+        <LinearLayout
+            android:id="@+id/shared_type"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="center"
+            android:layout_margin="@dimen/ten_dp"
+            android:gravity="center"
+            android:orientation="horizontal"
+            android:visibility="gone">
+            <include android:id="@+id/rb_already_shared" layout="@layout/left_title_layout" />
+            <include android:id="@+id/rb_choose_to_share" layout="@layout/right_title_layout" />
+        </LinearLayout>
+
+        <!-- ── DOCUMENT TYPE TOGGLE ──────────────────────────────────── -->
+        <LinearLayout
+            android:id="@+id/document_type"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="center"
+            android:layout_margin="@dimen/ten_dp"
+            android:gravity="center"
+            android:orientation="horizontal"
+            android:visibility="gone">
+            <include android:id="@+id/rb_client_document" layout="@layout/left_title_layout" />
+            <include android:id="@+id/rb_firm_document" layout="@layout/right_title_layout" />
+        </LinearLayout>
+
+        <!-- ── DOCUMENTS LIST ─────────────────────────────────────────── -->
+        <LinearLayout
+            android:id="@+id/nestedScrollView"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:orientation="vertical"
+            android:visibility="gone"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@id/document_type">
+
+            <com.google.android.material.textfield.TextInputLayout
+                android:id="@+id/search_tm"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_margin="@dimen/ten_dp"
+                android:textColorHint="@color/black"
+                app:boxBackgroundMode="none">
+
+                <com.google.android.material.textfield.TextInputEditText
+                    android:id="@+id/et_search_documents"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_gravity="start"
+                    android:background="@drawable/rectangle_light_grey"
+                    android:drawableRight="@drawable/search_groups"
+                    android:gravity="start" />
+            </com.google.android.material.textfield.TextInputLayout>
+
+            <LinearLayout
+                android:id="@id/ll_documents"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="vertical">
+
+                <androidx.cardview.widget.CardView
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_margin="@dimen/four_dp"
+                    android:background="@color/dark_grey"
+                    android:elevation="@dimen/four_dp"
+                    android:padding="@dimen/four_dp"
+                    android:visibility="visible"
+                    app:cardCornerRadius="@dimen/eight_dp">
+                    <include android:id="@+id/rv_shared_documents" layout="@layout/recyclerview" />
+                </androidx.cardview.widget.CardView>
+            </LinearLayout>
+        </LinearLayout>
+    </LinearLayout>
+
+</FrameLayout>

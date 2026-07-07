@@ -1,0 +1,5 @@
+<ImageView xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="@dimen/forty_dp"
+    android:layout_height="@dimen/eight_dp"
+    android:layout_margin="@dimen/two_dp"
+    android:src="@drawable/vertical_line"/>

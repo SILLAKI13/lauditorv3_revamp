@@ -1,0 +1,115 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent">
+
+    <!--    <LinearLayout-->
+    <!--        android:id="@+id/ll_search"-->
+    <!--        android:layout_width="match_parent"-->
+    <!--        android:layout_height="wrap_content"-->
+    <!--        app:layout_constraintStart_toStartOf="parent"-->
+    <!--        app:layout_constraintEnd_toEndOf="parent"-->
+    <!--        app:layout_constraintTop_toBottomOf="@id/ll_timesheet_type"-->
+    <!--        android:orientation="vertical"-->
+    <!--        -->
+    <!--        >-->
+    <!--        <com.google.android.material.textfield.TextInputEditText-->
+    <!--            android:id="@+id/et_Search"-->
+    <!--            android:layout_width="match_parent"-->
+    <!--            android:layout_height="wrap_content"-->
+    <!--            android:imeOptions="actionDone"-->
+    <!--            android:layout_margin="@dimen/four_dp"-->
+    <!--            android:padding="@dimen/four_dp"-->
+    <!--            android:layout_gravity="center"-->
+    <!--            android:inputType="textFilter"-->
+    <!--            android:drawableRight="@drawable/search_groups"-->
+    <!--            android:background="@drawable/rectangular_white_background"-->
+    <!--            android:layout_weight="1"-->
+    <!--            android:hint="Search" />-->
+    <!--    </LinearLayout>-->
+    <androidx.appcompat.widget.LinearLayoutCompat
+        android:id="@+id/ll_timesheet_type"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_margin="@dimen/Fifteen_dp"
+        android:layout_marginTop="@dimen/four_dp"
+        android:gravity="center"
+        android:orientation="horizontal"
+        android:padding="@dimen/ten_dp"
+        android:visibility="gone"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintHorizontal_bias="1.0"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent">
+
+        <include
+            android:id="@+id/tv_client"
+            layout="@layout/left_title_layout"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="@dimen/zero_dp"
+            android:layout_marginEnd="@dimen/one_dp" />
+
+        <include
+            android:id="@+id/tv_team"
+            layout="@layout/right_title_layout"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content" />
+
+        <androidx.cardview.widget.CardView
+            android:layout_width="@dimen/Fifty_five_dp"
+            android:layout_height="@dimen/Fifty_five_dp"
+            android:layout_gravity="center"
+            android:layout_marginStart="@dimen/thirty_dp"
+            android:foregroundGravity="center"
+             android:visibility="gone"
+            app:cardBackgroundColor="@color/grey_text_color"
+            app:cardCornerRadius="@dimen/forty_dp"
+            app:cardElevation="@dimen/four_dp">
+
+            <ImageView
+                android:id="@+id/btn_videocall"
+                android:layout_width="@dimen/thirty_five_dp"
+                android:layout_height="@dimen/thirty_five_dp"
+                android:layout_gravity="center"
+                android:background="@drawable/videochatwhite"
+                android:backgroundTint="@color/Blue_text_color"
+                android:contentDescription="@string/accept"
+                tools:ignore="TouchTargetSizeCheck" />
+        </androidx.cardview.widget.CardView>
+    </androidx.appcompat.widget.LinearLayoutCompat>
+
+
+
+
+    <ScrollView
+        android:id="@+id/sv_fragment"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:scrollbarStyle="insideInset"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintHorizontal_bias="1.0"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@id/ll_timesheet_type"
+        app:layout_constraintVertical_bias="0.016">
+
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical">
+
+            <FrameLayout
+                android:id="@+id/child_container_timesheets"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:paddingBottom="@dimen/hundred_dp" />
+
+        </LinearLayout>
+
+    </ScrollView>
+
+</androidx.constraintlayout.widget.ConstraintLayout>

@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- profile_detail_row_bg.xml -->
+<shape xmlns:android="http://schemas.android.com/apk/res/android"
+    android:shape="rectangle">
+    <solid android:color="#F8FAFC"/>
+    <corners android:radius="@dimen/ten_dp"/>
+</shape>

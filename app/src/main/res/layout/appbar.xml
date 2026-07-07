@@ -1,0 +1,193 @@
+<?xml version="1.0" encoding="utf-8"?>
+<com.google.android.material.appbar.AppBarLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:id="@+id/appbar"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:background="@color/white"
+    android:elevation="4dp"
+    app:layout_constraintEnd_toEndOf="parent"
+    app:layout_constraintStart_toStartOf="parent"
+    app:layout_constraintTop_toTopOf="parent">
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="@dimen/Fifty_dp"
+        android:gravity="center_vertical"
+        android:orientation="horizontal"
+        android:paddingStart="4dp"
+        android:paddingEnd="12dp">
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_weight="1">
+            <!-- ── Hamburger toggle ── -->
+            <!-- ── App Logo ── -->
+            <LinearLayout
+                android:id="@+id/digi_logo_layout"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginStart="2dp"
+                android:gravity="center_vertical"
+                android:orientation="horizontal">
+
+                <ImageView
+                    android:id="@+id/logo_dashboard"
+                    android:layout_width="@dimen/forty_dp"
+                    android:layout_height="@dimen/forty_dp"
+                    android:contentDescription="Logo"
+                    android:scaleType="fitCenter"
+                    android:src="@drawable/lawyer_logo_nw" />
+
+            </LinearLayout>
+
+            <!-- ── Page title (shown when inside a module) ── -->
+            <TextView
+                android:id="@+id/page_name"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_gravity="center"
+                android:layout_marginStart="@dimen/four_dp"
+                android:autoSizeMaxTextSize="@dimen/seventeen_dp"
+                android:autoSizeMinTextSize="@dimen/one_dp"
+                android:autoSizeTextType="uniform"
+                android:ellipsize="end"
+                android:fontFamily="@font/gill_sans"
+                android:gravity="center_vertical"
+                android:maxLines="1"
+                android:text="@string/are_you_sure_you_want_send_relationship_request_to"
+                android:textColor="@color/Blue_text_color"
+                android:textSize="@dimen/seventeen_dp"
+                android:textStyle="bold"
+                android:visibility="visible" />
+        </LinearLayout>
+        <!-- ── Spacer ── -->
+
+
+        <!-- ══════════════════════════════════════════
+             NOTIFICATION BELL with adaptive red badge
+             - Badge shows full number (no truncation)
+             - Adapts width automatically to any count
+             - Perfect circle for single digits
+             - Pill shape for double/triple digits
+        ══════════════════════════════════════════ -->
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_gravity="center"
+            android:layout_weight="1"
+            android:gravity="end">
+            <ImageView
+                android:id="@+id/reminders"
+                android:layout_width="@dimen/twenty_five"
+                android:layout_height="@dimen/twenty_five"
+                android:layout_marginEnd="@dimen/two_dp"
+                android:layout_gravity="center"
+                android:background="?attr/selectableItemBackgroundBorderless"
+                android:clickable="true"
+                android:contentDescription="Help"
+                android:focusable="true"
+                android:src="@drawable/support"
+                app:tint="@color/lite_grey" />
+
+            <FrameLayout
+                android:id="@+id/ll_notify"
+                android:layout_width="wrap_content"
+                android:layout_height="@dimen/forty_dp"
+                android:layout_marginEnd="2dp"
+                android:background="?attr/selectableItemBackgroundBorderless"
+                android:clickable="true"
+                android:focusable="true">
+
+                <!-- Bell icon -->
+                <ImageView
+                    android:id="@+id/iv_bell"
+                    android:layout_width="@dimen/twenty_five"
+                    android:layout_height="@dimen/twenty_five"
+                    android:layout_gravity="center"
+                    android:contentDescription="Notifications"
+                    android:scaleType="fitCenter"
+                    android:src="@drawable/notifications"
+                    app:tint="@color/lite_grey" />
+
+                <!-- Red badge:
+                     - wrap_content width  → adapts to any number (1, 99, 1000)
+                     - fixed 18dp height   → always a neat circle/pill
+                     - minWidth = height   → stays circular for single digits
+                     - paddingHorizontal   → breathing room for multi-digit numbers
+                     - layout_gravity top|end → top-right corner of bell
+                -->
+                <TextView
+                    android:id="@+id/notify_badge"
+                    android:layout_width="@dimen/twenty_dp"
+                    android:layout_height="@dimen/twenty_dp"
+                    android:layout_gravity="top|end"
+                    android:layout_marginEnd="0dp"
+                    android:autoSizeMaxTextSize="@dimen/Twelve_dp"
+                    android:autoSizeMinTextSize="@dimen/one_dp"
+                    android:layout_marginStart="@dimen/Fifteen_dp"
+                    android:autoSizeTextType="uniform"
+                    android:background="@drawable/red_circular"
+                    android:fontFamily="@font/gill_sans"
+                    android:gravity="center"
+                    android:maxLines="1"
+                    android:padding="@dimen/two_dp"
+                    android:textColor="@color/white"
+                    android:textSize="@dimen/Twelve_dp"
+                    android:visibility="gone" />
+
+            </FrameLayout>
+
+            <!-- ══════════════════════════════════════
+                 HELP icon
+            ══════════════════════════════════════ -->
+
+
+            <!-- ══════════════════════════════════════
+                 PROFILE circle — initials
+            ══════════════════════════════════════ -->
+            <TextView
+                android:id="@+id/person_icon"
+                android:layout_width="@dimen/thirty_five_dp"
+                android:layout_height="@dimen/thirty_five_dp"
+                android:layout_gravity="center"
+                android:layout_marginStart="@dimen/four_dp"
+                android:background="@drawable/circle_blue_bg"
+                android:clickable="true"
+                android:focusable="true"
+                android:fontFamily="@font/gill_sans"
+                android:gravity="center"
+                android:text="A"
+                android:textColor="@color/white"
+                android:textSize="@dimen/Fifteen_dp"
+                android:textStyle="bold" />
+
+            <!-- Profile image (replaces initials when loaded) -->
+            <ImageView
+                android:id="@+id/iv_profile"
+                android:layout_width="@dimen/thirty_five_dp"
+                android:layout_height="@dimen/thirty_five_dp"
+                android:layout_gravity="center"
+                android:layout_marginStart="@dimen/four_dp"
+                android:background="@drawable/circular_button_background"
+                android:clickable="true"
+                android:contentDescription="Profile Picture"
+                android:focusable="true"
+                android:fontFamily="@font/gill_sans"
+                android:scaleType="centerCrop"
+                android:visibility="gone" />
+
+            <ImageView
+                android:id="@+id/menu"
+                android:layout_width="@dimen/twenty_dp"
+                android:layout_height="@dimen/twenty_dp"
+                android:layout_gravity="center"
+                android:layout_marginStart="@dimen/ten_dp"
+                android:contentDescription="Open Menu"
+                android:src="@drawable/menu_icon" />
+        </LinearLayout>
+    </LinearLayout>
+
+</com.google.android.material.appbar.AppBarLayout>

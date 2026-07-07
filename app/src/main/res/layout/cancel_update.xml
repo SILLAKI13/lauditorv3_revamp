@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="utf-8"?>
+
+
+
+    <androidx.appcompat.widget.AppCompatButton xmlns:android="http://schemas.android.com/apk/res/android"
+
+        android:id="@+id/btn_update"
+        android:layout_width="100dp"
+        android:layout_height="@dimen/forty_dp"
+
+        android:layout_marginLeft="@dimen/twenty_dp"
+        android:layout_marginRight="@dimen/twenty_dp"
+        android:layout_weight="1"
+        android:background="@drawable/save_button_background"
+
+        android:elevation="@dimen/Fifteen_dp"
+        android:gravity="center"
+        android:text="@string/update"
+        android:textAllCaps="false"
+        android:textColor="@color/white">
+    </androidx.appcompat.widget.AppCompatButton>

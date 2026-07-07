@@ -1,0 +1,17 @@
+<shape xmlns:android="http://schemas.android.com/apk/res/android">
+    <solid android:color="@android:color/transparent" />
+    <corners
+        android:bottomLeftRadius="@dimen/four_dp"
+        android:bottomRightRadius="@dimen/four_dp"
+        android:radius="@dimen/ten_dp"
+        android:topLeftRadius="@dimen/four_dp"
+        android:topRightRadius="@dimen/four_dp" />
+    <stroke
+        android:width="0.8dp"
+        android:color="@color/grey_color_dark" />
+    <padding
+        android:bottom="@dimen/four_dp"
+        android:left="@dimen/four_dp"
+        android:right="@dimen/four_dp"
+        android:top="@dimen/four_dp" />
+</shape>

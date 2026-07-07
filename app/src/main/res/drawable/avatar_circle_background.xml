@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+    avatar_circle_background.xml
+    Blue circle used as avatar placeholder for attendee rows.
+    Place in res/drawable/
+-->
+<shape xmlns:android="http://schemas.android.com/apk/res/android"
+    android:shape="oval">
+
+    <solid android:color="@color/blue" />
+
+</shape>

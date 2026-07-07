@@ -1,0 +1,101 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--  res/layout/subscription_card.xml  -->
+<androidx.cardview.widget.CardView
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:id="@+id/Card_Layout"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:layout_margin="@dimen/ten_dp"
+    app:cardBackgroundColor="@color/white"
+    app:cardCornerRadius="@dimen/Fifteen_dp"
+    app:cardElevation="2dp">
+
+    <LinearLayout
+        android:id="@+id/subscription_card"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        android:padding="@dimen/Fifteen_dp">
+
+        <!-- Header row: icon + "Product Subscription" label -->
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:gravity="center_vertical"
+            android:orientation="horizontal">
+
+            <LinearLayout
+                android:layout_width="36dp"
+                android:layout_height="36dp"
+                android:background="@drawable/bg_orange_light"
+                android:gravity="center">
+                <ImageView
+                    android:layout_width="18dp"
+                    android:layout_height="18dp"
+                    android:src="@drawable/ic_star_orange" />
+            </LinearLayout>
+
+            <TextView
+                android:id="@+id/tv_product_subscription"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_marginStart="@dimen/ten_dp"
+                android:layout_weight="1"
+                android:textColor="@color/grey_color_dark"
+                android:textSize="@dimen/Twelve_dp" />
+        </LinearLayout>
+
+        <!-- "Valid till" / "Subscription Expired" / "Pending Payment" -->
+        <TextView
+            android:id="@+id/tv_pending_txt"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="@dimen/ten_dp"
+            android:textColor="@color/grey_color_dark"
+            android:textSize="@dimen/Twelve_dp" />
+
+        <!-- Right block: month value + message -->
+        <LinearLayout
+            android:id="@+id/rightLayout"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="2dp"
+            android:orientation="vertical">
+
+            <!-- Large month value e.g. "Mar 2026" -->
+            <TextView
+                android:id="@+id/tv_ps_year"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:textColor="@color/black"
+                android:textSize="24sp"
+                android:textStyle="bold" />
+
+            <!-- Subscription message -->
+            <TextView
+                android:id="@+id/tv_message"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="2dp"
+                android:maxLines="2"
+                android:textColor="@color/grey_color_dark"
+                android:textSize="@dimen/Twelve_dp" />
+        </LinearLayout>
+
+        <!-- Pay Now button (visible only when payment pending) -->
+        <Button
+            android:id="@+id/btn_pay_now"
+            android:layout_width="wrap_content"
+            android:layout_height="36dp"
+            android:layout_marginTop="@dimen/ten_dp"
+            android:background="@drawable/rectangular_complete_blue_background"
+            android:paddingStart="18dp"
+            android:paddingEnd="18dp"
+            android:text="Pay now"
+            android:textColor="@color/white"
+            android:textSize="@dimen/Twelve_dp"
+            android:visibility="gone" />
+
+    </LinearLayout>
+</androidx.cardview.widget.CardView>

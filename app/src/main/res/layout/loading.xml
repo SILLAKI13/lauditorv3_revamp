@@ -1,0 +1,40 @@
+<com.facebook.shimmer.ShimmerFrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:id="@+id/shimmerSquare"
+    android:layout_width="wrap_content"
+    android:layout_height="wrap_content"
+    android:layout_gravity="center"
+    android:background="@drawable/round_dilaog_background"
+    android:padding="@dimen/twenty_dp">
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:orientation="vertical"
+        android:padding="@dimen/Fifteen_dp">
+
+        <TextView
+            android:id="@+id/textView"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="center"
+            android:autoSizeMaxTextSize="@dimen/seventeen_dp"
+            android:autoSizeMinTextSize="@dimen/five_dp"
+            android:autoSizeTextType="uniform"
+            android:fontFamily="@font/gill_sans"
+            android:gravity="center"
+            android:text="@string/loading"
+            android:textColor="@color/black"
+            android:textSize="@dimen/seventeen_dp" />
+
+        <ImageView
+            android:id="@+id/imageView"
+            android:layout_width="@dimen/forty_dp"
+            android:layout_height="@dimen/forty_dp"
+            android:layout_marginTop="@dimen/ten_dp"
+            android:layout_gravity="center"
+            android:src="@drawable/loading_animation_new" />
+
+        <!-- Your popup content goes here -->
+    </LinearLayout>
+
+</com.facebook.shimmer.ShimmerFrameLayout>

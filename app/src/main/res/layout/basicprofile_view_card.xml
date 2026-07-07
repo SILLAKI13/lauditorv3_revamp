@@ -1,0 +1,565 @@
+<?xml version="1.0" encoding="utf-8"?>
+
+<ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:id="@+id/scrollview"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content">
+
+
+    <LinearLayout
+        android:id="@+id/ll_view"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical">
+
+        <androidx.cardview.widget.CardView xmlns:android="http://schemas.android.com/apk/res/android"
+            xmlns:app="http://schemas.android.com/apk/res-auto"
+            android:id="@+id/profileCompletionBanner"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:backgroundTint="@color/white"
+            android:visibility="visible"
+            android:layout_marginStart="@dimen/two_dp"
+            android:layout_marginBottom="@dimen/ten_dp"
+            android:layout_marginEnd="@dimen/two_dp"
+            app:cardCornerRadius="@dimen/ten_dp"
+            android:layout_marginTop="@dimen/two_dp"
+            app:cardElevation="@dimen/four_dp">
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:gravity="center_vertical"
+                android:orientation="horizontal"
+                android:padding="@dimen/Twelve_dp">
+
+                <!-- Percentage Circle -->
+                <TextView
+                    android:id="@+id/tvPercentage"
+                    android:layout_width="@dimen/forty_dp"
+                    android:layout_height="@dimen/forty_dp"
+                    android:background="@drawable/bg_percentage_circle"
+                    android:fontFamily="@font/gill_sans"
+                    android:gravity="center"
+                    android:text=""
+                    android:textColor="@color/scheduled_text"
+                    android:textSize="@dimen/Twelve_dp"
+                    android:textStyle="bold" />
+
+                <!-- Message -->
+                <TextView
+                    android:id="@+id/tvMessage"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_marginStart="@dimen/ten_dp"
+                    android:layout_weight="1"
+                    android:fontFamily="@font/gill_sans_regular"
+                    android:text="Profile cannot go live if incomplete"
+                    android:textColor="#333333"
+                    android:textSize="@dimen/Fifteen_dp" />
+
+                <!-- CTA -->
+                <TextView
+                    android:id="@+id/tvCompleteNow"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:fontFamily="@font/gill_sans_bold"
+                    android:paddingStart="@dimen/ten_dp"
+                    android:paddingEnd="@dimen/ten_dp"
+                    android:text="Complete Now"
+                    android:textColor="@color/scheduled_text"
+                    android:textSize="@dimen/Twelve_dp" />
+
+                <!-- Close -->
+                <ImageView
+                    android:id="@+id/ivClose"
+                    android:layout_width="@dimen/twenty_dp"
+                    android:layout_height="@dimen/twenty_dp"
+                    android:src="@drawable/simple_cancel" />
+
+            </LinearLayout>
+
+        </androidx.cardview.widget.CardView>
+
+
+        <LinearLayout
+            android:id="@+id/ll_basicprofile"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="@dimen/two_dp"
+            android:layout_marginEnd="@dimen/two_dp"
+            android:layout_marginBottom="@dimen/ten_dp"
+            android:background="@drawable/rectangular_white_background"
+            android:elevation="@dimen/four_dp"
+            android:orientation="vertical"
+            android:padding="@dimen/eight_dp">
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:gravity="center_vertical"
+                android:orientation="horizontal"
+                android:padding="@dimen/ten_dp">
+
+                <include
+                    android:id="@+id/tv_BasicProfile"
+                    layout="@layout/title_name_layout"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:fontFamily="@font/gill_sans_bold" />
+
+                <ImageView
+                    android:id="@+id/iv_edit"
+                    android:layout_width="@dimen/thirty_dp"
+                    android:layout_height="@dimen/thirty_dp"
+                    android:src="@drawable/edit_box"
+                    android:visibility="visible" />
+            </LinearLayout>
+
+            <RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:padding="@dimen/ten_dp">
+
+                <FrameLayout
+                    android:id="@+id/fl_profile_container"
+                    android:layout_width="@dimen/one_thiry_dp"
+                    android:layout_height="@dimen/one_thiry_dp"
+                    android:layout_centerInParent="true"
+                    android:background="@drawable/circle_background">
+
+                    <!-- Profile Image -->
+                    <ImageView
+                        android:id="@+id/iv_profile"
+                        android:layout_width="match_parent"
+                        android:layout_height="match_parent"
+                        android:layout_margin="@dimen/one_dp"
+                        android:scaleType="centerCrop"
+                        android:src="@drawable/ic_profile_placeholder" />
+
+                    <!-- PERSON ICON (CENTER OVERLAY) -->
+                    <include
+                        android:id="@+id/person_icon"
+                        layout="@layout/person_icon"
+                        android:layout_width="match_parent"
+                        android:layout_height="match_parent" />
+
+                    <!-- DELETE ICON (BOTTOM LEFT) -->
+                    <ImageView
+                        android:id="@+id/iv_delete_circle"
+                        android:layout_width="@dimen/thirty_dp"
+                        android:layout_height="@dimen/thirty_dp"
+                        android:layout_gravity="bottom|start"
+                        android:layout_marginStart="0dp"
+                        android:layout_marginBottom="0dp"
+                        android:background="@drawable/delete_circle_bg"
+                        android:padding="@dimen/eight_dp"
+                        android:scaleType="centerInside"
+                        android:src="@drawable/delete_white_icon"
+                        android:visibility="gone" />
+
+                    <!-- EDIT ICON (BOTTOM RIGHT) -->
+                    <ImageView
+                        android:id="@+id/iv_edit_circle"
+                        android:layout_width="@dimen/thirty_dp"
+                        android:layout_height="@dimen/thirty_dp"
+                        android:layout_gravity="bottom|end"
+                        android:layout_marginEnd="@dimen/six_dp"
+                        android:background="@drawable/edit_circlenew"
+                        android:padding="@dimen/six_dp"
+                        android:scaleType="centerInside"
+                        android:src="@drawable/edit_new_icon_"
+                        android:visibility="visible" />
+
+                </FrameLayout>
+
+            </RelativeLayout>
+
+
+            <include
+                android:id="@+id/FirmName"
+                layout="@layout/title_name_layout" />
+
+            <include
+                android:id="@+id/tv_FirmName"
+                layout="@layout/title_name_layout"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content" />
+
+            <include
+                android:id="@+id/ContactName"
+                layout="@layout/title_name_layout" />
+
+            <include
+                android:id="@+id/tv_ContactName"
+                layout="@layout/title_name_layout"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content" />
+
+
+            <include
+                android:id="@+id/Email"
+                layout="@layout/title_name_layout" />
+
+            <include
+                android:id="@+id/tv_Email"
+                layout="@layout/title_name_layout"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content" />
+
+            <include
+                android:id="@+id/Country"
+                layout="@layout/title_name_layout" />
+
+            <include
+                android:id="@+id/tv_Country"
+                layout="@layout/title_name_layout"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content" />
+
+            <include
+                android:id="@+id/ContactPhone"
+                layout="@layout/title_name_layout" />
+
+            <include
+                android:id="@+id/tv_ContactPhone"
+                layout="@layout/title_name_layout"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content" />
+
+            <include
+                android:id="@+id/billing_currency"
+                layout="@layout/title_name_layout"
+                android:visibility="gone"/>
+
+            <include
+                android:id="@+id/tv_billing_currency"
+                layout="@layout/title_name_layout"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:visibility="gone"/>
+
+            <include
+                android:id="@+id/con_fee"
+                layout="@layout/title_name_layout"
+                android:visibility="gone"/>
+
+            <include
+                android:id="@+id/tv_con_fee"
+                layout="@layout/title_name_layout"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:visibility="gone"/>
+
+            <include
+                android:id="@+id/dob"
+                layout="@layout/title_name_layout" />
+
+            <include
+                android:id="@+id/tv_dob"
+                layout="@layout/title_name_layout"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content" />
+
+            <include
+                android:id="@+id/gender"
+                layout="@layout/title_name_layout" />
+
+            <include
+                android:id="@+id/tv_gender"
+                layout="@layout/title_name_layout"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content" />
+
+            <include
+                android:id="@+id/nationality"
+                layout="@layout/title_name_layout" />
+
+            <include
+                android:id="@+id/tv_nationality"
+                layout="@layout/title_name_layout"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content" />
+
+            <include
+                android:id="@+id/Website"
+                layout="@layout/title_name_layout" />
+
+            <include
+                android:id="@+id/tv_Website"
+                layout="@layout/title_name_layout"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content" />
+
+
+            <include
+                android:id="@+id/bio"
+                layout="@layout/title_name_layout" />
+
+            <include
+                android:id="@+id/tv_bio"
+                layout="@layout/title_name_layout"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content" />
+
+            <include
+                android:id="@+id/tv_Address"
+                layout="@layout/title_name_layout"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="@dimen/ten_dp"
+                android:fontFamily="@font/gill_sans_bold"
+                android:visibility="gone" />
+
+            <include
+                android:id="@+id/Building"
+                layout="@layout/title_name_layout"
+                android:visibility="gone" />
+
+            <include
+                android:id="@+id/tv_Building"
+                layout="@layout/title_name_layout"
+                android:layout_width="wrap_content"
+
+                android:layout_height="wrap_content"
+                android:textColor="@color/grey_light"
+                android:visibility="gone" />
+
+            <include
+                android:id="@+id/Street"
+                layout="@layout/title_name_layout"
+                android:visibility="gone" />
+
+            <include
+                android:id="@+id/tv_Street"
+                layout="@layout/title_name_layout"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:textColor="@color/grey_light"
+                android:visibility="gone" />
+
+            <include
+                android:id="@+id/City"
+                layout="@layout/title_name_layout"
+                android:visibility="gone" />
+
+            <include
+                android:id="@+id/tv_City"
+                layout="@layout/title_name_layout"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:textColor="@color/grey_light"
+                android:visibility="gone" />
+
+            <include
+                android:id="@+id/State"
+                layout="@layout/title_name_layout"
+                android:visibility="gone" />
+
+            <include
+                android:id="@+id/tv_State"
+                layout="@layout/title_name_layout"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:textColor="@color/grey_light"
+                android:visibility="gone" />
+
+            <include
+                android:id="@+id/Ad_Country"
+                layout="@layout/title_name_layout"
+                android:visibility="gone" />
+
+            <include
+                android:id="@+id/tv_Ad_Country"
+                layout="@layout/title_name_layout"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:textColor="@color/grey_light"
+                android:visibility="gone" />
+
+            <include
+                android:id="@+id/Zip"
+                layout="@layout/title_name_layout"
+                android:visibility="gone" />
+
+            <include
+                android:id="@+id/tv_Zip"
+                layout="@layout/title_name_layout"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:textColor="@color/grey_light"
+                android:visibility="gone" />
+
+            <include
+                android:id="@+id/tv_Address1"
+                layout="@layout/title_name_layout"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="@dimen/ten_dp"
+                android:fontFamily="@font/gill_sans_bold"
+                android:visibility="gone" />
+
+            <include
+                android:id="@+id/Building1"
+                layout="@layout/title_name_layout"
+                android:visibility="gone" />
+
+            <include
+                android:id="@+id/tv_Building1"
+                layout="@layout/title_name_layout"
+                android:layout_width="wrap_content"
+
+                android:layout_height="wrap_content"
+
+                android:textColor="@color/grey_light"
+                android:visibility="gone" />
+
+            <include
+                android:id="@+id/Street1"
+                layout="@layout/title_name_layout"
+                android:visibility="gone" />
+
+            <include
+                android:id="@+id/tv_Street1"
+                layout="@layout/title_name_layout"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:textColor="@color/grey_light"
+                android:visibility="gone" />
+
+            <include
+                android:id="@+id/City1"
+                layout="@layout/title_name_layout"
+                android:visibility="gone" />
+
+            <include
+                android:id="@+id/tv_City1"
+                layout="@layout/title_name_layout"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:textColor="@color/grey_light"
+                android:visibility="gone" />
+
+            <include
+                android:id="@+id/State1"
+                layout="@layout/title_name_layout"
+                android:visibility="gone" />
+
+            <include
+                android:id="@+id/tv_State1"
+                layout="@layout/title_name_layout"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:textColor="@color/grey_light"
+                android:visibility="gone" />
+
+            <include
+                android:id="@+id/Ad_Country1"
+                layout="@layout/title_name_layout"
+                android:visibility="gone" />
+
+            <include
+                android:id="@+id/tv_Ad_Country1"
+                layout="@layout/title_name_layout"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:textColor="@color/grey_light"
+                android:visibility="gone" />
+
+            <include
+                android:id="@+id/Zip1"
+                layout="@layout/title_name_layout"
+                android:visibility="gone" />
+
+            <include
+                android:id="@+id/tv_Zip1"
+                layout="@layout/title_name_layout"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:textColor="@color/grey_light"
+                android:visibility="gone" />
+        </LinearLayout>
+
+        <LinearLayout
+            android:id="@+id/ll_additional_inform"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="@dimen/ten_dp"
+            android:layout_marginBottom="@dimen/ten_dp"
+            android:layout_marginStart="@dimen/two_dp"
+            android:layout_marginEnd="@dimen/two_dp"
+            android:background="@drawable/rectangular_white_background"
+            android:elevation="@dimen/four_dp"
+            android:orientation="vertical"
+            android:padding="@dimen/ten_dp">
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:gravity="center_vertical"
+                android:orientation="horizontal"
+                android:padding="@dimen/four_dp">
+
+                <include
+                    android:id="@+id/tv_add_info"
+                    layout="@layout/title_name_layout"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:fontFamily="@font/gill_sans_bold" />
+
+                <ImageView
+                    android:id="@+id/iv_edit_addinfo"
+                    android:layout_width="@dimen/thirty_dp"
+                    android:layout_height="@dimen/thirty_dp"
+                    android:src="@drawable/edit_box"
+                    android:visibility="visible" />
+            </LinearLayout>
+
+
+            <com.google.android.material.tabs.TabLayout
+                android:id="@+id/tab_layout"
+                android:layout_width="match_parent"
+                android:layout_height="@dimen/sixty_dp"
+                android:layout_marginTop="@dimen/four_dp"
+                android:background="@drawable/bg_tab_outer"
+                android:theme="@style/TabLayoutGreenOverlay"
+                app:tabGravity="fill"
+                app:tabIndicator="@drawable/bg_tab_selected"
+                app:tabIndicatorFullWidth="true"
+                app:tabIndicatorGravity="stretch"
+                app:tabIndicatorHeight="@dimen/sixty_dp"
+                app:tabMode="fixed"
+                app:tabRippleColor="@android:color/transparent"
+                app:tabSelectedTextColor="@android:color/white"
+                app:tabTextAppearance="@style/CustomTabTextAppearance"
+                app:tabTextColor="@color/grey_medium" />
+
+
+            <View
+                android:layout_width="match_parent"
+                android:layout_height="@dimen/one_point_five"
+                android:layout_marginTop="@dimen/five_dp"
+                android:background="#CCCCCC"
+                android:padding="@dimen/ten_dp" />
+
+            <LinearLayout
+                android:id="@+id/ll_viewscreen"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_gravity="center"
+                android:gravity="center"
+                android:orientation="horizontal"
+                android:visibility="visible" />
+        </LinearLayout>
+
+        <include
+            android:id="@+id/ll_subcription"
+            layout="@layout/address_view_card" />
+
+
+    </LinearLayout>
+
+</ScrollView>

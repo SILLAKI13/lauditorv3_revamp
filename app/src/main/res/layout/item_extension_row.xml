@@ -1,0 +1,41 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="wrap_content"
+    android:layout_height="wrap_content"
+    android:orientation="horizontal"
+    android:padding="@dimen/eight_dp"
+    android:layout_marginBottom="@dimen/six_dp"
+    android:background="@drawable/bg_orange_light">
+
+    <TextView
+        android:id="@+id/tvExFrom"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="12:00 PM"
+        android:padding="@dimen/eight_dp"
+        android:fontFamily="@font/gill_sans"
+        android:background="@drawable/bg_time_orange" />
+
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="to"
+        android:fontFamily="@font/gill_sans"
+        android:layout_marginHorizontal="@dimen/six_dp" />
+
+    <TextView
+        android:id="@+id/tvExTo"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="01:00 PM"
+        android:fontFamily="@font/gill_sans"
+        android:padding="@dimen/eight_dp"
+        android:background="@drawable/bg_time_orange" />
+
+    <ImageView
+        android:id="@+id/ivRemove"
+        android:layout_width="@dimen/twenty_dp"
+        android:layout_height="@dimen/twenty_dp"
+        android:layout_marginStart="@dimen/eight_dp"
+        android:background="@drawable/grey_cancel" />
+</LinearLayout>

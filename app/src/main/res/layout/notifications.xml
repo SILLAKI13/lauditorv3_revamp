@@ -1,0 +1,157 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="@color/dashboard_background_color"
+    android:orientation="vertical">
+
+    <!-- Header: Title + count badge + action icons -->
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:gravity="center_vertical"
+        android:orientation="horizontal"
+        android:layout_marginEnd="@dimen/Fifteen_dp"
+        android:layout_marginTop="@dimen/Fifteen_dp"
+        android:layout_marginStart="@dimen/Fifteen_dp">
+
+        <!-- Title -->
+        <TextView
+            android:id="@+id/tv_title"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:fontFamily="@font/gill_sans_regular"
+            android:text="List of Notifications"
+            android:textColor="@color/blue"
+            android:textSize="@dimen/eighteen_sp"
+            android:textStyle="bold" />
+
+        <!-- Count badge pill -->
+        <TextView
+            android:id="@+id/tv_notification_count"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="8dp"
+            android:background="@drawable/circle_blue_bg"
+            android:fontFamily="@font/gill_sans_regular"
+            android:paddingStart="8dp"
+            android:paddingTop="2dp"
+            android:paddingEnd="8dp"
+            android:paddingBottom="2dp"
+            android:text=""
+            android:textColor="@color/white"
+            android:textSize="@dimen/Twelve_dp"
+            android:textStyle="bold" />
+
+        <View
+            android:layout_width="0dp"
+            android:layout_height="1dp"
+            android:layout_weight="1" />
+
+        <!-- Read all (envelope icon) -->
+        <ImageView
+            android:id="@+id/ib_read"
+            android:layout_width="@dimen/thirty_five_dp"
+            android:layout_height="@dimen/thirty_five_dp"
+            android:layout_marginEnd="8dp"
+            android:background="@drawable/circle_b"
+            android:padding="8dp"
+            android:src="@drawable/ic_check" />
+
+        <!-- Delete all (trash icon) -->
+        <ImageView
+            android:id="@+id/btn_delete_all"
+            android:layout_width="@dimen/thirty_five_dp"
+            android:layout_height="@dimen/thirty_five_dp"
+            android:layout_marginEnd="8dp"
+            android:background="@drawable/circle_b"
+            android:padding="8dp"
+            android:src="@drawable/ic_delete" />
+
+    </LinearLayout>
+
+    <!-- Search bar -->
+    <include layout="@layout/search_layout_new" />
+
+    <!-- Select All row -->
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:gravity="center_vertical"
+        android:orientation="horizontal"
+        android:paddingStart="16dp"
+        android:paddingTop="4dp"
+        android:paddingEnd="12dp"
+        android:paddingBottom="8dp">
+
+        <TextView
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:fontFamily="@font/gill_sans_regular"
+            android:text="Select All"
+            android:textColor="@color/black"
+            android:textSize="@dimen/Fifteen_dp" />
+
+        <CheckBox
+            android:id="@+id/chk_select_all"
+            android:layout_width="@dimen/twenty_five"
+            android:layout_height="@dimen/twenty_five"
+            android:layout_gravity="center_vertical"
+            android:layout_marginEnd="@dimen/ten_dp"
+            android:background="@drawable/checkbox_circle_selector"
+            android:button="@null"
+            android:clickable="true"
+            android:focusable="true" />
+
+    </LinearLayout>
+
+    <!-- Empty State (shown when notification list is empty) -->
+    <LinearLayout
+        android:id="@+id/layout_empty_state"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:gravity="center"
+        android:orientation="vertical"
+        android:visibility="gone">
+
+        <ImageView
+            android:layout_width="130dp"
+            android:layout_height="130dp"
+            android:src="@drawable/empty_notification"
+            android:contentDescription="No notifications" />
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="16dp"
+            android:fontFamily="@font/gill_sans_regular"
+            android:text="No Notifications Yet!"
+            android:textColor="@color/black"
+            android:textSize="18sp"
+            android:textStyle="bold" />
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="8dp"
+            android:fontFamily="@font/gill_sans_regular"
+            android:text="There are no notifications under here."
+            android:textColor="@color/dark_grey_new"
+            android:textSize="14sp" />
+
+    </LinearLayout>
+
+    <!-- Notification list -->
+    <androidx.recyclerview.widget.RecyclerView
+        android:id="@+id/rv_list1"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:clipToPadding="false"
+        android:paddingStart="4dp"
+        android:paddingTop="4dp"
+        android:paddingEnd="4dp"
+        android:paddingBottom="16dp" />
+
+</LinearLayout>

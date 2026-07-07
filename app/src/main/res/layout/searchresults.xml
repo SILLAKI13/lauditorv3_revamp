@@ -1,0 +1,42 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:layout_margin="@dimen/four_dp"
+    android:background="@drawable/rectangle_light_grey"
+    android:elevation="@dimen/four_dp"
+    android:orientation="vertical">
+
+    <LinearLayout
+        android:id="@+id/linearLayoutCompat3"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_margin="@dimen/Fifteen_dp"
+        android:orientation="horizontal">
+
+        <include
+            android:id="@+id/tv_category_name"
+            layout="@layout/black_bold_txt"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_weight="1" />
+
+        <include
+            android:id="@+id/tv_timestamp"
+            layout="@layout/black_bold_txt"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="end" />
+
+    </LinearLayout>
+
+    <include
+        android:id="@+id/tv_message"
+        layout="@layout/black_normal_txt"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="@dimen/twenty_five"
+        android:layout_marginEnd="@dimen/twenty_five"
+        android:layout_marginBottom="@dimen/Fifteen_dp" />
+</LinearLayout>

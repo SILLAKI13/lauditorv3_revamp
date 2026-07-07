@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.appcompat.widget.AppCompatButton
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    android:id="@+id/btn_save"
+    android:layout_width="@dimen/module_btn_size"
+    android:layout_height="@dimen/forty_dp"
+    android:layout_gravity="center_horizontal"
+    android:layout_marginLeft="@dimen/twenty_dp"
+    android:textStyle="bold"
+    android:layout_margin="@dimen/two_dp"
+    android:fontFamily="@font/gill_sans"
+    android:layout_marginRight="@dimen/twenty_dp"
+    android:layout_weight="1"
+    android:background="@drawable/save_button_background"
+    android:elevation="@dimen/Fifteen_dp"
+    android:text="@string/add"
+    android:textAllCaps="false"
+    android:textColor="@color/white">
+</androidx.appcompat.widget.AppCompatButton>
+

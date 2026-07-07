@@ -1,0 +1,126 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:layout_marginStart="@dimen/two_dp"
+    android:layout_marginEnd="@dimen/two_dp"
+    android:layout_marginBottom="@dimen/ten_dp"
+    android:elevation="@dimen/four_dp"
+    android:orientation="vertical">
+
+    <!-- GREY CARD (ONLY FOR DATA) -->
+    <LinearLayout
+        android:id="@+id/ll_data_container"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:background="@drawable/new_rect_grey"
+        android:orientation="vertical"
+        android:padding="@dimen/ten_dp">
+
+        <!-- TITLE -->
+        <LinearLayout
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal">
+
+            <TextView
+                android:id="@+id/tv_courtType"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_gravity="center_vertical"
+                android:autoSizeMaxTextSize="@dimen/Fifteen_dp"
+                android:autoSizeMinTextSize="@dimen/two_dp"
+                android:autoSizeTextType="uniform"
+                android:background="@drawable/chip_pale_blue"
+                android:breakStrategy="simple"
+                android:fontFamily="@font/gill_sans"
+                android:gravity="center_vertical"
+                android:hyphenationFrequency="none"
+                android:maxLines="2"
+                android:padding="@dimen/six_dp"
+                android:text="@string/matters"
+                android:textColor="@color/blue"
+                android:textSize="@dimen/Fifteen_dp" />
+
+        </LinearLayout>
+
+        <!-- CONTENT ROW -->
+        <LinearLayout
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="@dimen/four_dp"
+            android:orientation="horizontal">
+
+            <LinearLayout
+                android:layout_width="wrap_content"
+                android:layout_height="match_parent"
+                android:layout_weight="1"
+                android:orientation="horizontal">
+
+                <TextView
+                    android:id="@+id/titledot"
+                    android:layout_width="@dimen/four_dp"
+                    android:layout_height="@dimen/four_dp"
+                    android:layout_gravity="center"
+                    android:layout_marginStart="@dimen/four_dp"
+                    android:layout_marginEnd="@dimen/ten_dp"
+                    android:background="@drawable/pale_blue_circular" />
+
+                <include
+                    android:id="@+id/tv_courtState"
+                    layout="@layout/black_normal_txt" />
+            </LinearLayout>
+
+            <TextView
+                android:id="@+id/dot2"
+                android:layout_width="@dimen/four_dp"
+                android:layout_height="@dimen/four_dp"
+                android:layout_gravity="center"
+                android:layout_marginStart="@dimen/ten_dp"
+                android:layout_marginEnd="@dimen/ten_dp"
+                android:background="@drawable/pale_blue_circular" />
+
+            <include
+                android:id="@+id/tv_courtCity"
+                layout="@layout/black_normal_txt"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_weight="1" />
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:orientation="horizontal"
+                android:visibility="gone">
+
+                <TextView
+                    android:id="@+id/contentdot"
+                    android:layout_width="@dimen/four_dp"
+                    android:layout_height="@dimen/four_dp"
+                    android:layout_gravity="center"
+                    android:layout_marginStart="@dimen/ten_dp"
+                    android:layout_marginEnd="@dimen/ten_dp"
+                    android:background="@drawable/pale_blue_circular" />
+
+                <include
+                    android:id="@+id/tv_courtName"
+                    layout="@layout/bold_txt_layout" />
+            </LinearLayout>
+        </LinearLayout>
+    </LinearLayout>
+
+    <!-- EMPTY STATE (NO BACKGROUND) -->
+    <TextView
+        android:id="@+id/tv_placeholder"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:fontFamily="@font/gill_sans"
+        android:gravity="center"
+        android:padding="@dimen/Twelve_dp"
+        android:text="No data added"
+        android:textColor="@color/grey_light"
+        android:textSize="@dimen/Fifteen_dp"
+        android:visibility="gone" />
+
+</LinearLayout>

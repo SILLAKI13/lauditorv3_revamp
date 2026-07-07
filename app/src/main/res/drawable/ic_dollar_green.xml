@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- res/drawable/ic_dollar_green.xml -->
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="24dp"
+    android:height="24dp"
+    android:viewportWidth="24"
+    android:viewportHeight="24">
+    <path
+        android:fillColor="#00000000"
+        android:strokeColor="#2E7D32"
+        android:strokeWidth="2"
+        android:strokeLineCap="round"
+        android:strokeLineJoin="round"
+        android:pathData="M12,1L12,23" />
+    <path
+        android:fillColor="#00000000"
+        android:strokeColor="#2E7D32"
+        android:strokeWidth="2"
+        android:strokeLineCap="round"
+        android:strokeLineJoin="round"
+        android:pathData="M17,5L9.5,5C8.572,5 7.681,5.368 7.025,6.025C6.368,6.681 6,7.572 6,8.5C6,9.428 6.368,10.319 7.025,10.975C7.681,11.632 8.572,12 9.5,12L14.5,12C15.428,12 16.319,12.368 16.975,13.025C17.632,13.681 18,14.572 18,15.5C18,16.428 17.632,17.319 16.975,17.975C16.319,18.632 15.428,19 14.5,19L6,19" />
+</vector>

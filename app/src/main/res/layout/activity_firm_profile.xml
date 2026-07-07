@@ -1,0 +1,112 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:id="@+id/ll_FirmProfile"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="vertical"
+    tools:context=".FirmProfile.FirmProfile">
+
+    <androidx.appcompat.widget.LinearLayoutCompat
+        android:id="@+id/llc_Firmprofile"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_gravity="center"
+        android:layout_margin="@dimen/twenty_dp"
+        android:gravity="center"
+        android:orientation="horizontal"
+        android:visibility="gone">
+
+        <include
+            android:id="@+id/tvBasicProfile"
+            layout="@layout/left_title_layout"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginEnd="@dimen/one_dp" />
+
+        <include
+            android:id="@+id/tvPracticePartners"
+            layout="@layout/right_title_layout"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content" />
+
+    </androidx.appcompat.widget.LinearLayoutCompat>
+
+    <androidx.appcompat.widget.LinearLayoutCompat
+        android:id="@+id/llc_Edit_View"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="@dimen/Fifteen_dp"
+        android:layout_marginTop="@dimen/Fifteen_dp"
+        android:layout_marginEnd="@dimen/Fifteen_dp"
+        android:layout_marginBottom="@dimen/_10dp"
+        android:gravity="center_vertical"
+        android:orientation="horizontal">
+
+        <!-- Center container -->
+        <LinearLayout
+            android:id="@+id/ll_profile"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:gravity="center"
+            android:orientation="horizontal">
+
+            <include
+                android:id="@+id/tvEdit"
+                layout="@layout/left_title_layout"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="@dimen/two_dp"
+                android:layout_marginBottom="@dimen/two_dp" />
+
+            <include
+                android:id="@+id/tvView"
+                layout="@layout/right_title_layout"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginStart="@dimen/one_dp"
+                android:layout_marginTop="@dimen/two_dp"
+                android:layout_marginBottom="@dimen/two_dp" />
+        </LinearLayout>
+
+        <!-- Right icon -->
+        <include
+            android:id="@+id/tv_switchEditProfile"
+            layout="@layout/common_title_icon"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginEnd="@dimen/four_dp"
+            android:visibility="gone" />
+
+    </androidx.appcompat.widget.LinearLayoutCompat>
+
+    <include
+        android:id="@+id/tv_switchView"
+        layout="@layout/common_title_icon"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="@dimen/Fifteen_dp"
+        android:layout_marginTop="@dimen/Fifteen_dp"
+        android:layout_marginEnd="@dimen/ten_dp"
+        android:visibility="gone" />
+
+    <include
+        android:id="@+id/tv_switchCreate"
+        layout="@layout/common_title_icon"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="@dimen/Fifteen_dp"
+        android:layout_marginTop="@dimen/Fifteen_dp"
+        android:layout_marginEnd="@dimen/ten_dp"
+        android:visibility="gone" />
+
+    <FrameLayout
+        android:id="@+id/flFirmProfile"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="@dimen/ten_dp"
+        android:layout_marginTop="@dimen/ten_dp"
+        android:layout_marginEnd="@dimen/ten_dp" />
+</LinearLayout>

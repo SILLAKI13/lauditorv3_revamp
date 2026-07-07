@@ -1,0 +1,13 @@
+<TextView xmlns:android="http://schemas.android.com/apk/res/android"
+    android:id="@+id/tv_normal_txt"
+    android:layout_width="wrap_content"
+    android:layout_height="wrap_content"
+    android:layout_marginStart="@dimen/six_dp"
+    android:autoSizeTextType="uniform"
+    android:background="@drawable/background_transparent"
+    android:breakStrategy="simple"
+    android:fontFamily="@font/gill_sans"
+    android:hyphenationFrequency="none"
+    android:text="@string/mon_10_22am"
+    android:textColor="@color/grey_medium"
+    android:textSize="@dimen/Twelve_dp" />

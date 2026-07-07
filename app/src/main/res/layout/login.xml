@@ -1,0 +1,399 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:id="@+id/ll_login"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="@color/blue_pale"
+    android:fitsSystemWindows="true"
+    android:orientation="vertical"
+    tools:context=".MainActivity">
+
+    <!-- CardView Container -->
+    <androidx.cardview.widget.CardView
+        android:id="@+id/cardview"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_margin="@dimen/twenty_dp"
+        android:layout_marginBottom="@dimen/twenty_dp"
+        android:padding="@dimen/twenty_dp"
+        app:cardBackgroundColor="@color/white"
+        app:cardCornerRadius="@dimen/thirty_dp"
+        app:cardElevation="@dimen/twenty_dp">
+
+        <!-- Main Content -->
+        <LinearLayout
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="center_horizontal"
+            android:layout_margin="@dimen/twenty_dp"
+            android:orientation="vertical">
+
+            <!-- ImageView for Logo -->
+            <include
+                android:id="@+id/imageView"
+                layout="@layout/logo_layout" />
+
+            <!-- TextView for Sign In/Register Title -->
+            <include
+                android:id="@+id/tv_sign_in"
+                layout="@layout/login_title_layout" />
+
+            <!-- LOGIN SECTION - Visible by default -->
+            <LinearLayout
+                android:id="@+id/login_section"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="vertical"
+                android:visibility="visible">
+
+                <!-- Email / Mobile Input -->
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_gravity="center_vertical"
+                    android:layout_margin="@dimen/ten_dp"
+                    android:background="@drawable/rectangle_light_grey"
+                    android:elevation="@dimen/four_dp">
+
+                    <com.google.android.material.textfield.TextInputEditText
+                        android:id="@+id/et_login_email"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_gravity="center"
+                        android:autoSizeMaxTextSize="@dimen/Fifteen_dp"
+                        android:autoSizeMinTextSize="@dimen/two_dp"
+                        android:autoSizeTextType="uniform"
+                        android:background="@android:color/transparent"
+                        android:elevation="@dimen/four_dp"
+                        android:fontFamily="@font/gill_sans"
+                        android:hint="@string/email_or_mobile"
+                        android:imeOptions="actionDone"
+                        android:inputType="textEmailAddress"
+                        android:maxLines="1"
+                        android:padding="@dimen/Fifteen_dp"
+                        android:textColor="@color/black"
+                        android:textColorHint="@color/grey_color_dark"
+                        android:textSize="@dimen/Fifteen_dp"
+                        tools:ignore="TouchTargetSizeCheck" />
+                </LinearLayout>
+
+                <!-- Multi-firm warning text -->
+                <TextView
+                    android:id="@+id/tv_multi_firm_msg"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginStart="@dimen/ten_dp"
+                    android:layout_marginEnd="@dimen/ten_dp"
+                    android:layout_marginBottom="@dimen/eight_dp"
+                    android:fontFamily="@font/gill_sans"
+                    android:text="This email is associated with multiple firms. Please select a firm to continue."
+                    android:textColor="@color/Red"
+                    android:textSize="@dimen/Thirteen_dp"
+                    android:visibility="gone" />
+
+                <!-- Firm dropdown layout -->
+                <include
+                    android:id="@+id/firm_layout"
+                    layout="@layout/multifirm_layout"
+                    android:visibility="gone" />
+
+                <LinearLayout
+                    android:id="@+id/password_section"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="vertical"
+                    android:visibility="visible">
+
+                    <!-- Password input -->
+                    <include layout="@layout/password_layout" />
+                    <!-- "Forgot Password?" link -->
+                    <TextView
+                        android:id="@+id/tv_forgot_password"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_marginStart="@dimen/ten_dp"
+                        android:layout_marginEnd="@dimen/ten_dp"
+                        android:layout_marginBottom="@dimen/four_dp"
+                        android:clickable="true"
+                        android:focusable="true"
+                        android:fontFamily="@font/gill_sans"
+                        android:gravity="start"
+                        android:text="@string/forgot_password_ul"
+                        android:textColor="@color/black"
+                        android:textSize="@dimen/Thirteen_dp" />
+
+                    <!-- "Use OTP Instead" hyperlink -->
+                    <TextView
+                        android:id="@+id/tv_use_password"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_marginEnd="@dimen/ten_dp"
+                        android:layout_marginBottom="@dimen/four_dp"
+                        android:clickable="true"
+                        android:focusable="true"
+                        android:fontFamily="@font/gill_sans"
+                        android:gravity="end"
+                        android:text="Use OTP Instead"
+                        android:textColor="@color/Primary_new"
+                        android:textSize="@dimen/Thirteen_dp" />
+
+                </LinearLayout>
+
+                <!-- "Use Password Instead" hyperlink -->
+                <TextView
+                    android:id="@+id/tv_use_password_otp_mode"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginEnd="@dimen/ten_dp"
+                    android:layout_marginBottom="@dimen/four_dp"
+                    android:clickable="true"
+                    android:focusable="true"
+                    android:fontFamily="@font/gill_sans"
+                    android:gravity="end"
+                    android:text="Use Password Instead"
+                    android:textColor="@color/Primary_new"
+                    android:textSize="@dimen/Thirteen_dp"
+                    android:visibility="visible" />
+
+            </LinearLayout>
+
+            <!-- REGISTER SECTION -->
+            <LinearLayout
+                android:id="@+id/register_section"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="vertical"
+                android:visibility="gone">
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_gravity="center_vertical"
+                    android:layout_margin="@dimen/ten_dp"
+                    android:background="@drawable/rectangle_light_grey">
+
+                    <com.google.android.material.textfield.TextInputEditText
+                        android:id="@+id/et_full_name"
+                        android:layout_width="match_parent"
+                        android:layout_height="match_parent"
+                        android:layout_gravity="center"
+                        android:autoSizeMaxTextSize="@dimen/Fifteen_dp"
+                        android:autoSizeMinTextSize="@dimen/two_dp"
+                        android:autoSizeTextType="uniform"
+                        android:background="@android:color/transparent"
+                        android:drawablePadding="@dimen/four_dp"
+                        android:fontFamily="@font/gill_sans"
+                        android:hint="@string/full_name"
+                        android:imeOptions="actionNext"
+                        android:inputType="textPersonName"
+                        android:maxLines="1"
+                        android:padding="@dimen/Fifteen_dp"
+                        android:textColor="@color/black"
+                        android:textColorHint="@color/grey_color_dark"
+                        android:textSize="@dimen/Fifteen_dp"
+                        tools:ignore="TouchTargetSizeCheck" />
+                </LinearLayout>
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_gravity="center_vertical"
+                    android:layout_margin="@dimen/ten_dp"
+                    android:background="@drawable/rectangle_light_grey">
+
+                    <com.google.android.material.textfield.TextInputEditText
+                        android:id="@+id/et_register_email"
+                        android:layout_width="match_parent"
+                        android:layout_height="match_parent"
+                        android:layout_gravity="center"
+                        android:autoSizeMaxTextSize="@dimen/Fifteen_dp"
+                        android:autoSizeMinTextSize="@dimen/two_dp"
+                        android:autoSizeTextType="uniform"
+                        android:background="@android:color/transparent"
+                        android:drawablePadding="@dimen/four_dp"
+                        android:fontFamily="@font/gill_sans"
+                        android:hint="Enter the Email"
+                        android:imeOptions="actionDone"
+                        android:inputType="textEmailAddress"
+                        android:maxLines="1"
+                        android:padding="@dimen/Fifteen_dp"
+                        android:textColor="@color/black"
+                        android:textColorHint="@color/grey_color_dark"
+                        android:textSize="@dimen/Fifteen_dp"
+                        tools:ignore="TouchTargetSizeCheck" />
+                </LinearLayout>
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_gravity="center_vertical"
+                    android:layout_margin="@dimen/ten_dp"
+                    android:background="@drawable/rectangle_light_grey">
+
+                    <com.google.android.material.textfield.TextInputEditText
+                        android:id="@+id/et_register_phone"
+                        android:layout_width="match_parent"
+                        android:layout_height="match_parent"
+                        android:layout_gravity="center"
+                        android:autoSizeMaxTextSize="@dimen/Fifteen_dp"
+                        android:autoSizeMinTextSize="@dimen/two_dp"
+                        android:autoSizeTextType="uniform"
+                        android:background="@android:color/transparent"
+                        android:drawablePadding="@dimen/four_dp"
+                        android:fontFamily="@font/gill_sans"
+                        android:hint="Enter the Mobile Number"
+                        android:imeOptions="actionDone"
+                        android:inputType="textEmailAddress"
+                        android:maxLines="1"
+                        android:padding="@dimen/Fifteen_dp"
+                        android:textColor="@color/black"
+                        android:textColorHint="@color/grey_color_dark"
+                        android:textSize="@dimen/Fifteen_dp"
+                        tools:ignore="TouchTargetSizeCheck" />
+                </LinearLayout>
+
+
+            </LinearLayout>
+
+            <!-- Terms & Conditions checkbox -->
+            <LinearLayout
+                android:id="@+id/ll_termsCondition"
+                android:layout_width="wrap_content"
+                android:layout_height="match_parent"
+                android:layout_marginStart="@dimen/ten_dp"
+                android:layout_marginEnd="@dimen/ten_dp"
+                android:layout_marginBottom="@dimen/ten_dp"
+                android:orientation="horizontal"
+                android:padding="@dimen/four_dp">
+
+                <include
+                    android:id="@+id/cbTermsCondition"
+                    layout="@layout/chk_box_layout"
+                    android:visibility="gone" />
+
+                <TextView
+                    android:id="@+id/tv_terms_full"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_gravity="center_vertical"
+                    android:fontFamily="@font/gill_sans"
+                    android:lineSpacingExtra="@dimen/two_dp"
+                    android:textColor="@color/black"
+                    android:textSize="@dimen/Thirteen_dp" />
+            </LinearLayout>
+
+            <!-- Biometric CheckBox for Login -->
+            <LinearLayout
+                android:id="@+id/login_biometric_section"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_margin="@dimen/ten_dp"
+                android:orientation="horizontal"
+                android:visibility="gone">
+
+                <androidx.cardview.widget.CardView
+                    android:id="@+id/checkbox_cardview_login"
+                    android:layout_width="@dimen/twenty_five"
+                    android:layout_height="@dimen/twenty_five"
+                    android:layout_gravity="center_vertical"
+                    android:layout_margin="@dimen/four_dp"
+                    android:paddingBottom="@dimen/eight_dp"
+                    app:cardBackgroundColor="@color/white"
+                    app:cardCornerRadius="@dimen/eight_dp"
+                    app:cardElevation="@dimen/four_dp">
+
+                    <include
+                        android:id="@+id/checkBox"
+                        layout="@layout/chk_box_layout" />
+                </androidx.cardview.widget.CardView>
+
+                <TextView
+                    android:id="@+id/textView2_login"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_gravity="center_vertical"
+                    android:layout_marginStart="@dimen/ten_dp"
+                    android:fontFamily="@font/gill_sans"
+                    android:text="@string/enable_biometric_authentication"
+                    android:textColor="@color/black"
+                    android:textSize="@dimen/Twelve_dp"
+                    tools:ignore="TextSizeCheck" />
+            </LinearLayout>
+
+            <include
+                android:id="@+id/tv_biometric_info"
+                layout="@layout/owner_layout"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_margin="@dimen/ten_dp"
+                android:visibility="gone" />
+
+            <!-- Send OTP / Login Button -->
+            <include
+                android:id="@+id/btn_send_otp"
+                layout="@layout/submit_button"
+                android:layout_width="@dimen/module_btn_size"
+                android:layout_height="@dimen/forty_dp"
+                android:layout_gravity="center"
+                android:layout_margin="@dimen/ten_dp" />
+
+            <!-- Toggle Link (Register/Login) -->
+            <LinearLayout
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_gravity="center_horizontal"
+                android:layout_marginTop="@dimen/ten_dp"
+                android:orientation="horizontal">
+
+                <TextView
+                    android:id="@+id/tv_toggle_text"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:fontFamily="@font/gill_sans"
+                    android:text="Don't have an account? "
+                    android:textColor="@color/black"
+                    android:textSize="@dimen/Fifteen_dp" />
+
+                <TextView
+                    android:id="@+id/tv_toggle_link"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:fontFamily="@font/gill_sans"
+                    android:text="Register Here"
+                    android:textColor="@color/Primary_new"
+                    android:textSize="@dimen/Fifteen_dp" />
+            </LinearLayout>
+
+            <LinearLayout
+                android:id="@+id/ll_contact_support"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_gravity="center_horizontal"
+                android:layout_marginTop="@dimen/ten_dp"
+                android:orientation="horizontal">
+
+                <TextView
+                    android:id="@+id/tv_toggle_info"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:fontFamily="@font/gill_sans"
+                    android:text="@string/for_more_information"
+                    android:textColor="@color/black"
+                    android:textSize="@dimen/Fifteen_dp" />
+
+                <TextView
+                    android:id="@+id/tv_contact_support"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginStart="@dimen/four_dp"
+                    android:fontFamily="@font/gill_sans"
+                    android:text="@string/contact_support"
+                    android:textColor="@color/Primary_new"
+                    android:textSize="@dimen/Fifteen_dp" />
+            </LinearLayout>
+
+        </LinearLayout>
+    </androidx.cardview.widget.CardView>
+</LinearLayout>

@@ -1,0 +1,14 @@
+<TextView xmlns:android="http://schemas.android.com/apk/res/android"
+    android:id="@+id/tv_last_msg"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:layout_gravity="center_vertical"
+    android:layout_weight="1"
+    android:breakStrategy="simple"
+    android:fontFamily="@font/gill_sans"
+    android:gravity="start"
+    android:hyphenationFrequency="none"
+    android:text="@string/matters"
+    android:textColor="@color/material_dynamic_neutral50"
+    android:textSize="@dimen/Fifteen_dp" />
+

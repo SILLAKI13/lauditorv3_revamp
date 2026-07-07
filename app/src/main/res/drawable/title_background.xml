@@ -1,0 +1,31 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<layer-list xmlns:android="http://schemas.android.com/apk/res/android" >
+    <item android:drawable="@drawable/softwaves"></item>
+    <item>
+        <shape
+            android:shape="rectangle">
+
+            <corners android:radius="@dimen/zero_dp"/>
+
+            <gradient
+
+                android:endColor="#004D87"
+                android:centerColor="#004D87"
+                android:startColor="#00355C"
+                android:type="linear"
+                android:angle="180"/>
+
+            <padding
+                android:bottom="@dimen/zero_dp"
+                android:left="@dimen/zero_dp"
+                android:right="@dimen/zero_dp"
+                android:top="@dimen/zero_dp"/>
+
+            <stroke
+                android:width="@dimen/one_dp"
+                android:color="#123"/>
+
+        </shape>
+    </item>
+
+</layer-list>

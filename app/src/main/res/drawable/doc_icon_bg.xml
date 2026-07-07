@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- detail_icon_bg.xml — dark navy circle behind profile detail icons -->
+<shape xmlns:android="http://schemas.android.com/apk/res/android"
+    android:shape="oval">
+    <solid android:color="#0F4C81"/>
+</shape>

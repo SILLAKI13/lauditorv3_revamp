@@ -1,0 +1,32 @@
+<?xml version="1.0" encoding="utf-8"?>
+<com.google.android.material.textfield.TextInputLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:id="@+id/search_tm"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:layout_margin="@dimen/ten_dp"
+    android:hint="Search Groups"
+    app:boxBackgroundMode="none"
+    app:layout_constraintBottom_toBottomOf="parent"
+    app:layout_constraintEnd_toEndOf="parent"
+    app:layout_constraintStart_toStartOf="parent"
+    app:layout_constraintTop_toBottomOf="@+id/cv_details_2">
+
+    <!-- This is the actual edit text which takes the input -->
+    <com.google.android.material.textfield.TextInputEditText
+        android:id="@+id/et_search_members"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_gravity="start"
+        android:importantForAutofill="no"
+        android:inputType="textNoSuggestions"
+        android:maxLines="1"
+        android:background="@drawable/rectangle_grey_background"
+        android:drawableRight="@drawable/search_groups"
+        android:gravity="start"
+        tools:ignore="LabelFor" />
+
+</com.google.android.material.textfield.TextInputLayout>
+

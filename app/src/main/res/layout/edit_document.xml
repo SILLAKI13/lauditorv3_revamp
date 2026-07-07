@@ -1,0 +1,233 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:background="@drawable/rectangular_white_background"
+    android:orientation="vertical">
+
+    <include layout="@layout/header_layout" />
+
+    <ScrollView
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        android:layout_weight="1"
+        android:fillViewport="true">
+
+        <LinearLayout
+            android:id="@+id/ll_tag_type"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            android:padding="@dimen/ten_dp">
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="@dimen/ten_dp"
+                android:orientation="horizontal">
+
+                <include
+                    android:id="@+id/tv_document_name"
+                    layout="@layout/title_name_layout"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content" />
+
+                <include layout="@layout/astrick_layout" />
+
+            </LinearLayout>
+
+            <include
+                android:id="@+id/response_email"
+                layout="@layout/response"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginStart="@dimen/four_dp"
+                android:visibility="gone" />
+
+            <com.google.android.material.textfield.TextInputLayout
+                android:id="@+id/tv_edit_doc_name"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginEnd="@dimen/_10dp"
+                android:layout_weight="1"
+                android:gravity="top"
+                android:layoutDirection="rtl"
+                android:textColorHint="@color/black"
+                android:textDirection="ltr"
+                app:boxBackgroundMode="outline"
+                app:counterEnabled="true"
+                app:counterMaxLength="50"
+                app:counterTextColor="@color/grey_color_dark">
+
+
+                <include
+                    android:id="@+id/edit_doc_name"
+                    layout="@layout/title_description_layout"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginStart="@dimen/zero_dp"
+                    android:layout_marginEnd="@dimen/ten_dp"
+                    android:layout_weight="1" />
+            </com.google.android.material.textfield.TextInputLayout>
+
+            <include
+                android:id="@+id/response_docname"
+                layout="@layout/response"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginStart="@dimen/four_dp"
+                android:visibility="gone" />
+
+            <LinearLayout
+
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="@dimen/ten_dp"
+                android:orientation="horizontal">
+
+                <include
+                    android:id="@+id/description"
+                    layout="@layout/title_name_layout"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content" />
+
+                <include layout="@layout/astrick_layout" />
+
+            </LinearLayout>
+
+            <com.google.android.material.textfield.TextInputLayout
+                android:id="@+id/tv_edit_description"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_gravity="top"
+                android:layout_marginEnd="@dimen/_10dp"
+                android:layout_weight="1"
+                android:gravity="top"
+                android:layoutDirection="rtl"
+                android:textDirection="ltr"
+                app:boxBackgroundMode="outline"
+                app:counterEnabled="true"
+                app:counterMaxLength="300"
+                app:counterTextColor="@color/grey_color_dark">
+
+                <include
+                    android:id="@+id/edit_description"
+                    layout="@layout/description_large_layout"
+                    android:layout_width="match_parent"
+                    android:layout_height="@dimen/one_fifty_dp"
+                    android:layout_marginStart="@dimen/zero_dp"
+                    android:layout_marginTop="@dimen/ten_dp"
+                    android:layout_marginEnd="@dimen/ten_dp" />
+
+            </com.google.android.material.textfield.TextInputLayout>
+
+            <include
+                android:id="@+id/response_docdes"
+                layout="@layout/response"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginStart="@dimen/four_dp"
+                android:visibility="gone" />
+
+            <LinearLayout
+
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="@dimen/ten_dp"
+                android:orientation="horizontal">
+
+                <include
+                    android:id="@+id/expiration_date_id"
+                    layout="@layout/title_name_layout"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content" />
+
+            </LinearLayout>
+
+            <include
+                android:id="@+id/tv_expiration_date"
+                layout="@layout/button_calender" />
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginStart="@dimen/six_dp"
+                android:orientation="vertical">
+
+                <include
+                    android:id="@+id/switch_download"
+                    layout="@layout/component_switch_row" />
+
+                <include
+                    android:id="@+id/switch_encryption"
+                    layout="@layout/component_switch_row" />
+            </LinearLayout>
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginStart="@dimen/six_dp"
+                android:gravity="center_vertical"
+                android:orientation="horizontal">
+
+                <com.google.android.material.textview.MaterialTextView
+                    android:id="@+id/tv_tags"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:fontFamily="@font/gill_sans"
+                    android:text="@string/tags_"
+                    android:textColor="@color/Blue_text_color"
+                    android:textSize="@dimen/Fifteen_dp"
+                    app:useMaterialThemeColors="true" />
+
+                <androidx.appcompat.widget.AppCompatButton
+                    android:id="@+id/btn_add_tag"
+                    android:layout_width="wrap_content"
+                    android:layout_height="@dimen/thirty_dp"
+                    android:background="@drawable/rectangle_blue_bg"
+                    android:text="@string/add_tag"
+                    android:textAllCaps="false"
+                    android:textColor="@color/white"
+                    android:textSize="@dimen/Twelve_dp" />
+            </LinearLayout>
+
+            <HorizontalScrollView
+                android:id="@+id/HS_selected_tags"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:fillViewport="false"
+                android:scrollbars="none">
+
+                <LinearLayout
+                    android:id="@+id/ll_selected_tags"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_margin="@dimen/four_dp"
+                    android:orientation="horizontal" />
+
+            </HorizontalScrollView>
+        </LinearLayout>
+    </ScrollView>
+
+    <androidx.appcompat.widget.LinearLayoutCompat
+        android:id="@+id/ll_buttons"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="@dimen/ten_dp"
+        android:layout_marginEnd="@dimen/ten_dp"
+        android:orientation="horizontal"
+        android:padding="@dimen/ten_dp">
+
+        <include
+            android:id="@+id/btn_cancel_edit_docs"
+            layout="@layout/cancel_button" />
+
+        <include
+            android:id="@+id/btn_save_tag"
+            layout="@layout/submit_button" />
+
+    </androidx.appcompat.widget.LinearLayoutCompat>
+
+</LinearLayout>

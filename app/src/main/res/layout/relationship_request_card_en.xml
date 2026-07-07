@@ -1,0 +1,123 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--  res/layout/relationship_request_card.xml  -->
+<androidx.cardview.widget.CardView
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:id="@+id/Card_Layout"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:layout_margin="@dimen/ten_dp"
+    app:cardBackgroundColor="@color/white"
+    app:cardCornerRadius="@dimen/Fifteen_dp"
+    app:cardElevation="2dp">
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        android:padding="@dimen/Fifteen_dp">
+
+        <!-- Header: icon + "Relationships" label -->
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:gravity="center_vertical"
+            android:orientation="horizontal">
+
+            <LinearLayout
+                android:layout_width="36dp"
+                android:layout_height="36dp"
+                android:background="@drawable/pale_blue_circular"
+                android:gravity="center">
+                <ImageView
+                    android:layout_width="18dp"
+                    android:layout_height="18dp"
+                    android:src="@drawable/ic_people_blue" />
+            </LinearLayout>
+
+            <TextView
+                android:id="@+id/Card_Name"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_marginStart="@dimen/ten_dp"
+                android:layout_weight="1"
+                android:textColor="@color/black"
+                android:textSize="@dimen/Fifteen_dp"
+                android:textStyle="bold" />
+        </LinearLayout>
+
+        <!-- Thin divider -->
+        <View
+            android:layout_width="match_parent"
+            android:layout_height="0.5dp"
+            android:layout_marginTop="@dimen/ten_dp"
+            android:layout_marginBottom="@dimen/ten_dp"
+            android:background="@color/grey_color_light" />
+
+        <!-- Accepted | Pending stat row -->
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal">
+
+            <!-- Accepted -->
+            <LinearLayout
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:gravity="center"
+                android:orientation="vertical">
+
+                <TextView
+                    android:id="@+id/tv_accepted_relationships"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:textColor="@color/black"
+                    android:textSize="26sp"
+                    android:textStyle="bold" />
+
+                <TextView
+                    android:id="@+id/tv_total_team_members"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="2dp"
+                    android:textColor="@color/grey_color_dark"
+                    android:textSize="@dimen/Twelve_dp" />
+            </LinearLayout>
+
+            <!-- Vertical divider -->
+            <View
+                android:layout_width="0.5dp"
+                android:layout_height="44dp"
+                android:layout_gravity="center_vertical"
+                android:background="@color/grey_color_light" />
+
+            <!-- Pending -->
+            <LinearLayout
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:gravity="center"
+                android:orientation="vertical">
+
+                <TextView
+                    android:id="@+id/tv_pending_relationships"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:textColor="@color/black"
+                    android:textSize="26sp"
+                    android:textStyle="bold" />
+
+                <TextView
+                    android:id="@+id/tv_not_submitted"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="2dp"
+                    android:textColor="@color/grey_color_dark"
+                    android:textSize="@dimen/Twelve_dp" />
+            </LinearLayout>
+
+        </LinearLayout>
+
+    </LinearLayout>
+</androidx.cardview.widget.CardView>

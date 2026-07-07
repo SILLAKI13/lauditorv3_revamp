@@ -1,0 +1,215 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:id="@+id/dayRoot"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:layout_marginStart="@dimen/four_dp"
+    android:layout_marginTop="@dimen/four_dp"
+    android:layout_marginEnd="@dimen/four_dp"
+    android:layout_marginBottom="@dimen/ten_dp"
+    android:background="@drawable/new_rect_grey"
+    android:elevation="@dimen/four_dp"
+    android:orientation="vertical"
+    android:paddingTop="@dimen/four_dp">
+
+    <!-- MAIN ROW -->
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginEnd="@dimen/four_dp"
+        android:gravity="center_vertical"
+        android:orientation="horizontal">
+
+        <CheckBox
+            android:id="@+id/cbDay"
+            android:layout_width="@dimen/thirty_five_dp"
+            android:layout_height="@dimen/thirty_five_dp" />
+
+        <TextView
+            android:id="@+id/tvDay"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:fontFamily="@font/gill_sans"
+            android:text="Monday"
+            android:textColor="@color/black"
+            android:textSize="@dimen/Thirteen_dp" />
+
+
+        <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginEnd="@dimen/four_dp"
+            android:gravity="center_vertical"
+            android:orientation="horizontal">
+
+
+            <!-- Left content (time / text / chips etc.) -->
+            <LinearLayout
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:orientation="horizontal">
+                <!-- your content -->
+            </LinearLayout>
+
+            <TextView
+                android:id="@+id/noavail"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginEnd="@dimen/four_dp"
+                android:fontFamily="@font/gill_sans"
+                android:text="@string/not_available"
+                android:textColor="@color/grey_medium"
+                android:textSize="@dimen/Fifteen_dp" />
+
+            <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_gravity="end"
+                android:orientation="horizontal">
+
+                <!-- From time -->
+                <TextView
+                    android:id="@+id/tvFromTime"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:background="@drawable/bg_time_box"
+                    android:fontFamily="@font/gill_sans"
+                    android:paddingStart="@dimen/ten_dp"
+                    android:paddingTop="@dimen/five_dp"
+                    android:paddingEnd="@dimen/ten_dp"
+                    android:paddingBottom="@dimen/five_dp"
+                    android:text="09:00 AM"
+                    android:textColor="#000000"
+                    android:textSize="@dimen/Thirteen_dp" />
+
+                <!-- to text -->
+                <TextView
+                    android:id="@+id/to_text"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginHorizontal="@dimen/four_dp"
+                    android:fontFamily="@font/gill_sans"
+                    android:text="-"
+                    android:textColor="@color/grey_medium"
+                    android:textSize="@dimen/Fifteen_dp" />
+
+                <!-- To time -->
+                <TextView
+                    android:id="@+id/tvToTime"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:background="@drawable/bg_time_box"
+                    android:fontFamily="@font/gill_sans"
+                    android:paddingStart="@dimen/ten_dp"
+                    android:paddingTop="@dimen/five_dp"
+                    android:paddingEnd="@dimen/ten_dp"
+                    android:paddingBottom="@dimen/five_dp"
+                    android:text="05:00 PM"
+                    android:textColor="@color/black"
+                    android:textSize="@dimen/Thirteen_dp" />
+
+            </LinearLayout>
+
+            <ImageView
+                android:id="@+id/slot"
+                android:layout_width="@dimen/twenty_dp"
+                android:layout_height="@dimen/twenty_dp"
+                android:layout_gravity="center|end"
+                android:layout_marginStart="@dimen/two_dp"
+                android:background="@drawable/exclude_icon_bg"
+                android:contentDescription="@string/remove"
+                android:padding="@dimen/four_dp"
+                android:src="@drawable/slot_icon"
+                app:tint="@color/blue" />
+            <!-- Remove icon (END) -->
+        </LinearLayout>
+
+
+    </LinearLayout>
+
+
+    <!-- EXCEPTION CONTAINER -->
+    <LinearLayout
+        android:id="@+id/exceptionContainer"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        android:visibility="visible">
+
+        <!-- SELECTED SLOTS -->
+        <com.google.android.flexbox.FlexboxLayout
+            android:id="@+id/layoutSelectedSlots"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:background="@drawable/rectangle_grey_background"
+            android:padding="@dimen/six_dp"
+            android:visibility="gone"
+            app:flexWrap="wrap"
+            app:justifyContent="flex_start" />
+
+
+        <!-- SUMMARY -->
+        <androidx.cardview.widget.CardView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_margin="@dimen/eight_dp"
+            app:cardBackgroundColor="@android:color/white"
+            app:cardCornerRadius="@dimen/six_dp"
+            app:cardElevation="@dimen/two_dp"
+            app:cardUseCompatPadding="false">
+
+            <!-- MAIN CONTAINER -->
+            <LinearLayout
+                android:id="@+id/timinglayout"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="horizontal"
+                android:padding="@dimen/ten_dp">
+
+                <!-- LEFT VERTICAL LINE -->
+                <View
+                    android:layout_width="@dimen/four_dp"
+                    android:layout_height="match_parent"
+                    android:layout_marginEnd="@dimen/ten_dp"
+                    android:background="@color/scheduled_text" />
+
+                <!-- TEXT CONTENT -->
+                <LinearLayout
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:orientation="vertical">
+
+                    <!-- AVAILABILITY -->
+                    <TextView
+                        android:id="@+id/tvOutTime"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:fontFamily="@font/gill_sans"
+                        android:text="Availability: 0 hours ; timings (-)"
+                        android:textColor="#000000"
+                        android:textSize="@dimen/Fifteen_dp" />
+
+                    <!-- EXCLUDED -->
+                    <TextView
+                        android:id="@+id/tvAvailTime"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="@dimen/six_dp"
+                        android:fontFamily="@font/gill_sans"
+                        android:text="Excluded: 0 slots"
+                        android:textColor="@color/grey_medium"
+                        android:textSize="@dimen/Thirteen_dp" />
+
+                </LinearLayout>
+
+            </LinearLayout>
+
+        </androidx.cardview.widget.CardView>
+
+
+    </LinearLayout>
+
+</LinearLayout>

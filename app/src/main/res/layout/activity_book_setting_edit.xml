@@ -1,0 +1,220 @@
+<?xml version="1.0" encoding="utf-8"?>
+<ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:fillViewport="true"
+    android:background="#FFFFFF">
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        android:padding="@dimen/Fifteen_dp">
+
+        <TextView
+            android:id="@+id/tv_booking_settings"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginBottom="@dimen/ten_dp"
+            android:fontFamily="@font/gill_sans_bold"
+            android:text="@string/booking_settings"
+            android:textColor="@color/Blue_text_color"
+            android:textSize="@dimen/Fifteen_dp" />
+
+        <!-- Slot Duration + Minimum Booking Hours Row -->
+        <LinearLayout
+            android:id="@+id/slot_min"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginBottom="@dimen/ten_dp"
+            android:orientation="horizontal">
+
+            <LinearLayout
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:layout_marginEnd="@dimen/ten_dp"
+                android:orientation="vertical">
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:fontFamily="@font/gill_sans"
+                    android:text="Slot Duration"
+                    android:textColor="@color/grey_medium"
+                    android:textSize="@dimen/Fifteen_dp" />
+
+                <androidx.appcompat.widget.AppCompatButton
+                    android:id="@+id/btn_slot_duration"
+                    android:layout_width="wrap_content"
+                    android:layout_height="@dimen/forty_dp"
+                    android:layout_marginTop="@dimen/ten_dp"
+                    android:background="@drawable/rectangle_light_grey"
+                    android:fontFamily="@font/gill_sans"
+                    android:text="30 minutes"
+                    android:textAllCaps="false"
+                    android:textColor="@android:color/black" />
+            </LinearLayout>
+
+            <LinearLayout
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:orientation="vertical">
+
+                <LinearLayout
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:orientation="horizontal">
+
+                    <TextView
+                        android:id="@+id/min_hours"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:fontFamily="@font/gill_sans"
+                        android:text="Minimum Booking Window (Hours)"
+                        android:textColor="@color/grey_medium"
+                        android:textSize="@dimen/Fifteen_dp" />
+
+                    <ImageView
+                        android:id="@+id/iv_info"
+                        android:layout_width="@dimen/twenty_dp"
+                        android:layout_height="@dimen/twenty_dp"
+                        android:layout_marginStart="@dimen/six_dp"
+                        android:src="@drawable/iv_info"
+                        android:visibility="gone" />
+                </LinearLayout>
+
+                <TextView
+                    android:id="@+id/tv_min_booking_hours"
+                    android:layout_width="wrap_content"
+                    android:layout_height="@dimen/forty_dp"
+                    android:layout_marginTop="@dimen/ten_dp"
+                    android:background="@drawable/rectangle_light_grey"
+                    android:fontFamily="@font/gill_sans"
+                    android:padding="@dimen/ten_dp"
+                    android:text="4 hours"
+                    android:textColor="#000000" />
+            </LinearLayout>
+        </LinearLayout>
+
+        <!-- Weekly Hours Header -->
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_gravity="center"
+            android:gravity="center_vertical"
+            android:orientation="horizontal">
+
+            <ImageView
+                android:layout_width="@dimen/twenty_dp"
+                android:layout_height="@dimen/twenty_dp"
+                android:src="@drawable/timer" />
+
+            <TextView
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_gravity="center"
+                android:layout_marginStart="@dimen/four_dp"
+                android:layout_weight="1"
+                android:fontFamily="@font/gill_sans"
+                android:gravity="center_vertical"
+                android:text="Weekly hours"
+                android:textColor="@color/pale_blue"
+                android:textSize="@dimen/Fifteen_dp" />
+
+            <ImageView
+                android:id="@+id/iv_info1"
+                android:layout_width="@dimen/twenty_dp"
+                android:layout_height="@dimen/twenty_dp"
+                android:layout_marginEnd="@dimen/ten_dp"
+                android:layout_marginStart="@dimen/ten_dp"
+                android:src="@drawable/iv_info"
+                app:tint="@color/dark_blue" />
+
+        </LinearLayout>
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="@dimen/ten_dp"
+            android:layout_marginBottom="@dimen/ten_dp"
+            android:fontFamily="@font/gill_sans"
+            android:text="Set when you are typically available for meetings"
+            android:textColor="@color/grey_medium"
+            android:textSize="@dimen/Fifteen_dp" />
+
+        <!-- Quick Actions Row -->
+        <LinearLayout
+            android:id="@+id/set_clear"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginBottom="@dimen/ten_dp"
+            android:orientation="horizontal">
+
+            <TextView
+                android:id="@+id/tv_set_weekdays"
+                android:layout_width="0dp"
+                android:layout_height="@dimen/forty_dp"
+                android:layout_weight="1"
+                android:layout_marginEnd="@dimen/ten_dp"
+                android:gravity="center"
+                android:background="@drawable/rectangular_button_green_count"
+                android:fontFamily="@font/gill_sans"
+                android:text="Set Mon-Fri 9am-5pm"
+                android:textColor="@color/white"
+                android:textSize="@dimen/Fifteen_dp" />
+
+            <TextView
+                android:id="@+id/tv_clear_all"
+                android:layout_width="0dp"
+                android:layout_height="@dimen/forty_dp"
+                android:layout_weight="1"
+                android:gravity="center"
+                android:background="@drawable/yellow_clear"
+                android:fontFamily="@font/gill_sans"
+                android:text="Clear All"
+                android:textColor="@color/black"
+                android:textSize="@dimen/Fifteen_dp" />
+        </LinearLayout>
+
+        <!-- ✅ Dynamic day rows inflated here from API order -->
+        <LinearLayout
+            android:id="@+id/ll_days_container"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical" />
+
+        <RelativeLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="@dimen/ten_dp"
+            android:visibility="gone"
+            android:background="@drawable/info_box_bg"
+            android:padding="@dimen/ten_dp">
+
+            <ImageView
+                android:id="@+id/iv_info2"
+                android:layout_width="@dimen/twenty_dp"
+                android:layout_height="@dimen/twenty_dp"
+                android:layout_marginEnd="@dimen/ten_dp"
+                android:src="@drawable/iv_info"
+                app:tint="@color/dark_blue"
+                tools:ignore="DuplicateIds" />
+
+            <TextView
+                android:id="@+id/tvInfo"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_toRightOf="@+id/iv_info2"
+                android:fontFamily="@font/gill_sans"
+                android:text="@string/availability_info_txt"
+                android:textColor="@color/dark_blue"
+                android:textSize="@dimen/Fifteen_dp"
+                android:textStyle="normal" />
+        </RelativeLayout>
+
+    </LinearLayout>
+</ScrollView>

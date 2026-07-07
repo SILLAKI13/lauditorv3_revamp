@@ -1,0 +1,122 @@
+<?xml version="1.0" encoding="utf-8"?><!--  res/layout/super_user_matter_kpi.xml  -->
+<androidx.cardview.widget.CardView xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:layout_margin="@dimen/ten_dp"
+    app:cardBackgroundColor="@color/white"
+    app:cardCornerRadius="@dimen/Fifteen_dp"
+    app:cardElevation="2dp">
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        android:padding="@dimen/Fifteen_dp">
+
+        <!-- Header: icon + "Matters" label -->
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:gravity="center_vertical"
+            android:orientation="horizontal">
+
+            <LinearLayout
+                android:layout_width="36dp"
+                android:layout_height="36dp"
+                android:background="@drawable/pale_green_circular"
+                android:gravity="center">
+
+                <ImageView
+                    android:layout_width="18dp"
+                    android:layout_height="18dp"
+                    android:src="@drawable/ic_folder_teal" />
+            </LinearLayout>
+
+            <TextView
+                android:id="@+id/tv_closed_members"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_marginStart="@dimen/ten_dp"
+                android:layout_weight="1"
+                android:fontFamily="@font/gill_sans"
+                android:textColor="@color/black"
+                android:textSize="@dimen/Fifteen_dp"
+                android:textStyle="bold" />
+        </LinearLayout>
+
+        <!-- Thin divider -->
+        <View
+            android:layout_width="match_parent"
+            android:layout_height="0.5dp"
+            android:layout_marginTop="@dimen/ten_dp"
+            android:layout_marginBottom="8dp"
+            android:background="@color/grey_color_light" />
+
+        <!-- ACTIVE row (included) -->
+        <include
+            android:id="@+id/ActiveMatterLayout"
+            layout="@layout/matter_row_item_en"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content" />
+
+        <!-- Thin divider -->
+        <View
+            android:layout_width="match_parent"
+            android:layout_height="0.5dp"
+            android:layout_marginTop="8dp"
+            android:layout_marginBottom="8dp"
+            android:background="@color/grey_color_light" />
+
+        <!-- CLOSED row -->
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:gravity="center_vertical"
+            android:orientation="horizontal">
+
+            <TextView
+                android:id="@+id/tv_closed"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Closed"
+                android:textColor="@color/grey_color_dark"
+                android:textSize="@dimen/Twelve_dp" />
+
+            <TextView
+                android:id="@+id/tv_total_matters_count"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginStart="6dp"
+                android:background="@drawable/light_grey_bg"
+                android:paddingStart="6dp"
+                android:paddingTop="1dp"
+                android:paddingEnd="6dp"
+                android:paddingBottom="1dp"
+                android:textColor="@color/grey_color_dark"
+                android:textSize="@dimen/Twelve_dp"
+                android:textStyle="bold" />
+
+            <Space
+                android:layout_width="0dp"
+                android:layout_height="1dp"
+                android:layout_weight="1" />
+
+            <TextView
+                android:id="@+id/tv_total_legal_matter_count"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginEnd="8dp"
+                android:textColor="@color/black"
+                android:textSize="@dimen/Fifteen_dp" />
+
+            <TextView
+                android:id="@+id/tv_total_general_matter_count"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:textColor="@color/black"
+                android:textSize="@dimen/Fifteen_dp" />
+        </LinearLayout>
+
+    </LinearLayout>
+</androidx.cardview.widget.CardView>

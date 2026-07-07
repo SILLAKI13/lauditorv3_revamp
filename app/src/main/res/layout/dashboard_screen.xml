@@ -1,0 +1,220 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent">
+
+    <!-- ── Header row: date/time (left) + empty right spacer (right) ── -->
+    <LinearLayout
+        android:id="@+id/ll_header_row"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent">
+
+        <LinearLayout
+            android:id="@+id/ll_1"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="@dimen/twenty_dp"
+            android:layout_marginTop="@dimen/Fifteen_dp"
+            android:layout_marginEnd="@dimen/ten_dp"
+            android:layout_marginBottom="@dimen/Fifteen_dp"
+            android:layout_weight="1"
+            android:background="@drawable/rectangular_white_background"
+            android:elevation="@dimen/four_dp"
+            android:gravity="end"
+            android:orientation="horizontal">
+
+            <TextClock
+                android:id="@+id/tv_date"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_gravity="start"
+                android:layout_marginStart="@dimen/four_dp"
+                android:layout_marginEnd="@dimen/four_dp"
+                android:layout_weight="1"
+                android:fontFamily="@font/gill_sans"
+                android:format12Hour="MMM dd yyyy"
+                android:format24Hour="MMM dd yyyy"
+                android:gravity="start"
+                android:paddingStart="@dimen/ten_dp"
+                android:paddingTop="@dimen/twenty_dp"
+                android:paddingEnd="@dimen/twenty_dp"
+                android:paddingBottom="@dimen/twenty_dp"
+                android:text="@string/time"
+                android:textColor="@color/black"
+                android:textFontWeight="350"
+                android:textSize="@dimen/thirty_dp" />
+
+            <LinearLayout
+                android:layout_width="wrap_content"
+                android:layout_height="match_parent"
+                android:layout_gravity="end"
+                android:layout_weight="01"
+                android:background="@drawable/date_backgorund"
+                android:gravity="end"
+                android:orientation="horizontal"
+                android:padding="@dimen/ten_dp">
+
+                <TextClock
+                    android:id="@+id/time"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_gravity="center_vertical"
+                    android:layout_marginStart="@dimen/four_dp"
+                    android:layout_marginEnd="@dimen/four_dp"
+                    android:fontFamily="@font/gill_sans"
+                    android:format12Hour="hh:mm"
+                    android:format24Hour="HH:mm"
+                    android:layout_weight="1"
+                    android:gravity="center"
+                    android:text="@string/time"
+                    android:textColor="@color/black"
+                    android:textFontWeight="350"
+                    android:textSize="@dimen/twenty_dp" />
+
+                <include
+                    android:id="@+id/center_line"
+                    layout="@layout/divide_line" />
+
+                <TextClock xmlns:android="http://schemas.android.com/apk/res/android"
+                    android:id="@+id/am_pm"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_gravity="center"
+                    android:layout_marginStart="@dimen/four_dp"
+                    android:layout_marginEnd="@dimen/four_dp"
+                    android:layout_weight="1"
+                    android:fontFamily="@font/gill_sans"
+                    android:format12Hour="a"
+                    android:format24Hour="a"
+                    android:gravity="center"
+                    android:text="@string/time"
+                    android:textColor="@color/black"
+                    android:textFontWeight="350"
+                    android:textSize="@dimen/twenty_dp" />
+
+            </LinearLayout>
+        </LinearLayout>
+
+        <!-- RIGHT: empty placeholder on phone (weight=0), KPI header on tablet (weight=1, managed in Java) -->
+        <View
+            android:id="@+id/v_header_right_spacer"
+            android:layout_width="0dp"
+            android:layout_height="match_parent"
+            android:layout_weight="0"
+            android:visibility="gone" />
+
+    </LinearLayout>
+
+    <!-- ── Tab row: My Day / KPIs buttons (left) + Personalize (right) ── -->
+    <LinearLayout
+        android:id="@+id/ll_tabs_row"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/ll_header_row">
+
+        <LinearLayout
+            android:id="@+id/ll_3"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="@dimen/twenty_dp"
+            android:layout_weight="1"
+            android:background="@drawable/background_transparent"
+            android:elevation="@dimen/four_dp"
+            android:orientation="horizontal">
+
+            <include
+                android:id="@+id/bt_Myday"
+                layout="@layout/borderless_btn" />
+
+            <include
+                layout="@layout/divide_line"
+                android:layout_width="@dimen/point_five"
+                android:layout_height="match_parent"
+                android:layout_marginEnd="@dimen/point_five" />
+
+            <include
+                android:id="@+id/bt_kpi"
+                layout="@layout/borderless_btn" />
+
+        </LinearLayout>
+
+        <LinearLayout
+            android:id="@+id/ll_personalize"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginEnd="@dimen/six_dp"
+            android:background="@drawable/rectangle_light_grey_bg"
+            android:elevation="@dimen/four_dp"
+            android:orientation="horizontal"
+            android:visibility="gone">
+
+            <include
+                android:id="@+id/personalize_btn"
+                layout="@layout/borderless_btn" />
+
+        </LinearLayout>
+
+    </LinearLayout>
+
+    <!-- ── Content area: two-column on tablet, single-column on phone ── -->
+    <!--
+         On PHONE  : ll_column_left  is full width, ll_column_right is GONE
+         On TABLET : both columns are visible, weight=1 each (set in Java)
+         The RecyclerView rv_myday lives inside ll_column_left.
+         The RecyclerView rv_kpi  lives inside ll_column_right (tablet only).
+    -->
+    <LinearLayout
+        android:id="@+id/ll_content_row"
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        android:orientation="horizontal"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/ll_tabs_row">
+
+        <!-- LEFT column — always visible -->
+        <LinearLayout
+            android:id="@+id/ll_column_left"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:layout_weight="1"
+            android:orientation="vertical">
+
+            <androidx.recyclerview.widget.RecyclerView
+                android:id="@+id/rv_myday"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:layout_margin="@dimen/ten_dp" />
+
+        </LinearLayout>
+
+        <!-- RIGHT column — GONE on phone, VISIBLE on tablet (set in Java) -->
+        <LinearLayout
+            android:id="@+id/ll_column_right"
+            android:layout_width="0dp"
+            android:layout_height="match_parent"
+            android:layout_weight="0"
+            android:orientation="vertical"
+            android:visibility="gone">
+
+            <androidx.recyclerview.widget.RecyclerView
+                android:id="@+id/rv_kpi"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:layout_margin="@dimen/ten_dp" />
+
+        </LinearLayout>
+
+    </LinearLayout>
+
+</androidx.constraintlayout.widget.ConstraintLayout>

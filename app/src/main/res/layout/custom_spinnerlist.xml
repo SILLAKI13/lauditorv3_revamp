@@ -1,0 +1,30 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:orientation="vertical">
+
+    <include
+        layout="@layout/spinner_text_view"
+        android:id="@+id/custom_client"
+        android:layout_width="match_parent"
+        android:layout_height="55dp"
+        android:layout_margin="@dimen/six_dp"/>
+
+    <ScrollView
+        android:id="@+id/list_scroll_view"
+        android:layout_width="match_parent"
+        android:layout_height="@dimen/one_fifty_dp"
+        android:fillViewport="true"
+        tools:ignore="SpeakableTextPresentCheck">
+
+        <ListView
+            android:id="@+id/client_list_view"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:visibility="visible" />
+
+    </ScrollView>
+</LinearLayout>

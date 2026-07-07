@@ -1,0 +1,63 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:id="@+id/exceptionRow"
+    android:layout_width="wrap_content"
+    android:layout_height="wrap_content"
+    android:layout_marginStart="@dimen/thirty_five_dp"
+    android:layout_marginTop="@dimen/six_dp"
+    android:background="@drawable/bg_orange_light"
+    android:orientation="vertical"
+    android:padding="@dimen/eight_dp">
+
+    <LinearLayout
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal">
+
+        <!-- EXCEPTION FROM -->
+        <TextView
+            android:id="@+id/tvExceptionFrom"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:background="@drawable/bg_time_orange"
+            android:padding="@dimen/eight_dp"
+            android:text="12:00 PM"
+            android:fontFamily="@font/gill_sans" />
+
+        <!-- TO LABEL -->
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginHorizontal="@dimen/six_dp"
+            android:text="to"
+            android:fontFamily="@font/gill_sans" />
+
+        <!-- EXCEPTION TO -->
+        <TextView
+            android:id="@+id/tvExceptionTo"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:background="@drawable/bg_time_orange"
+            android:padding="@dimen/eight_dp"
+            android:text="01:00 PM"
+            android:fontFamily="@font/gill_sans" />
+
+        <!-- REMOVE EXCEPTION ICON -->
+        <ImageView
+            android:id="@+id/ivRemoveException"
+            android:layout_width="@dimen/twenty_dp"
+            android:layout_height="@dimen/twenty_dp"
+            android:layout_marginStart="@dimen/eight_dp"
+            android:src="@drawable/grey_cancel" />
+    </LinearLayout>
+
+    <!-- ERROR TEXT -->
+    <TextView
+        android:id="@+id/tvTimeError"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="End time must be after start time"
+        android:textColor="#D32F2F"
+        android:textSize="@dimen/Twelve_dp"
+        android:visibility="gone" />
+</LinearLayout>

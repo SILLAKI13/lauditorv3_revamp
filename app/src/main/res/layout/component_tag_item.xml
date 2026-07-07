@@ -1,0 +1,35 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="wrap_content"
+    android:layout_height="wrap_content"
+    android:layout_margin="@dimen/ten_dp"
+    android:background="@drawable/rectangle_light_grey"
+    android:elevation="@dimen/two_dp"
+    android:gravity="center_vertical"
+    android:orientation="horizontal"
+    android:paddingHorizontal="@dimen/ten_dp"
+    android:paddingVertical="@dimen/six_dp">
+
+    <TextView
+        android:id="@+id/tv_tag_name"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Tag - Ty1"
+        android:fontFamily="@font/gill_sans"
+        android:textColor="@color/black"
+        android:textSize="@dimen/Thirteen_dp" />
+
+    <ImageView
+        android:id="@+id/iv_edit"
+        android:layout_width="@dimen/twenty_dp"
+        android:layout_height="@dimen/twenty_dp"
+        android:layout_marginStart="@dimen/eight_dp"
+        android:src="@drawable/edit_new_icon_" />
+
+    <ImageView
+        android:id="@+id/iv_delete"
+        android:layout_width="@dimen/twenty_dp"
+        android:layout_height="@dimen/twenty_dp"
+        android:layout_marginStart="@dimen/eight_dp"
+        android:src="@drawable/cancel_red_icon" />
+</LinearLayout>

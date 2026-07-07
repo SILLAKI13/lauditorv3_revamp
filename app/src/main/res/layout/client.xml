@@ -1,0 +1,93 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="vertical">
+
+    <include
+        android:id="@+id/tv_chat"
+        layout="@layout/blue_bold_txt_layout"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="@dimen/twenty_dp"
+        android:layout_marginTop="@dimen/Fifteen_dp"
+        android:layout_marginEnd="@dimen/Fifteen_dp" />
+
+    <LinearLayout
+        android:id="@+id/ll_search"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="@dimen/four_dp"
+        android:layout_marginEnd="@dimen/four_dp"
+        android:orientation="vertical"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent">
+
+        <include
+            android:id="@+id/tl_Search"
+            layout="@layout/search_layout_new" />
+    </LinearLayout>
+
+    <androidx.appcompat.widget.LinearLayoutCompat
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        android:layout_marginStart="@dimen/ten_dp"
+        android:layout_marginEnd="@dimen/ten_dp"
+        android:layout_weight="1"
+        android:orientation="vertical"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@id/ll_search"
+        app:layout_constraintVertical_bias="0.01">
+
+        <!-- RecyclerView: visible when list has items -->
+        <androidx.recyclerview.widget.RecyclerView
+            android:id="@+id/rv_clientrelationships"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:visibility="visible" />
+
+        <!-- Empty State: shown when list is empty -->
+        <LinearLayout
+            android:id="@+id/layout_empty_state"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:gravity="center"
+            android:orientation="vertical"
+            android:visibility="gone">
+
+            <ImageView
+                android:layout_width="130dp"
+                android:layout_height="130dp"
+                android:contentDescription="No data found"
+                android:src="@drawable/chat_empty" />
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="16dp"
+                android:fontFamily="@font/gill_sans_regular"
+                android:text="No Messages Yet!"
+
+                android:textColor="@color/black"
+                android:textSize="18sp"
+                android:textStyle="bold" />
+
+            <TextView
+                android:id="@+id/tv_empty_subtitle"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="8dp"
+                android:fontFamily="@font/gill_sans_regular"
+                android:text="Start chatting with your contacts and enhance your communicaion now."
+                android:textColor="@color/dark_grey_new"
+                android:textSize="14sp" />
+
+        </LinearLayout>
+
+    </androidx.appcompat.widget.LinearLayoutCompat>
+
+</LinearLayout>

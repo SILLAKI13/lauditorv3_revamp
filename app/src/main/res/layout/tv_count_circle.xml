@@ -1,0 +1,11 @@
+<TextView xmlns:android="http://schemas.android.com/apk/res/android"
+    android:id="@+id/tv_count_circle"
+    android:layout_width="@dimen/forty_dp"
+    android:layout_height="@dimen/forty_dp"
+    android:layout_margin="@dimen/ten_dp"
+    android:background="@drawable/circular_button_background"
+    android:gravity="center"
+    android:layout_gravity="center"
+    android:text="@string/aa"
+    android:textColor="@color/white"
+    android:textFontWeight="600" />

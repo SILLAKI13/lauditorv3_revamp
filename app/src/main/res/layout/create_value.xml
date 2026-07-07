@@ -1,0 +1,46 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.appcompat.widget.LinearLayoutCompat
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:id="@+id/linearLayoutCompat"
+    android:layout_width="wrap_content"
+    android:layout_height="wrap_content"
+    android:orientation="horizontal"
+    android:paddingStart="@dimen/forty_dp"
+    android:paddingTop="@dimen/twenty_dp"
+    android:paddingEnd="@dimen/forty_dp"
+    app:layout_constraintBottom_toBottomOf="parent"
+    app:layout_constraintEnd_toEndOf="parent"
+    app:layout_constraintHorizontal_bias="0.593"
+    app:layout_constraintStart_toStartOf="parent"
+    app:layout_constraintTop_toTopOf="parent"
+    app:layout_constraintVertical_bias="0.013">
+
+    <TextView
+        android:id="@+id/tv_create_group"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_weight="1"
+        android:background="@drawable/button_left_background"
+        android:fontFamily="@font/gill_sans"
+        android:padding="@dimen/ten_dp"
+        android:text="@string/create_group"
+        android:textColor="@color/black"
+        android:textSize="@dimen/Fifteen_dp">
+
+    </TextView>
+
+    <TextView
+        android:id="@+id/tv_view_group"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_weight="1"
+        android:background="@drawable/button_right_background"
+        android:fontFamily="@font/gill_sans"
+        android:padding="@dimen/ten_dp"
+        android:text="@string/view_group"
+        android:textColor="@color/black"
+        android:textSize="@dimen/Fifteen_dp">
+
+    </TextView>
+</androidx.appcompat.widget.LinearLayoutCompat>

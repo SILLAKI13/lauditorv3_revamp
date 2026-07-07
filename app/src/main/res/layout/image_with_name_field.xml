@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="wrap_content"
+    android:layout_height="wrap_content"
+    android:layout_gravity="center"
+    android:padding="@dimen/six_dp"
+    android:background="@drawable/paleblue_border_bg"
+    android:gravity="center">
+
+    <ImageView
+        android:id="@+id/iv_image"
+        android:layout_width="@dimen/twenty_five"
+        android:layout_height="@dimen/twenty_five"
+        android:padding="@dimen/four_dp"
+        android:src="@drawable/generate_icon"
+        app:tint="@color/blue" />
+
+    <include
+        android:id="@+id/tv_image_name"
+        layout="@layout/blue_normal_txt2" />
+
+</LinearLayout>

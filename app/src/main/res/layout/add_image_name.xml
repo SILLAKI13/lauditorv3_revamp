@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:layout_gravity="center"
+    android:gravity="center">
+
+    <ImageView
+        android:layout_width="@dimen/thirty_dp"
+        android:layout_height="@dimen/thirty_dp"
+        android:padding="@dimen/four_dp"
+        android:src="@drawable/attachment" />
+
+    <include
+        android:id="@+id/tv_image_name"
+        layout="@layout/black_normal_txt" />
+
+</LinearLayout>

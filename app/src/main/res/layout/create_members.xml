@@ -1,0 +1,401 @@
+<ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    tools:context=".MainActivity">
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical">
+
+        <androidx.appcompat.widget.LinearLayoutCompat
+            android:id="@+id/linearLayoutCompat"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="center"
+            android:gravity="center"
+            android:orientation="horizontal"
+            android:visibility="gone">
+
+            <include layout="@layout/left_title_layout" />
+
+            <include layout="@layout/right_title_layout" />
+        </androidx.appcompat.widget.LinearLayoutCompat>
+
+        <androidx.appcompat.widget.LinearLayoutCompat
+            android:id="@+id/ll_buttons"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="@dimen/Twelve_dp"
+            android:layout_marginEnd="@dimen/Twelve_dp"
+            android:orientation="vertical">
+
+            <include
+                android:id="@+id/tv_switchView"
+                layout="@layout/common_title_icon" />
+
+            <include
+                android:id="@+id/tv_switchCreate"
+                layout="@layout/common_title_icon" />
+        </androidx.appcompat.widget.LinearLayoutCompat>
+
+        <androidx.cardview.widget.CardView
+            android:id="@+id/cv_details"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_margin="@dimen/ten_dp"
+            android:elevation="@dimen/forty_dp"
+            android:padding="@dimen/ten_dp"
+            android:visibility="gone"
+            app:cardBackgroundColor="@color/white"
+            app:cardCornerRadius="@dimen/eight_dp">
+
+            <FrameLayout
+                android:id="@+id/child_container"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="vertical">
+
+                <androidx.appcompat.widget.LinearLayoutCompat
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_margin="@dimen/ten_dp"
+                    android:orientation="vertical">
+
+                    <LinearLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:orientation="horizontal">
+
+                        <include
+                            android:id="@+id/name"
+                            layout="@layout/title_name_layout"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content" />
+
+                        <include layout="@layout/astrick_layout" />
+
+                    </LinearLayout>
+                    <!--this is the actual edit text which takes the input-->
+                    <include
+                        android:id="@+id/tv_create_member_name"
+                        layout="@layout/title_description_layout" />
+
+                    <LinearLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="@dimen/ten_dp"
+                        android:orientation="horizontal">
+
+                        <include
+                            android:id="@+id/designation"
+                            layout="@layout/title_name_layout"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content" />
+
+                        <include layout="@layout/astrick_layout" />
+
+                    </LinearLayout>
+
+                    <!--this is the actual edit text which takes the input-->
+                    <include
+                        android:id="@+id/tv_designation"
+                        layout="@layout/title_description_layout" />
+
+                    <LinearLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_marginStart="@dimen/four_dp"
+                        android:layout_marginTop="@dimen/ten_dp"
+                        android:layout_marginEnd="@dimen/four_dp"
+                        android:baselineAligned="false"
+                        android:orientation="horizontal">
+
+                        <LinearLayout
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:layout_weight="1"
+                            android:orientation="vertical">
+
+                            <LinearLayout
+                                android:layout_width="match_parent"
+                                android:layout_height="wrap_content"
+                                android:layout_marginTop="@dimen/ten_dp"
+                                android:layout_marginBottom="@dimen/ten_dp"
+                                android:orientation="horizontal">
+
+                                <include
+                                    android:id="@+id/default_currency"
+                                    layout="@layout/title_name_layout"
+                                    android:layout_width="wrap_content"
+                                    android:layout_height="wrap_content" />
+
+                                <include layout="@layout/astrick_layout" />
+
+                            </LinearLayout>
+
+                            <include
+                                android:id="@+id/ll_sp_currency"
+                                layout="@layout/dropdown_spinner_layout"
+                                android:layout_width="match_parent"
+                                android:layout_height="wrap_content" />
+
+                            <include
+                                android:id="@+id/sp_default_currency"
+                                layout="@layout/spinner_list"
+                                android:layout_width="match_parent"
+                                android:layout_height="@dimen/one_fifty_dp"
+                                android:visibility="gone" />
+                        </LinearLayout>
+
+                        <LinearLayout
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:layout_gravity="center"
+                            android:layout_marginStart="@dimen/ten_dp"
+                            android:layout_weight="1"
+                            android:gravity="center"
+                            android:orientation="vertical">
+
+                            <LinearLayout
+                                android:layout_width="match_parent"
+                                android:layout_height="wrap_content"
+                                android:layout_marginTop="@dimen/ten_dp"
+                                android:orientation="horizontal">
+
+                                <include
+                                    android:id="@+id/default_rate"
+                                    layout="@layout/title_name_layout"
+                                    android:layout_width="wrap_content"
+                                    android:layout_height="wrap_content" />
+
+                                <include layout="@layout/astrick_layout" />
+
+                            </LinearLayout>
+
+                            <!--this is the actual edit text which takes the input-->
+                            <include
+                                android:id="@+id/tv_default_rate"
+                                layout="@layout/title_description_layout"
+                                android:layout_width="match_parent"
+                                android:layout_height="wrap_content"
+                                android:layout_marginTop="@dimen/ten_dp" />
+                        </LinearLayout>
+                    </LinearLayout>
+
+                    <LinearLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="@dimen/ten_dp"
+                        android:orientation="horizontal">
+
+                        <include
+                            android:id="@+id/email"
+                            layout="@layout/title_name_layout"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content" />
+
+                        <include layout="@layout/astrick_layout" />
+
+                    </LinearLayout>
+
+                    <!--this is the actual edit text which takes the input-->
+                    <include
+                        android:id="@+id/tv_email"
+                        layout="@layout/title_description_layout" />
+
+                    <include
+                        android:id="@+id/response_email"
+                        layout="@layout/response"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_marginStart="@dimen/four_dp"
+                        android:visibility="gone" />
+
+                    <LinearLayout
+                        android:id="@+id/ll_confirm_email"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="@dimen/ten_dp"
+                        android:orientation="horizontal">
+
+                        <include
+                            android:id="@+id/confirm_email"
+                            layout="@layout/title_name_layout"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content" />
+
+                        <include layout="@layout/astrick_layout" />
+
+                    </LinearLayout>
+
+                    <!--this is the actual edit text which takes the input-->
+                    <include
+                        android:id="@+id/tv_confirm_email"
+                        layout="@layout/title_description_layout" />
+
+                    <include
+                        android:id="@+id/response_cemail"
+                        layout="@layout/response"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_marginStart="@dimen/four_dp"
+                        android:visibility="gone" />
+
+                    <TextView
+                        android:id="@+id/tv_assign_group"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_marginStart="@dimen/four_dp"
+                        android:layout_marginTop="@dimen/Fifteen_dp"
+                        android:layout_marginEnd="@dimen/four_dp"
+                        android:layout_marginBottom="@dimen/ten_dp"
+                        android:background="@drawable/rectangle_light_grey"
+                        android:fontFamily="@font/gill_sans"
+                        android:padding="@dimen/ten_dp"
+                        android:text="@string/assign_group"
+                        android:textColor="@color/black"
+                        android:textSize="@dimen/Fifteen_dp" />
+
+                    <androidx.appcompat.widget.LinearLayoutCompat
+                        android:id="@+id/ll_save_buttons"
+                        android:layout_width="match_parent"
+                        android:layout_height="match_parent"
+                        android:layout_margin="@dimen/ten_dp"
+                        android:orientation="horizontal"
+                        android:visibility="visible">
+
+                        <include
+                            android:id="@+id/btn_cancel_save"
+                            layout="@layout/cancel_button" />
+
+                        <include
+                            android:id="@+id/btn_create"
+                            layout="@layout/submit_button" />
+                    </androidx.appcompat.widget.LinearLayoutCompat>
+
+                    <androidx.appcompat.widget.LinearLayoutCompat
+                        android:id="@+id/ll_edit_buttons"
+                        android:layout_width="match_parent"
+                        android:layout_height="match_parent"
+                        android:layout_margin="@dimen/ten_dp"
+                        android:orientation="horizontal"
+                        android:visibility="gone">
+
+                        <include
+                            android:id="@+id/btn_cancel_edit"
+                            layout="@layout/cancel_button" />
+
+                        <include layout="@layout/cancel_update" />
+                    </androidx.appcompat.widget.LinearLayoutCompat>
+                </androidx.appcompat.widget.LinearLayoutCompat>
+            </FrameLayout>
+        </androidx.cardview.widget.CardView>
+
+        <androidx.cardview.widget.CardView
+            android:id="@+id/cv_details_2"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_margin="@dimen/ten_dp"
+            android:elevation="@dimen/four_dp"
+            android:padding="@dimen/ten_dp"
+            android:visibility="gone"
+            app:cardBackgroundColor="@color/white"
+            app:cardCornerRadius="@dimen/eight_dp"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintHorizontal_bias="0.0"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@+id/cv_details"
+            app:layout_constraintVertical_bias="0.0">
+
+            <androidx.appcompat.widget.LinearLayoutCompat
+                android:id="@+id/linearLayoutCompat2"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="vertical"
+                android:padding="@dimen/four_dp"
+                android:paddingBottom="@dimen/thirty_dp">
+                <!--include the search box -->
+                <include
+                    android:id="@+id/assign_group"
+                    layout="@layout/blue_bold_txt"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_margin="@dimen/ten_dp" />
+
+                <include
+                    android:id="@+id/tl_search_members"
+                    layout="@layout/search_layout_new"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginStart="@dimen/ten_dp"
+                    android:layout_marginEnd="@dimen/ten_dp" />
+                <!--et_search_members-->
+                <androidx.recyclerview.widget.RecyclerView
+                    android:id="@+id/rv_selected_member"
+                    android:layout_width="match_parent"
+                    android:layout_height="@dimen/ThreeHundred_dp"
+                    android:layout_margin="@dimen/ten_dp"
+                    android:orientation="vertical" />
+
+                <androidx.appcompat.widget.LinearLayoutCompat
+                    android:id="@+id/ll_buttons_1"
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent"
+                    android:layout_margin="@dimen/ten_dp"
+                    android:orientation="horizontal">
+
+                    <include
+                        android:id="@+id/btn_cancel_members"
+                        layout="@layout/cancel_button" />
+
+                    <include
+                        android:id="@+id/btn_save_members"
+                        layout="@layout/submit_button" />
+                </androidx.appcompat.widget.LinearLayoutCompat>
+            </androidx.appcompat.widget.LinearLayoutCompat>
+        </androidx.cardview.widget.CardView>
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@+id/cv_details">
+
+            <!--include the search box -->
+            <include
+                android:id="@+id/tl_search_teammember"
+                layout="@layout/search_layout_new"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginStart="@dimen/twenty_dp"
+                android:layout_marginTop="@dimen/ten_dp"
+                android:layout_marginEnd="@dimen/twenty_dp" />
+
+            <include
+                android:id="@+id/tv_tot_license"
+                layout="@layout/title_name_layout"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginStart="@dimen/twenty_dp"
+                android:layout_marginTop="@dimen/Fifteen_dp"
+                android:visibility="gone" />
+
+            <include
+                android:id="@+id/rv_view_members"
+                layout="@layout/recyclerview"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginStart="@dimen/ten_dp"
+                android:layout_marginTop="@dimen/ten_dp"
+                android:layout_marginEnd="@dimen/twenty_dp"
+                android:layout_marginBottom="@dimen/ten_dp" />
+        </LinearLayout>
+    </LinearLayout>
+</ScrollView>

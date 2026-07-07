@@ -1,0 +1,12 @@
+<TextView xmlns:android="http://schemas.android.com/apk/res/android"
+    android:id="@+id/black_normal_txt"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:layout_gravity="center_vertical"
+    android:breakStrategy="simple"
+    android:fontFamily="@font/gill_sans"
+    android:gravity="center_vertical"
+    android:hyphenationFrequency="none"
+    android:text="@string/matters"
+    android:textColor="@color/blue"
+    android:textSize="@dimen/Fifteen_dp" />

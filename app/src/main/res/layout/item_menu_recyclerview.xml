@@ -1,0 +1,39 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.appcompat.widget.LinearLayoutCompat xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="wrap_content"
+    android:layout_height="wrap_content"
+    android:layout_gravity="center"
+    android:orientation="vertical">
+
+    <com.google.android.material.floatingactionbutton.FloatingActionButton
+        android:id="@+id/fb_items"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignParentRight="true"
+        android:layout_alignParentBottom="true"
+        android:layout_gravity="center"
+        android:background="@color/white"
+        android:backgroundTint="@color/grey_text_color"
+        android:clickable="true"
+        android:elevation="@dimen/zero_dp"
+        android:src="@drawable/timesheet"
+        android:visibility="visible"
+        app:backgroundTint="@color/grey_text_color"
+        app:elevation="@dimen/zero_dp"
+        app:fabCustomSize="@dimen/sixty_dp"
+        app:fabSize="auto"
+        tools:layout_editor_absoluteX="175dp"
+        tools:layout_editor_absoluteY="592dp" />
+
+    <TextView
+        android:id="@+id/tv_item"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_gravity="bottom|center"
+        android:fontFamily="@font/gill_sans"
+        android:gravity="center"
+        android:text="Timesheet"
+        android:textColor="@color/grey_text_color" />
+</androidx.appcompat.widget.LinearLayoutCompat>

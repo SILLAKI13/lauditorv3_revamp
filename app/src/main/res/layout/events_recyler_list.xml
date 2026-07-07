@@ -1,0 +1,707 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:layout_margin="@dimen/four_dp"
+    android:background="@drawable/rectangular_white_background"
+    android:clipChildren="false"
+    android:clipToPadding="false"
+    android:elevation="@dimen/four_dp"
+    tools:context=".MainActivity">
+
+    <androidx.cardview.widget.CardView
+        android:id="@+id/cv_client_details"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:elevation="@dimen/forty_dp"
+        android:padding="@dimen/four_dp"
+        android:visibility="visible"
+        app:cardBackgroundColor="@color/white"
+        app:cardCornerRadius="@dimen/eight_dp"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintHorizontal_bias="0.0"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent">
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal">
+
+            <!-- Left colour strip -->
+            <View
+                android:id="@+id/statusView"
+                android:layout_width="@dimen/six_dp"
+                android:layout_height="match_parent"
+                android:background="@color/blue" />
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_margin="@dimen/four_dp"
+                android:orientation="vertical">
+
+                <!-- Close button (dialog mode) -->
+                <include
+                    android:id="@+id/ib_close_events"
+                    layout="@layout/simple_cancel_icon"
+                    android:layout_width="@dimen/thirty_dp"
+                    android:layout_height="@dimen/thirty_dp"
+                    android:layout_gravity="end"
+                    android:layout_marginEnd="@dimen/four_dp"
+                    android:visibility="gone" />
+
+                <!-- ── Header: date + 3-dot menu ── -->
+                <LinearLayout
+                    android:id="@+id/ll_event_function"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginStart="@dimen/six_dp"
+                    android:layout_marginTop="@dimen/six_dp"
+                    android:layout_marginEnd="@dimen/six_dp"
+                    android:baselineAligned="false"
+                    android:orientation="horizontal">
+
+                    <LinearLayout
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:layout_gravity="center_vertical"
+                        android:layout_weight="1"
+                        android:orientation="vertical">
+                        <include
+                            android:id="@+id/events_names"
+                            layout="@layout/blue_normal_txt" />
+                    </LinearLayout>
+
+                    <LinearLayout
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_gravity="end"
+                        android:layout_marginStart="@dimen/ten_dp"
+                        android:gravity="end"
+                        android:orientation="horizontal">
+
+                        <ImageView
+                            android:id="@+id/custom_spinner_cardview"
+                            android:layout_width="@dimen/thirty_dp"
+                            android:layout_height="@dimen/thirty_dp"
+                            android:layout_gravity="center_vertical"
+                            android:padding="@dimen/four_dp"
+                            android:scaleType="fitCenter"
+                            android:src="@drawable/img_17"
+                            android:visibility="gone" />
+
+                        <include
+                            android:id="@+id/ib_view_events"
+                            layout="@layout/edit_icon"
+                            android:layout_width="@dimen/thirty_dp"
+                            android:layout_height="@dimen/thirty_dp"
+                            android:layout_gravity="center_vertical"
+                            android:layout_marginEnd="@dimen/ten_dp"
+                            android:visibility="gone" />
+
+                        <include
+                            android:id="@+id/ib_delete_events"
+                            layout="@layout/delete_icon"
+                            android:visibility="gone" />
+
+                    </LinearLayout>
+                </LinearLayout>
+
+                <!-- ── RSVP buttons ── -->
+                <LinearLayout
+                    android:id="@+id/ll_rsvp"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_gravity="start"
+                    android:gravity="start"
+                    android:orientation="horizontal"
+                    android:padding="@dimen/four_dp"
+                    android:paddingTop="@dimen/twenty_dp"
+                    android:visibility="gone">
+
+                    <TextView
+                        android:id="@+id/tv_yes"
+                        android:layout_width="wrap_content"
+                        android:layout_height="match_parent"
+                        android:layout_weight="1"
+                        android:background="@drawable/button_left_green_round_background"
+                        android:fontFamily="@font/gill_sans"
+                        android:padding="@dimen/ten_dp"
+                        android:text="Yes"
+                        android:textColor="@color/black"
+                        android:textSize="@dimen/Fifteen_dp" />
+
+                    <TextView
+                        android:id="@+id/tv_no"
+                        android:layout_width="wrap_content"
+                        android:layout_height="match_parent"
+                        android:layout_weight="1"
+                        android:background="@drawable/radiobutton_centre_background"
+                        android:fontFamily="@font/gill_sans"
+                        android:padding="@dimen/ten_dp"
+                        android:text="No"
+                        android:textColor="@color/black"
+                        android:textSize="@dimen/Fifteen_dp" />
+
+                    <TextView
+                        android:id="@+id/tv_maybe"
+                        android:layout_width="wrap_content"
+                        android:layout_height="match_parent"
+                        android:layout_weight="1"
+                        android:background="@drawable/button_right_round_background"
+                        android:fontFamily="@font/gill_sans"
+                        android:padding="@dimen/ten_dp"
+                        android:text="Maybe"
+                        android:textColor="@color/black"
+                        android:textSize="@dimen/Fifteen_dp" />
+                </LinearLayout>
+
+                <!-- ── Event body ── -->
+                <LinearLayout
+                    android:id="@+id/ll_events"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_margin="@dimen/four_dp"
+                    android:orientation="vertical">
+
+                    <!-- Title -->
+                    <include
+                        android:id="@+id/event_title"
+                        layout="@layout/black_bold_large_txt"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_marginStart="@dimen/eight_dp"
+                        android:layout_marginBottom="@dimen/four_dp" />
+
+                    <!-- Time + repeat -->
+                    <LinearLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_gravity="center_vertical"
+                        android:layout_marginStart="@dimen/four_dp"
+                        android:layout_marginBottom="@dimen/four_dp"
+                        android:gravity="center_vertical"
+                        android:orientation="horizontal">
+
+                        <include
+                            android:id="@+id/event_time"
+                            layout="@layout/black_normal_txt"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:layout_marginStart="@dimen/four_dp"
+                            android:layout_marginEnd="@dimen/two_dp" />
+
+                        <LinearLayout
+                            android:id="@+id/ll_repetation"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:gravity="center_vertical">
+                            <include layout="@layout/divide_line" />
+                            <include
+                                android:id="@+id/event_repetation"
+                                layout="@layout/black_normal_txt"
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:layout_marginStart="@dimen/four_dp" />
+                        </LinearLayout>
+                    </LinearLayout>
+
+                    <!-- Timezone -->
+                    <include
+                        android:id="@+id/event_timezone"
+                        layout="@layout/black_normal_txt"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_marginStart="@dimen/eight_dp" />
+
+                    <!-- Matter title (reminders) -->
+                    <include
+                        android:id="@+id/tv_matter_title"
+                        layout="@layout/black_bold_large_txt"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_margin="@dimen/eight_dp"
+                        android:visibility="gone" />
+
+                    <!-- ════ EXPANDED SECTION ════ -->
+                    <LinearLayout
+                        android:id="@+id/ll_view_more"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:orientation="vertical"
+                        android:visibility="gone">
+
+                        <!-- Description label -->
+                        <include
+                            android:id="@+id/tv_event_description"
+                            layout="@layout/black_bold_txt"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:layout_marginStart="@dimen/eight_dp"
+                            android:layout_marginTop="@dimen/six_dp" />
+
+                        <!-- Description value -->
+                        <include
+                            android:id="@+id/event_description"
+                            layout="@layout/black_normal_txt"
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:layout_marginStart="@dimen/eight_dp"
+                            android:layout_marginBottom="@dimen/six_dp" />
+
+                        <!-- ── Event detail fields (hidden for appointments / reminders) ── -->
+                        <LinearLayout
+                            android:id="@+id/ll_event_details"
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:orientation="vertical"
+                            android:visibility="visible">
+
+                            <!--
+                                Join Meeting row.
+                                v_btn (video icon) + tv_meeting_link are siblings inside this
+                                LinearLayout. Both are hidden by Java when meeting_link is empty.
+                                The parent LinearLayout itself stays visible so that dialin /
+                                location rows below it are unaffected.
+                            -->
+                            <LinearLayout
+                                android:id="@+id/ll_meeting_link_row"
+                                android:layout_width="match_parent"
+                                android:layout_height="wrap_content"
+                                android:layout_marginStart="@dimen/eight_dp"
+                                android:layout_marginEnd="@dimen/eight_dp"
+                                android:layout_marginBottom="@dimen/eight_dp"
+                                android:gravity="center_vertical"
+                                android:orientation="horizontal">
+
+                                <!--
+                                    Video icon — id=v_btn.
+                                    Java sets VISIBLE / GONE together with tv_meeting_link.
+                                -->
+                                <ImageView
+                                    android:id="@+id/v_btn"
+                                    android:layout_width="20dp"
+                                    android:layout_height="20dp"
+                                    android:layout_marginEnd="6dp"
+                                    android:contentDescription="Meeting"
+                                    android:src="@drawable/videocall_icon"
+                                    android:visibility="gone"
+                                    app:tint="@color/blue" />
+
+                                <!-- "Join Meeting" — clickable blue text -->
+                                <TextView
+                                    android:id="@+id/tv_meeting_link"
+                                    android:layout_width="wrap_content"
+                                    android:layout_height="wrap_content"
+                                    android:fontFamily="@font/gill_sans"
+                                    android:text="Join Meeting"
+                                    android:textColor="@color/blue"
+                                    android:textSize="14sp"
+                                    android:visibility="gone" />
+
+                            </LinearLayout>
+
+                            <!-- Join by phone row -->
+                            <LinearLayout
+                                android:layout_width="match_parent"
+                                android:layout_height="wrap_content"
+                                android:layout_marginStart="@dimen/eight_dp"
+                                android:layout_marginEnd="@dimen/eight_dp"
+                                android:layout_marginBottom="@dimen/four_dp"
+                                android:gravity="center_vertical"
+                                android:orientation="horizontal">
+
+                                <ImageView
+                                    android:layout_width="20dp"
+                                    android:layout_height="20dp"
+                                    android:layout_marginEnd="6dp"
+                                    android:contentDescription="Dial-in"
+                                    android:src="@drawable/notify_bell_1"
+                                    android:visibility="gone"
+                                    app:tint="@color/blue" />
+
+                                <include
+                                    android:id="@+id/dialin"
+                                    layout="@layout/title_name_layout"
+                                    android:layout_width="wrap_content"
+                                    android:layout_height="wrap_content" />
+
+                            </LinearLayout>
+
+                            <include
+                                android:id="@+id/tv_phone_dialin"
+                                layout="@layout/black_normal_txt"
+                                android:layout_width="match_parent"
+                                android:layout_height="wrap_content"
+                                android:layout_marginStart="@dimen/thirty_dp"
+                                android:layout_marginBottom="@dimen/eight_dp" />
+
+                            <!-- Location row -->
+                            <LinearLayout
+                                android:layout_width="match_parent"
+                                android:layout_height="wrap_content"
+                                android:layout_marginStart="@dimen/eight_dp"
+                                android:layout_marginEnd="@dimen/eight_dp"
+                                android:layout_marginBottom="@dimen/two_dp"
+                                android:gravity="center_vertical"
+                                android:orientation="horizontal">
+
+                                <ImageView
+                                    android:layout_width="20dp"
+                                    android:layout_height="20dp"
+                                    android:layout_marginEnd="6dp"
+                                    android:contentDescription="Location"
+                                    android:src="@drawable/notify_bell_1"
+                                    android:visibility="gone"
+                                    app:tint="@color/blue" />
+
+                                <include
+                                    android:id="@+id/location"
+                                    layout="@layout/title_name_layout"
+                                    android:layout_width="match_parent"
+                                    android:layout_height="wrap_content" />
+
+                            </LinearLayout>
+
+                            <include
+                                android:id="@+id/tv_location"
+                                layout="@layout/black_normal_txt"
+                                android:layout_width="match_parent"
+                                android:layout_height="wrap_content"
+                                android:layout_marginStart="@dimen/thirty_dp"
+                                android:layout_marginBottom="@dimen/eight_dp" />
+
+                        </LinearLayout>
+
+                        <!-- ── Reminder row (bell icon + "X min Before" + "Email Notification") ── -->
+                        <LinearLayout
+                            android:id="@+id/ll_notifications_view"
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:layout_marginStart="@dimen/four_dp"
+                            android:layout_marginEnd="@dimen/four_dp"
+                            android:layout_marginBottom="@dimen/eight_dp"
+                            android:gravity="center_vertical"
+                            android:orientation="horizontal"
+                            android:visibility="gone">
+
+                            <ImageView
+                                android:id="@+id/img_notify"
+                                android:layout_width="20dp"
+                                android:layout_height="20dp"
+                                android:layout_marginEnd="8dp"
+                                android:contentDescription="@string/notifications"
+                                android:src="@drawable/notify_bell_1"
+                                app:tint="@color/blue" />
+
+                            <LinearLayout
+                                android:layout_width="0dp"
+                                android:layout_height="wrap_content"
+                                android:layout_weight="1"
+                                android:orientation="vertical">
+
+                                <include
+                                    android:id="@+id/event_notification"
+                                    layout="@layout/black_normal_txt"
+                                    android:layout_width="match_parent"
+                                    android:layout_height="wrap_content" />
+
+                                <TextView
+                                    android:id="@+id/tv_notification_type"
+                                    android:layout_width="wrap_content"
+                                    android:layout_height="wrap_content"
+                                    android:fontFamily="@font/gill_sans"
+                                    android:text="Email Notification"
+                                    android:textColor="@color/grey"
+                                    android:textSize="12sp"
+                                    android:visibility="gone" />
+
+                            </LinearLayout>
+                        </LinearLayout>
+
+                        <!-- ── Documents section ── -->
+                        <LinearLayout
+                            android:id="@+id/ll_documents_view"
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:orientation="vertical"
+                            android:visibility="gone">
+
+                            <include
+                                android:id="@+id/documents"
+                                layout="@layout/title_name_layout"
+                                android:layout_width="match_parent"
+                                android:layout_height="wrap_content"
+                                android:layout_marginStart="@dimen/four_dp"
+                                android:layout_marginTop="@dimen/four_dp"
+                                android:layout_marginBottom="@dimen/four_dp" />
+
+                            <!-- Document item rows injected here (each has rounded background) -->
+                            <LinearLayout
+                                android:id="@+id/ll_documents"
+                                android:layout_width="match_parent"
+                                android:layout_height="wrap_content"
+                                android:layout_marginStart="@dimen/four_dp"
+                                android:layout_marginEnd="@dimen/four_dp"
+                                android:layout_marginBottom="@dimen/four_dp"
+                                android:orientation="vertical" />
+
+                        </LinearLayout>
+
+                        <!-- ── Attendees section ── -->
+                        <LinearLayout
+                            android:id="@+id/ll_team_members_view"
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:orientation="vertical"
+                            android:visibility="gone">
+
+                            <!-- "N Attendees" header — count is total of ALL invitee groups -->
+                            <LinearLayout
+                                android:layout_width="match_parent"
+                                android:layout_height="wrap_content"
+                                android:layout_marginStart="@dimen/four_dp"
+                                android:layout_marginTop="@dimen/four_dp"
+                                android:layout_marginBottom="@dimen/two_dp"
+                                android:gravity="center_vertical"
+                                android:orientation="horizontal">
+
+                                <ImageView
+                                    android:layout_width="20dp"
+                                    android:layout_height="20dp"
+                                    android:layout_marginEnd="6dp"
+                                    android:contentDescription="Attendees"
+                                    android:src="@drawable/team_member_group"
+                                    app:tint="@color/blue" />
+
+                                <include
+                                    android:id="@+id/team_members"
+                                    layout="@layout/title_name_layout"
+                                    android:layout_width="0dp"
+                                    android:layout_height="wrap_content"
+                                    android:layout_weight="1" />
+
+                            </LinearLayout>
+
+                            <!--
+                                RSVP summary row.
+                                Shows "X Yes", "X No", "X Waiting" counts.
+                                All three counters come from ALL invitee groups combined
+                                (team members + consumer-external + external + corporate).
+                                Yes and Waiting are always shown when > 0; No is also shown when > 0.
+                                The entire row is hidden when all counts are zero.
+                            -->
+                            <LinearLayout
+                                android:id="@+id/ll_rsvp_summary"
+                                android:layout_width="match_parent"
+                                android:layout_height="wrap_content"
+                                android:layout_marginStart="@dimen/thirty_dp"
+                                android:layout_marginEnd="@dimen/eight_dp"
+                                android:layout_marginBottom="@dimen/eight_dp"
+                                android:gravity="start"
+                                android:orientation="horizontal"
+                                android:visibility="gone">
+
+                                <TextView
+                                    android:id="@+id/tv_rsvp_yes_count"
+                                    android:layout_width="wrap_content"
+                                    android:layout_height="wrap_content"
+                                    android:layout_marginEnd="12dp"
+                                    android:fontFamily="@font/gill_sans"
+                                    android:textColor="#27AE60"
+                                    android:textSize="12sp"
+                                    android:visibility="gone" />
+
+                                <TextView
+                                    android:id="@+id/tv_rsvp_no_count"
+                                    android:layout_width="wrap_content"
+                                    android:layout_height="wrap_content"
+                                    android:layout_marginEnd="12dp"
+                                    android:fontFamily="@font/gill_sans"
+                                    android:textColor="#E74C3C"
+                                    android:textSize="12sp"
+                                    android:visibility="gone" />
+
+                                <TextView
+                                    android:id="@+id/tv_rsvp_waiting_count"
+                                    android:layout_width="wrap_content"
+                                    android:layout_height="wrap_content"
+                                    android:fontFamily="@font/gill_sans"
+                                    android:textColor="@color/grey"
+                                    android:textSize="12sp"
+                                    android:visibility="gone" />
+
+                            </LinearLayout>
+
+                            <!-- Attendee rows injected here (NO background — plain rows) -->
+                            <LinearLayout
+                                android:id="@+id/ll_team_members"
+                                android:layout_width="match_parent"
+                                android:layout_height="wrap_content"
+                                android:layout_marginStart="@dimen/four_dp"
+                                android:layout_marginEnd="@dimen/four_dp"
+                                android:orientation="vertical" />
+
+                        </LinearLayout>
+
+                        <!-- ── Clients section ── -->
+                        <LinearLayout
+                            android:id="@+id/ll_clients_view"
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:orientation="vertical"
+                            android:visibility="gone">
+
+                            <include
+                                android:id="@+id/clients"
+                                layout="@layout/title_name_layout"
+                                android:layout_width="match_parent"
+                                android:layout_height="wrap_content"
+                                android:layout_marginStart="@dimen/four_dp"
+                                android:layout_marginTop="@dimen/four_dp"
+                                android:layout_marginBottom="@dimen/four_dp" />
+
+                            <LinearLayout
+                                android:id="@+id/ll_clients"
+                                android:layout_width="match_parent"
+                                android:layout_height="wrap_content"
+                                android:layout_marginStart="@dimen/four_dp"
+                                android:layout_marginEnd="@dimen/four_dp"
+                                android:orientation="vertical" />
+
+                        </LinearLayout>
+
+                        <!-- ── Corporate clients section ── -->
+                        <LinearLayout
+                            android:id="@+id/ll_corp_clients_view"
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:orientation="vertical"
+                            android:visibility="gone">
+
+                            <include
+                                android:id="@+id/corp_clients"
+                                layout="@layout/title_name_layout"
+                                android:layout_width="match_parent"
+                                android:layout_height="wrap_content"
+                                android:layout_marginStart="@dimen/four_dp"
+                                android:layout_marginTop="@dimen/four_dp"
+                                android:layout_marginBottom="@dimen/four_dp" />
+
+                            <LinearLayout
+                                android:id="@+id/ll_corp_clients"
+                                android:layout_width="match_parent"
+                                android:layout_height="wrap_content"
+                                android:layout_marginStart="@dimen/four_dp"
+                                android:layout_marginEnd="@dimen/four_dp"
+                                android:orientation="vertical" />
+
+                        </LinearLayout>
+
+                    </LinearLayout>
+
+                    <!-- View More / View Less -->
+                    <include
+                        android:id="@+id/bt_hide_details"
+                        layout="@layout/title_name_layout"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_marginStart="@dimen/six_dp"
+                        android:layout_marginTop="@dimen/four_dp"
+                        android:layout_marginBottom="@dimen/four_dp" />
+
+                </LinearLayout>
+
+                <!-- ── Appointment action bar ── -->
+                <RelativeLayout
+                    android:id="@+id/rl_actions"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginStart="@dimen/eight_dp"
+                    android:layout_marginTop="@dimen/ten_dp"
+                    android:layout_marginEnd="@dimen/ten_dp"
+                    android:layout_marginBottom="@dimen/ten_dp"
+                    android:visibility="gone">
+
+                    <TextView
+                        android:id="@+id/tv_appointment_status"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_centerVertical="true"
+                        android:background="@drawable/pending_badge"
+                        android:fontFamily="@font/gill_sans"
+                        android:paddingStart="@dimen/ten_dp"
+                        android:paddingTop="@dimen/five_dp"
+                        android:paddingEnd="@dimen/ten_dp"
+                        android:paddingBottom="@dimen/five_dp"
+                        android:text="Payment Pending"
+                        android:textColor="@color/pending_text"
+                        android:textSize="@dimen/Twelve_dp" />
+
+                    <LinearLayout
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_alignParentEnd="true"
+                        android:layout_centerVertical="true"
+                        android:orientation="horizontal">
+
+                        <ImageView
+                            android:id="@+id/iv_chat"
+                            android:layout_width="@dimen/thirty_dp"
+                            android:layout_height="@dimen/thirty_dp"
+                            android:layout_gravity="center_vertical"
+                            android:layout_marginEnd="@dimen/four_dp"
+                            android:background="@drawable/scheduled_badge"
+                            android:padding="@dimen/eight_dp"
+                            android:src="@drawable/message_icon"
+                            app:tint="@color/scheduled_text" />
+
+                        <ImageView
+                            android:id="@+id/iv_video_call"
+                            android:layout_width="@dimen/thirty_dp"
+                            android:layout_height="@dimen/thirty_dp"
+                            android:layout_gravity="center_vertical"
+                            android:background="@drawable/completed_badge"
+                            android:padding="@dimen/eight_dp"
+                            android:src="@drawable/videocall_icon"
+                            app:tint="@color/completed_text" />
+
+                    </LinearLayout>
+                </RelativeLayout>
+
+            </LinearLayout>
+        </LinearLayout>
+    </androidx.cardview.widget.CardView>
+
+    <!-- Floating 3-dot dropdown -->
+    <androidx.cardview.widget.CardView
+        android:id="@+id/action_list_card"
+        android:layout_width="180dp"
+        android:layout_height="wrap_content"
+        android:layout_marginEnd="16dp"
+        android:layout_marginTop="52dp"
+        android:elevation="50dp"
+        android:translationZ="50dp"
+        android:visibility="gone"
+        app:cardBackgroundColor="@color/white"
+        app:cardCornerRadius="@dimen/ten_dp"
+        app:cardElevation="@dimen/Fifteen_dp"
+        app:cardUseCompatPadding="false"
+        app:layout_constraintEnd_toEndOf="@+id/cv_client_details"
+        app:layout_constraintTop_toTopOf="@+id/cv_client_details">
+
+        <ListView
+            android:id="@+id/action_list"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:divider="@color/light_grey"
+            android:dividerHeight="0.5dp"
+            android:scrollbars="none" />
+
+    </androidx.cardview.widget.CardView>
+
+</androidx.constraintlayout.widget.ConstraintLayout>

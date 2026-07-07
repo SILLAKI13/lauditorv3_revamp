@@ -1,0 +1,53 @@
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:id="@+id/ll_page_navigaiton"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:orientation="horizontal"
+    android:padding="@dimen/four_dp"
+    app:layout_constraintBottom_toBottomOf="parent"
+    app:layout_constraintEnd_toEndOf="parent"
+    app:layout_constraintStart_toStartOf="parent"
+    app:layout_constraintTop_toBottomOf="@id/cv_list"
+    app:layout_constraintVertical_bias="0">
+
+    <ImageView
+        android:id="@+id/iv_backward_button"
+        android:layout_width="@dimen/thirty_five_dp"
+        android:layout_height="@dimen/thirty_five_dp"
+        android:layout_gravity="center"
+        android:layout_margin="@dimen/four_dp"
+        android:layout_weight="0"
+        android:src="@drawable/ic_arrow_left"
+        app:tint="@color/grey_light">
+
+    </ImageView>
+
+    <HorizontalScrollView
+        android:id="@id/scrollView"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_gravity="center_vertical"
+        android:layout_weight="1">
+
+        <LinearLayout
+            android:id="@+id/pageNumberLayout"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="start"
+            android:layout_marginStart="@dimen/ten_dp"
+            android:gravity="start"
+            android:orientation="horizontal" />
+    </HorizontalScrollView>
+
+    <ImageView
+        android:id="@+id/iv_forward_button"
+        android:layout_width="@dimen/thirty_five_dp"
+        android:layout_height="@dimen/thirty_five_dp"
+        android:layout_gravity="center"
+        android:layout_margin="@dimen/four_dp"
+        android:layout_weight="0"
+        android:contentDescription="TODO"
+        android:src="@drawable/ic_arrow_right"
+        app:tint="@color/grey_light"></ImageView>
+</LinearLayout>

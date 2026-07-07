@@ -1,0 +1,84 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:id="@+id/Card_Layout"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:layout_margin="@dimen/ten_dp"
+    android:background="@drawable/rectangular_white_background"
+    android:elevation="4dp"
+    android:gravity="center_vertical"
+    android:orientation="horizontal"
+    android:padding="@dimen/ten_dp">
+
+    <!-- LEFT ICON -->
+    <ImageView
+        android:id="@+id/imageView5"
+        android:layout_width="@dimen/forty_dp"
+        android:layout_height="@dimen/forty_dp"
+        android:layout_marginEnd="12dp"
+        android:contentDescription="@string/todo"
+        android:src="@drawable/notification_icon" />
+
+    <!-- MIDDLE TEXT SECTION -->
+    <LinearLayout
+        android:id="@+id/ll_1"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:layout_weight="1"
+        android:orientation="vertical"
+        android:paddingStart="@dimen/five_dp">
+
+        <!-- BLUE TEXT -->
+        <FrameLayout
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content">
+
+            <include
+                android:id="@+id/tv_notification"
+                layout="@layout/blue_normal_txt" />
+        </FrameLayout>
+
+        <!-- DATE -->
+        <FrameLayout
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="@dimen/five_dp"
+            android:layout_marginTop="2dp">
+
+            <include
+                android:id="@+id/tv_notif_date"
+                layout="@layout/black_normal_txt" />
+        </FrameLayout>
+
+        <!-- MESSAGE -->
+        <FrameLayout
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="@dimen/six_dp">
+
+            <include
+                android:id="@+id/tv_dash_notification"
+                layout="@layout/count_green_normal_txt"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginStart="@dimen/five_dp" />
+        </FrameLayout>
+
+    </LinearLayout>
+
+    <!-- SIDE LINE -->
+    <include layout="@layout/notifcation_side_line" />
+
+    <!-- COUNT BADGE -->
+    <TextView
+        android:id="@+id/tv_total_notification_count"
+        android:layout_width="@dimen/forty_dp"
+        android:layout_height="@dimen/forty_dp"
+        android:background="@drawable/circular_button_background"
+        android:fontFamily="@font/gill_sans"
+        android:gravity="center"
+        android:text="3784"
+        android:textColor="@color/white"
+        android:textSize="@dimen/Fifteen_dp" />
+
+</LinearLayout>

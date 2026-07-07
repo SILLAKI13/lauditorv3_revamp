@@ -1,0 +1,147 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="vertical"
+    android:background="@android:color/white">
+
+    <!-- Header -->
+    <androidx.appcompat.widget.Toolbar
+        android:id="@+id/toolbar"
+        android:layout_width="match_parent"
+        android:layout_height="?attr/actionBarSize"
+        android:background="@color/blue"
+        android:elevation="@dimen/four_dp">
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="center"
+            android:text="@string/terms_and_conditions"
+            android:textColor="@android:color/white"
+            android:textSize="@dimen/eighteen_sp"
+            android:fontFamily="@font/gill_sans"
+            android:textStyle="bold" />
+
+        <ImageView
+            android:id="@+id/iv_close"
+            android:layout_width="@dimen/thirty_dp"
+            android:layout_height="@dimen/thirty_dp"
+            android:layout_gravity="end"
+            android:visibility="gone"
+            android:layout_marginEnd="@dimen/ten_dp"
+            android:src="@drawable/close_circle" />
+
+    </androidx.appcompat.widget.Toolbar>
+
+    <!-- PDF View Container -->
+    <FrameLayout
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        android:layout_weight="1">
+
+        <com.github.barteksc.pdfviewer.PDFView
+            android:id="@+id/pdfView"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:visibility="gone" />
+
+        <ProgressBar
+            android:id="@+id/progressBar"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="center"
+            android:visibility="visible" />
+
+        <TextView
+            android:id="@+id/tv_error"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:gravity="center"
+            android:fontFamily="@font/gill_sans"
+            android:text="Failed to load PDF"
+            android:textSize="@dimen/Fifteen_dp"
+            android:visibility="gone" />
+
+    </FrameLayout>
+
+    <!-- Terms Agreement Section -->
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        android:paddingStart="@dimen/Fifteen_dp"
+        android:paddingEnd="@dimen/Fifteen_dp"
+        android:paddingTop="@dimen/Twelve_dp"
+        android:paddingBottom="@dimen/Twelve_dp"
+        android:gravity="center_vertical">
+        <androidx.appcompat.widget.LinearLayoutCompat
+            android:layout_width="@dimen/twenty_five"
+            android:layout_height="@dimen/twenty_five"
+            android:layout_gravity="center"
+            android:layout_marginEnd="@dimen/ten_dp"
+            android:layout_marginStart="@dimen/ten_dp"
+            android:elevation="@dimen/four_dp"
+            android:gravity="center_vertical">
+
+            <include
+                android:id="@+id/cb_agree"
+                layout="@layout/chk_box_layout" />
+        </androidx.appcompat.widget.LinearLayoutCompat>
+
+
+        <TextView
+            android:id="@+id/tv_terms"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="By clicking this, you agree to the Privacy Policy and Cookies Policy, along with the Terms &amp; Conditions."
+            android:textSize="@dimen/Fifteen_dp"
+            android:fontFamily="@font/gill_sans"
+            android:textColor="@color/black"
+            android:lineSpacingExtra="@dimen/two_dp" />
+
+    </LinearLayout>
+
+    <!-- Button Container -->
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        android:layout_gravity="end"
+        android:padding="@dimen/ten_dp"
+        android:background="@android:color/white"
+        android:elevation="8dp">
+
+        <com.google.android.material.button.MaterialButton
+            android:id="@+id/btn_decline"
+            style="@style/Widget.Material3.Button"
+            android:layout_width="0dp"
+            android:layout_height="@dimen/Fifty_dp"
+            android:layout_marginStart="8dp"
+            android:layout_weight="1"
+            android:text="@string/cancel"
+            android:fontFamily="@font/gill_sans"
+            android:textSize="@dimen/twenty_dp"
+            android:maxLines="1"
+            android:autoSizeMaxTextSize="@dimen/twenty_dp"
+            android:textColor="@color/white"
+            app:backgroundTint="@color/grey" />
+
+        <com.google.android.material.button.MaterialButton
+            android:id="@+id/btn_accept"
+            style="@style/Widget.Material3.Button"
+            android:layout_width="0dp"
+            android:layout_height="@dimen/Fifty_dp"
+            android:layout_marginStart="8dp"
+            android:layout_weight="1"
+            android:maxLines="1"
+            android:text="@string/agree"
+            android:fontFamily="@font/gill_sans"
+            android:textSize="@dimen/twenty_dp"
+            android:textColor="@android:color/white"
+            app:backgroundTint="@color/blue" />
+
+    </LinearLayout>
+
+</LinearLayout>

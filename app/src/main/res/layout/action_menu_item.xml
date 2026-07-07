@@ -1,0 +1,39 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+    action_menu_item.xml
+    Single row inside the floating action dropdown.
+    Layout: [icon]  [label text]
+    "Delete" row is colored red by the adapter at runtime.
+-->
+<LinearLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:gravity="center_vertical"
+    android:orientation="horizontal"
+    android:paddingStart="@dimen/Fifteen_dp"
+    android:paddingEnd="@dimen/Fifteen_dp"
+    android:paddingTop="12dp"
+    android:paddingBottom="12dp">
+
+    <!-- Action icon -->
+    <ImageView
+        android:id="@+id/action_item_icon"
+        android:layout_width="18dp"
+        android:layout_height="18dp"
+        android:layout_marginEnd="12dp"
+        android:scaleType="fitCenter"
+        android:visibility="gone"
+        />
+
+    <!-- Action label -->
+    <TextView
+        android:id="@+id/action_item_label"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:textSize="@dimen/Fifteen_dp"
+        android:textColor="@color/black"
+        android:fontFamily="@font/gill_sans_regular"
+        android:letterSpacing="0.01" />
+
+</LinearLayout>

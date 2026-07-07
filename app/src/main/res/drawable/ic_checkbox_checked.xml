@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="utf-8"?>
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="@dimen/twenty_five"
+    android:height="@dimen/twenty_five"
+    android:viewportWidth="22"
+    android:viewportHeight="22">
+
+    <!-- Blue filled rounded square — larger corner radius (~6dp) -->
+    <path
+        android:fillColor="@color/scheduled_text"
+        android:pathData="M7,1 H15 Q21,1 21,7 V15 Q21,21 15,21 H7 Q1,21 1,15 V7 Q1,1 7,1 Z" />
+
+    <!-- White checkmark -->
+    <path
+        android:pathData="M5,11 L9,15 L17,7"
+        android:strokeColor="#FFFFFF"
+        android:strokeWidth="2"
+        android:strokeLineCap="round"
+        android:strokeLineJoin="round"
+        android:fillColor="@android:color/transparent" />
+
+</vector>

@@ -1,0 +1,157 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:id="@+id/con_id"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="@color/blue_pale"
+    android:orientation="vertical"
+    android:padding="@dimen/ten_dp">
+
+    <!-- Search -->
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal">
+
+        <include
+            android:id="@+id/tl_search_appointments"
+            layout="@layout/search_layout_new"
+            android:layout_width="match_parent"
+            android:layout_height="@dimen/forty_dp"
+            android:layout_marginStart="@dimen/ten_dp"
+            android:layout_marginTop="@dimen/ten_dp"
+            android:layout_marginEnd="@dimen/ten_dp"
+            android:layout_marginBottom="@dimen/ten_dp"
+            android:layout_weight="1" />
+
+        <include
+            android:id="@+id/ll_search_appointments"
+            layout="@layout/searchbar_with_button"
+            android:layout_width="match_parent"
+            android:layout_height="@dimen/forty_dp"
+            android:layout_weight="1"
+            android:visibility="gone" />
+    </LinearLayout>
+
+    <!-- ==================== EMPTY STATE SECTION ==================== -->
+    <LinearLayout
+        android:id="@+id/ll_empty_state"
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        android:layout_weight="1"
+        android:orientation="vertical"
+        android:gravity="center"
+        android:visibility="gone"
+        android:padding="32dp">
+
+        <ImageView
+            android:id="@+id/iv_empty_state"
+            android:layout_width="120dp"
+            android:layout_height="120dp"
+            android:src="@drawable/empty_appointments"
+            android:layout_marginBottom="16dp"
+            android:contentDescription="No appointments" />
+
+        <TextView
+            android:id="@+id/tv_empty_state_title"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="No Appointments Yet!"
+            android:textSize="18sp"
+            android:textColor="@color/blue"
+            android:fontFamily="@font/gill_sans_bold"
+            android:gravity="center"
+            android:layout_marginBottom="8dp" />
+
+        <TextView
+            android:id="@+id/tv_empty_state_subtitle"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="There are no Appointment(s)under here."
+            android:textSize="14sp"
+            android:textColor="@color/grey_medium"
+            android:fontFamily="@font/gill_sans"
+            android:gravity="center" />
+
+    </LinearLayout>
+    <!-- ==================== END EMPTY STATE SECTION ==================== -->
+
+    <!-- Search Empty State (shown when search returns no results) -->
+    <LinearLayout
+        android:id="@+id/ll_search_empty_state"
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        android:layout_weight="1"
+        android:orientation="vertical"
+        android:gravity="center"
+        android:visibility="gone"
+        android:padding="32dp">
+
+        <ImageView
+            android:id="@+id/iv_search_empty_state"
+            android:layout_width="100dp"
+            android:layout_height="100dp"
+            android:src="@drawable/empty_appointments"
+            android:layout_marginBottom="16dp"
+            android:contentDescription="No search results" />
+
+        <TextView
+            android:id="@+id/tv_search_empty_title"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="No matching appointments"
+            android:textSize="18sp"
+            android:textColor="@color/blue"
+            android:fontFamily="@font/gill_sans_bold"
+            android:gravity="center"
+            android:layout_marginBottom="8dp" />
+
+        <TextView
+            android:id="@+id/tv_search_empty_subtitle"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Try adjusting your search terms"
+            android:textSize="14sp"
+            android:textColor="@color/grey_medium"
+            android:fontFamily="@font/gill_sans"
+            android:gravity="center" />
+
+    </LinearLayout>
+
+    <!-- RecyclerView takes remaining space -->
+    <androidx.recyclerview.widget.RecyclerView
+        android:id="@+id/rv_appointments_list"
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        android:layout_weight="1"
+        android:visibility="visible"
+        android:orientation="vertical" />
+
+    <!-- Buttons ALWAYS at bottom -->
+    <LinearLayout
+        android:id="@+id/ll_nav_buttons"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_gravity="end"
+        android:gravity="end"
+        android:orientation="horizontal"
+        android:padding="@dimen/ten_dp"
+        android:visibility="gone">
+
+        <include
+            android:id="@+id/btn_prev"
+            layout="@layout/add_button" />
+
+        <include
+            android:id="@+id/btn_next"
+            layout="@layout/add_button" />
+
+    </LinearLayout>
+
+    <FrameLayout
+        android:id="@+id/fl_appointment_history"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:background="@color/white"
+        android:visibility="gone" />
+</LinearLayout>

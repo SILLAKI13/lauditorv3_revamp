@@ -1,0 +1,82 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:id="@+id/scrollView"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="@color/Blue_text_color"
+    android:backgroundTint="@color/Blue_text_color"
+    tools:context=".MainActivity">
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:layout_margin="@dimen/four_dp"
+        android:orientation="vertical"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent">
+
+        <androidx.cardview.widget.CardView
+            android:id="@+id/card_view3"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_gravity="center_vertical"
+            android:layout_marginStart="@dimen/ten_dp"
+            android:layout_marginTop="@dimen/four_dp"
+            android:layout_marginEnd="@dimen/ten_dp"
+            android:clickable="true"
+            app:cardBackgroundColor="@color/Dark_Blue_text_color"
+            app:cardCornerRadius="@dimen/eight_dp"
+            app:cardElevation="@dimen/ten_dp">
+
+            <RelativeLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:gravity="center"
+                android:orientation="vertical">
+
+                <com.applandeo.materialcalendarview.CalendarView
+                    android:id="@+id/prolificcalendarview"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    app:abbreviationsBarColor="@color/Dark_Blue_text_color"
+                    app:abbreviationsLabelsColor="@color/white"
+                    app:anotherMonthsDaysLabelsColor="@color/disabledDialogButtonColor"
+                    app:daysLabelsColor="@color/black"
+                    app:eventsEnabled="true"
+                    app:firstDayOfWeek="sunday"
+                    app:headerColor="@color/Dark_Blue_text_color"
+                    app:highlightedDaysLabelsColor="@color/Blue_text_color"
+                    app:pagesColor="@color/white"
+                    app:selectionColor="@color/scheduled_text"
+                    app:selectionLabelColor="@color/white"
+                    app:todayLabelColor="@color/Blue_text_color"
+                    app:type="one_day_picker" />
+            </RelativeLayout>
+        </androidx.cardview.widget.CardView>
+
+        <androidx.appcompat.widget.LinearLayoutCompat
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_margin="@dimen/four_dp"
+            android:layout_marginTop="@dimen/four_dp"
+            android:layout_weight="1"
+            android:orientation="vertical">
+
+            <androidx.recyclerview.widget.RecyclerView
+                android:id="@+id/rv_events"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:layout_margin="@dimen/four_dp"
+                android:background="@color/Blue_text_color">
+
+            </androidx.recyclerview.widget.RecyclerView>
+        </androidx.appcompat.widget.LinearLayoutCompat>
+
+
+    </LinearLayout>
+
+</androidx.constraintlayout.widget.ConstraintLayout>

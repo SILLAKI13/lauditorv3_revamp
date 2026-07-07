@@ -1,0 +1,31 @@
+<layer-list xmlns:android="http://schemas.android.com/apk/res/android">
+    <!-- Large red circle -->
+    <item>
+        <shape
+            android:shape="oval">
+            <stroke
+                android:width="@dimen/one_dp"
+                android:color="@color/Blue_text_color" />
+            <solid android:color="@color/Blue_text_color" />
+            <size
+                android:width="@dimen/ten_dp"
+                android:height="@dimen/ten_dp"/>
+        </shape>
+    </item>
+
+    <!-- Small black circle -->
+    <item android:right="@dimen/four_dp"
+        android:left="-3dp"
+        android:top="@dimen/four_dp"
+        android:bottom="-3dp">
+
+        <shape android:shape="oval">
+            <stroke android:color="@android:color/transparent"
+                android:width="@dimen/Fifteen_dp"/>
+            <solid android:color="#000"/>
+            <size
+                android:width="@dimen/four_dp"
+                android:height="@dimen/four_dp"/>
+        </shape>
+    </item>
+</layer-list>

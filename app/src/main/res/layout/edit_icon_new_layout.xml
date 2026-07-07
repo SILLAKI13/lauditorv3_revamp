@@ -1,0 +1,7 @@
+<ImageView xmlns:android="http://schemas.android.com/apk/res/android"
+    android:id="@+id/iv_notes"
+    android:layout_width="@dimen/thirty_dp"
+    android:layout_height="@dimen/thirty_dp"
+    android:padding="@dimen/two_dp"
+    android:layout_gravity="center_vertical"
+    android:src="@drawable/edit_new_icon_" />

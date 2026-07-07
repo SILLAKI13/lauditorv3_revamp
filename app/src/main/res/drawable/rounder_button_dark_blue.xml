@@ -1,0 +1,6 @@
+<!-- rounded_green_button_background.xml -->
+<shape xmlns:android="http://schemas.android.com/apk/res/android"
+    android:shape="rectangle">
+    <solid android:color="@color/scheduled_text" /> <!-- Change color to green -->
+    <corners android:radius="@dimen/eight_dp" /> <!-- Adjust radius as needed -->
+</shape>

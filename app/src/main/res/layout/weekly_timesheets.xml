@@ -1,0 +1,179 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.cardview.widget.CardView xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:id="@+id/cardview_week"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    app:cardBackgroundColor="@color/white"
+    app:cardCornerRadius="@dimen/eight_dp">
+
+    <androidx.appcompat.widget.LinearLayoutCompat xmlns:android="http://schemas.android.com/apk/res/android"
+        android:id="@+id/week_linear"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical">
+
+        <androidx.appcompat.widget.LinearLayoutCompat xmlns:android="http://schemas.android.com/apk/res/android"
+            android:id="@+id/llc_week"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical">
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_gravity="center_vertical"
+                android:layout_marginTop="@dimen/four_dp"
+                android:layout_marginEnd="@dimen/four_dp"
+                android:gravity="center_vertical"
+                android:orientation="horizontal">
+
+                <include
+                    android:id="@+id/tv_tm_label"
+                    layout="@layout/title_name_layout"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:visibility="gone"
+                    android:layout_marginStart="-4dp"/>
+
+                <include
+                    android:id="@+id/tv_matter_name"
+                    layout="@layout/blue_bold_txt"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content" />
+
+            </LinearLayout>
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="horizontal">
+
+                <androidx.appcompat.widget.LinearLayoutCompat
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="@dimen/four_dp"
+                    android:layout_marginBottom="@dimen/four_dp"
+                    android:layout_weight="1"
+                    android:orientation="horizontal">
+
+                    <LinearLayout
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_gravity="center"
+                        android:orientation="vertical">
+
+                        <include
+                            android:id="@+id/tv_matter_hours"
+                            layout="@layout/black_bold_txt"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:layout_gravity="start"
+                            android:layout_marginBottom="@dimen/four_dp" />
+
+                        <include
+                            android:id="@+id/tv_matter_minutes"
+                            layout="@layout/black_bold_txt"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:layout_gravity="start" />
+                    </LinearLayout>
+
+                    <LinearLayout
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:gravity="center"
+                        android:orientation="vertical">
+
+                        <include layout="@layout/side_line" />
+
+                        <include layout="@layout/side_line" />
+
+                        <include layout="@layout/side_line" />
+
+                        <include layout="@layout/side_line" />
+
+                        <include layout="@layout/side_line" />
+                    </LinearLayout>
+
+                    <LinearLayout
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_gravity="center"
+                        android:gravity="start"
+                        android:orientation="vertical">
+
+                        <include
+                            android:id="@+id/tv_matter_billable"
+                            layout="@layout/black_bold_txt" />
+
+                        <include
+                            android:id="@+id/tv_matter_task_name"
+                            layout="@layout/black_bold_txt" />
+                    </LinearLayout>
+
+                </androidx.appcompat.widget.LinearLayoutCompat>
+
+                <LinearLayout
+                    android:id="@+id/edit_del_timesheets"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginStart="@dimen/ten_dp"
+                    android:layout_marginEnd="@dimen/ten_dp"
+                    android:gravity="end"
+                    android:visibility="gone">
+
+                    <include
+                        android:id="@+id/edit_timesheets"
+                        layout="@layout/edit_icon_new_layout" />
+
+                    <include
+                        android:id="@+id/delete_timesheets"
+                        layout="@layout/delete_icon" />
+                </LinearLayout>
+
+            </LinearLayout>
+
+
+            <LinearLayout
+                android:id="@+id/ll_total_hours"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_weight="0"
+                android:orientation="vertical"
+                android:visibility="visible">
+
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="@dimen/four_dp"
+                    android:layout_marginBottom="@dimen/four_dp"
+                    android:layout_weight="1"
+                    android:orientation="horizontal">
+
+                    <include
+                        android:id="@+id/total_hours_id"
+                        layout="@layout/blue_bold_txt"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content" />
+
+                    <include
+                        android:id="@+id/tv_total_hours"
+                        layout="@layout/blue_large_txt"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_marginStart="@dimen/ten_dp" />
+                </LinearLayout>
+            </LinearLayout>
+        </androidx.appcompat.widget.LinearLayoutCompat>
+
+        <View
+            android:id="@+id/week_line"
+            android:layout_width="match_parent"
+            android:layout_height="@dimen/point_five"
+            android:layout_weight="1"
+            android:background="@color/black"
+            android:visibility="gone" />
+    </androidx.appcompat.widget.LinearLayoutCompat>
+</androidx.cardview.widget.CardView>

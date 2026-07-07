@@ -1,0 +1,134 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.cardview.widget.CardView xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:id="@+id/cv_documents"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:layout_margin="@dimen/four_dp"
+    android:visibility="visible"
+    app:cardBackgroundColor="@color/white"
+    app:cardCornerRadius="@dimen/six_dp"
+    app:cardElevation="@dimen/ten_dp"
+    app:layout_constraintBottom_toBottomOf="parent"
+    app:layout_constraintEnd_toEndOf="parent"
+    app:layout_constraintStart_toStartOf="parent"
+    app:layout_constraintTop_toTopOf="parent">
+
+    <ScrollView
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        tools:context=".MainActivity">
+
+        <androidx.appcompat.widget.LinearLayoutCompat
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:gravity="center"
+            android:orientation="vertical"
+            android:padding="@dimen/four_dp">
+
+            <!--            <LinearLayout-->
+            <!--                android:layout_width="match_parent"-->
+            <!--                android:layout_height="wrap_content"-->
+            <!--                android:layout_gravity="end"-->
+            <!--                android:layout_margin="@dimen/four_dp"-->
+            <!--                android:gravity="end"-->
+            <!--                android:orientation="horizontal">-->
+
+            <ImageView
+                android:id="@+id/close_documents"
+                android:layout_width="@dimen/thirty_dp"
+                android:layout_height="@dimen/thirty_dp"
+                android:layout_gravity="end"
+                android:contentDescription="@string/cancel"
+                android:src="@drawable/simple_cancel" />
+
+            <!--            </LinearLayout>-->
+
+            <TextView
+                android:id="@+id/header_name"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:fontFamily="@font/gill_sans_bold"
+                android:text="@string/alert"
+                android:textColor="@color/Red"
+                android:textSize="@dimen/twenty_dp"
+                android:textStyle="bold" />
+
+            <TextView
+                android:id="@+id/tv_confirmation"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_gravity="center"
+                android:layout_marginTop="@dimen/ten_dp"
+                android:layout_marginBottom="@dimen/ten_dp"
+                android:enabled="false"
+                android:fontFamily="@font/gill_sans"
+                android:gravity="center"
+                android:padding="@dimen/ten_dp"
+                android:text="@string/delete"
+                android:textColor="@color/black"
+                android:textSize="@dimen/seventeen_dp" />
+
+            <androidx.appcompat.widget.LinearLayoutCompat
+                android:id="@+id/ll_buttons"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="@dimen/ten_dp"
+                android:layout_marginBottom="@dimen/eight_dp"
+                android:gravity="center"
+                android:orientation="horizontal"
+                android:weightSum="3">
+
+                <androidx.appcompat.widget.AppCompatButton
+                    android:id="@+id/btn_No"
+                    android:layout_width="@dimen/seventy_dp"
+                    android:layout_height="@dimen/forty_dp"
+                    android:layout_alignParentBottom="true"
+                    android:layout_centerInParent="true"
+                    android:layout_weight="1"
+                    android:autoSizeMaxTextSize="@dimen/Fifteen_dp"
+                    android:autoSizeMinTextSize="@dimen/five_dp"
+                    android:autoSizeTextType="uniform"
+                    android:background="@drawable/cancel_button_background"
+                    android:elevation="@dimen/four_dp"
+                    android:fontFamily="@font/gill_sans_bold"
+                    android:gravity="center"
+                    android:maxLines="1"
+                    android:paddingStart="@dimen/ten_dp"
+                    android:paddingEnd="@dimen/ten_dp"
+                    android:text="@string/no"
+                    android:textAllCaps="false"
+                    android:textColor="@color/black"
+                    android:textSize="@dimen/Fifteen_dp" />
+
+                <Space
+                    android:layout_width="@dimen/thirty_dp"
+                    android:layout_height="@dimen/thirty_dp" />
+
+                <androidx.appcompat.widget.AppCompatButton
+                    android:id="@+id/btn_yes"
+                    android:layout_width="@dimen/seventy_dp"
+                    android:layout_height="@dimen/forty_dp"
+                    android:layout_alignParentBottom="true"
+                    android:layout_centerInParent="true"
+                    android:layout_weight="1"
+                    android:autoSizeMaxTextSize="@dimen/Fifteen_dp"
+                    android:autoSizeMinTextSize="@dimen/five_dp"
+                    android:autoSizeTextType="uniform"
+                    android:background="@drawable/no_button_green_button"
+                    android:elevation="@dimen/four_dp"
+                    android:fontFamily="@font/gill_sans_bold"
+                    android:gravity="center"
+                    android:maxLines="1"
+                    android:paddingStart="@dimen/ten_dp"
+                    android:paddingEnd="@dimen/ten_dp"
+                    android:text="@string/yes"
+                    android:textAllCaps="false"
+                    android:textColor="@color/white"
+                    android:textSize="@dimen/Fifteen_dp" />
+            </androidx.appcompat.widget.LinearLayoutCompat>
+        </androidx.appcompat.widget.LinearLayoutCompat>
+    </ScrollView>
+</androidx.cardview.widget.CardView>

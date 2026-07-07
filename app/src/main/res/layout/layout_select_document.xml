@@ -1,0 +1,67 @@
+<LinearLayout android:id="@+id/ll_select_file"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:layout_gravity="center_vertical"
+    android:baselineAligned="false"
+    android:orientation="vertical"
+   android:layout_marginTop="@dimen/ten_dp"
+    android:layout_marginBottom="@dimen/ten_dp"
+    android:layout_marginStart="@dimen/four_dp"
+    android:layout_marginEnd="@dimen/four_dp"
+    xmlns:android="http://schemas.android.com/apk/res/android">
+
+    <!-- Dashed Drop Zone -->
+    <LinearLayout
+        android:id="@+id/tv_selected_file"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:background="@drawable/bg_dashed_border"
+        android:clickable="true"
+        android:focusable="true"
+        android:gravity="center"
+        android:orientation="vertical"
+        android:padding="@dimen/ten_dp">
+
+        <!-- Cloud Upload Icon -->
+        <ImageView
+            android:id="@+id/iv_cloud_upload"
+            android:layout_width="@dimen/forty_dp"
+            android:layout_height="@dimen/forty_dp"
+            android:layout_gravity="center"
+            android:layout_marginTop="@dimen/five_dp"
+            android:contentDescription="Upload Icon"
+            android:scaleType="fitCenter"
+            android:src="@drawable/cloud_icon" />
+
+        <!-- Instruction Text -->
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="@dimen/ten_dp"
+            android:layout_marginBottom="@dimen/ten_dp"
+            android:gravity="center"
+            android:text="Choose the files from your device or drag\n&amp; drop them here"
+            android:textColor="@color/grey_text"
+            android:textSize="@dimen/Twelve_dp" />
+
+        <!-- Browse Files Button -->
+        <androidx.appcompat.widget.AppCompatButton
+            android:id="@+id/btn_browse"
+            android:layout_width="wrap_content"
+            android:layout_height="@dimen/forty_dp"
+            android:layout_gravity="center"
+           android:background="@drawable/rectangle_blue_bg"
+            android:paddingStart="@dimen/ten_dp"
+            android:paddingEnd="@dimen/ten_dp"
+            android:text="@string/browse_files"
+            android:fontFamily="@font/gill_sans"
+            android:textAllCaps="false"
+            android:layout_marginBottom="@dimen/five_dp"
+            android:textColor="@color/white"
+            android:textSize="@dimen/Fifteen_dp"
+            android:textStyle="bold" />
+
+    </LinearLayout>
+    <!-- END Dashed Drop Zone -->
+
+</LinearLayout>

@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+  drawable/grey_badge.xml
+  Used for status chip when API returns color = "grey"  (e.g. "Inactive")
+  Matches the screenshot: light grey pill, dark grey text
+-->
+<shape xmlns:android="http://schemas.android.com/apk/res/android"
+    android:shape="rectangle">
+
+    <solid android:color="#EFEFEF"/>
+
+    <corners android:radius="20dp"/>
+
+</shape>

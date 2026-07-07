@@ -1,0 +1,148 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content">
+
+    <androidx.appcompat.widget.LinearLayoutCompat
+        android:id="@+id/ll_clients"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_margin="@dimen/four_dp"
+        android:background="@drawable/rectangular_grey_background"
+        android:orientation="vertical"
+        android:padding="@dimen/four_dp"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent">
+
+        <LinearLayout
+            android:id="@+id/ll_client_card"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:orientation="horizontal"
+            android:padding="@dimen/four_dp">
+
+            <LinearLayout
+                android:layout_width="wrap_content"
+                android:layout_height="match_parent"
+                android:layout_gravity="right"
+                android:layout_weight="1"
+                android:gravity="left">
+
+                <FrameLayout
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_gravity="center">
+
+                    <!-- Circular Button -->
+                    <include
+                        android:id="@+id/person_icon"
+                        layout="@layout/tv_count_circle"
+                        android:layout_width="@dimen/thirty_five_dp"
+                        android:layout_height="@dimen/thirty_five_dp"
+                        android:layout_margin="@dimen/ten_dp" />
+                </FrameLayout>
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_gravity="center_vertical"
+                    android:orientation="vertical">
+
+                    <include
+                        android:id="@+id/tv_name"
+                        layout="@layout/black_normal_txt" />
+
+                    <RelativeLayout
+                        android:id="@+id/ll_last_msg"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:gravity="center_vertical">
+
+                        <TextView
+                            android:id="@+id/tv_last_msg_time"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:layout_alignParentEnd="true"
+                            android:fontFamily="@font/gill_sans"
+                            android:maxLines="1"
+                            android:text="@string/mailing_address"
+                            android:textColor="@color/material_dynamic_neutral50"
+                            android:textSize="@dimen/Fifteen_dp" />
+
+                        <TextView
+                            android:id="@+id/tv_last_msg"
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:layout_marginEnd="@dimen/ten_dp"
+                            android:layout_toStartOf="@id/tv_last_msg_time"
+                            android:ellipsize="end"
+                            android:fontFamily="@font/gill_sans"
+                            android:maxLines="2"
+                            android:text="@string/mailing_address"
+                            android:textColor="@color/material_dynamic_neutral50"
+                            android:textSize="@dimen/Fifteen_dp" />
+
+                    </RelativeLayout>
+                </LinearLayout>
+            </LinearLayout>
+
+            <LinearLayout
+                android:layout_width="wrap_content"
+                android:layout_height="match_parent"
+                android:layout_gravity="end"
+                android:layout_weight="0"
+                android:gravity="end">
+
+                <ImageView
+                    android:id="@+id/dot_icon"
+                    android:layout_width="@dimen/ten_dp"
+                    android:layout_height="@dimen/ten_dp"
+                    android:layout_gravity="center"
+                    android:background="@drawable/red_circular"
+                    android:visibility="gone" />
+
+                <FrameLayout
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_gravity="center">
+
+                    <!-- Circular Button -->
+                    <include
+                        android:id="@+id/count_icon"
+                        layout="@layout/red_circular_view"
+                        android:layout_width="@dimen/thirty_five_dp"
+                        android:layout_height="@dimen/thirty_five_dp"
+                        android:layout_margin="@dimen/ten_dp"
+                        android:layout_gravity="center"
+                        android:visibility="gone" />
+                </FrameLayout>
+
+                <ImageView
+                    android:id="@+id/plus_icon"
+                    android:layout_width="@dimen/forty_dp"
+                    android:layout_height="@dimen/forty_dp"
+                    android:layout_gravity="center"
+                    android:layout_margin="@dimen/four_dp"
+                    android:background="@drawable/plus_icon_xl_chat"
+                    android:padding="@dimen/four_dp"
+                    android:visibility="gone" />
+            </LinearLayout>
+        </LinearLayout>
+
+        <androidx.appcompat.widget.LinearLayoutCompat
+            android:id="@+id/ll_users"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:orientation="vertical">
+
+            <androidx.recyclerview.widget.RecyclerView
+                android:id="@+id/rv_users"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content" />
+        </androidx.appcompat.widget.LinearLayoutCompat>
+    </androidx.appcompat.widget.LinearLayoutCompat>
+</androidx.constraintlayout.widget.ConstraintLayout>

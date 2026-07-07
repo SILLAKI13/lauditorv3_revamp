@@ -1,0 +1,73 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:id="@+id/Card_Layout"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:layout_margin="@dimen/ten_dp"
+    android:background="@drawable/rectangular_white_background"
+    android:elevation="@dimen/four_dp"
+    android:orientation="vertical"
+    android:padding="@dimen/ten_dp">
+
+    <androidx.appcompat.widget.LinearLayoutCompat
+        android:id="@+id/ll_1"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:gravity="top"
+        android:orientation="horizontal">
+
+        <ImageView
+            android:id="@+id/Card_Image"
+            android:layout_width="@dimen/forty_dp"
+            android:layout_height="@dimen/forty_dp"
+            android:layout_gravity="center_horizontal"
+            android:layout_marginEnd="@dimen/ten_dp"
+            android:background="@drawable/new_clients"
+            android:contentDescription="@string/todo" />
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_gravity="center_vertical"
+            android:orientation="vertical">
+
+            <include
+                android:id="@+id/tv_NewClients"
+                layout="@layout/blue_normal_txt"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content" />
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_gravity="end"
+                android:baselineAligned="false"
+                android:orientation="horizontal">
+
+                <include
+                    android:id="@+id/tv_newclients_legal_count"
+                    layout="@layout/count_green_normal_txt" />
+
+                <include
+                    android:id="@+id/tv_first_client_type"
+                    layout="@layout/black_normal_txt"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_gravity="bottom"
+                    android:layout_weight="1" />
+
+                <include
+                    android:id="@+id/tv_newclients_civil_count"
+                    layout="@layout/count_green_normal_txt" />
+
+                <include
+                    android:id="@+id/tv_second_client_type"
+                    layout="@layout/black_normal_txt"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_gravity="bottom"
+                    android:layout_weight="1" />
+            </LinearLayout>
+        </LinearLayout>
+    </androidx.appcompat.widget.LinearLayoutCompat>
+</LinearLayout>

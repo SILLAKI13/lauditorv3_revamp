@@ -1,0 +1,173 @@
+<?xml version="1.0" encoding="utf-8"?>
+    <androidx.cardview.widget.CardView
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:android="http://schemas.android.com/apk/res/android"
+        android:id="@+id/cv_details_activity_log"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_margin="@dimen/ten_dp"
+        android:elevation="@dimen/forty_dp"
+        android:padding="@dimen/ten_dp"
+        android:visibility="visible"
+        app:cardBackgroundColor="@color/white"
+        app:cardCornerRadius="@dimen/eight_dp">
+
+        <androidx.appcompat.widget.LinearLayoutCompat
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_margin="@dimen/ten_dp"
+            android:orientation="vertical">
+
+            <include
+                android:id="@+id/cancelIcon"
+                layout="@layout/simple_cancel_icon"
+                android:layout_width="@dimen/thirty_dp"
+                android:layout_height="@dimen/thirty_dp"
+                android:layout_gravity="end" />
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="horizontal">
+
+                <!--Changing sub title name to category-->
+                <include
+                    android:id="@+id/category_id"
+                    layout="@layout/title_name_layout"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content" />
+
+                <include layout="@layout/astrick_layout" />
+
+            </LinearLayout>
+
+            <RelativeLayout
+                android:id="@+id/spinnerLayout"
+                android:layout_width="match_parent"
+                android:layout_height="@dimen/forty_dp"
+                android:layout_alignParentTop="true"
+                android:layout_marginTop="@dimen/ten_dp"
+                android:layout_marginEnd="@dimen/four_dp"
+                android:layout_marginStart="@dimen/four_dp"
+                android:layout_weight=".28"
+                android:background="@drawable/rectangle_light_grey"
+                android:gravity="center"
+                android:orientation="horizontal">
+                <!--Adding a spinner to choose a category-->
+                <include layout="@layout/spinner_layout" />
+
+                <include layout="@layout/spinner_drop_down" />
+
+            </RelativeLayout>
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="vertical">
+                <!--Adding a Client name-->
+                <include
+                    android:id="@+id/client_id_name"
+                    layout="@layout/title_name_layout" />
+
+                <include
+                    android:id="@+id/et_client_name"
+                    layout="@layout/title_description_layout" />
+            </LinearLayout>
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="horizontal">
+                <!--Adding a team_member name-->
+                <include
+                    android:id="@+id/team_member_id"
+                    layout="@layout/title_name_layout" />
+
+            </LinearLayout>
+
+            <include
+                android:id="@+id/et_team_member"
+                layout="@layout/title_description_layout" />
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="vertical">
+
+                <include
+                    android:id="@+id/search_name"
+                    layout="@layout/title_name_layout" />
+                <!--this is the actual edit text which takes the input-->
+                <include
+                    android:id="@+id/et_search_name"
+                    layout="@layout/title_description_layout" />
+            </LinearLayout>
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:baselineAligned="false"
+                android:orientation="horizontal">
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_margin="@dimen/four_dp"
+                    android:layout_weight="1"
+                    android:orientation="vertical">
+
+                    <include
+                        android:id="@+id/from_id"
+                        layout="@layout/title_name_layout" />
+                    <!--        Adding a F rom date calender button-->
+                    <include layout="@layout/button_calender" />
+                </LinearLayout>
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_margin="@dimen/four_dp"
+                    android:layout_weight="1"
+                    android:orientation="vertical">
+
+                    <include
+                        android:id="@+id/to_id"
+                        layout="@layout/title_name_layout" />
+
+                    <!--        Adding a To date calender button-->
+                    <include
+                        android:id="@+id/btn_to_date"
+                        layout="@layout/button_calender" />
+                </LinearLayout>
+            </LinearLayout>
+            <!--                 Adding a cancel and search button-->
+            <include
+                android:id="@+id/btn_cancel_activity_log"
+                layout="@layout/cancel_button"
+                android:visibility="gone" />
+
+            <include
+                android:id="@+id/btn_update_activity_log"
+                layout="@layout/submit_button"
+                android:layout_width="@dimen/module_btn_size"
+                android:layout_height="@dimen/forty_dp"
+                android:layout_gravity="start"
+                android:layout_margin="@dimen/ten_dp" />
+            <!--            </androidx.appcompat.widget.LinearLayoutCompat>-->
+
+            <!--this is the actual edit text which takes the input-->
+            <include
+                android:id="@+id/tl_et_search_message"
+                layout="@layout/search_layout_new"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_margin="@dimen/ten_dp" />
+
+            <androidx.recyclerview.widget.RecyclerView
+                android:id="@+id/rv_view_activity_log"
+                android:layout_width="match_parent"
+                android:layout_height="@dimen/one_fifty_dp"
+                android:layout_margin="@dimen/ten_dp"
+                android:orientation="vertical" />
+        </androidx.appcompat.widget.LinearLayoutCompat>
+    </androidx.cardview.widget.CardView>

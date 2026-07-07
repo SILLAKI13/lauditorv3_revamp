@@ -1,0 +1,59 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:orientation="vertical"
+    android:layout_margin="@dimen/ten_dp">
+
+    <!-- GREY CARD (ONLY FOR DATA) -->
+    <LinearLayout
+        android:id="@+id/ll_data_container"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:background="@drawable/new_rect_grey"
+        android:orientation="vertical"
+        android:padding="@dimen/ten_dp">
+
+        <!-- TITLE -->
+        <include
+            android:id="@+id/tv_title"
+            layout="@layout/black_bold_txt" />
+
+        <!-- CONTENT ROW -->
+        <LinearLayout
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal">
+
+            <include
+                android:id="@+id/tv_content"
+                layout="@layout/black_normal_txt" />
+
+            <TextView
+                android:id="@+id/dot"
+                android:layout_width="@dimen/six_dp"
+                android:layout_height="@dimen/six_dp"
+                android:layout_margin="@dimen/ten_dp"
+                android:layout_gravity="center"
+                android:background="@drawable/circular_grey_bg" />
+
+            <include
+                android:id="@+id/tv_year"
+                layout="@layout/black_normal_txt" />
+        </LinearLayout>
+    </LinearLayout>
+
+    <!-- EMPTY STATE (NO BACKGROUND) -->
+    <TextView
+        android:id="@+id/tv_placeholder"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:gravity="center"
+        android:text="No data added"
+        android:fontFamily="@font/gill_sans"
+        android:textColor="@color/grey_light"
+        android:textSize="@dimen/Fifteen_dp"
+        android:visibility="gone"
+        android:padding="@dimen/Twelve_dp" />
+
+</LinearLayout>

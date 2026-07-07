@@ -1,0 +1,64 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--  res/layout/admin_no_of_groups.xml
+      Used by NOGHolder (Groups) and TMholder (Team Members).
+      Holder sets Card_Image drawable + tv_bhours text at bind time. -->
+<androidx.cardview.widget.CardView
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:id="@+id/Card_Layout"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:layout_margin="@dimen/ten_dp"
+    app:cardBackgroundColor="@color/white"
+    app:cardCornerRadius="@dimen/Fifteen_dp"
+    app:cardElevation="2dp">
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        android:padding="@dimen/Fifteen_dp">
+
+        <!-- Icon -->
+        <LinearLayout
+            android:layout_width="36dp"
+            android:layout_height="36dp"
+            android:background="@drawable/pale_blue_circular"
+            android:gravity="center">
+            <ImageView
+                android:id="@+id/Card_Image"
+                android:layout_width="18dp"
+                android:layout_height="18dp"
+                android:src="@drawable/ic_group_purple" />
+        </LinearLayout>
+
+        <!-- "Total" label -->
+        <TextView
+            android:id="@+id/Card_Name"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="@dimen/ten_dp"
+            android:textColor="@color/grey_color_dark"
+            android:textSize="@dimen/Twelve_dp" />
+
+        <!-- Big count -->
+        <TextView
+            android:id="@+id/tv_nog_count"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="2dp"
+            android:textColor="@color/black"
+            android:textSize="30sp"
+            android:textStyle="bold" />
+
+        <!-- "Number of Groups" / "Team Members" sub-label -->
+        <TextView
+            android:id="@+id/tv_bhours"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="2dp"
+            android:textColor="@color/grey_color_dark"
+            android:textSize="@dimen/Twelve_dp" />
+
+    </LinearLayout>
+</androidx.cardview.widget.CardView>

@@ -1,0 +1,50 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:id="@+id/ll_Confirm"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:layout_gravity="center"
+    android:layout_margin="@dimen/ten_dp"
+    android:background="@drawable/rectangular_white_background"
+    android:elevation="@dimen/Fifteen_dp"
+    android:gravity="center"
+    android:orientation="vertical"
+    android:padding="@dimen/ten_dp">
+
+    <include
+        android:id="@+id/cancelIcon"
+        layout="@layout/simple_cancel_icon"
+        android:layout_width="@dimen/thirty_dp"
+        android:layout_height="@dimen/thirty_dp"
+        android:layout_gravity="end" />
+
+    <include
+        android:id="@+id/tv_confirmation"
+        layout="@layout/blue_bold_large_txt" />
+
+    <include
+        android:id="@+id/tv_confirmContent"
+        layout="@layout/black_bold_txt"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_margin="@dimen/ten_dp" />
+
+    <LinearLayout
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_gravity="center"
+        android:layout_marginTop="@dimen/ten_dp"
+        android:layout_marginBottom="@dimen/ten_dp">
+
+        <include
+            android:id="@+id/btnCancel"
+            layout="@layout/submit_dark_layout"
+            android:layout_width="wrap_content"
+            android:layout_height="@dimen/forty_dp"
+            android:layout_marginEnd="@dimen/twenty_dp" />
+
+        <include
+            android:id="@+id/btnSave"
+            layout="@layout/submit_dark_layout" />
+    </LinearLayout>
+</LinearLayout>

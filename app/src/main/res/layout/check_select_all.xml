@@ -1,0 +1,30 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:id="@+id/chk_box_layout"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:layout_margin="@dimen/four_dp"
+    android:background="@drawable/rectangle_light_grey"
+    android:elevation="@dimen/four_dp"
+    android:gravity="center"
+    android:padding="@dimen/ten_dp">
+
+    <androidx.appcompat.widget.LinearLayoutCompat
+        android:layout_width="@dimen/twenty_five"
+        android:layout_height="@dimen/twenty_five"
+        android:layout_gravity="center"
+        android:layout_marginEnd="@dimen/ten_dp"
+
+        android:elevation="@dimen/four_dp"
+        android:gravity="center_vertical">
+
+        <include
+            android:id="@+id/chk_select_all"
+            layout="@layout/chk_box_layout" />
+    </androidx.appcompat.widget.LinearLayoutCompat>
+
+
+    <include
+        android:id="@+id/chk_select_all_text"
+        layout="@layout/select_all_textview" />
+</LinearLayout>

@@ -1,0 +1,85 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:orientation="vertical"
+    android:padding="@dimen/twenty_dp"
+    android:background="@android:color/transparent">
+
+    <!-- White container -->
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        android:background="@android:color/white">
+
+        <!-- Camera -->
+        <LinearLayout
+            android:id="@+id/llCamera"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            android:padding="@dimen/Fifteen_dp"
+            android:gravity="center_vertical">
+
+            <ImageView
+                android:layout_width="@dimen/twenty_five"
+                android:layout_height="@dimen/twenty_five"
+                app:tint="@color/scheduled_text"
+                android:src="@drawable/green_camera" />
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Camera"
+                android:textSize="@dimen/Fifteen_dp"
+                android:fontFamily="@font/gill_sans"
+                android:textColor="@color/scheduled_text"
+                android:layout_marginStart="@dimen/Fifteen_dp" />
+        </LinearLayout>
+
+        <!-- Gallery -->
+        <LinearLayout
+            android:id="@+id/llGallery"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            android:padding="@dimen/Fifteen_dp"
+            android:gravity="center_vertical">
+
+            <ImageView
+                android:layout_width="@dimen/twenty_five"
+                android:layout_height="@dimen/twenty_five"
+                app:tint="@color/scheduled_text"
+                android:src="@drawable/green_gallery" />
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Choose from Photo Gallery"
+                android:textSize="@dimen/Fifteen_dp"
+                android:fontFamily="@font/gill_sans"
+                android:textColor="@color/scheduled_text"
+                android:layout_marginStart="@dimen/Fifteen_dp" />
+
+        </LinearLayout>
+
+
+    </LinearLayout>
+
+    <!-- Cancel Button -->
+    <TextView
+        android:id="@+id/tvCancel"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="Cancel"
+        android:gravity="center"
+        android:textSize="@dimen/Fifteen_dp"
+        android:textColor="@color/black"
+        android:fontFamily="@font/gill_sans"
+        android:background="@drawable/rectangular_white_background"
+        android:padding="@dimen/ten_dp"
+        android:layout_marginTop="@dimen/ten_dp" />
+
+</LinearLayout>

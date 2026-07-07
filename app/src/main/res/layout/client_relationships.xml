@@ -1,0 +1,680 @@
+<?xml version="1.0" encoding="utf-8"?>
+<ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:id="@+id/sv_relationships"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:layout_marginBottom="@dimen/twenty_dp"
+    tools:context=".MainActivity">
+
+    <LinearLayout
+        android:id="@+id/ll_view_rel"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        android:padding="@dimen/four_dp">
+
+        <LinearLayout
+            android:id="@+id/rgTask"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="center"
+            android:layout_marginTop="@dimen/ten_dp"
+            android:gravity="center"
+            android:orientation="horizontal"
+            android:visibility="gone">
+
+            <include
+                android:id="@+id/tv_add_relationship"
+                layout="@layout/left_title_layout" />
+
+            <include
+                android:id="@+id/tv_view_relationship"
+                layout="@layout/right_title_layout" />
+
+        </LinearLayout>
+
+        <LinearLayout
+            android:id="@+id/entity"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="center"
+            android:gravity="center"
+            android:orientation="horizontal"
+            android:visibility="visible">
+
+            <include
+                android:id="@+id/tv_add_individual"
+                layout="@layout/left_title_layout" />
+
+            <include
+                android:id="@+id/tv_add_entity"
+                layout="@layout/center_title_layout" />
+
+            <include
+                android:id="@+id/tv_add_corporate"
+                layout="@layout/right_title_layout" />
+
+        </LinearLayout>
+
+        <LinearLayout
+            android:id="@+id/view_relationship"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="center"
+            android:gravity="center"
+            android:orientation="horizontal"
+            android:visibility="visible">
+
+            <include
+                android:id="@+id/tv_view_individual_relationship"
+                layout="@layout/left_title_layout" />
+
+            <include
+                android:id="@+id/tv_view_entity_relationship"
+                layout="@layout/center_title_layout" />
+
+            <include
+                android:id="@+id/tv_view_corporate_relationship"
+                layout="@layout/center_title_layout" />
+
+            <include
+                android:id="@+id/tv_view_temp_relationship"
+                layout="@layout/right_title_layout" />
+
+        </LinearLayout>
+
+        <include
+            android:id="@+id/tv_switchView"
+            layout="@layout/common_title_icon" />
+
+        <include
+            android:id="@+id/tv_switchCreate"
+            layout="@layout/common_title_icon" />
+
+        <androidx.cardview.widget.CardView
+            android:id="@+id/cv_details"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_margin="@dimen/ten_dp"
+            android:elevation="@dimen/four_dp"
+            android:padding="@dimen/ten_dp"
+            app:cardBackgroundColor="@color/white"
+            app:cardCornerRadius="@dimen/eight_dp">
+
+            <androidx.appcompat.widget.LinearLayoutCompat
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_margin="@dimen/ten_dp"
+                android:orientation="vertical">
+
+                <LinearLayout
+                    android:id="@+id/ll_search_individual"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_margin="@dimen/four_dp"
+                    android:orientation="horizontal">
+
+                    <include
+                        android:id="@+id/et_search_individual"
+                        layout="@layout/title_description_layout"
+                        android:layout_width="match_parent"
+                        android:layout_height="@dimen/forty_dp"
+                        android:layout_gravity="center"
+                        android:layout_marginEnd="@dimen/Fifteen_dp"
+                        android:layout_weight="1" />
+
+                    <include
+                        android:id="@+id/btn_search_individual"
+                        layout="@layout/submit_button"
+                        android:layout_width="wrap_content"
+                        android:layout_height="@dimen/forty_dp"
+                        android:layout_marginTop="@dimen/four_dp"
+                        android:layout_marginBottom="@dimen/four_dp" />
+
+                </LinearLayout>
+
+                <LinearLayout
+                    android:id="@+id/ll_search_entity"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_margin="@dimen/four_dp"
+                    android:layout_weight="1"
+                    android:orientation="horizontal"
+                    android:visibility="gone">
+
+                    <AutoCompleteTextView
+                        android:id="@+id/ac_search_entity"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_gravity="center_vertical"
+                        android:layout_marginEnd="@dimen/Fifteen_dp"
+                        android:layout_weight="1"
+                        android:background="@drawable/rectangle_light_grey"
+                        android:dropDownWidth="wrap_content"
+                        android:dropDownHeight="@dimen/one_fifty_dp"
+                        android:dropDownSelector="@drawable/rectangle_light_grey"
+                        android:ellipsize="end"
+                        android:fontFamily="@font/gill_sans"
+                        android:gravity="start"
+                        android:imeOptions="flagNoExtractUi"
+                        android:inputType="textNoSuggestions"
+                        android:maxLines="1"
+                        android:padding="@dimen/ten_dp"
+                        android:popupBackground="@drawable/rectangle_light_grey"
+                        android:textAlignment="viewStart"
+                        android:textColor="@color/black"
+                        android:textColorHint="@color/grey_color_dark"
+                        android:textSize="@dimen/Fifteen_dp" />
+
+                    <include
+                        android:id="@+id/btn_search_entity"
+                        layout="@layout/submit_button"
+                        android:layout_width="wrap_content"
+                        android:layout_height="match_parent" />
+
+                </LinearLayout>
+
+                <include
+                    android:id="@+id/tv_response"
+                    layout="@layout/title_name_layout"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:visibility="visible" />
+
+                <LinearLayout
+                    android:id="@+id/Content_layout"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="vertical">
+
+                    <LinearLayout
+                        android:id="@+id/ll_entity_name"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:orientation="vertical"
+                        android:visibility="gone">
+
+                        <LinearLayout
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:layout_marginTop="@dimen/ten_dp"
+                            android:orientation="horizontal">
+
+                            <include
+                                android:id="@+id/entity_name"
+                                layout="@layout/title_name_layout"
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content" />
+
+                            <include layout="@layout/astrick_layout" />
+
+                        </LinearLayout>
+
+                        <com.google.android.material.textfield.TextInputLayout
+                            android:id="@+id/tl_entity_name"
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:textColorHint="@color/black"
+                            app:boxBackgroundMode="none">
+
+                            <include
+                                android:id="@+id/tv_entity_name"
+                                layout="@layout/title_description_layout" />
+
+                        </com.google.android.material.textfield.TextInputLayout>
+                    </LinearLayout>
+
+                    <LinearLayout
+                        android:id="@+id/ll_contact_person"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="@dimen/ten_dp"
+                        android:orientation="vertical"
+                        android:visibility="gone">
+
+                        <LinearLayout
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:layout_marginTop="@dimen/ten_dp"
+                            android:orientation="horizontal">
+
+                            <include
+                                android:id="@+id/contact_person"
+                                layout="@layout/title_name_layout"
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content" />
+
+                            <include layout="@layout/astrick_layout" />
+
+                        </LinearLayout>
+
+                        <com.google.android.material.textfield.TextInputLayout
+                            android:id="@+id/tl_entity_contact_person"
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:textColorHint="@color/black"
+                            app:boxBackgroundMode="none">
+
+                            <include
+                                android:id="@+id/tv_entity_contact_person"
+                                layout="@layout/title_description_layout" />
+
+                        </com.google.android.material.textfield.TextInputLayout>
+                    </LinearLayout>
+
+                    <LinearLayout
+                        android:id="@+id/ll_country"
+                        android:layout_width="match_parent"
+                        android:layout_height="match_parent"
+                        android:layout_marginTop="@dimen/ten_dp"
+                        android:layout_weight="1"
+                        android:orientation="vertical"
+                        tools:ignore="ExtraText">
+
+                        <LinearLayout
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:layout_marginTop="@dimen/ten_dp"
+                            android:orientation="horizontal">
+
+                            <include
+                                android:id="@+id/country"
+                                layout="@layout/title_name_layout"
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:layout_marginBottom="@dimen/ten_dp" />
+
+                            <include layout="@layout/icon" />
+
+                        </LinearLayout>
+
+                        <include
+                            android:id="@+id/tl_individual_country"
+                            layout="@layout/dropdown_spinner_layout" />
+
+                        <include
+                            android:id="@+id/sp_country"
+                            layout="@layout/spinner_list"
+                            android:layout_width="match_parent"
+                            android:layout_height="@dimen/one_fifty_dp"
+                            android:layout_marginStart="@dimen/four_dp"
+                            android:layout_marginEnd="@dimen/four_dp"
+                            android:visibility="gone" />
+                    </LinearLayout>
+
+                    <LinearLayout
+                        android:id="@+id/ll_first_name"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="@dimen/ten_dp"
+                        android:orientation="vertical">
+
+                        <LinearLayout
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:layout_marginTop="@dimen/ten_dp"
+                            android:orientation="horizontal">
+
+                            <include
+                                android:id="@+id/first_name"
+                                layout="@layout/title_name_layout"
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content" />
+
+                            <include layout="@layout/astrick_layout" />
+
+                        </LinearLayout>
+
+                        <com.google.android.material.textfield.TextInputLayout
+                            android:id="@+id/tl_individual_firstname"
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:textColorHint="@color/black"
+                            app:boxBackgroundMode="none">
+
+                            <include
+                                android:id="@+id/tv_individual_firstname"
+                                layout="@layout/title_description_layout" />
+
+                        </com.google.android.material.textfield.TextInputLayout>
+                    </LinearLayout>
+
+                    <LinearLayout
+                        android:id="@+id/ll_last_name"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="@dimen/ten_dp"
+                        android:orientation="vertical">
+
+                        <LinearLayout
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:layout_marginTop="@dimen/ten_dp"
+                            android:orientation="horizontal">
+
+                            <include
+                                android:id="@+id/last_name"
+                                layout="@layout/title_name_layout"
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content" />
+
+                            <include layout="@layout/astrick_layout" />
+
+                        </LinearLayout>
+
+                        <com.google.android.material.textfield.TextInputLayout
+                            android:id="@+id/tl_individual_last_name"
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:textColorHint="@color/black"
+                            app:boxBackgroundMode="none">
+
+                            <include
+                                android:id="@+id/tv_individual_last_name"
+                                layout="@layout/title_description_layout" />
+
+                        </com.google.android.material.textfield.TextInputLayout>
+                    </LinearLayout>
+
+                    <LinearLayout
+                        android:id="@+id/ll_email"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:orientation="vertical">
+
+                        <LinearLayout
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:layout_marginTop="@dimen/ten_dp"
+                            android:orientation="horizontal">
+
+                            <include
+                                android:id="@+id/email"
+                                layout="@layout/title_name_layout"
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content" />
+
+                            <include layout="@layout/astrick_layout" />
+
+                        </LinearLayout>
+
+                        <com.google.android.material.textfield.TextInputLayout
+                            android:id="@+id/tl_individual_email"
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:textColorHint="@color/black"
+                            app:boxBackgroundMode="none">
+
+                            <include
+                                android:id="@+id/tv_individual_email"
+                                layout="@layout/title_description_layout"
+                                android:textColor="@color/black" />
+
+                        </com.google.android.material.textfield.TextInputLayout>
+
+                        <include
+                            android:id="@+id/Email_error"
+                            layout="@layout/response"
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:layout_marginStart="@dimen/four_dp"
+                            android:visibility="gone" />
+
+                    </LinearLayout>
+
+                    <LinearLayout
+                        android:id="@+id/ll_confirm_email"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="@dimen/ten_dp"
+                        android:orientation="vertical">
+
+                        <LinearLayout
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:layout_marginTop="@dimen/ten_dp"
+                            android:orientation="horizontal">
+
+                            <include
+                                android:id="@+id/confirm_email"
+                                layout="@layout/title_name_layout"
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content" />
+
+                            <include layout="@layout/astrick_layout" />
+
+                        </LinearLayout>
+
+                        <com.google.android.material.textfield.TextInputLayout
+                            android:id="@+id/tl_individual_confirm_email"
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:textColorHint="@color/black"
+                            app:boxBackgroundMode="none">
+
+                            <include
+                                android:id="@+id/tv_individual_confirm_email"
+                                layout="@layout/title_description_layout" />
+
+                        </com.google.android.material.textfield.TextInputLayout>
+
+                        <include
+                            android:id="@+id/ConfirmEmail_error"
+                            layout="@layout/response"
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:layout_marginStart="@dimen/four_dp"
+                            android:visibility="gone" />
+
+                    </LinearLayout>
+
+                    <LinearLayout
+                        android:id="@+id/ll_entity_number"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:orientation="vertical"
+                        android:visibility="gone">
+
+                        <LinearLayout
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:orientation="vertical">
+
+                            <LinearLayout
+                                android:layout_width="match_parent"
+                                android:layout_height="wrap_content"
+                                android:layout_marginTop="@dimen/ten_dp"
+                                android:orientation="horizontal">
+
+                                <include
+                                    android:id="@+id/Contact_phno"
+                                    layout="@layout/title_name_layout"
+                                    android:layout_width="wrap_content"
+                                    android:layout_height="wrap_content" />
+
+                                <include
+                                    android:id="@+id/iv_mobile_mandatory"
+                                    layout="@layout/astrick_layout"
+                                    android:visibility="gone" />
+
+                            </LinearLayout>
+                        </LinearLayout>
+
+                        <com.google.android.material.textfield.TextInputLayout
+                            android:id="@+id/tl_entity_phone_number"
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:textColorHint="@color/black"
+                            app:boxBackgroundMode="none">
+
+                            <include
+                                android:id="@+id/tv_entity_phone_number"
+                                layout="@layout/title_description_layout" />
+
+                        </com.google.android.material.textfield.TextInputLayout>
+
+                        <include
+                            android:id="@+id/PhoneNumber_error"
+                            layout="@layout/response"
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:layout_marginStart="@dimen/four_dp"
+                            android:visibility="gone" />
+
+                    </LinearLayout>
+
+                </LinearLayout>
+
+                <androidx.appcompat.widget.LinearLayoutCompat
+                    android:id="@+id/ll_buttons"
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent"
+                    android:layout_margin="@dimen/ten_dp"
+                    android:orientation="horizontal">
+
+                    <include
+                        android:id="@+id/btn_relationships_cancel"
+                        layout="@layout/cancel_button" />
+
+                    <include
+                        android:id="@+id/btn_send_request"
+                        layout="@layout/submit_button" />
+
+                </androidx.appcompat.widget.LinearLayoutCompat>
+            </androidx.appcompat.widget.LinearLayoutCompat>
+
+        </androidx.cardview.widget.CardView>
+
+        <LinearLayout
+            android:id="@+id/ll_select_all"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="@dimen/twenty_dp"
+            android:background="@drawable/checkbox_background"
+            android:orientation="horizontal"
+            android:visibility="gone"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintHorizontal_bias="0.914"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@+id/cv_details"
+            app:layout_constraintVertical_bias="0.0">
+
+            <CheckBox
+                android:id="@+id/chk_select_all"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_gravity="center"
+                android:layout_margin="@dimen/ten_dp"
+                android:background="@color/grey_text_color"
+                android:buttonTint="@color/green_color"
+                android:paddingEnd="@dimen/twenty_dp"
+                android:text="@string/select_all" />
+        </LinearLayout>
+
+        <LinearLayout
+            android:id="@+id/ll_groups"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical">
+
+            <include layout="@layout/add_relationships" />
+        </LinearLayout>
+
+        <LinearLayout
+            android:id="@+id/ll_relationships"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            android:visibility="gone"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@+id/ll_groups">
+
+            <include
+                android:id="@+id/tl_search_relationships"
+                layout="@layout/searchbar_with_button"
+                android:layout_width="match_parent"
+                android:layout_height="@dimen/forty_dp"
+                android:layout_margin="@dimen/ten_dp"
+                android:layout_weight="1" />
+
+            <!-- ─── Empty State: shown when relationship list is empty ─── -->
+            <LinearLayout
+                android:id="@+id/layout_relationships_empty_state"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:gravity="center"
+                android:orientation="vertical"
+
+                android:visibility="gone">
+
+                <ImageView
+                    android:layout_width="130dp"
+                    android:layout_height="130dp"
+                    android:contentDescription="No relationships"
+                    android:src="@drawable/empty_relationship" />
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="16dp"
+                    android:fontFamily="@font/gill_sans_regular"
+                    android:text="No Relationships Yet!"
+                    android:textColor="@color/black"
+                    android:textSize="18sp"
+                    android:textStyle="bold" />
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="8dp"
+                    android:fontFamily="@font/gill_sans_regular"
+                    android:text="There are no Relationships under this category."
+                    android:textColor="@color/dark_grey_new"
+                    android:textSize="14sp" />
+
+            </LinearLayout>
+            <!-- ─── End Empty State ─── -->
+
+            <androidx.recyclerview.widget.RecyclerView
+                android:id="@+id/rv_relationships"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="vertical"
+                android:visibility="visible" />
+
+            <LinearLayout
+                android:id="@+id/ll_nav_buttons"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_gravity="end"
+                android:gravity="end"
+                android:orientation="horizontal"
+                android:padding="@dimen/ten_dp">
+
+                <include
+                    android:id="@+id/btn_prev"
+                    layout="@layout/add_button" />
+
+                <include
+                    android:id="@+id/btn_next"
+                    layout="@layout/add_button" />
+
+            </LinearLayout>
+
+        </LinearLayout>
+
+        <View
+            android:id="@+id/view_blocker"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:background="@android:color/transparent"
+            android:clickable="false"
+            android:visibility="visible" />
+
+    </LinearLayout>
+</ScrollView>

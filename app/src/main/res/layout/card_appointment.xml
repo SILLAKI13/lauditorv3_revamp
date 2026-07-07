@@ -1,0 +1,121 @@
+<?xml version="1.0" encoding="utf-8"?><!--  card_appointment_trend.xml  —  Appointment Trend  (Grouped BarChart)  -->
+<androidx.cardview.widget.CardView xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="@dimen/ThreeHundred_dp"
+    android:layout_height="@dimen/twohundred_fifty"
+    android:layout_margin="@dimen/six_dp"
+    app:cardBackgroundColor="@color/white"
+    app:cardCornerRadius="@dimen/eighteen_sp"
+    app:cardElevation="@dimen/four_dp">
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:orientation="vertical"
+        android:padding="@dimen/Fifteen_dp">
+
+        <!-- ── Header ─────────────────────────────────────────────────── -->
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:gravity="center_vertical"
+            android:orientation="horizontal">
+
+            <FrameLayout
+                android:layout_width="40dp"
+                android:layout_height="40dp"
+                android:visibility="gone">
+
+                <ImageView
+                    android:layout_width="40dp"
+                    android:layout_height="40dp"
+                    android:src="@drawable/icon_bg_indigo" />
+
+                <ImageView
+                    android:layout_width="22dp"
+                    android:layout_height="22dp"
+                    android:layout_gravity="center"
+                    android:scaleType="fitCenter"
+                    android:src="@drawable/ic_calendar_blue" />
+            </FrameLayout>
+
+            <LinearLayout
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_marginBottom="@dimen/ten_dp"
+                android:layout_weight="1"
+                android:orientation="vertical">
+
+                <TextView
+                    android:id="@+id/tv_trend_title"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:fontFamily="@font/gill_sans_bold"
+                    android:text="Appointment Trend"
+                    android:textColor="@color/black"
+                    android:textSize="@dimen/Fifteen_dp" />
+
+                <TextView
+                    android:id="@+id/tv_trend_subtitle"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="@dimen/four_dp"
+                    android:fontFamily="@font/gill_sans"
+                    android:text="Weekly overview"
+                    android:textColor="@color/grey_text"
+                    android:textSize="@dimen/Twelve_dp" />
+            </LinearLayout>
+
+            <!-- Range selector dropdown / badge -->
+            <TextView
+                android:id="@+id/tv_trend_badge"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:background="@drawable/badge_bg"
+                android:gravity="center"
+                android:minWidth="28dp"
+                android:paddingHorizontal="8dp"
+                android:paddingVertical="4dp"
+                android:textColor="@color/white"
+                android:textSize="@dimen/Twelve_dp"
+                android:textStyle="bold"
+                android:visibility="gone" />
+        </LinearLayout>
+
+        <View
+            android:layout_width="match_parent"
+            android:layout_height="1dp"
+            android:layout_marginVertical="@dimen/ten_dp"
+            android:background="#F0F0F5"
+            android:visibility="gone" />
+
+        <!-- ── Range tabs ──────────────────────────────────────────────── -->
+        <LinearLayout
+            android:id="@+id/ll_range_tabs"
+            android:layout_width="wrap_content"
+            android:layout_height="32dp"
+            android:layout_marginBottom="8dp"
+            android:background="@drawable/segment_container_bg"
+            android:gravity="center_vertical"
+            android:orientation="horizontal"
+            android:padding="3dp"
+            android:visibility="gone" />
+
+        <!-- ── Grouped BarChart ────────────────────────────────────────── -->
+        <com.github.mikephil.charting.charts.BarChart
+            android:id="@+id/bar_chart_trend"
+            android:layout_width="match_parent"
+            android:layout_height="150dp"
+            android:layout_weight="1" />
+
+        <!-- ── Legend row ─────────────────────────────────────────────── -->
+        <LinearLayout
+            android:id="@+id/ll_legend"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="6dp"
+            android:gravity="center"
+            android:orientation="horizontal" />
+
+    </LinearLayout>
+</androidx.cardview.widget.CardView>

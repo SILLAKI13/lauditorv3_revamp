@@ -1,0 +1,58 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.cardview.widget.CardView xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:id="@+id/card_view3"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:layout_gravity="center_horizontal"
+    android:layout_margin="@dimen/four_dp"
+    android:background="@drawable/background_transparent"
+    android:clickable="true"
+    app:cardCornerRadius="@dimen/six_dp"
+    app:cardElevation="@dimen/thirty_dp">
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:background="@color/white"
+        android:orientation="vertical">
+
+        <TextView
+            android:id="@+id/edit_event_dialog"
+            android:layout_width="match_parent"
+            android:layout_height="@dimen/forty_dp"
+            android:layout_gravity="top"
+            android:background="@color/scheduled_text"
+            android:fontFamily="@font/gill_sans"
+            android:gravity="center"
+            android:text="@string/info"
+            android:textColor="@color/white"
+            android:textFontWeight="500"
+            android:textSize="20sp" />
+
+        <include
+            android:id="@+id/delete_event_msg"
+            layout="@layout/title_name_layout"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_margin="@dimen/ten_dp" />
+
+        <LinearLayout
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="center"
+            android:layout_margin="@dimen/ten_dp">
+
+            <include
+                layout="@layout/dialog_save_button"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginEnd="@dimen/thirty_dp" />
+
+
+            <include
+                android:id="@+id/btn_close_event"
+                layout="@layout/dialog_save_button" />
+        </LinearLayout>
+    </LinearLayout>
+</androidx.cardview.widget.CardView>

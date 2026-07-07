@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="utf-8"?>
+<TextView xmlns:android="http://schemas.android.com/apk/res/android"
+    android:id="@+id/horizontal_split_line"
+    android:layout_width="@dimen/ten_dp"
+    android:layout_height="@dimen/point_five"
+    android:layout_gravity="center_vertical"
+    android:layout_margin="@dimen/four_dp"
+    android:background="@color/black" />

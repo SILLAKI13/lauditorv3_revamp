@@ -1,0 +1,112 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--  res/layout/super_user_kpi_new_client.xml
+      Shared for NewClientsHolder and NewHiresHolder.
+      Holder sets Card_Image + tv_NewClients text at bind time. -->
+<androidx.cardview.widget.CardView
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:id="@+id/Card_Layout"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:layout_margin="@dimen/ten_dp"
+    app:cardBackgroundColor="@color/white"
+    app:cardCornerRadius="@dimen/Fifteen_dp"
+    app:cardElevation="2dp">
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        android:padding="@dimen/Fifteen_dp">
+
+        <!-- Icon -->
+        <LinearLayout
+            android:layout_width="36dp"
+            android:layout_height="36dp"
+            android:background="@drawable/pale_blue_circular"
+            android:gravity="center">
+            <ImageView
+                android:id="@+id/Card_Image"
+                android:layout_width="18dp"
+                android:layout_height="18dp"
+                android:src="@drawable/ic_people_blue" />
+        </LinearLayout>
+
+        <!-- Card title e.g. "New Clients" / "New Hires" -->
+        <TextView
+            android:id="@+id/tv_NewClients"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="@dimen/ten_dp"
+            android:textColor="@color/grey_color_dark"
+            android:textSize="@dimen/Twelve_dp"
+            android:textStyle="bold" />
+
+        <!-- Two stat columns -->
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="@dimen/ten_dp"
+            android:orientation="horizontal">
+
+            <!-- Left stat -->
+            <LinearLayout
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:gravity="center"
+                android:orientation="vertical">
+
+                <TextView
+                    android:id="@+id/tv_newclients_legal_count"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:textColor="@color/black"
+                    android:textSize="28sp"
+                    android:textStyle="bold" />
+
+                <TextView
+                    android:id="@+id/tv_first_client_type"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="2dp"
+                    android:textColor="@color/grey_color_dark"
+                    android:textSize="@dimen/Twelve_dp" />
+            </LinearLayout>
+
+            <!-- Vertical divider -->
+            <View
+                android:layout_width="0.5dp"
+                android:layout_height="48dp"
+                android:layout_gravity="center_vertical"
+                android:background="@color/grey_color_light" />
+
+            <!-- Right stat -->
+            <LinearLayout
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:gravity="center"
+                android:orientation="vertical">
+
+                <TextView
+                    android:id="@+id/tv_newclients_civil_count"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:textColor="@color/black"
+                    android:textSize="28sp"
+                    android:textStyle="bold" />
+
+                <TextView
+                    android:id="@+id/tv_second_client_type"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="2dp"
+                    android:textColor="@color/grey_color_dark"
+                    android:textSize="@dimen/Twelve_dp" />
+            </LinearLayout>
+
+        </LinearLayout>
+
+    </LinearLayout>
+</androidx.cardview.widget.CardView>

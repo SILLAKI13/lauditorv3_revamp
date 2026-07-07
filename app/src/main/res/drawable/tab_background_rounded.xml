@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- tab_background_rounded.xml — used for the Profile / Share Documents toggle row -->
+<shape xmlns:android="http://schemas.android.com/apk/res/android"
+    android:shape="rectangle">
+    <solid android:color="#F3F4F6"/>
+    <corners android:radius="@dimen/ten_dp"/>
+</shape>

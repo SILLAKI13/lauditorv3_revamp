@@ -1,0 +1,40 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:id="@+id/ll_Confirm"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:layout_margin="@dimen/ten_dp"
+    android:background="@drawable/rectangular_white_background"
+    android:elevation="@dimen/four_dp"
+    android:orientation="vertical"
+    android:padding="@dimen/ten_dp">
+
+    <include
+        android:id="@+id/tv_confirmation"
+        layout="@layout/black_bold_txt" />
+
+    <include
+        android:id="@+id/tv_confirmContent"
+        layout="@layout/black_normal_txt"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="@dimen/one_dp"
+        android:layout_marginTop="@dimen/four_dp"
+        android:layout_marginEnd="@dimen/two_dp"
+        android:layout_marginBottom="@dimen/four_dp" />
+
+    <LinearLayout
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_gravity="end"
+        android:layout_marginTop="@dimen/Fifteen_dp">
+
+        <include
+            android:id="@+id/btnCancel"
+            layout="@layout/border_button_layout" />
+
+        <include
+            android:id="@+id/btnSave"
+            layout="@layout/small_save_btn_layout" />
+    </LinearLayout>
+</LinearLayout>

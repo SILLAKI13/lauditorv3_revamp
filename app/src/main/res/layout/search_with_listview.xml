@@ -1,0 +1,46 @@
+<?xml version="1.0" encoding="utf-8"?><!--
+    searchable_list_layout.xml
+    Drop-in replacement for any plain <ListView> that needs a search bar above it.
+
+    Usage in your fragment/activity XML:
+        <include layout="@layout/searchable_list_layout" />
+
+    OR include just the inner pieces inside your existing container.
+-->
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="@drawable/rectangle_light_grey"
+    android:orientation="vertical"
+    android:padding="@dimen/four_dp">
+
+    <!-- ── Search bar ──────────────────────────────────────────────────── -->
+    <EditText
+        android:id="@+id/et_search"
+        android:layout_width="match_parent"
+        android:layout_height="@dimen/forty_dp"
+        android:layout_marginBottom="@dimen/four_dp"
+        android:background="@drawable/white_with_black_border"
+        android:drawableStart="@drawable/ic_baseline_search_24"
+        android:drawablePadding="@dimen/ten_dp"
+        android:fontFamily="@font/gill_sans"
+        android:hint="Search..."
+        android:imeOptions="actionSearch"
+        android:inputType="text"
+        android:maxLines="1"
+        android:padding="@dimen/ten_dp"
+        android:singleLine="true"
+        android:textSize="@dimen/Fifteen_dp" />
+
+    <!-- ── List ────────────────────────────────────────────────────────── -->
+    <ListView
+        android:id="@+id/list_client"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:layout_marginStart="@dimen/four_dp"
+        android:layout_marginEnd="@dimen/four_dp"
+        android:nestedScrollingEnabled="true"
+        android:padding="@dimen/four_dp"
+        android:scrollbars="vertical" />
+
+</LinearLayout>

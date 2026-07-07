@@ -1,0 +1,9 @@
+<ImageView xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:id="@+id/iv_suggest"
+    android:layout_width="@dimen/twenty_dp"
+    android:layout_height="@dimen/twenty_dp"
+    android:layout_gravity="center"
+    android:layout_marginEnd="@dimen/four_dp"
+    android:src="@drawable/suggest_magic_icon"
+    app:tint="@color/blue_dark" />

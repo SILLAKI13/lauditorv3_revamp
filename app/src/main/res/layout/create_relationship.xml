@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RadioButton xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:id="@+id/add_relationship"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:layout_weight="1"
+    android:background="@drawable/button_left_green_background"
+    android:button="@android:color/transparent"
+    android:fontFamily="@font/gill_sans"
+    android:gravity="center"
+    android:padding="@dimen/ten_dp"
+    android:singleLine="true"
+    android:text="@string/add_relationships"
+    android:textSize="@dimen/Fifteen_dp" />

@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+    res/drawable/checkbox_circle_selector.xml
+
+    State-list selector for the CheckBox in notification_view.xml.
+    References two self-contained vector drawables — no bitmap, no rotate hacks.
+
+    Usage in XML:
+        android:button="@null"
+        android:background="@drawable/checkbox_circle_selector"
+        android:layout_width="22dp"
+        android:layout_height="22dp"
+
+    Requires: AppCompat or AndroidX — add to Application or Activity:
+        AppCompatDelegate.setCompatVectorFromResourcesEnabled(true);   ← if API < 21
+-->
+<selector xmlns:android="http://schemas.android.com/apk/res/android">
+
+    <!-- Checked: blue circle + white tick vector -->
+    <item
+        android:drawable="@drawable/ic_checkbox_checked"
+        android:state_checked="true" />
+
+    <!-- Unchecked: white circle with grey border -->
+    <item
+        android:drawable="@drawable/ic_checkbox_unchecked"
+        android:state_checked="false" />
+
+</selector>

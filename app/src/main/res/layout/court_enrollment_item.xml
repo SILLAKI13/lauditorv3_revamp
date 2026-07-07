@@ -1,0 +1,267 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:layout_marginStart="@dimen/ten_dp"
+    android:layout_marginTop="@dimen/two_dp"
+    android:layout_marginEnd="@dimen/ten_dp"
+    android:layout_marginBottom="@dimen/ten_dp"
+    android:background="@drawable/rectangle_light_grey"
+    android:elevation="@dimen/four_dp"
+    android:orientation="horizontal"
+    android:padding="@dimen/eight_dp">
+
+    <LinearLayout
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:layout_weight="1"
+        android:orientation="vertical">
+
+        <!-- Row 1: Court Type | State -->
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginBottom="@dimen/four_dp"
+            android:orientation="horizontal">
+
+            <LinearLayout
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_marginEnd="@dimen/four_dp"
+                android:layout_weight="1"
+                android:orientation="vertical">
+
+                <include
+                    android:id="@+id/ll_court_type"
+                    layout="@layout/spinner_dropdown_layout2"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content" />
+
+                <include
+                    android:id="@+id/sp_court_type"
+                    layout="@layout/spinner_list"
+                    android:layout_width="match_parent"
+                    android:layout_height="@dimen/one_fifty_dp"
+                    android:visibility="gone" />
+
+                <include
+                    android:id="@+id/tvCourtTypeError"
+                    layout="@layout/grey_normal_txt" />
+            </LinearLayout>
+
+            <LinearLayout
+                android:id="@+id/ll_state_root"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_marginStart="@dimen/four_dp"
+                android:layout_weight="1"
+                android:orientation="vertical">
+
+                <include
+                    android:id="@+id/ll_state_spinner"
+                    layout="@layout/spinner_dropdown_layout2"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content" />
+
+                <include
+                    android:id="@+id/sp_state_list"
+                    layout="@layout/spinner_list"
+                    android:layout_width="match_parent"
+                    android:layout_height="@dimen/one_fifty_dp"
+                    android:visibility="gone" />
+
+                <include
+                    android:id="@+id/tvStateNameError"
+                    layout="@layout/grey_normal_txt" />
+            </LinearLayout>
+        </LinearLayout>
+
+        <!-- Row 2: City with TextInputEditText + Tick/Cancel -->
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="@dimen/four_dp"
+            android:orientation="horizontal">
+
+            <LinearLayout
+                android:id="@+id/ll_city_root"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:orientation="vertical">
+
+                <!-- City input with tick/cancel (replacing the spinner) -->
+                <LinearLayout
+                    android:id="@+id/tl_city_area"
+                    android:layout_width="match_parent"
+                    android:layout_height="@dimen/forty_dp"
+                    android:layout_margin="@dimen/two_dp"
+                    android:background="@drawable/rectangle_light_grey"
+                    android:gravity="center_vertical"
+                    android:orientation="horizontal"
+                    android:paddingEnd="@dimen/eight_dp">
+
+                    <!-- In court_enrollment_item.xml — replace the TextInputEditText et_city_search -->
+                    <com.google.android.material.textfield.TextInputEditText
+                        android:id="@+id/et_city_search"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_gravity="center"
+                        android:layout_marginStart="@dimen/four_dp"
+                        android:layout_marginEnd="@dimen/four_dp"
+                        android:layout_marginBottom="@dimen/one_dp"
+                        android:layout_weight="1"
+                        android:background="@null"
+                        android:ellipsize="end"
+                        android:fontFamily="@font/gill_sans"
+                        android:gravity="start"
+                        android:hint="Search &amp; Add City"
+                        android:maxLines="3"
+                        android:padding="@dimen/ten_dp"
+                        android:textColor="@color/black"
+                        android:textColorHint="@color/grey_color_dark"
+                        android:textSize="@dimen/Fifteen_dp" />
+                    <!-- Removed autoSizeTextType, autoSizeMaxTextSize, autoSizeMinTextSize -->
+                    <androidx.appcompat.widget.AppCompatImageButton
+                        android:id="@+id/btn_city_confirm"
+                        android:layout_width="@dimen/thirty_dp"
+                        android:layout_height="@dimen/thirty_dp"
+                        android:layout_marginEnd="@dimen/four_dp"
+                        android:background="@drawable/rectangle_pale_blue"
+                        android:contentDescription="Confirm city"
+                        android:padding="@dimen/six_dp"
+                        android:src="@drawable/ic_check"
+                        android:visibility="visible"
+                        app:tint="@color/blue" />
+
+                    <androidx.appcompat.widget.AppCompatImageButton
+                        android:id="@+id/btn_city_cancel"
+                        android:layout_width="@dimen/thirty_dp"
+                        android:layout_height="@dimen/thirty_dp"
+                        android:layout_marginEnd="@dimen/four_dp"
+                        android:background="@drawable/rect_desc_red_bg"
+                        android:contentDescription="Clear city"
+                        android:cropToPadding="true"
+                        android:padding="@dimen/eight_dp"
+                        android:src="@drawable/simple_cancel_blue"
+                        android:visibility="visible"
+                        app:tint="@color/red_icon" />
+
+                    <ImageView
+                        android:id="@+id/img_city_dropdown"
+                        android:layout_width="@dimen/twenty_dp"
+                        android:layout_height="match_parent"
+                        android:contentDescription="Toggle city list"
+                        android:src="@drawable/drop_down_blue" />
+
+                </LinearLayout>
+                <!-- City dropdown list -->
+                <include
+                    android:id="@+id/sp_city_list"
+                    layout="@layout/spinner_list"
+                    android:layout_width="match_parent"
+                    android:layout_height="@dimen/one_fifty_dp"
+                    android:visibility="gone" />
+
+                <!-- Error message -->
+                <include
+                    android:id="@+id/tvCourtCityError"
+                    layout="@layout/grey_normal_txt" />
+            </LinearLayout>
+
+            <!-- Hidden court name column (kept for compatibility, not shown) -->
+            <LinearLayout
+                android:id="@+id/ll_court_name_root"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_marginStart="@dimen/four_dp"
+                android:layout_weight="1"
+                android:orientation="vertical"
+                android:visibility="gone">
+
+                <LinearLayout
+                    android:id="@+id/tl_services_area"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginStart="@dimen/ten_dp"
+                    android:layout_marginEnd="@dimen/ten_dp"
+                    android:background="@drawable/rect_desc_bg"
+                    android:gravity="center_vertical"
+                    android:orientation="horizontal"
+                    android:paddingStart="@dimen/ten_dp"
+                    android:paddingEnd="@dimen/eight_dp">
+
+                    <com.google.android.material.textfield.TextInputEditText
+                        android:id="@+id/et_services_search"
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:layout_weight="1"
+                        android:background="@null"
+                        android:hint="Search or add service"
+                        android:imeOptions="actionDone"
+                        android:inputType="textCapWords"
+                        android:paddingTop="@dimen/Twelve_dp"
+                        android:paddingBottom="@dimen/Twelve_dp"
+                        android:singleLine="true"
+                        android:textColor="@color/black"
+                        android:textColorHint="@color/grey_color_dark"
+                        android:textSize="@dimen/Fifteen_dp" />
+
+                    <androidx.appcompat.widget.AppCompatImageButton
+                        android:id="@+id/btn_service_confirm"
+                        android:layout_width="@dimen/thirty_dp"
+                        android:layout_height="@dimen/thirty_dp"
+                        android:layout_marginEnd="@dimen/four_dp"
+                        android:background="@drawable/rounder_button_blue"
+                        android:contentDescription="Add service"
+                        android:padding="@dimen/six_dp"
+                        android:src="@drawable/ic_check"
+                        app:tint="@color/white" />
+
+                    <androidx.appcompat.widget.AppCompatImageButton
+                        android:id="@+id/btn_service_cancel"
+                        android:layout_width="@dimen/thirty_dp"
+                        android:layout_height="@dimen/thirty_dp"
+                        android:layout_marginEnd="@dimen/four_dp"
+                        android:background="@drawable/rect_desc_red_bg"
+                        android:contentDescription="Clear service"
+                        android:padding="@dimen/six_dp"
+                        android:src="@drawable/cancel_white_icon"
+                        app:tint="@color/red_icon" />
+
+                    <ImageView
+                        android:id="@+id/img_services_dropdown"
+                        android:layout_width="@dimen/twenty_dp"
+                        android:layout_height="@dimen/twenty_dp"
+                        android:contentDescription="Toggle services"
+                        android:src="@drawable/drop_down_blue" />
+
+                </LinearLayout>
+
+                <include
+                    android:id="@+id/sp_court_name_list"
+                    layout="@layout/spinner_list"
+                    android:layout_width="match_parent"
+                    android:layout_height="@dimen/one_fifty_dp"
+                    android:visibility="gone" />
+
+                <include
+                    android:id="@+id/tvCourtNameError"
+                    layout="@layout/grey_normal_txt" />
+            </LinearLayout>
+        </LinearLayout>
+    </LinearLayout>
+
+    <ImageView
+        android:id="@+id/iv_delete"
+        android:layout_width="@dimen/Fifteen_dp"
+        android:layout_height="@dimen/Fifteen_dp"
+        android:layout_gravity="top"
+        android:layout_marginStart="@dimen/five_dp"
+        android:layout_marginTop="@dimen/thirty_five_dp"
+        android:contentDescription="Delete"
+        android:src="@drawable/delete_de"
+        app:tint="@color/Red" />
+
+</LinearLayout>

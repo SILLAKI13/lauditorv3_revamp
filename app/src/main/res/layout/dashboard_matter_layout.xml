@@ -1,0 +1,40 @@
+<androidx.appcompat.widget.LinearLayoutCompat xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:id="@+id/DashboardMatterLayout"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:layout_marginStart="@dimen/four_dp"
+    android:layout_weight="1"
+    android:gravity="start"
+    android:orientation="vertical"
+    tools:ignore="MissingConstraints">
+
+    <include
+        android:id="@+id/tv_closed"
+        layout="@layout/blue_normal_txt"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="-2dp" />
+
+    <include
+        android:id="@+id/tv_closed_members"
+        layout="@layout/blue_normal_txt"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="@dimen/_10dp"
+        android:layout_marginStart="-2dp" />
+
+    <include
+        android:id="@+id/tv_total_matters_count"
+        layout="@layout/count_green_normal_txt" />
+
+    <include
+        android:id="@+id/tv_total_legal_matter_count"
+        layout="@layout/black_normal_txt" />
+
+    <include
+        android:id="@+id/tv_total_general_matter_count"
+        layout="@layout/black_normal_txt" />
+
+</androidx.appcompat.widget.LinearLayoutCompat>

@@ -1,0 +1,66 @@
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:layout_margin="@dimen/ten_dp"
+    android:background="@drawable/rectangle_light_grey"
+    android:orientation="vertical"
+    android:padding="@dimen/ten_dp">
+
+    <!-- Top Row (Note + Icons) -->
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal">
+
+        <!-- Note Text -->
+        <TextView
+            android:id="@+id/tv_note_text"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:fontFamily="@font/gill_sans"
+            android:maxLines="5"
+            android:textColor="@color/black"
+            android:textSize="@dimen/Fifteen_dp"
+            android:textStyle="normal" />
+
+        <!-- Edit Icon -->
+        <ImageView
+            android:id="@+id/iv_edit_note"
+            android:layout_width="@dimen/twenty_dp"
+            android:layout_height="@dimen/twenty_dp"
+            android:layout_marginStart="@dimen/ten_dp"
+            android:contentDescription="Edit"
+            android:src="@drawable/edit__icon"
+            android:tint="@color/black" />
+
+        <!-- Delete Icon -->
+        <ImageView
+            android:id="@+id/iv_delete_note"
+            android:layout_gravity="center"
+            android:layout_width="@dimen/seventeen_dp"
+            android:layout_height="@dimen/Fifteen_dp"
+            android:layout_marginStart="@dimen/ten_dp"
+            android:contentDescription="Delete"
+            android:tint="@color/Red"
+            android:src="@drawable/delete_de" />
+    </LinearLayout>
+
+    <!-- Divider -->
+    <View
+        android:layout_width="match_parent"
+        android:layout_height="1dp"
+        android:layout_marginTop="@dimen/ten_dp"
+        android:layout_marginBottom="@dimen/five_dp"
+        android:background="@color/grey" />
+
+    <!-- Date -->
+    <TextView
+        android:id="@+id/tv_note_date"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:fontFamily="@font/gill_sans"
+        android:textColor="@color/black"
+        android:textSize="@dimen/Fifteen_dp" />
+
+</LinearLayout>

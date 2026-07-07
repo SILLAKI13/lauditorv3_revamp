@@ -1,0 +1,50 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content">
+
+    <LinearLayout
+        android:id="@+id/select_tm_layout"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:background="@drawable/rectangle_light_grey"
+        android:orientation="horizontal"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintHorizontal_bias="1.0"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintVertical_bias="0.029">
+
+        <include layout="@layout/grp_name_layout" />
+
+        <androidx.appcompat.widget.LinearLayoutCompat
+            android:layout_width="@dimen/twenty_five"
+            android:layout_height="@dimen/twenty_five"
+            android:layout_gravity="center"
+            android:layout_marginEnd="@dimen/ten_dp"
+
+            android:elevation="@dimen/eight_dp"
+            android:gravity="center_vertical">
+
+            <include
+                android:id="@+id/chk_selected"
+                layout="@layout/chk_box_layout" />
+        </androidx.appcompat.widget.LinearLayoutCompat>
+    </LinearLayout>
+
+    <View
+        android:id="@+id/list_line"
+        android:layout_width="match_parent"
+        android:layout_height="0.7dp"
+        android:layout_marginStart="@dimen/four_dp"
+        android:layout_marginTop="@dimen/four_dp"
+        android:layout_marginEnd="@dimen/four_dp"
+        android:alpha="0.7"
+        android:background="@color/grey_color_dark"
+        android:visibility="gone"
+        app:layout_constraintBottom_toBottomOf="@+id/select_tm_layout"
+        tools:ignore="MissingConstraints" />
+</androidx.constraintlayout.widget.ConstraintLayout>

@@ -1,0 +1,91 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.cardview.widget.CardView xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="@dimen/ThreeHundred_dp"
+    android:layout_height="@dimen/twohundred_fifty"
+    android:layout_margin="@dimen/six_dp"
+    app:cardBackgroundColor="@color/white"
+    app:cardCornerRadius="@dimen/eighteen_sp"
+    app:cardElevation="@dimen/four_dp">
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        android:padding="@dimen/ten_dp">
+
+        <!-- ROW 1: Title + Badge circle -->
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginBottom="6dp"
+            android:gravity="center_vertical"
+            android:orientation="horizontal">
+
+            <TextView
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:fontFamily="@font/gill_sans_bold"
+                android:text="Matter Status"
+                android:textColor="@color/black"
+                android:textSize="@dimen/Fifteen_dp" />
+
+            <TextView
+                android:id="@+id/tv_badge"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:background="@drawable/badge_blue"
+                android:fontFamily="@font/gill_sans_bold"
+                android:gravity="center"
+                android:minWidth="@dimen/twenty_dp"
+                android:paddingHorizontal="8dp"
+                android:paddingVertical="4dp"
+                android:text="0"
+                android:textColor="@color/blue_dark"
+                android:textSize="@dimen/Twelve_dp"
+                android:visibility="visible" />
+        </LinearLayout>
+
+        <!-- ROW 2: HorizontalBarChart — fixed height so nothing clips -->
+        <com.github.mikephil.charting.charts.HorizontalBarChart
+            android:id="@+id/bar_chart_matter"
+            android:layout_width="match_parent"
+            android:layout_marginTop="@dimen/ten_dp"
+            android:layout_height="@dimen/one_fifty_dp"
+            android:padding="@dimen/four_dp" />
+
+        <!-- ROW 3: Legend -->
+        <LinearLayout
+            android:id="@+id/ll_matter_legend"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="center_horizontal"
+            android:layout_marginTop="4dp"
+            android:gravity="center_vertical"
+            android:orientation="horizontal" />
+
+        <!-- Hidden compat views -->
+        <TextView
+            android:id="@+id/tv_grand_total"
+            android:layout_width="0dp"
+            android:layout_height="0dp"
+            android:fontFamily="@font/gill_sans"
+            android:visibility="gone" />
+
+        <TextView
+            android:id="@+id/tv_active_count"
+            android:layout_width="0dp"
+            android:layout_height="0dp"
+            android:fontFamily="@font/gill_sans"
+            android:visibility="gone" />
+
+        <TextView
+            android:id="@+id/tv_closed_count"
+            android:layout_width="0dp"
+            android:layout_height="0dp"
+            android:fontFamily="@font/gill_sans"
+            android:visibility="gone" />
+
+    </LinearLayout>
+</androidx.cardview.widget.CardView>

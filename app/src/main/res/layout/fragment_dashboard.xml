@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="@color/blue_pale"
+    android:orientation="vertical">
+
+    <!-- Date header -->
+    <include layout="@layout/dashboard_date_header" />
+
+    <!-- RecyclerView only - no shimmer -->
+    <androidx.recyclerview.widget.RecyclerView
+        android:id="@+id/rv_outer"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:clipToPadding="false"
+        android:fadeScrollbars="true"
+        android:overScrollMode="never"
+        android:paddingStart="@dimen/zero_dp"
+        android:paddingEnd="@dimen/ten_dp"
+        android:paddingBottom="@dimen/forty_dp"
+        android:scrollbarStyle="outsideOverlay"
+        android:visibility="visible" />
+</LinearLayout>

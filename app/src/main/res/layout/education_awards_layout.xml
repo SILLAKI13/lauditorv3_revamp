@@ -1,0 +1,45 @@
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:layout_marginTop="@dimen/ten_dp"
+    android:orientation="vertical">
+
+    <include
+        android:id="@+id/tv_title_education"
+        layout="@layout/black_normal_txt"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="@dimen/ten_dp" />
+
+    <LinearLayout
+        android:id="@+id/ll_education"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical" />
+
+    <include
+        android:id="@+id/tv_title_certification"
+        layout="@layout/black_normal_txt"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="@dimen/ten_dp" />
+
+    <LinearLayout
+        android:id="@+id/ll_certification"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical" />
+
+    <include
+        android:id="@+id/tv_title_awards"
+        layout="@layout/black_normal_txt"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="@dimen/ten_dp" />
+
+    <LinearLayout
+        android:id="@+id/ll_awards"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical" />
+</LinearLayout>

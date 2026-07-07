@@ -1,0 +1,205 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.cardview.widget.CardView xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:id="@+id/Card_Layout"
+    android:layout_width="@dimen/ThreeHundred_dp"
+    android:layout_height="@dimen/one_sixty"
+    android:layout_margin="@dimen/six_dp"
+    app:cardBackgroundColor="@color/white"
+    app:cardCornerRadius="@dimen/eighteen_sp"
+    app:cardElevation="@dimen/four_dp">
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginBottom="@dimen/ten_dp"
+        android:orientation="vertical"
+        android:paddingStart="@dimen/Fifteen_dp"
+        android:paddingTop="@dimen/Fifteen_dp"
+        android:paddingEnd="@dimen/Fifteen_dp">
+
+        <!-- ── Row 1 : icon · label · badge ─────────────────────────── -->
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:gravity="center_vertical"
+            android:orientation="horizontal">
+
+            <!-- Icon with oval background -->
+            <LinearLayout
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginEnd="@dimen/ten_dp"
+                android:layout_weight="1"
+                android:orientation="horizontal">
+
+                <FrameLayout
+                    android:layout_width="@dimen/forty_dp"
+                    android:layout_height="@dimen/forty_dp">
+
+                    <ImageView
+                        android:id="@+id/iv_icon_bg"
+                        android:layout_width="@dimen/forty_dp"
+                        android:layout_height="@dimen/forty_dp"
+                        android:src="@drawable/icon_bg_blue" />
+
+                    <ImageView
+                        android:id="@+id/iv_card_icon"
+                        android:layout_width="@dimen/twenty_dp"
+                        android:layout_height="@dimen/twenty_dp"
+                        android:layout_gravity="center"
+                        android:scaleType="fitCenter" />
+                </FrameLayout>
+
+            </LinearLayout>
+
+            <!-- Label (card type name) -->
+            <!-- Badge pill -->
+            <TextView
+                android:id="@+id/tv_badge"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:background="@drawable/pale_blue_circular"
+                android:fontFamily="@font/gill_sans_bold"
+                android:gravity="center"
+                android:minWidth="@dimen/twenty_dp"
+                android:paddingHorizontal="8dp"
+                android:paddingVertical="4dp"
+                android:text="0"
+                android:textColor="@color/white"
+                android:textSize="@dimen/Twelve_dp"
+                android:visibility="visible" />
+        </LinearLayout>
+
+        <!-- ── Divider ────────────────────────────────────────────────── -->
+        <!-- ── Row 2 : main content (shown when data exists) ─────────── -->
+        <TextView
+            android:id="@+id/tv_card_label"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="@dimen/two_dp"
+            android:ellipsize="end"
+            android:fontFamily="@font/gill_sans"
+            android:maxLines="1"
+            android:text="@string/new_message"
+            android:textColor="@color/grey_text"
+            android:textSize="@dimen/Fifteen_dp" />
+
+        <LinearLayout
+            android:id="@+id/ll_content"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:layout_gravity="center"
+            android:layout_marginTop="@dimen/four_dp"
+            android:gravity="center"
+            android:orientation="horizontal"
+            android:visibility="visible">
+
+            <LinearLayout
+                android:id="@+id/ll_client"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_gravity="center"
+                android:layout_weight="1"
+                android:gravity="center"
+                android:orientation="vertical">
+
+                <FrameLayout
+                    android:layout_width="@dimen/thirty_dp"
+                    android:layout_height="@dimen/thirty_dp"
+                    android:layout_marginBottom="@dimen/two_dp">
+
+                    <ImageView
+                        android:id="@+id/iv_team"
+                        android:layout_width="@dimen/thirty_dp"
+                        android:layout_height="@dimen/thirty_dp"
+                        android:src="@drawable/icon_bg_blue"
+                        app:tint="@color/dark_shaded_blue_bg" />
+
+                    <ImageView
+                        android:id="@+id/iv_teamIcon"
+                        android:layout_width="@dimen/twenty_dp"
+                        android:layout_height="@dimen/twenty_dp"
+                        android:layout_gravity="center"
+                        android:padding="@dimen/two_dp"
+                        android:scaleType="fitCenter"
+                        android:src="@drawable/dashboard_client_icon"
+                        app:tint="@color/dark_shaded_blue" />
+                </FrameLayout>
+
+                <include
+                    android:id="@+id/tv_client_count"
+                    layout="@layout/bold_txt_layout" />
+
+                <include
+                    android:id="@+id/tv_client"
+                    layout="@layout/grey_normal_txt"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_gravity="center"/>
+
+            </LinearLayout>
+
+            <LinearLayout
+                android:id="@+id/ll_team"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_gravity="center"
+                android:layout_weight="1"
+                android:gravity="center"
+                android:orientation="vertical">
+
+                <FrameLayout
+                    android:layout_width="@dimen/thirty_dp"
+                    android:layout_height="@dimen/thirty_dp"
+                    android:layout_marginBottom="@dimen/two_dp">
+
+                    <ImageView
+                        android:id="@+id/iv_client"
+                        android:layout_width="@dimen/thirty_dp"
+                        android:layout_height="@dimen/thirty_dp"
+                        android:src="@drawable/icon_bg_blue"
+                        app:tint="@color/lite_shaded_blue" />
+
+                    <ImageView
+                        android:id="@+id/iv_client_icon"
+                        android:layout_width="@dimen/twenty_dp"
+                        android:layout_height="@dimen/twenty_dp"
+                        android:layout_gravity="center"
+                        android:padding="@dimen/two_dp"
+                        android:scaleType="fitCenter"
+                        android:src="@drawable/dashboard_team_icon"
+                        app:tint="@color/blue_dark" />
+                </FrameLayout>
+
+                <include
+                    android:id="@+id/tv_team_count"
+                    layout="@layout/bold_txt_layout" />
+
+                <include
+                    android:id="@+id/tv_team"
+                    layout="@layout/grey_normal_txt"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_gravity="center" />
+
+            </LinearLayout>
+
+        </LinearLayout>
+
+        <TextView
+            android:id="@+id/tv_empty_text"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="@dimen/ten_dp"
+            android:fontFamily="@font/gill_sans"
+            android:text="No data available"
+            android:textColor="@color/grey_text"
+            android:textSize="@dimen/Twelve_dp"
+            android:visibility="gone" />
+
+    </LinearLayout>
+
+    <!-- ── Row 2 alt : empty state ───────────────────────────────── -->
+
+</androidx.cardview.widget.CardView>

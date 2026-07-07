@@ -1,0 +1,125 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="vertical"
+    android:background="@color/blue_pale"
+    android:paddingStart="@dimen/ten_dp"
+    android:paddingEnd="@dimen/ten_dp"
+    android:paddingBottom="@dimen/ten_dp">
+<!--    android:background="#F4F6FA"-->
+    <!-- ── Date Header ──────────────────────────────────────────── -->
+    <include
+        layout="@layout/dashboard_date_header"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="@dimen/ten_dp" />
+
+    <!-- ── Tab Row ─────────────────────────────────────────────── -->
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="@dimen/forty_dp"
+        android:layout_marginTop="@dimen/ten_dp"
+        android:background="@drawable/rectangular_white_background"
+        android:orientation="horizontal">
+
+        <TextView
+            android:id="@+id/bt_Myday"
+            android:layout_width="0dp"
+            android:layout_height="match_parent"
+            android:layout_weight="1"
+            android:background="@drawable/button_left_grey_bg"
+            android:gravity="center"
+            android:text="@string/my_day"
+            android:textColor="@color/Blue_text_color"
+            android:textSize="@dimen/Fifteen_dp"
+            android:textStyle="bold" />
+
+        <TextView
+            android:id="@+id/bt_kpi"
+            android:layout_width="0dp"
+            android:layout_height="match_parent"
+            android:layout_weight="1"
+            android:background="@drawable/button_right_white_bg"
+            android:fontFamily="@font/gill_sans"
+            android:gravity="center"
+            android:text="KPI"
+            android:textColor="@color/black"
+            android:textSize="@dimen/Fifteen_dp"
+            android:textStyle="bold" />
+
+    </LinearLayout>
+
+    <!-- ── Personalize Button ──────────────────────────────────── -->
+    <TextView
+        android:id="@+id/personalize_btn"
+        android:layout_width="wrap_content"
+        android:layout_height="32dp"
+        android:layout_gravity="end"
+        android:layout_marginTop="6dp"
+        android:layout_marginBottom="4dp"
+        android:background="@drawable/rectangular_complete_blue_background"
+        android:gravity="center"
+        android:paddingStart="@dimen/Fifteen_dp"
+        android:paddingEnd="@dimen/Fifteen_dp"
+        android:text="@string/personalize"
+        android:textColor="@color/white"
+        android:textSize="@dimen/Twelve_dp" />
+
+    <!-- ── Two-column content (tablet = side by side) ──────────── -->
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal">
+
+        <!-- LEFT — My Day (phone: full width) -->
+        <LinearLayout
+            android:id="@+id/ll_column_left"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical">
+
+            <!-- "Today's Activities" section header -->
+            <include
+                android:id="@+id/section_myday"
+                layout="@layout/dashboard_section_header_en"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content" />
+
+            <androidx.recyclerview.widget.RecyclerView
+                android:id="@+id/rv_myday"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:clipToPadding="false"
+                android:nestedScrollingEnabled="false" />
+
+        </LinearLayout>
+
+        <!-- RIGHT — KPI (phone: GONE, tablet: weight=1) -->
+        <LinearLayout
+            android:id="@+id/ll_column_right"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="@dimen/ten_dp"
+            android:orientation="vertical"
+            android:visibility="gone">
+
+            <!-- "Business Metrics" section header -->
+            <include
+                android:id="@+id/section_kpi"
+                layout="@layout/dashboard_section_header_en"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content" />
+
+            <androidx.recyclerview.widget.RecyclerView
+                android:id="@+id/rv_kpi"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:clipToPadding="false"
+                android:nestedScrollingEnabled="false" />
+
+        </LinearLayout>
+
+    </LinearLayout>
+
+</LinearLayout>

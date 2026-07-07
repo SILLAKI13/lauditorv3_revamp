@@ -1,0 +1,112 @@
+<androidx.appcompat.widget.LinearLayoutCompat xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:id="@+id/linearLayoutCompat2"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:background="@drawable/rectangular_white_background"
+    android:orientation="vertical"
+    android:padding="@dimen/four_dp"
+    tools:context=".MainActivity">
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:background="@drawable/background_transparent"
+        android:gravity="center"
+        android:orientation="horizontal">
+
+        <ImageView
+            android:id="@+id/close_details"
+            android:layout_width="@dimen/thirty_dp"
+            android:layout_height="@dimen/thirty_dp"
+            android:layout_gravity="center"
+            android:layout_margin="@dimen/ten_dp"
+            android:background="@drawable/cancel_icon"
+            android:fontFamily="@font/gill_sans"
+            android:padding="@dimen/ten_dp"
+            android:textColor="@color/black"
+            android:textSize="@dimen/Fifteen_dp"
+            android:visibility="gone" />
+
+        <TextView
+            android:id="@+id/header_name"
+            android:layout_width="match_parent"
+            android:layout_height="@dimen/forty_dp"
+            android:layout_gravity="center"
+            android:layout_margin="@dimen/four_dp"
+            android:autoSizeMaxTextSize="@dimen/seventeen_dp"
+            android:autoSizeMinTextSize="@dimen/five_dp"
+            android:autoSizeTextType="uniform"
+            android:fontFamily="@font/gill_sans"
+            android:gravity="start"
+            android:padding="@dimen/ten_dp"
+            android:text="@string/update_group_s"
+            android:textColor="@color/Primary_new"
+            android:textFontWeight="500"
+            android:textSize="@dimen/twenty_dp"
+            android:visibility="visible" />
+    </LinearLayout>
+
+    <!--this is the actual edit text which takes the input-->
+    <include
+        android:id="@+id/et_search_members"
+        layout="@layout/search_layout_new" />
+
+    <ScrollView
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content">
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical">
+
+            <TextView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:fontFamily="@font/gill_sans"
+                android:text="@string/select_head_of_the_practice"
+                android:textColor="@color/Blue_text_color"
+                android:textSize="@dimen/twenty_dp"
+                android:visibility="gone" />
+
+            <LinearLayout
+                android:id="@+id/ll_groups"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="vertical"
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintTop_toBottomOf="@+id/ll_add_tag" />
+
+            <include
+                android:id="@+id/rv_group_update"
+                layout="@layout/recyclerview"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_margin="@dimen/four_dp"
+                android:visibility="visible" />
+
+            <androidx.appcompat.widget.LinearLayoutCompat
+                android:id="@+id/ll_buttons_1"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_margin="@dimen/ten_dp"
+                android:orientation="horizontal">
+
+                <include
+                    android:id="@+id/btn_cancel_save"
+                    layout="@layout/cancel_button" />
+
+                <include
+                    android:id="@+id/btn_create"
+                    layout="@layout/submit_button" />
+            </androidx.appcompat.widget.LinearLayoutCompat>
+        </LinearLayout>
+    </ScrollView>
+</androidx.appcompat.widget.LinearLayoutCompat>
+
+
+
+

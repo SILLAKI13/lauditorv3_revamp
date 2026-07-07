@@ -1,0 +1,95 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:id="@+id/Card_Layout"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:layout_margin="@dimen/ten_dp"
+    android:background="@drawable/rectangular_white_background"
+    android:elevation="@dimen/four_dp"
+    android:gravity="center_vertical"
+    android:orientation="horizontal"
+    android:padding="@dimen/ten_dp">
+
+    <!-- LEFT SIDE -->
+    <LinearLayout
+        android:id="@+id/ll_left"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:layout_weight="1"
+        android:gravity="center_vertical"
+        android:orientation="horizontal">
+
+        <!-- ICON -->
+        <ImageView
+            android:id="@+id/Card_Image"
+            android:layout_width="@dimen/forty_dp"
+            android:layout_height="@dimen/forty_dp"
+            android:layout_marginEnd="@dimen/ten_dp"
+            android:background="@drawable/client_chat_icon"
+            android:contentDescription="@string/todo" />
+
+        <!-- TEXT COLUMN -->
+        <LinearLayout
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:orientation="vertical"
+            android:paddingStart="@dimen/eight_dp">
+
+            <!-- TITLE -->
+            <FrameLayout
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content">
+
+                <include
+                    android:id="@+id/tv_client_chat"
+                    layout="@layout/blue_normal_txt" />
+            </FrameLayout>
+
+            <!-- SUB TITLE -->
+            <FrameLayout
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginStart="@dimen/five_dp"
+                android:layout_marginTop="2dp">
+
+                <include
+                    android:id="@+id/tv_chat_msg"
+                    layout="@layout/black_normal_txt"
+                    android:text="Messages" />
+            </FrameLayout>
+
+            <!-- MESSAGE -->
+            <FrameLayout
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginStart="@dimen/five_dp"
+                android:layout_marginTop="4dp">
+
+                <include
+                    android:id="@+id/tv_chat_new"
+                    layout="@layout/count_green_normal_txt"
+                    android:text="New Messages" />
+            </FrameLayout>
+
+        </LinearLayout>
+    </LinearLayout>
+
+    <!-- RIGHT SIDE -->
+    <LinearLayout
+        android:layout_width="wrap_content"
+        android:layout_height="match_parent"
+        android:gravity="center_vertical"
+        android:orientation="horizontal">
+
+        <include layout="@layout/side_line_layout" />
+
+        <include
+            android:id="@+id/clientChat_count"
+            layout="@layout/tv_count_circle"
+            android:layout_width="@dimen/forty_dp"
+            android:layout_height="@dimen/forty_dp"
+            android:layout_marginStart="@dimen/eight_dp" />
+    </LinearLayout>
+
+</LinearLayout>

@@ -1,0 +1,41 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.cardview.widget.CardView xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:id="@+id/card_view"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    app:cardBackgroundColor="@color/white"
+    app:cardCornerRadius="@dimen/eight_dp"
+    app:cardElevation="@dimen/four_dp"
+    app:cardUseCompatPadding="true">
+
+    <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal">
+
+        <ImageView
+            android:id="@+id/attachmentImage"
+            android:layout_width="@dimen/twenty_dp"
+            android:layout_height="@dimen/twenty_dp"
+            android:layout_margin="@dimen/four_dp"
+            android:src="@drawable/attachment_icons" />
+
+        <TextView
+            android:id="@+id/attachmentFilename"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_gravity="center_vertical"
+            android:layout_margin="@dimen/four_dp"
+            android:textColor="@color/black"
+            android:layout_weight="1" />
+
+        <ImageView
+            android:id="@+id/closeIcon"
+            android:layout_width="@dimen/twenty_dp"
+            android:layout_height="@dimen/twenty_dp"
+            android:layout_margin="@dimen/four_dp"
+            android:src="@drawable/cancel_red_icon" />
+
+    </LinearLayout>
+</androidx.cardview.widget.CardView>

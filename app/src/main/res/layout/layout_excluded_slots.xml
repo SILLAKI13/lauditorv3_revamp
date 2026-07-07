@@ -1,0 +1,95 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:layout_marginTop="@dimen/ten_dp"
+    android:background="@drawable/bg_exclude_container"
+    android:orientation="vertical"
+    android:padding="@dimen/Fifteen_dp">
+
+    <!-- HEADER -->
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:gravity="center_vertical"
+        android:orientation="horizontal">
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:fontFamily="@font/gill_sans"
+            android:text="Select slots to exclude"
+            android:textColor="@color/black"
+            android:textSize="@dimen/Fifteen_dp"
+            android:textStyle="bold" />
+
+        <View
+            android:layout_width="0dp"
+            android:layout_height="0dp"
+            android:layout_weight="1" />
+
+        <ImageView
+            android:id="@+id/btnClose"
+            android:layout_width="@dimen/twenty_dp"
+            android:layout_height="@dimen/twenty_dp"
+            android:src="@drawable/close_circle"
+            app:tint="@color/lite_grey" />
+    </LinearLayout>
+
+    <!-- SUB TEXT -->
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="@dimen/six_dp"
+        android:fontFamily="@font/gill_sans"
+        android:text="Click 30-minute slots to exclude (0/4 slots, max 2 hours)"
+        android:textColor="@color/lite_grey"
+        android:textSize="@dimen/Twelve_dp" />
+
+    <!-- SLOT GRID -->
+    <GridLayout
+        android:id="@+id/gridSlots"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="@dimen/ten_dp"
+        android:columnCount="2">
+
+        <!-- SLOT ITEM TEMPLATE -->
+
+
+    </GridLayout>
+
+    <!-- ACTION BUTTONS -->
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="@dimen/Fifteen_dp"
+        android:gravity="end"
+        android:orientation="horizontal">
+
+        <TextView
+            android:id="@+id/btnCancel"
+            android:layout_width="wrap_content"
+            android:layout_height="@dimen/thirty_dp"
+            android:background="@drawable/rectangle_grey_background"
+            android:fontFamily="@font/gill_sans"
+            android:gravity="center"
+            android:paddingHorizontal="@dimen/Fifteen_dp"
+            android:text="Cancel"
+            android:textColor="@color/black" />
+
+        <TextView
+            android:id="@+id/btnSave"
+            android:layout_width="wrap_content"
+            android:layout_height="@dimen/thirty_dp"
+            android:layout_marginStart="@dimen/ten_dp"
+            android:background="@drawable/rectangle_blue_bg"
+            android:fontFamily="@font/gill_sans"
+            android:gravity="center"
+            android:paddingHorizontal="@dimen/twenty_dp"
+            android:text="Save"
+            android:textColor="@color/white" />
+    </LinearLayout>
+
+</LinearLayout>

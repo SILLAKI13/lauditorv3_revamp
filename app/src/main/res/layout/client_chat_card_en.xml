@@ -1,0 +1,90 @@
+<?xml version="1.0" encoding="utf-8"?><!--  res/layout/client_chat_card.xml
+      Reused for Team Chat — holder swaps Card_Image drawable + labels at bind time -->
+<androidx.cardview.widget.CardView xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:id="@+id/Card_Layout"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:layout_margin="@dimen/ten_dp"
+    app:cardBackgroundColor="@color/white"
+    app:cardCornerRadius="@dimen/Fifteen_dp"
+    app:cardElevation="2dp">
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        android:padding="@dimen/Fifteen_dp">
+
+        <!-- Row 1: icon + badge -->
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:gravity="center_vertical"
+            android:orientation="horizontal">
+
+            <LinearLayout
+                android:layout_width="36dp"
+                android:layout_height="36dp"
+                android:background="@drawable/completed_badge"
+                android:gravity="center">
+                <!-- Swapped to team icon by TeamChatHolder at bind time -->
+                <ImageView
+                    android:id="@+id/Card_Image"
+                    android:layout_width="18dp"
+                    android:layout_height="18dp"
+                    android:src="@drawable/ic_chat_green" />
+            </LinearLayout>
+
+            <Space
+                android:layout_width="0dp"
+                android:layout_height="1dp"
+                android:layout_weight="1" />
+
+            <TextView
+                android:id="@+id/clientChat_count"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:background="@drawable/completed_badge"
+                android:gravity="center"
+                android:minWidth="22dp"
+                android:paddingStart="7dp"
+                android:paddingTop="2dp"
+                android:paddingEnd="7dp"
+                android:paddingBottom="2dp"
+                android:textColor="@color/white"
+                android:textSize="@dimen/Twelve_dp"
+                android:textStyle="bold" />
+        </LinearLayout>
+
+        <!-- "Client" / "Team" label -->
+        <TextView
+            android:id="@+id/tv_client_chat"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="@dimen/ten_dp"
+            android:textColor="@color/grey_color_dark"
+            android:textSize="@dimen/Twelve_dp" />
+
+        <!-- "Messages" -->
+        <TextView
+            android:id="@+id/tv_chat_msg"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="2dp"
+            android:fontFamily="@font/gill_sans"
+            android:textColor="@color/black"
+            android:textSize="@dimen/Fifteen_dp"
+            android:textStyle="bold" />
+
+        <!-- "New Messages" / "No New Messages" -->
+        <TextView
+            android:id="@+id/tv_chat_new"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="2dp"
+            android:textColor="@color/scheduled_text"
+            android:textSize="@dimen/Twelve_dp" />
+
+    </LinearLayout>
+</androidx.cardview.widget.CardView>

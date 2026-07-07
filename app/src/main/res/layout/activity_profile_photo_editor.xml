@@ -1,0 +1,300 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="vertical"
+    android:background="@color/blue_pale">
+
+
+    <!-- ══════════════════════════════════════════════════════════════
+         Title bar — back arrow on left, "Set profile photo" centered
+         ══════════════════════════════════════════════════════════════ -->
+    <RelativeLayout
+        android:id="@+id/rl_title_bar"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:background="@color/blue_pale"
+        android:paddingStart="@dimen/ten_dp"
+        android:paddingEnd="@dimen/ten_dp"
+        android:paddingBottom="@dimen/ten_dp">
+
+        <!-- Back arrow (left) -->
+        <ImageView
+            android:id="@+id/ivBack"
+            android:layout_width="@dimen/forty_dp"
+            android:layout_height="@dimen/forty_dp"
+            android:layout_alignParentStart="true"
+            android:layout_centerVertical="true"
+            android:paddingStart="@dimen/ten_dp"
+            android:paddingEnd="@dimen/ten_dp"
+            android:src="@drawable/back_arrow"
+            android:contentDescription="Back"
+            android:background="?attr/selectableItemBackgroundBorderless"
+            app:tint="@color/blue" />
+
+        <!-- "Set profile photo" — to the right of image with no gap -->
+        <TextView
+            android:id="@+id/tvTitle"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_toEndOf="@id/ivBack"
+            android:layout_centerVertical="true"
+            android:text="Set profile photo"
+            android:textColor="@color/Blue_text_color"
+            android:textSize="@dimen/eighteen_sp"
+            android:fontFamily="@font/gill_sans"
+            android:textStyle="bold" />
+
+    </RelativeLayout>
+
+
+    <!-- ══════════════════════════════════════════════════════════════
+         Circular crop view — fills all remaining space
+         ══════════════════════════════════════════════════════════════ -->
+    <com.digicoffer.lauditor.FirmProfile.CropImageView
+        android:id="@+id/cropImageView"
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        android:layout_weight="1" />
+
+    <View
+        android:layout_width="match_parent"
+        android:layout_height="20dp" />
+
+    <TextView
+        android:id="@+id/tvChoosePhoto"
+        android:layout_width="wrap_content"
+        android:layout_height="44dp"
+        android:gravity="center"
+        android:text="Choose photo"
+        android:textColor="@color/white"
+        android:textSize="14sp"
+        android:paddingStart="@dimen/ten_dp"
+        android:layout_gravity="center"
+        android:paddingEnd="@dimen/ten_dp"
+        android:fontFamily="@font/gill_sans"
+        android:textStyle="bold"
+        android:layout_marginBottom="10dp"
+        android:background="@drawable/save_button_background" />
+
+    <!-- ══════════════════════════════════════════════════════════════
+         Hint text below crop circle  (matches screenshot)
+         ══════════════════════════════════════════════════════════════ -->
+    <TextView
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="@string/pinch_or_scroll_to_zoom_drag_to_reposition"
+        android:textColor="@color/grey_text_neww"
+        android:textSize="12sp"
+        android:gravity="center"
+        android:paddingTop="8dp"
+        android:paddingBottom="4dp"
+        android:fontFamily="@font/gill_sans" />
+
+
+    <!-- ══════════════════════════════════════════════════════════════
+         Bottom control panel
+         ══════════════════════════════════════════════════════════════ -->
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        android:paddingTop="8dp"
+        android:paddingBottom="16dp"
+        android:paddingStart="16dp"
+        android:paddingEnd="16dp">
+
+
+        <!-- ── Zoom row: [−]  SeekBar  [+] ──────────────────────────── -->
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            android:gravity="center_vertical"
+            android:layout_marginBottom="12dp">
+
+
+            <!-- Zoom Out (−) -->
+            <TextView
+                android:id="@+id/tvZoomOut"
+                android:layout_width="36dp"
+                android:layout_height="36dp"
+                android:gravity="center"
+
+                android:textColor="@android:color/white"
+                android:textSize="22sp"
+                android:background="@drawable/zoom_out" />
+
+
+            <!-- Zoom SeekBar -->
+            <SeekBar
+                android:id="@+id/zoomSeekBar"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:layout_marginStart="8dp"
+                android:layout_marginEnd="8dp"
+                android:progressTint="@color/Blue_text_color"
+                android:thumbTint="@color/Blue_text_color" />
+
+
+            <!-- Zoom In (+) -->
+            <TextView
+                android:id="@+id/tvZoomIn"
+                android:layout_width="36dp"
+                android:layout_height="36dp"
+                android:gravity="center"
+
+                android:textColor="@android:color/white"
+                android:textSize="22sp"
+                android:background="@drawable/zoom_inn" />
+
+
+        </LinearLayout>
+
+
+        <!-- ── Rotate row ────────────────────────────────────────────── -->
+
+
+
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            android:gravity="center"
+            android:layout_marginBottom="16dp">
+
+
+            <!-- Rotate Left -->
+            <LinearLayout
+                android:id="@+id/llRotateLeft"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:orientation="vertical"
+                android:gravity="center"
+                android:padding="8dp"
+                android:background="?attr/selectableItemBackgroundBorderless">
+
+
+                <ImageView
+                    android:id ="@+id/rotate_left"
+                    android:layout_width="28dp"
+                    android:layout_height="28dp"
+                    android:src="@drawable/rotate_left"
+                    android:contentDescription="Rotate Left" />
+
+
+                <TextView
+                    android:id="@+id/tvRotateLeft"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="Rotate Left"
+                    android:textColor="@color/grey_text_neww"
+                    android:textSize="12sp"
+                    android:fontFamily="@font/gill_sans"
+                    android:layout_marginTop="4dp" />
+
+
+            </LinearLayout>
+
+
+            <!-- Rotate Right (similar structure) -->
+            <LinearLayout
+                android:id="@+id/llRotateRight"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:orientation="vertical"
+                android:gravity="center"
+                android:padding="8dp"
+                android:background="?attr/selectableItemBackgroundBorderless">
+
+
+                <ImageView
+                    android:id = "@+id/rotate_right"
+                    android:layout_width="28dp"
+                    android:layout_height="28dp"
+                    android:src="@drawable/rotate_right"
+
+                    />
+
+
+                <TextView
+                    android:id="@+id/tvRotateRight"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="Rotate Right"
+                    android:textColor="@color/grey_text_neww"
+                    android:fontFamily="@font/gill_sans"
+                    android:textSize="12sp"
+                    android:layout_marginTop="4dp" />
+
+
+            </LinearLayout>
+
+
+        </LinearLayout>
+
+
+        <!-- Divider -->
+
+
+
+
+        <!-- ── Choose Photo button (above Cancel/Save, full width) ───── -->
+
+
+
+
+        <!-- ── Cancel / Save row ─────────────────────────────────────── -->
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            android:weightSum="2">
+
+
+            <!-- Cancel -->
+            <TextView
+                android:id="@+id/tvCancel"
+                android:layout_width="0dp"
+                android:layout_height="48dp"
+                android:layout_weight="1"
+                android:gravity="center"
+                android:text="✕  Cancel"
+                android:textColor="#AAAAAA"
+                android:textSize="14sp"
+                android:fontFamily="@font/gill_sans"
+                android:textStyle="bold"
+                android:layout_marginEnd="6dp"
+                android:background="@drawable/cancel_button_background" />
+
+
+            <!-- Save -->
+            <TextView
+                android:id="@+id/tvSave"
+                android:layout_width="0dp"
+                android:layout_height="48dp"
+                android:layout_weight="1"
+                android:gravity="center"
+                android:text="✓  Save"
+                android:textColor="@android:color/white"
+                android:textSize="14sp"
+                android:fontFamily="@font/gill_sans"
+                android:textStyle="bold"
+                android:layout_marginStart="6dp"
+                android:background="@drawable/save_button_background" />
+
+
+        </LinearLayout>
+
+
+    </LinearLayout>
+
+
+</LinearLayout>
+

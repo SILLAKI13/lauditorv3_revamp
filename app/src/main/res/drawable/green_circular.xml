@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- res/drawable/circular.xml -->
+<!-- defines the circular shape and its properties -->
+<shape xmlns:android="http://schemas.android.com/apk/res/android"
+    android:innerRadius="@dimen/zero_dp"
+    android:shape="ring"
+    android:thicknessRatio="2.0"
+    android:useLevel="false" >
+
+    <gradient  android:centerColor="#3FAF3F" android:endColor="#007705" android:startColor="#007705" android:type="linear" android:angle="90" />
+
+
+    <stroke
+        android:width="@dimen/zero_dp"
+        android:color="@color/green_color" />
+</shape>

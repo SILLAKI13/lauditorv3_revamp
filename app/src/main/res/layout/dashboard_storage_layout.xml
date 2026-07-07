@@ -1,0 +1,38 @@
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="wrap_content"
+    android:layout_height="wrap_content"
+    android:layout_gravity="center_vertical"
+    android:layout_marginEnd="@dimen/four_dp"
+    android:layout_marginStart="@dimen/four_dp"
+    android:baselineAligned="true"
+    android:gravity="center_vertical"
+    android:orientation="vertical">
+
+    <include
+        android:id="@+id/tv_total"
+        layout="@layout/blue_normal_txt"
+        android:layout_width="wrap_content"
+        android:layout_height="@dimen/forty_dp"
+        android:layout_weight="1" />
+
+    <LinearLayout
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_gravity="center_vertical"
+        android:layout_marginStart="@dimen/two_dp"
+        android:baselineAligned="true"
+        android:gravity="center_vertical"
+        android:orientation="horizontal">
+
+        <include
+            android:id="@+id/tv_total_data_storage"
+            layout="@layout/count_green_normal_txt" />
+
+        <include
+            android:id="@+id/tv_tot_gb"
+            layout="@layout/black_normal_txt"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="bottom" />
+    </LinearLayout>
+</LinearLayout>

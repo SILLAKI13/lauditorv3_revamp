@@ -1,0 +1,42 @@
+<TextView xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:id="@+id/tv_spinner_view"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:layout_gravity="center_vertical"
+    android:layout_weight="1"
+    android:background="@drawable/rectangle_sharp_grey_bg"
+    android:drawablePadding="@dimen/ten_dp"
+    android:elevation="@dimen/four_dp"
+    android:ellipsize="end"
+    android:fontFamily="@font/gill_sans"
+    android:gravity="center_vertical"
+    android:maxLines="1"
+    android:layout_marginTop="@dimen/ten_dp"
+    android:padding="@dimen/Twelve_dp"
+    android:text="@string/file"
+    android:textColor="@color/black"
+    android:textSize="@dimen/Fifteen_dp"
+    app:drawableRightCompat="@drawable/drop_down_s20" />
+
+    <!--    <ImageView-->
+    <!--        android:id="@+id/img_dropdown_icon"-->
+    <!--        android:layout_width="@dimen/twenty_dp"-->
+    <!--        android:layout_height="@dimen/twenty_dp"-->
+    <!--        android:layout_gravity="center_vertical"-->
+    <!--        android:layout_marginEnd="@dimen/Fifteen_dp"-->
+    <!--        android:contentDescription="@string/image_1"-->
+    <!--        android:src="@drawable/drop_down_blue"-->
+    <!--        android:visibility="visible" />-->
+
+    <!--    <ImageView-->
+    <!--        android:id="@+id/img_clear_icon"-->
+    <!--        android:layout_width="@dimen/thirty_dp"-->
+    <!--        android:layout_height="@dimen/thirty_dp"-->
+    <!--        android:layout_gravity="center_vertical"-->
+    <!--        android:layout_marginStart="@dimen/four_dp"-->
+    <!--        android:layout_marginEnd="@dimen/eight_dp"-->
+    <!--        android:contentDescription="@string/image_2"-->
+    <!--        android:src="@drawable/simple_cancel_blue"-->
+    <!--        android:visibility="gone" />-->
+    <!--    </LinearLayout>-->

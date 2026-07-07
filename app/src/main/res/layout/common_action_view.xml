@@ -1,0 +1,25 @@
+<androidx.cardview.widget.CardView xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:id="@+id/action_list_card"
+    android:layout_width="@dimen/one_fifty_dp"
+    android:layout_height="wrap_content"
+    android:layout_marginTop="@dimen/Fifty_dp"
+    android:layout_marginEnd="@dimen/ten_dp"
+    android:elevation="@dimen/four_dp"
+    android:translationZ="@dimen/four_dp"
+    android:visibility="gone"
+    app:cardBackgroundColor="@color/white"
+    app:cardCornerRadius="@dimen/ten_dp"
+    app:cardUseCompatPadding="false"
+    app:layout_constraintEnd_toEndOf="parent"
+    app:layout_constraintTop_toTopOf="@+id/cv_view_documents">
+
+    <ListView
+        android:id="@+id/action_list"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:divider="@color/light_grey"
+        android:dividerHeight="@dimen/point_five"
+        android:scrollbars="none" />
+
+</androidx.cardview.widget.CardView>

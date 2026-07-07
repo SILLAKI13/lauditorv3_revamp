@@ -1,0 +1,10 @@
+<CheckBox android:id="@+id/chk_selected"
+    android:layout_width="@dimen/twenty_two_dp"
+    android:layout_height="@dimen/twenty_two_dp"
+    android:layout_gravity="center_vertical"
+    android:layout_marginEnd="@dimen/ten_dp"
+    android:background="@drawable/checkbox_circle_selector"
+    android:button="@null"
+    android:clickable="true"
+    android:focusable="true"
+    xmlns:android="http://schemas.android.com/apk/res/android" />

@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="utf-8"?>
+<com.google.android.material.textfield.TextInputEditText xmlns:android="http://schemas.android.com/apk/res/android"
+    android:id="@+id/et_Search"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:layout_margin="@dimen/four_dp"
+    android:layout_weight="1"
+    android:background="@drawable/rectangular_grey_background"
+    android:imeOptions="actionDone"
+    android:importantForAutofill="no"
+    android:inputType="textNoSuggestions"
+    android:maxLines="1"
+    android:padding="@dimen/ten_dp" />

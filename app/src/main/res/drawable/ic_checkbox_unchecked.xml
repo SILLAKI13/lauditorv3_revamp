@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="utf-8"?>
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="@dimen/twenty_five"
+    android:height="@dimen/twenty_five"
+    android:viewportWidth="22"
+    android:viewportHeight="22">
+
+    <!-- White filled rounded square with grey stroke — larger corner radius (~5dp) -->
+    <path
+        android:fillColor="#FFFFFF"
+        android:pathData="M7,2 H15 Q20,2 20,7 V15 Q20,20 15,20 H7 Q2,20 2,15 V7 Q2,2 7,2 Z"
+        android:strokeColor="#CCCCCC"
+        android:strokeWidth="1.5" />
+
+</vector>

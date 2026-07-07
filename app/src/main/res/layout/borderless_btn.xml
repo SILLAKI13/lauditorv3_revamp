@@ -1,0 +1,11 @@
+<TextView xmlns:android="http://schemas.android.com/apk/res/android"
+    android:id="@+id/borderLess_btn"
+    android:layout_width="wrap_content"
+    android:layout_height="wrap_content"
+    android:background="@drawable/background_transparent"
+    android:fontFamily="@font/gill_sans"
+    android:padding="@dimen/ten_dp"
+    android:text="@string/kpis"
+    android:gravity="center"
+    android:textAllCaps="false"
+    android:textColor="@color/black" />

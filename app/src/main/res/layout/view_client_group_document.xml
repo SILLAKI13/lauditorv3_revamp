@@ -1,0 +1,114 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content">
+
+    <RelativeLayout
+        android:id="@+id/rv_doc_details"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="@dimen/ten_dp"
+        android:background="@drawable/rectangle_light_grey"
+        android:padding="@dimen/four_dp">
+
+        <ImageView
+            android:id="@+id/iv_doc_image"
+            android:layout_width="80dp"
+            android:layout_height="80dp"
+            android:layout_gravity="center"
+            android:layout_marginStart="@dimen/four_dp"
+            android:layout_marginTop="@dimen/twenty_dp"
+            android:layout_marginEnd="@dimen/four_dp"
+            android:layout_marginBottom="@dimen/four_dp"
+            android:background="@drawable/flower_image"
+            android:visibility="invisible" />
+
+
+        <RelativeLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content">
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_alignParentStart="true"
+                android:layout_alignParentEnd="true"
+                android:layout_marginStart="@dimen/four_dp"
+                android:layout_marginEnd="45dp"
+                android:padding="@dimen/four_dp"
+                android:orientation="vertical">
+
+                <include
+                    android:id="@+id/tv_image_name"
+                    layout="@layout/uploadtext"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="@dimen/zero_dp"
+                    android:layout_marginBottom="@dimen/four_dp" />
+
+                <include
+                    android:id="@+id/tv_client_name"
+                    layout="@layout/uploadtext"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content" />
+
+                <include
+                    android:id="@+id/tv_doc_description"
+                    layout="@layout/uploadtext"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content" />
+            </LinearLayout>
+
+            <CheckBox
+                android:id="@+id/checkbox_id"
+                android:layout_width="@dimen/thirty_dp"
+                android:layout_height="@dimen/thirty_dp"
+                android:layout_alignParentEnd="true"
+                android:layout_marginStart="@dimen/ten_dp"
+                android:layout_marginTop="@dimen/ten_dp"
+                android:layout_marginEnd="@dimen/ten_dp"
+                android:layout_marginBottom="@dimen/ten_dp"
+                android:buttonTint="@color/green_color" />
+<!--            android:background="@drawable/check_box" android:button="@drawable/checkbox_tick"-->
+        </RelativeLayout>
+
+        <RelativeLayout
+            android:id="@+id/rv_dates"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_below="@id/iv_doc_image"
+            android:layout_marginStart="@dimen/four_dp"
+            android:layout_marginTop="@dimen/zero_dp"
+            android:layout_marginEnd="@dimen/four_dp"
+            android:layout_marginBottom="@dimen/four_dp"
+            android:background="@drawable/rectangular_button_green_count"
+            android:orientation="vertical"
+            android:padding="@dimen/two_dp">
+
+            <include layout="@layout/createdocument" />
+
+            <include
+                android:id="@+id/tv_created_date"
+                layout="@layout/createdocument"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_toEndOf="@id/tv_created" />
+
+            <include
+                android:id="@+id/tv_Expiration"
+                layout="@layout/createdocument"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_below="@+id/tv_created" />
+
+            <include
+                android:id="@+id/tv_Expiration_date"
+                layout="@layout/createdocument"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_below="@+id/tv_created_date"
+                android:layout_toEndOf="@id/tv_Expiration" />
+        </RelativeLayout>
+    </RelativeLayout>
+</RelativeLayout>

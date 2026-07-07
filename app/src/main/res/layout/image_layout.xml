@@ -1,0 +1,83 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:orientation="vertical">
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_margin="@dimen/four_dp"
+        android:orientation="horizontal">
+
+        <include
+            android:id="@+id/tv_content"
+            layout="@layout/title_name_layout"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="center"
+            android:layout_weight="1" />
+
+        <ImageView
+            android:id="@+id/iv_expand"
+            android:layout_width="@dimen/twenty_five"
+            android:layout_height="@dimen/twenty_five"
+            android:layout_gravity="center"
+            android:src="@drawable/overview_icion" />
+
+        <include
+            android:id="@+id/iv_remove"
+            layout="@layout/simple_cancel_icon"
+            android:layout_width="@dimen/thirty_dp"
+            android:layout_height="@dimen/thirty_dp" />
+
+    </LinearLayout>
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_margin="@dimen/ten_dp"
+        android:background="@drawable/rectangular_white_background"
+        android:elevation="@dimen/four_dp"
+        android:gravity="center"
+        android:orientation="vertical"
+        android:padding="@dimen/ten_dp">
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="@dimen/ten_dp"
+            android:layout_marginBottom="@dimen/ten_dp"
+            android:gravity="center"
+            android:orientation="horizontal">
+
+            <include
+                android:id="@+id/btn_browse"
+                layout="@layout/submit_button"
+                android:layout_width="wrap_content"
+                android:layout_height="@dimen/forty_dp"
+                android:layout_gravity="center" />
+
+            <include
+                android:id="@+id/ll_image_view"
+                layout="@layout/add_image_name"
+                android:visibility="gone" />
+
+        </LinearLayout>
+
+        <LinearLayout
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:gravity="center">
+
+            <include layout="@layout/warning_icon" />
+
+            <include
+                android:id="@+id/tv_max_File"
+                layout="@layout/black_normal_txt"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginStart="@dimen/four_dp" />
+        </LinearLayout>
+    </LinearLayout>
+</LinearLayout>

@@ -1,0 +1,127 @@
+<?xml version="1.0" encoding="utf-8"?>
+<ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:background="@color/white"
+    android:layout_marginBottom="@dimen/four_dp"
+    android:layout_height="wrap_content">
+<androidx.constraintlayout.widget.ConstraintLayout
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    >
+
+<LinearLayout
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:orientation="horizontal"
+    android:background="@drawable/rectangle_light_grey"
+    app:layout_constraintBottom_toBottomOf="parent"
+    app:layout_constraintTop_toTopOf="parent"
+    app:layout_constraintStart_toStartOf="parent"
+    app:layout_constraintEnd_toEndOf="parent"
+    >
+
+
+    <LinearLayout
+        android:id="@+id/ll_documents"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        android:gravity="center"
+        android:layout_weight="1"
+
+
+       >
+        <TextView
+            android:id="@+id/tv_doc_name"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_margin="@dimen/ten_dp"
+            android:layout_weight="1"
+            android:gravity="start"
+            android:layout_gravity="center"
+            android:padding="@dimen/four_dp"
+            android:fontFamily="@font/gill_sans"
+            android:text="Date"
+            android:textSize="@dimen/Fifteen_dp"
+            android:textColor="@color/black"/>
+    </LinearLayout>
+<LinearLayout
+    android:layout_width="wrap_content"
+    android:layout_height="wrap_content"
+    android:orientation="horizontal"
+    android:layout_gravity="center"
+    android:gravity="end"
+   android:layout_weight="1"
+
+    >
+
+    <ImageButton
+        android:id="@+id/iv_view"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:background="@color/dark_grey"
+       android:layout_margin="@dimen/four_dp"
+        android:visibility="gone"
+        android:src="@drawable/view_document">
+
+    </ImageButton>
+    <ImageButton
+        android:id="@+id/iv_copy"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+    android:layout_margin="@dimen/four_dp"
+        android:visibility="gone"
+        android:background="@color/dark_grey"
+        android:src="@drawable/copy_document">
+
+    </ImageButton>
+</LinearLayout>
+
+
+
+
+<!--    </LinearLayout>-->
+<!--    <LinearLayout-->
+<!--        android:id="@+id/ll_dashed_line"-->
+<!--        android:layout_width="match_parent"-->
+<!--        android:layout_height="wrap_content"-->
+<!--        app:layout_constraintBottom_toBottomOf="parent"-->
+<!--        app:layout_constraintStart_toStartOf="parent"-->
+<!--        app:layout_constraintEnd_toEndOf="parent"-->
+<!--        app:layout_constraintTop_toBottomOf="@id/ll_documents"-->
+<!--        android:orientation="horizontal">-->
+<!--        <ImageView-->
+<!--            android:layout_weight="1"-->
+<!--            android:layout_width="match_parent"-->
+<!--            android:layout_height="wrap_content"-->
+
+<!--            android:background="@drawable/dashed_line">-->
+
+<!--        </ImageView>-->
+<!--        <ImageView-->
+<!--            android:layout_weight="1"-->
+<!--            android:layout_width="match_parent"-->
+<!--            android:layout_height="wrap_content"-->
+<!--            android:background="@drawable/dashed_line">-->
+
+<!--        </ImageView>-->
+<!--        <ImageView-->
+<!--            android:layout_weight="1"-->
+<!--            android:layout_width="match_parent"-->
+<!--            android:layout_height="wrap_content"-->
+<!--            android:background="@drawable/dashed_line">-->
+
+<!--        </ImageView>-->
+<!--        <ImageView-->
+<!--            android:layout_weight="1"-->
+<!--            android:layout_width="match_parent"-->
+<!--            android:layout_height="wrap_content"-->
+<!--            android:background="@drawable/dashed_line">-->
+
+<!--        </ImageView>-->
+<!--    </LinearLayout>-->
+</LinearLayout>
+</androidx.constraintlayout.widget.ConstraintLayout>
+</ScrollView>

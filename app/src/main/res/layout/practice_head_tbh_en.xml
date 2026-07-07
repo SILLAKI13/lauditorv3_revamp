@@ -1,0 +1,101 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--  res/layout/practice_head_tbh.xml
+      Used by: TBHholder (Billable Hours)
+               NBHholder (Non-Billable Hours)
+               ARholder  (Approx Revenue)
+               ABRholder (Avg Billing Rate)
+      Holder swaps Card_Image drawable, tv_tbh text and tv_bh_percentage visibility. -->
+<androidx.cardview.widget.CardView
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:id="@+id/Card_Layout"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:layout_margin="@dimen/ten_dp"
+    app:cardBackgroundColor="@color/white"
+    app:cardCornerRadius="@dimen/Fifteen_dp"
+    app:cardElevation="2dp">
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        android:padding="@dimen/Fifteen_dp">
+
+        <!-- Row 1: icon + trend badge -->
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:gravity="center_vertical"
+            android:orientation="horizontal">
+
+            <!-- Icon circle -->
+            <LinearLayout
+                android:layout_width="36dp"
+                android:layout_height="36dp"
+                android:background="@drawable/pale_blue_circular"
+                android:gravity="center">
+                <ImageView
+                    android:id="@+id/Card_Image"
+                    android:layout_width="18dp"
+                    android:layout_height="18dp"
+                    android:src="@drawable/ic_time_blue" />
+            </LinearLayout>
+
+            <Space android:layout_width="0dp" android:layout_height="1dp" android:layout_weight="1" />
+
+            <!-- Trend percentage badge  e.g. "+17.93%" -->
+            <TextView
+                android:id="@+id/tv_bh_percentage"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:background="@drawable/completed_badge"
+                android:paddingStart="8dp"
+                android:paddingEnd="8dp"
+                android:paddingTop="3dp"
+                android:paddingBottom="3dp"
+                android:textColor="@color/white"
+                android:textSize="@dimen/Twelve_dp"
+                android:textStyle="bold" />
+        </LinearLayout>
+
+        <!-- Card type label e.g. "Total Billable Hours" -->
+        <TextView
+            android:id="@+id/tv_tbh"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="@dimen/ten_dp"
+            android:textColor="@color/grey_color_dark"
+            android:textSize="@dimen/Twelve_dp" />
+
+        <!-- Big value e.g. "12:30" -->
+        <TextView
+            android:id="@+id/tv_bhours"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="2dp"
+            android:ellipsize="end"
+            android:maxLines="1"
+            android:textColor="@color/black"
+            android:textSize="28sp"
+            android:textStyle="bold" />
+
+        <!-- Period / sub-label row -->
+        <LinearLayout
+            android:id="@+id/percentage_layout"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="4dp"
+            android:orientation="horizontal">
+
+            <TextView
+                android:id="@+id/tv_email_message"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:textColor="@color/grey_color_dark"
+                android:textSize="@dimen/Twelve_dp" />
+
+        </LinearLayout>
+
+    </LinearLayout>
+</androidx.cardview.widget.CardView>

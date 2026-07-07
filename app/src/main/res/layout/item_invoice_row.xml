@@ -1,0 +1,123 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:gravity="center_vertical"
+    android:orientation="horizontal"
+    android:padding="@dimen/eight_dp">
+
+    <!-- Sl.No. -->
+    <TextView
+        android:id="@+id/tv_sl_no"
+        android:layout_width="@dimen/forty_dp"
+        android:layout_height="wrap_content"
+        android:fontFamily="@font/gill_sans"
+        android:gravity="center"
+        android:text="1"
+        android:textColor="@color/black"
+        android:textSize="@dimen/Fifteen_dp" />
+
+    <!-- Description + character count -->
+    <LinearLayout
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="@dimen/six_dp"
+        android:layout_weight="2"
+        android:orientation="vertical">
+
+        <com.google.android.material.textfield.TextInputLayout
+            android:id="@+id/tl_client_address"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layoutDirection="rtl"
+            android:textColorHint="@color/grey_color_dark"
+            android:textDirection="ltr"
+            app:boxBackgroundMode="none"
+            app:counterEnabled="true"
+            app:counterMaxLength="250"
+            app:counterTextColor="@color/grey_color_dark">
+
+            <include
+                android:id="@+id/et_description"
+                layout="@layout/title_description_layout" />
+        </com.google.android.material.textfield.TextInputLayout>
+    </LinearLayout>
+
+    <!-- Rate : currency symbol + EditText -->
+    <LinearLayout
+        android:layout_width="0dp"
+        android:layout_height="@dimen/forty_dp"
+        android:layout_marginStart="@dimen/four_dp"
+        android:layout_weight="1.5"
+        android:background="@drawable/rectangle_light_grey"
+        android:gravity="center_vertical"
+        android:orientation="horizontal"
+        android:padding="@dimen/four_dp">
+
+        <!-- FIX 1: Added android:id="@+id/tv_currency_symbol" -->
+        <TextView
+            android:id="@+id/tv_currency_symbol"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:fontFamily="@font/gill_sans"
+            android:text="₹"
+            android:textColor="@color/black"
+            android:textSize="@dimen/Fifteen_dp" />
+
+        <com.google.android.material.textfield.TextInputEditText
+            android:id="@+id/et_rate"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:background="@android:color/transparent"
+            android:hint="0"
+            android:inputType="numberDecimal"
+            android:padding="@dimen/four_dp"
+            android:textSize="@dimen/Fifteen_dp" />
+    </LinearLayout>
+
+    <!-- Quantity -->
+    <com.google.android.material.textfield.TextInputEditText
+        android:id="@+id/et_quantity"
+        android:layout_width="0dp"
+        android:layout_height="@dimen/forty_dp"
+        android:layout_marginStart="@dimen/four_dp"
+        android:layout_weight="1"
+        android:background="@drawable/rectangle_light_grey"
+        android:gravity="center"
+        android:hint="1"
+        android:inputType="numberDecimal"
+        android:padding="@dimen/eight_dp"
+        android:textSize="@dimen/Fifteen_dp" />
+
+    <!-- Amount (read-only, computed) -->
+    <LinearLayout
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="@dimen/four_dp"
+        android:layout_weight="1"
+        android:gravity="center_vertical"
+        android:orientation="horizontal">
+
+        <TextView
+            android:id="@+id/tv_amount"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:gravity="center"
+            android:fontFamily="@font/gill_sans"
+            android:text="0.00"
+            android:textColor="@color/black"
+            android:textSize="@dimen/Fifteen_dp" />
+    </LinearLayout>
+
+    <!-- FIX 2: Changed id from iv_delete_row to iv_delete to match the adapter -->
+    <ImageView
+        android:id="@+id/iv_delete"
+        android:layout_width="@dimen/twenty_five"
+        android:layout_height="@dimen/twenty_five"
+        android:layout_marginStart="@dimen/four_dp"
+        android:padding="@dimen/two_dp"
+        android:src="@drawable/cancel_red_icon" />
+
+</LinearLayout>

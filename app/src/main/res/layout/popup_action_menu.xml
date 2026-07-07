@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.cardview.widget.CardView xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:id="@+id/popup_card"
+    android:layout_width="wrap_content"
+    android:layout_height="wrap_content"
+    android:elevation="100dp"
+    android:translationZ="100dp"
+    app:cardBackgroundColor="@color/white"
+    app:cardCornerRadius="@dimen/ten_dp"
+    app:cardElevation="@dimen/Fifteen_dp"
+    app:cardUseCompatPadding="false">
+
+    <ListView
+        android:id="@+id/popup_action_list"
+        android:layout_width="@dimen/one_sixty"
+        android:layout_height="wrap_content"
+        android:divider="@color/light_grey"
+        android:dividerHeight="0.5dp"
+        android:paddingStart="@dimen/four_dp"
+        android:scrollbars="none" />
+
+</androidx.cardview.widget.CardView>

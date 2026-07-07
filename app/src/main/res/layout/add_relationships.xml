@@ -1,0 +1,62 @@
+<?xml version="1.0" encoding="utf-8"?>
+
+<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent">
+
+    <androidx.cardview.widget.CardView
+        android:id="@+id/cv_details_2"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_margin="@dimen/ten_dp"
+        android:background="@drawable/rectangular_white_background"
+        android:elevation="@dimen/four_dp"
+        android:padding="@dimen/ten_dp"
+        android:visibility="visible"
+        app:cardBackgroundColor="@color/white"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintHorizontal_bias="0.0"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintVertical_bias="0.0">
+
+        <androidx.appcompat.widget.LinearLayoutCompat
+            android:id="@+id/linearLayoutCompat2"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            android:padding="@dimen/four_dp"
+            android:paddingBottom="@dimen/thirty_dp">
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginStart="@dimen/Fifteen_dp"
+                android:layout_marginTop="@dimen/four_dp"
+                android:fontFamily="@font/gill_sans"
+                android:text="@string/select_groups"
+                android:textColor="@color/blue"
+                android:textSize="@dimen/Fifteen_dp" />
+            <!--this is the actual edit text which takes the input-->
+            <include
+                android:id="@+id/et_search_relationships"
+                layout="@layout/search_layout"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_margin="@dimen/ten_dp" />
+
+            <include
+                android:id="@+id/rv_relationship_groups"
+                layout="@layout/recyclerview"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_margin="@dimen/eight_dp"
+                android:orientation="vertical" />
+
+
+        </androidx.appcompat.widget.LinearLayoutCompat>
+    </androidx.cardview.widget.CardView>
+</androidx.constraintlayout.widget.ConstraintLayout>

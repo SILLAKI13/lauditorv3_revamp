@@ -1,0 +1,63 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content">
+
+    <include layout="@layout/header_layout" />
+
+    <LinearLayout
+        android:id="@+id/ll_doc_views"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:layout_below="@+id/ll_view_document"
+        android:background="@drawable/rectangular_white_background"
+        android:orientation="vertical"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintHorizontal_bias="1.0"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@id/ll_view_document"
+        app:layout_constraintVertical_bias="0.038"
+        tools:ignore="WebViewLayout">
+
+        <ImageView
+            android:id="@+id/doc_image"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:layout_gravity="center"
+            android:contentDescription="@string/document"
+            android:padding="@dimen/four_dp"
+            android:scaleType="fitCenter"
+            android:visibility="gone" />
+
+        <!--PDF Viewer to display our PDF-->
+        <com.github.barteksc.pdfviewer.PDFView
+            android:id="@+id/idPDFView"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:layout_gravity="center_vertical"
+            android:layout_margin="@dimen/four_dp"
+            android:visibility="gone" />
+
+        <WebView
+            android:id="@+id/doc_webview"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent" />
+        <ProgressBar
+            android:id="@+id/progress_pdf"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="center"
+            android:visibility="visible"/>
+
+        <!--        <WebView-->
+        <!--            android:id="@+id/webview"-->
+        <!--            android:layout_width="match_parent"-->
+        <!--            android:layout_height="@dimen/ThreeHundred_dp"-->
+        <!--            android:layout_gravity="center"-->
+        <!--            android:padding="@dimen/four_dp"-->
+        <!--            android:visibility="gone" />-->
+    </LinearLayout>
+</RelativeLayout>

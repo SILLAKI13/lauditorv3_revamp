@@ -1,0 +1,81 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:id="@+id/ll_email_provider"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:layout_margin="@dimen/ten_dp"
+    android:background="@drawable/rectangular_white_background"
+    android:elevation="@dimen/four_dp"
+    android:orientation="vertical"
+    android:padding="@dimen/ten_dp">
+
+    <TextView
+        android:id="@+id/tv_mailprovider"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:fontFamily="@font/gill_sans"
+        android:text="@string/choose_a_main_account_provider"
+        android:textColor="@color/black"
+        android:textFontWeight="500"
+        android:textSize="@dimen/eighteen_sp" />
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_gravity="center_vertical"
+        android:layout_marginTop="@dimen/ten_dp"
+        android:gravity="center_vertical"
+        android:orientation="horizontal">
+
+        <LinearLayout
+            android:id="@+id/ll_google"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="center_vertical"
+            android:gravity="center_vertical">
+
+            <RadioButton
+                android:id="@+id/rb_google"
+                android:layout_width="@dimen/thirty_dp"
+                android:layout_height="@dimen/thirty_dp"
+                android:layout_marginStart="@dimen/ten_dp"
+                android:buttonTint="@color/light_blue" />
+
+            <ImageView
+                android:id="@+id/iv_google"
+                android:layout_width="@dimen/sixty_dp"
+                android:layout_height="@dimen/thirty_dp"
+                android:layout_marginStart="@dimen/four_dp"
+                android:layout_marginTop="@dimen/two_dp"
+                android:src="@drawable/google" />
+        </LinearLayout>
+
+        <LinearLayout
+            android:id="@+id/ll_outlook"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="center_vertical"
+            android:gravity="center_vertical">
+
+            <RadioButton
+                android:id="@+id/rb_outlook"
+                android:layout_width="@dimen/thirty_dp"
+                android:layout_height="@dimen/thirty_dp"
+                android:layout_marginStart="@dimen/twenty_dp"
+                android:buttonTint="@color/light_blue" />
+
+            <ImageView
+                android:id="@+id/iv_outlook"
+                android:layout_width="@dimen/seventy_dp"
+                android:layout_height="@dimen/thirty_five_dp"
+                android:src="@drawable/outlook" />
+        </LinearLayout>
+    </LinearLayout>
+
+    <include
+        android:id="@+id/btn_continue"
+        layout="@layout/submit_button"
+        android:layout_width="wrap_content"
+        android:layout_height="@dimen/forty_dp"
+        android:layout_gravity="end" />
+</LinearLayout>

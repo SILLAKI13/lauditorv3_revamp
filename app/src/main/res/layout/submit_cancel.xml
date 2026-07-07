@@ -1,0 +1,69 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="73dp"
+    android:layout_gravity="center_horizontal"
+    android:background="@android:color/transparent"
+    android:gravity="center_horizontal"
+    android:orientation="horizontal"
+    android:padding="@dimen/ten_dp">
+
+
+    <!--Card view for buttons-->
+    <androidx.cardview.widget.CardView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        app:cardElevation="@dimen/eight_dp"
+        android:layout_marginTop="@dimen/ten_dp"
+      app:cardCornerRadius="@dimen/eight_dp">
+
+        <!--Cancel button-->
+
+        <androidx.appcompat.widget.AppCompatButton
+            android:id="@+id/Cancel"
+            android:layout_width="@dimen/module_btn_size"
+            android:layout_height="@dimen/forty_dp"
+            android:alpha="0.9"
+            android:layout_gravity="center_horizontal"
+            android:background="@color/grey_text_color"
+            android:elevation="@dimen/four_dp"
+            android:fontFamily="@font/gill_sans"
+            android:text="Cancel"
+            android:textStyle="bold"
+            android:textSize="@dimen/Fifteen_dp"
+            android:textAllCaps="false"
+            tools:ignore="TouchTargetSizeCheck"
+            android:textColor="@color/black" />
+    </androidx.cardview.widget.CardView>
+
+    <!--Cardview for submit button-->
+
+    <androidx.cardview.widget.CardView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        app:cardElevation="@dimen/eight_dp"
+        android:layout_marginTop="@dimen/ten_dp"
+      app:cardCornerRadius="@dimen/eight_dp"
+        android:layout_marginLeft="@dimen/twenty_dp">
+
+        <!--Submit button-->
+        <androidx.appcompat.widget.AppCompatButton
+            android:id="@+id/bt_submit_firm_login"
+            android:layout_width="@dimen/module_btn_size"
+            android:layout_height="@dimen/forty_dp"
+            android:alpha="0.5"
+            android:visibility="visible"
+            android:textStyle="bold"
+            android:background="@color/blue"
+            android:fontFamily="@font/gill_sans"
+            android:layout_gravity="center_horizontal"
+            android:text="Submit"
+            android:textSize="@dimen/Fifteen_dp"
+            tools:ignore="TouchTargetSizeCheck"
+            android:textAllCaps="false"
+            android:elevation="@dimen/four_dp"
+            android:textColor="@color/white" />
+    </androidx.cardview.widget.CardView>
+</LinearLayout>

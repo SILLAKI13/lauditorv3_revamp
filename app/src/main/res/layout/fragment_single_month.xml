@@ -1,0 +1,12 @@
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:orientation="vertical">
+
+    <include
+        android:id="@+id/recyclerView"
+        layout="@layout/recyclerview"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="@dimen/ten_dp" />
+</LinearLayout>

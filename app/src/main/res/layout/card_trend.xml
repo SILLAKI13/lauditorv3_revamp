@@ -1,0 +1,77 @@
+<?xml version="1.0" encoding="utf-8"?><!--  card_trend.xml  —  shared by Revenue Trend and Appointment Trend  -->
+<androidx.cardview.widget.CardView xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="@dimen/ThreeHundred_dp"
+    android:layout_height="@dimen/twohundred_fifty"
+    android:layout_margin="@dimen/six_dp"
+    app:cardBackgroundColor="@color/white"
+    app:cardCornerRadius="@dimen/eighteen_sp"
+    app:cardElevation="@dimen/four_dp">
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:orientation="vertical"
+        android:padding="@dimen/Fifteen_dp">
+
+        <!-- Header row: title + badge -->
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:gravity="center_vertical"
+            android:orientation="horizontal">
+
+            <ImageView
+                android:layout_width="40dp"
+                android:layout_height="40dp"
+                android:background="@drawable/icon_bg_green"
+                android:padding="9dp"
+                android:scaleType="fitCenter"
+                android:src="@drawable/ic_trending_up_green"
+                android:visibility="gone" />
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:orientation="vertical">
+
+                <TextView
+                    android:id="@+id/tv_trend_title"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="Trend"
+                    android:textColor="@color/black"
+                    android:textSize="@dimen/Fifteen_dp"
+                    android:textStyle="bold" />
+
+                <TextView
+                    android:id="@+id/tv_trend_subtitle"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="@dimen/four_dp"
+                    android:text="Based on appointments"
+                    android:textColor="@color/grey_text"
+                    android:textSize="@dimen/Twelve_dp" />
+            </LinearLayout>
+
+            <LinearLayout
+                android:id="@+id/ll_range_tabs"
+                android:layout_width="wrap_content"
+                android:layout_height="@dimen/thirty_dp"
+                android:layout_marginBottom="@dimen/four_dp"
+                android:background="@drawable/segment_container_bg"
+                android:gravity="center_vertical"
+                android:orientation="horizontal"
+                android:padding="@dimen/two_dp" />
+        </LinearLayout>
+
+        <!-- Range tab row (dynamically populated) -->
+        <!-- LineChart -->
+        <com.github.mikephil.charting.charts.LineChart
+            android:id="@+id/line_chart_trend"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent" />
+
+    </LinearLayout>
+</androidx.cardview.widget.CardView>

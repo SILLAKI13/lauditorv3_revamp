@@ -1,0 +1,109 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:id="@+id/ll_monthView"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:orientation="vertical">
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="@dimen/Fifteen_dp"
+        android:layout_marginTop="@dimen/ten_dp"
+        android:layout_marginEnd="@dimen/Fifteen_dp"
+        android:layout_marginBottom="@dimen/ten_dp"
+        android:background="@drawable/rectangular_white_background"
+        android:orientation="vertical">
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_margin="@dimen/ten_dp"
+            android:baselineAligned="false">
+
+            <LinearLayout
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:background="@drawable/rectangle_light_grey"
+                android:padding="@dimen/four_dp">
+
+                <include layout="@layout/previous_week_img" />
+            </LinearLayout>
+
+            <include
+                android:id="@+id/tv_month"
+                layout="@layout/blue_bold_txt"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_gravity="center"
+                android:layout_weight="1" />
+
+            <LinearLayout
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:background="@drawable/rectangle_light_grey"
+                android:padding="@dimen/four_dp">
+
+                <include layout="@layout/forward_week_img" />
+            </LinearLayout>
+        </LinearLayout>
+
+        <androidx.viewpager2.widget.ViewPager2
+            android:id="@+id/viewPager"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:adjustViewBounds="true"
+            android:nestedScrollingEnabled="false"
+            android:padding="@dimen/four_dp" />
+    </LinearLayout>
+
+    <!-- Events RecyclerView: visible when there are events for the selected date -->
+    <include
+        android:id="@+id/rv_monthView"
+        layout="@layout/recyclerview"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="@dimen/ten_dp"
+        android:layout_marginEnd="@dimen/ten_dp"
+        android:visibility="visible" />
+
+    <!-- Empty State: shown when there are no events for the selected date -->
+    <LinearLayout
+        android:id="@+id/layout_empty_state"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:gravity="center"
+        android:orientation="vertical"
+        android:paddingTop="40dp"
+        android:paddingBottom="40dp"
+        android:visibility="gone">
+
+        <ImageView
+            android:layout_width="130dp"
+            android:layout_height="130dp"
+            android:contentDescription="No events found"
+            android:src="@drawable/empty_appointments" />
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="16dp"
+            android:fontFamily="@font/gill_sans_regular"
+            android:text="No Events Found!"
+            android:textColor="@color/black"
+            android:textSize="18sp"
+            android:textStyle="bold" />
+
+        <TextView
+            android:id="@+id/tv_empty_subtitle"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="8dp"
+            android:fontFamily="@font/gill_sans_regular"
+            android:text="There are no events for this date."
+            android:textColor="@color/dark_grey_new"
+            android:textSize="14sp" />
+
+    </LinearLayout>
+
+</LinearLayout>

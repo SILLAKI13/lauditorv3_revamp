@@ -1,0 +1,197 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--  card_hours.xml  —  Billable / Non-Billable + Approx Revenue + Avg Rate  -->
+<androidx.cardview.widget.CardView
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:layout_margin="@dimen/ten_dp"
+    app:cardCornerRadius="16dp"
+    app:cardElevation="2dp"
+    app:cardBackgroundColor="@color/white">
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        android:padding="16dp">
+
+        <!-- Header -->
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            android:gravity="center_vertical">
+
+            <ImageView
+                android:layout_width="40dp"
+                android:layout_height="40dp"
+                android:src="@drawable/ic_time_blue"
+                android:background="@drawable/icon_bg_blue"
+                android:padding="9dp"
+                android:scaleType="fitCenter"/>
+
+            <LinearLayout
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:layout_marginStart="12dp"
+                android:orientation="vertical">
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="Hours Summary"
+                    android:textSize="@dimen/Fifteen_dp"
+                    android:textStyle="bold"
+                    android:textColor="@color/black"/>
+
+                <TextView
+                    android:id="@+id/tv_date_range"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:textSize="11sp"
+                    android:textColor="@color/grey_text"/>
+            </LinearLayout>
+        </LinearLayout>
+
+        <View
+            android:layout_width="match_parent"
+            android:layout_height="1dp"
+            android:layout_marginVertical="12dp"
+            android:background="#F0F0F5"/>
+
+        <!-- Pie Chart -->
+        <com.github.mikephil.charting.charts.PieChart
+            android:id="@+id/pie_chart_hours"
+            android:layout_width="match_parent"
+            android:layout_height="180dp"
+            android:layout_gravity="center_horizontal"/>
+
+        <!-- Stats row below pie -->
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            android:layout_marginTop="12dp">
+
+            <!-- Billable -->
+            <LinearLayout
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:orientation="vertical"
+                android:gravity="center"
+                android:background="@drawable/stat_box_blue"
+                android:padding="@dimen/ten_dp"
+                android:layout_marginEnd="6dp">
+
+                <TextView
+                    android:id="@+id/tv_billable_hours"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="0:00"
+                    android:textSize="20sp"
+                    android:textStyle="bold"
+                    android:textColor="@color/blue"/>
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="Billable"
+                    android:textSize="11sp"
+                    android:textColor="@color/grey_text"/>
+            </LinearLayout>
+
+            <!-- Non-Billable -->
+            <LinearLayout
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:orientation="vertical"
+                android:gravity="center"
+                android:background="@drawable/stat_box_orange"
+                android:padding="@dimen/ten_dp"
+                android:layout_marginStart="6dp">
+
+                <TextView
+                    android:id="@+id/tv_non_billable_hours"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="0:00"
+                    android:textSize="20sp"
+                    android:textStyle="bold"
+                    android:textColor="#F57C00"/>
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="Non-Billable"
+                    android:textSize="11sp"
+                    android:textColor="@color/grey_text"/>
+            </LinearLayout>
+        </LinearLayout>
+
+        <!-- Revenue + Rate row -->
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            android:layout_marginTop="8dp">
+
+            <LinearLayout
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:orientation="vertical"
+                android:gravity="center"
+                android:padding="@dimen/ten_dp"
+                android:background="@drawable/stat_box_grey"
+                android:layout_marginEnd="6dp">
+
+                <TextView
+                    android:id="@+id/tv_approx_revenue"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="₹0"
+                    android:textSize="@dimen/eighteen_sp"
+                    android:textStyle="bold"
+                    android:textColor="@color/black"/>
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="Approx Revenue"
+                    android:textSize="10sp"
+                    android:textColor="@color/grey_text"/>
+            </LinearLayout>
+
+            <LinearLayout
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:orientation="vertical"
+                android:gravity="center"
+                android:padding="@dimen/ten_dp"
+                android:background="@drawable/stat_box_grey"
+                android:layout_marginStart="6dp">
+
+                <TextView
+                    android:id="@+id/tv_avg_billing_rate"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="₹0/hr"
+                    android:textSize="@dimen/eighteen_sp"
+                    android:textStyle="bold"
+                    android:textColor="@color/black"/>
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="Avg Billing Rate"
+                    android:textSize="10sp"
+                    android:textColor="@color/grey_text"/>
+            </LinearLayout>
+        </LinearLayout>
+    </LinearLayout>
+</androidx.cardview.widget.CardView>

@@ -1,0 +1,144 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <color name="purple_200">#FFBB86FC</color>
+    <color name="purple_500">#FF6200EE</color>
+    <color name="purple_700">#FF3700B3</color>
+    <color name="teal_200">#004D87</color>
+    <color name="teal_700">#FF018786</color>
+    <color name="black">#FF000000</color>
+    <color name="grey">#D2C9C9</color>
+    <color name="white">#FFFFFFFF</color>
+    <color name="orange">#F39C13</color>
+    <color name="semi_transparant">#88D0D0D0</color>
+    <color name="semi_pearl">#CCFFFFFF</color>
+    <color name="pearl">#E6FFFFFF</color>
+    <color name="Primary">#1476B0</color>
+    <color name="grey_badge_bg">#EFEFEF</color>
+    <color name = "text_field_color">#F9FAFB</color>
+    <!-- Dark text (for actual date values) -->
+    <color name="dark_text">#1A1A2E</color>
+    <color name="Primary_new">#004D87</color>
+    <color name="pale_blue">#2079AD</color>
+    <color name="card_highlight">#64B5F6</color>
+    <color name="sto_grey">#F3F3F3</color>
+    <color name="dark_blue">#1C398E</color>
+    <color name="yellow_clear">#E8A844</color>
+    <color name="Blue_text_color">#004D87</color>
+    <color name="Dark_Blue_text_color">#00355C</color>
+    <color name="dullBlueColor">#85B2E0</color>
+    <color name="grey_text_color">#EEEEEE</color>
+    <color name="platinum">#F8F8F8</color>
+    <!--    <color name="dashboard_background_color">#004D87</color>-->
+    <color name="dashboard_background_color">#e4f2ff</color>
+    <color name="orange_color">#F15F12</color>
+    <color name="dashboard_background_shadow_color">#00000066</color>
+    <color name="green_count_color">#00B3A7</color>
+    <color name="green_color_dark">#2AAD66</color>
+    <color name="green_color">#348005</color>
+    <color name="dark_grey">#DDDDDE</color>
+    <color name="silver">#C0C0C0</color>
+    <color name="grey_color_dark">#A0A0A0</color>
+    <color name="grey_medium">#585858</color>
+    <color name="white_grey">#CDCDCD</color>
+    <color name="dialog_bg">#50000000</color>
+    <color name="Red">#ff0000</color>
+    <color name="light_Red">#FF6A6A</color>
+    <color name="overlay_background_color">#80050505</color>
+    <color name="dark_brown">#865A45</color>
+    <color name="dark_grey_new">#4A5565</color>
+    <color name="new_grey">#E5E7EB</color>
+    <color name="edu_bg">#F9FAFB</color>
+    <color name="color_des">#F3F3F5</color>
+    <color name="background_tint_color">#004D87</color>
+    <color name="material_dynamic_neutral30">#FFDDDDDD</color>
+    <color name="material_dynamic_neutral50">#FF888888</color>
+    <color name="lite_grey">#FF888888</color>
+    <color name="material_dynamic_neutral90">#E1E3E5</color>
+    <color name="material_dynamic_neutral100">#FF000000</color>
+    <color name="material_dynamic_neutral_variant1">#AABBCC</color>
+    <color name="material_dynamic_neutral_variant0">#FF000000</color>
+    <color name="text_color_primary">#000000</color>
+    <color name="card_background">#FFFFFF</color>
+    <color name="button_text_color">#000000</color>
+
+    <color name="light_blue">#1976D2</color>
+    <color name="light_grey">#EDEDF1</color>
+    <color name="darkBlueColor">#000080</color>
+    <color name="blue">#004D87</color>
+    <color name="grey_light">#666666</color>
+
+    <!-- Appointment Text Colors -->
+    <color name="client_name_color">#1A237E</color>
+    <color name="datetime_color">#616161</color>
+    <!--    <color name="blue_pale">#DBEAFE</color>-->
+    <color name="blue_pale">#e4f2ff</color>
+    <color name="lite_blue">#E0F1FB</color>
+    <!-- Payment Status Colors -->
+    <color name="payment_paid_color">#4CAF50</color>
+    <color name="payment_pending_color">#FF9800</color>
+    <color name="chip_pale_blue">#e2f6ff</color>
+
+    <!-- Badge Background Colors -->
+    <color name="completed_bg">#C8E6C9</color>
+    <color name="light_green">#A7F0AB</color>
+    <color name="pending_bg">#FFE0B2</color>
+    <color name="scheduled_bg">#9ECCF2</color>
+    <color name="cancelled_bg">#FFCDD2</color>
+
+    <color name="pale_green">#BEEDBF</color>
+    <!-- Badge Text Colors -->
+    <color name="completed_text">#2E7D32</color>
+    <color name="pending_text">#F57C00</color>
+    <!--    <color name="scheduled_text">#1976D2</color>-->
+    <color name="scheduled_text">#004D87</color>
+    <color name="cancelled_text">#C62828</color>
+
+    <!-- Additional Colors -->
+    <color name="green">#4CAF50</color>
+    <color name="green_dark">#2E7D32</color>
+    <color name="orange_dark">#F57C00</color>
+    <color name="blue_dark">#1976D2</color>
+    <color name="red_dark">#C62828</color>
+
+    <color name="bg_dashboard">#F4F6FA</color>
+    <color name="grey_color_light">#E0E0E0</color>
+    <color name="color_blue_icon">#1557A0</color>
+    <color name="color_green_icon">#2E7D32</color>
+    <color name="color_orange_icon">#E65100</color>
+    <color name="color_purple_icon">#7B1FA2</color>
+    <color name="color_teal_icon">#00695C</color>
+    <color name="color_blue_icon_bg">#E8F0FE</color>
+    <color name="color_green_icon_bg">#E6F4EA</color>
+    <color name="color_orange_icon_bg">#FFF3E0</color>
+    <color name="color_purple_icon_bg">#F3E8FD</color>
+    <color name="color_teal_icon_bg">#E0F2F1</color>
+
+
+    <!-- ── New additions for dashboard ──────────────────────────── -->
+    <color name="grey_text">#8A8A9A</color>
+    <color name="menu_items_color">#666666</color>
+
+    <!-- Chart palette -->
+    <color name="chart_blue">#1E88E5</color>
+    <color name="chart_green">#43A047</color>
+    <color name="chart_orange">#FB8C00</color>
+    <color name="chart_red">#E53935</color>
+    <color name="chart_purple">#6C3DE8</color>
+    <color name="chart_teal">#00897B</color>
+
+    <!-- Badge colors (used with badge_bg drawable tint) -->
+    <color name="badge_blue">#1E88E5</color>
+    <color name="badge_green">#43A047</color>
+    <color name="badge_red">#E53935</color>
+    <color name="badge_orange">#FB8C00</color>
+
+    <!-- Surface / background -->
+    <color name="surface_card">#FFFFFF</color>
+    <color name="bg_page">#F2F4F7</color>
+    <color name="purple_pale">#F4F0FF</color>
+    <color name="dark_shaded_blue_bg">#EEF2FF</color>
+    <color name="dark_shaded_blue">#4F39F6</color>
+    <color name="lite_shaded_blue">#E8F6FF</color>
+    <!-- Semi-transparent black dim behind popups — does NOT expose wallpaper -->
+    <color name="popup_dim_overlay">#99000000</color>
+</resources>

@@ -1,0 +1,11 @@
+<Spinner
+    xmlns:android="http://schemas.android.com/apk/res/android"
+        android:id="@+id/sp_category"
+        style="@style/Widget.Material3.TextInputLayout.FilledBox"
+        android:layout_width="match_parent"
+        android:layout_height="55dp"
+        android:layout_centerVertical="true"
+        android:layout_gravity="center"
+    android:background="@drawable/rectangle_light_grey"
+        android:gravity="center"
+        android:spinnerMode="dropdown" />

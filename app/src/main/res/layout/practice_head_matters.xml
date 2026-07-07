@@ -1,0 +1,149 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_margin="@dimen/ten_dp"
+    android:padding="@dimen/ten_dp"
+    android:background="@drawable/dashboard_screens_background"
+    android:layout_height="wrap_content">
+
+
+    <androidx.appcompat.widget.LinearLayoutCompat
+        android:id="@+id/ll_2"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:gravity="top"
+        android:orientation="horizontal"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintVertical_bias="0.0"
+        tools:ignore="MissingConstraints">
+
+        <androidx.appcompat.widget.LinearLayoutCompat
+            android:id="@+id/ll_3"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_gravity="top"
+            android:layout_weight="1"
+            android:gravity="center"
+            android:orientation="vertical"
+            tools:ignore="MissingConstraints">
+
+            <ImageView
+                android:id="@+id/imageView5"
+                android:layout_width="@dimen/forty_dp"
+                android:layout_height="@dimen/forty_dp"
+                android:layout_gravity="center"
+                android:contentDescription="@string/todo"
+                android:src="@drawable/closed_matters" />
+
+
+        </androidx.appcompat.widget.LinearLayoutCompat>
+
+        <androidx.appcompat.widget.LinearLayoutCompat
+            android:id="@+id/ll_4"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:gravity="start"
+            android:orientation="vertical"
+            tools:ignore="MissingConstraints">
+            <TextView
+                android:id="@+id/tv_closed"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_gravity="center"
+
+                android:fontFamily="@font/gill_sans"
+                android:gravity="center"
+                android:padding="@dimen/four_dp"
+                android:text="Closed"
+                android:textColor="@color/Blue_text_color"
+                android:textSize="@dimen/thirty_dp" />
+
+            <TextView
+                android:id="@+id/tv_closed_members"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_gravity="center"
+
+                android:fontFamily="@font/gill_sans"
+                android:gravity="center"
+                android:padding="@dimen/four_dp"
+                android:text="Matters"
+                android:textColor="@color/black"
+                android:textSize="@dimen/Fifteen_dp" />
+
+            <TextView
+                android:id="@+id/tv_closed_members_count"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_gravity="center"
+
+                android:fontFamily="@font/gill_sans"
+                android:padding="@dimen/four_dp"
+                android:text="128"
+                android:textColor="@color/scheduled_text"
+                android:textSize="@dimen/forty_dp">
+
+            </TextView>
+
+
+        </androidx.appcompat.widget.LinearLayoutCompat>
+
+        <androidx.appcompat.widget.LinearLayoutCompat
+            android:id="@+id/ll_5"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+
+            android:layout_weight="1"
+            android:gravity="start"
+            android:orientation="vertical"
+
+            tools:ignore="MissingConstraints">
+            <TextView
+                android:id="@+id/tv_active"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_gravity="center"
+                android:fontFamily="@font/gill_sans"
+                android:gravity="center"
+                android:padding="@dimen/four_dp"
+                android:text="Active"
+                android:textColor="@color/Blue_text_color"
+                android:textSize="@dimen/thirty_dp" />
+            <TextView
+                android:id="@+id/tv_active_members"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_gravity="center"
+                android:fontFamily="@font/gill_sans"
+                android:gravity="center"
+                android:padding="@dimen/four_dp"
+                android:text="Matters"
+                android:textColor="@color/black"
+                android:textSize="@dimen/Fifteen_dp" />
+
+            <TextView
+                android:id="@+id/tv_active_members_count"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_gravity="center"
+
+                android:fontFamily="@font/gill_sans"
+                android:padding="@dimen/four_dp"
+                android:text="4"
+                android:textColor="@color/scheduled_text"
+                android:textSize="@dimen/forty_dp">
+
+            </TextView>
+
+
+        </androidx.appcompat.widget.LinearLayoutCompat>
+
+    </androidx.appcompat.widget.LinearLayoutCompat>
+
+</androidx.constraintlayout.widget.ConstraintLayout>

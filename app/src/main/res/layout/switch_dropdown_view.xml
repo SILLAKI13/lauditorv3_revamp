@@ -1,0 +1,50 @@
+<!-- res/layout/custom_layout.xml -->
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:background="@drawable/white_circular_background"
+    android:elevation="@dimen/four_dp"
+    android:orientation="horizontal">
+
+    <ImageView
+        android:id="@+id/img_filter_icon"
+        android:layout_width="@dimen/Fifteen_dp"
+        android:layout_height="@dimen/Fifteen_dp"
+        android:layout_gravity="center_vertical"
+        android:layout_marginStart="@dimen/ten_dp"
+        android:layout_marginEnd="@dimen/ten_dp"
+        android:contentDescription="@string/image_1"
+        android:src="@drawable/red_circular"
+        android:visibility="visible" />
+
+    <TextView
+        android:id="@+id/tv_spinner_view"
+        android:layout_width="@dimen/zero_dp"
+        android:layout_height="wrap_content"
+        android:layout_gravity="center_vertical"
+        android:layout_weight="1"
+        android:autoSizeMaxTextSize="@dimen/Fifteen_dp"
+        android:autoSizeMinTextSize="@dimen/five_dp"
+        android:autoSizeTextType="uniform"
+        android:elevation="@dimen/four_dp"
+        android:ellipsize="end"
+        android:fontFamily="@font/gill_sans"
+        android:gravity="center_vertical"
+        android:maxLines="2"
+        android:padding="@dimen/ten_dp"
+        android:textColor="@color/black"
+        android:textColorHint="@color/black"
+        android:textSize="@dimen/Fifteen_dp" />
+
+    <ImageView
+        android:id="@+id/img_dropdown_icon"
+        android:layout_width="@dimen/Fifteen_dp"
+        android:layout_height="@dimen/Fifteen_dp"
+        android:layout_gravity="center_vertical"
+        android:layout_marginEnd="@dimen/ten_dp"
+        android:contentDescription="@string/image_1"
+        android:src="@drawable/drop_down_blue"
+        android:visibility="visible" />
+
+
+</LinearLayout>

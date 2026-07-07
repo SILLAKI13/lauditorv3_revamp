@@ -1,0 +1,30 @@
+<?xml version="1.0" encoding="utf-8"?>
+<layer-list xmlns:android="http://schemas.android.com/apk/res/android">
+    <item>
+        <shape android:shape="rectangle">
+            <corners android:bottomLeftRadius="@dimen/four_dp" android:bottomRightRadius="@dimen/four_dp" android:radius="@dimen/ten_dp" android:topLeftRadius="@dimen/four_dp" android:topRightRadius="@dimen/four_dp" />
+            <gradient  android:centerColor="@color/Primary" android:endColor="@color/Primary" android:startColor="@color/Primary" android:type="linear" android:angle="90" />
+            <padding android:bottom="@dimen/zero_dp" android:left="@dimen/zero_dp" android:right="@dimen/zero_dp" android:top="@dimen/zero_dp" />
+
+        </shape>
+    </item>
+    <!-- Background gradient -->
+    <item>
+        <shape android:shape="rectangle">
+            <gradient
+                android:startColor="@color/material_dynamic_neutral_variant1"
+                android:endColor="@color/material_dynamic_neutral_variant0"
+                android:angle="45" />
+            <corners android:radius="@dimen/ten_dp" />
+        </shape>
+    </item>
+    <!-- Dark Black Shadow on the right side -->
+    <item android:left="@dimen/thirty_dp">
+        <shape android:shape="rectangle">
+            <solid android:color="#FF000000" /> <!-- Dark Black Color -->
+            <corners android:radius="@dimen/ten_dp" />
+        </shape>
+        <padding android:right="@dimen/thirty_dp" />
+    </item>
+</layer-list>
+

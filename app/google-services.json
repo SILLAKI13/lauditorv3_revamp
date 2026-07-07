@@ -1,0 +1,67 @@
+{
+  "project_info": {
+    "project_number": "150510681156",
+    "project_id": "testpushnotifications-fb862",
+    "storage_bucket": "testpushnotifications-fb862.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:150510681156:android:4843438eb4ee1dc18d9011",
+        "android_client_info": {
+          "package_name": "com.digicoffer.lauditor"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyD-JgLZbNTm0H_Jm2OriDo-EmLM8HMfJXo"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    },
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:150510681156:android:4843438eb4ee1dc18d9011",
+        "android_client_info": {
+          "package_name": "com.digicoffer.lauditor.staging"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyD-JgLZbNTm0H_Jm2OriDo-EmLM8HMfJXo"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    },
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:150510681156:android:4843438eb4ee1dc18d9011",
+        "android_client_info": {
+          "package_name": "com.digicoffer.lauditor.dev"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyD-JgLZbNTm0H_Jm2OriDo-EmLM8HMfJXo"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

@@ -1,0 +1,90 @@
+<?xml version="1.0" encoding="utf-8"?>
+<com.google.android.material.appbar.AppBarLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:id="@+id/header_layout"
+    android:layout_width="match_parent"
+    android:layout_height="180dp"
+    android:background="@drawable/title_background"
+    android:theme="@style/AppTheme.AppBarOverlay">
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_gravity="center"
+        android:layout_marginTop="@dimen/ten_dp"
+        android:layout_weight="1"
+        android:gravity="center"
+        android:orientation="vertical">
+
+
+        <ImageView
+            android:id="@+id/tv_digicofferlogo_header"
+            android:layout_width="80dp"
+            android:layout_height="80dp"
+            android:layout_gravity="center"
+            android:layout_weight="0"
+            android:contentDescription="Navigation header"
+            android:src="@drawable/single_logo" />
+
+
+    </LinearLayout>
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_weight="1"
+        android:orientation="horizontal"
+        android:paddingLeft="@dimen/Fifteen_dp"
+        android:paddingTop="@dimen/Fifteen_dp"
+        android:paddingRight="@dimen/Fifteen_dp"
+        android:paddingBottom="@dimen/Fifteen_dp"
+        android:theme="@style/ThemeOverlay.AppCompat.Dark">
+
+        <LinearLayout
+            android:layout_width="@dimen/sixty_dp"
+            android:layout_height="wrap_content"
+            android:gravity="center_vertical"
+            android:padding="@dimen/four_dp">
+
+<!--            <ImageView-->
+
+<!--                android:layout_width="@dimen/forty_dp"-->
+<!--                android:layout_height="@dimen/forty_dp"-->
+<!--                android:layout_gravity="center"-->
+<!--                android:layout_weight="0"-->
+<!--                android:contentDescription="Navigation header"-->
+<!--                android:padding="@dimen/four_dp"-->
+<!--                android:paddingTop="@dimen/nav_header_vertical_spacing"-->
+<!--                android:src="@mipmap/person_round_icon" />-->
+        </LinearLayout>
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginLeft="@dimen/four_dp"
+            android:orientation="vertical">
+
+            <TextView
+                android:id="@+id/tv_headerName"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:text="Name"
+                android:textColor="@color/white"
+                android:textSize="@dimen/twenty_dp" />
+
+            <TextView
+                android:id="@+id/tv_firm_name"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:fontFamily="@font/gill_sans"
+                android:text="Name"
+                android:textColor="@color/white" />
+
+        </LinearLayout>
+
+    </LinearLayout>
+
+</com.google.android.material.appbar.AppBarLayout>

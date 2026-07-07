@@ -1,0 +1,37 @@
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:orientation="horizontal"
+    android:layout_marginStart="@dimen/four_dp"
+    android:layout_marginEnd="@dimen/two_dp">
+
+    <!-- Matter title -->
+    <TextView
+        android:id="@+id/matter_title"
+        android:layout_width="match_parent"
+        android:layout_height="@dimen/forty_dp"
+        android:layout_marginBottom="@dimen/four_dp"
+        android:layout_marginEnd="@dimen/ten_dp"
+        android:layout_weight="1"
+        android:autoSizeMaxTextSize="@dimen/twenty_dp"
+        android:autoSizeMinTextSize="@dimen/five_dp"
+        android:autoSizeStepGranularity="1sp"
+        android:autoSizeTextType="uniform"
+        android:fontFamily="@font/gill_sans_bold"
+        android:gravity="center_vertical"
+        android:maxLines="2"
+        android:text="@string/matter_information"
+        android:textColor="@color/Blue_text_color" />
+
+    <!-- Remove icon (OVERLAPPED) -->
+    <ImageView
+        android:id="@+id/iv_remove_matter"
+        android:layout_width="@dimen/thirty_five_dp"
+        android:layout_height="@dimen/thirty_five_dp"
+        android:layout_gravity="center_vertical"
+        android:clickable="true"
+        android:elevation="@dimen/four_dp"
+        android:focusable="true"
+        android:src="@drawable/cancel_icon_1" />
+
+</LinearLayout>

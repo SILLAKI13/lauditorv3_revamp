@@ -1,0 +1,373 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.core.widget.NestedScrollView xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:layout_marginStart="@dimen/ten_dp"
+    android:layout_marginEnd="@dimen/ten_dp"
+    tools:context=".MainActivity">
+
+    <androidx.constraintlayout.widget.ConstraintLayout
+        android:id="@+id/cl_matter_document"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content">
+
+        <androidx.cardview.widget.CardView
+            android:id="@+id/cv_client_details"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_margin="@dimen/four_dp"
+            android:elevation="@dimen/forty_dp"
+            android:padding="@dimen/four_dp"
+            android:visibility="visible"
+            app:cardBackgroundColor="@color/white"
+            app:cardCornerRadius="@dimen/eight_dp"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toTopOf="parent">
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_margin="@dimen/ten_dp"
+                android:orientation="vertical">
+
+                <!--    <androidx.appcompat.widget.AppCompatButton-->
+                <!--        android:id="@+id/matter_title"-->
+                <!--        android:layout_width="match_parent"-->
+                <!--        android:layout_height="wrap_content"-->
+                <!--        android:background="@drawable/rectangular_white_background"-->
+                <!--        android:fontFamily="@font/gill_sans"-->
+                <!--        android:gravity="start|center_vertical"-->
+                <!--        android:padding="@dimen/four_dp"-->
+                <!--        android:enabled="false"-->
+                <!--        android:textSize="@dimen/twenty_dp"-->
+                <!--        android:text="@string/matter_title"-->
+                <!--        android:textAllCaps="false"-->
+                <!--        android:textColor="@color/Blue_text_color">-->
+
+                <!--    </androidx.appcompat.widget.AppCompatButton>-->
+
+
+                <RelativeLayout
+                    android:id="@+id/ll_matter_title"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="vertical"
+                    android:visibility="visible">
+
+                    <include
+                        android:id="@+id/ll_title"
+                        layout="@layout/title_layout" />
+
+
+                    <LinearLayout
+                        android:id="@+id/ll_matterDate"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_below="@+id/ll_title"
+                        android:orientation="horizontal">
+
+                        <include
+                            android:id="@+id/matter_date"
+                            layout="@layout/black_bold_txt"
+                            android:layout_width="0dp"
+                            android:layout_height="wrap_content"
+                            android:layout_gravity="center"
+                            android:layout_marginStart="@dimen/ten_dp"
+                            android:layout_weight="1" />
+
+                        <ImageView
+                            android:id="@+id/img_clear_icon"
+                            android:layout_width="@dimen/forty_dp"
+                            android:layout_height="@dimen/forty_dp"
+                            android:layout_margin="@dimen/five_dp"
+                            android:src="@drawable/calendar_icon" />
+                    </LinearLayout>
+                </RelativeLayout>
+
+
+                <androidx.appcompat.widget.LinearLayoutCompat
+                    android:id="@+id/ll_upload_type"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_gravity="center"
+                    android:layout_marginTop="@dimen/ten_dp"
+                    android:gravity="center"
+                    android:orientation="horizontal"
+                    android:padding="@dimen/four_dp"
+                    android:paddingTop="@dimen/twenty_dp"
+                    android:visibility="gone">
+
+                    <include
+                        android:id="@+id/tv_document_library"
+                        layout="@layout/left_title_layout"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content" />
+
+                    <include
+                        android:id="@+id/tv_device_drive"
+                        layout="@layout/right_title_layout"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:visibility="visible" />
+                </androidx.appcompat.widget.LinearLayoutCompat>
+
+                <LinearLayout
+                    android:id="@+id/ll_add_documents"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:orientation="vertical">
+
+                    <LinearLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="@dimen/ten_dp"
+                        android:orientation="horizontal">
+
+                        <include
+                            android:id="@+id/add_groups"
+                            layout="@layout/title_name_layout"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content" />
+                    </LinearLayout>
+
+                    <include
+                        android:id="@+id/at_add_documents"
+                        layout="@layout/spinner_text_view" />
+
+                    <include
+                        android:id="@+id/rv_display_upload_doc"
+                        layout="@layout/recyclerview"
+                        android:layout_width="match_parent"
+                        android:layout_height="@dimen/one_fifty_dp"
+                        android:layout_marginStart="@dimen/four_dp"
+                        android:layout_marginEnd="@dimen/four_dp"
+                        android:layout_marginBottom="@dimen/four_dp"
+                        android:visibility="gone" />
+
+                    <include
+                        android:id="@+id/btn_add_documents"
+                        layout="@layout/add_button"
+                        android:layout_width="@dimen/Eighty_dp"
+                        android:layout_height="@dimen/forty_dp"
+                        android:layout_gravity="end"
+                        android:layout_margin="@dimen/four_dp" />
+                </LinearLayout>
+
+                <include
+                    android:id="@+id/tv_selected_document"
+                    layout="@layout/title_name_layout"
+                    android:visibility="gone" />
+
+                <LinearLayout
+                    android:id="@+id/ll_selected_documents"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="vertical">
+
+                </LinearLayout>
+
+                <include
+                    android:id="@+id/ll_select_file"
+                    layout="@layout/layout_select_document" />
+
+                <LinearLayout
+                    android:id="@+id/ll_select_doc"
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent"
+                    android:orientation="vertical"
+                    android:visibility="gone">
+
+                    <include
+                        android:id="@+id/select_all"
+                        layout="@layout/title_name_layout"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content" />
+
+                    <LinearLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_margin="@dimen/four_dp"
+                        android:baselineAligned="false"
+                        android:orientation="horizontal">
+
+                        <include
+                            android:id="@+id/tv_selected_file"
+                            layout="@layout/title_name_layout"
+                            android:layout_width="wrap_content"
+                            android:layout_height="match_parent"
+                            android:layout_weight="1" />
+
+                        <include
+                            android:id="@+id/btn_browse"
+                            layout="@layout/submit_button"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:layout_gravity="center" />
+
+                    </LinearLayout>
+
+                    <include
+                        android:id="@+id/tv_multiple_doc"
+                        layout="@layout/normal_text" />
+
+                    <LinearLayout
+                        android:id="@+id/ll_buttons"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_marginStart="@dimen/ten_dp"
+                        android:layout_marginEnd="@dimen/ten_dp">
+
+                        <include
+                            android:id="@+id/btn_add_tag"
+                            layout="@layout/submit_button"
+                            android:layout_width="@dimen/hundred_dp"
+                            android:layout_height="@dimen/forty_dp"
+                            android:layout_gravity="center_vertical" />
+
+
+                        <LinearLayout
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:layout_gravity="center_vertical"
+                            android:gravity="end">
+
+                            <include
+                                layout="@layout/check_select_all"
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:layout_gravity="center_vertical"
+                                android:layout_margin="@dimen/four_dp" />
+                        </LinearLayout>
+                    </LinearLayout>
+
+                    <RelativeLayout
+                        android:id="@+id/rl_buttons"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_margin="@dimen/ten_dp"
+                        android:visibility="gone">
+
+                        <androidx.appcompat.widget.LinearLayoutCompat
+                            android:id="@+id/tag_meta"
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:layout_gravity="center_vertical"
+                            android:orientation="horizontal"
+                            android:padding="@dimen/four_dp">
+
+                            <include
+                                android:id="@+id/tv_add_tag"
+                                layout="@layout/left_title_layout" />
+
+                            <include
+                                android:id="@+id/tv_edit_meta"
+                                layout="@layout/right_title_layout" />
+
+                            <LinearLayout
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:layout_gravity="center_vertical"
+                                android:gravity="end">
+
+                                <include
+                                    layout="@layout/check_select_all"
+                                    android:layout_width="wrap_content"
+                                    android:layout_height="wrap_content"
+                                    android:layout_gravity="center_vertical"
+                                    android:layout_margin="@dimen/four_dp" />
+                            </LinearLayout>
+
+                        </androidx.appcompat.widget.LinearLayoutCompat>
+                    </RelativeLayout>
+
+                    <androidx.appcompat.widget.LinearLayoutCompat
+                        android:id="@+id/ll_download"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_marginStart="@dimen/ten_dp"
+                        android:layout_marginEnd="@dimen/ten_dp"
+                        android:orientation="horizontal"
+                        android:padding="@dimen/four_dp">
+
+                        <LinearLayout
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:layout_gravity="center_vertical"
+                            android:layout_weight="1"
+                            android:gravity="start"
+                            android:orientation="horizontal">
+
+                            <include
+                                android:id="@+id/tv_enable_download"
+                                layout="@layout/left_title_layout" />
+
+                            <include
+                                android:id="@+id/tv_disable_download"
+                                layout="@layout/right_title_layout" />
+                        </LinearLayout>
+
+                        <LinearLayout
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:layout_gravity="end"
+                            android:layout_marginStart="@dimen/ten_dp"
+                            android:layout_marginEnd="@dimen/four_dp"
+                            android:layout_weight="1"
+                            android:gravity="end"
+                            android:orientation="horizontal">
+
+                            <include
+                                android:id="@+id/tv_enable_encryption"
+                                layout="@layout/left_title_layout" />
+
+                            <include
+                                android:id="@+id/tv_disable_encryption"
+                                layout="@layout/right_title_layout" />
+                        </LinearLayout>
+
+                    </androidx.appcompat.widget.LinearLayoutCompat>
+
+                </LinearLayout>
+
+                <include
+                    android:id="@+id/ll_uploaded_documents"
+                    layout="@layout/recyclerview"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content">
+
+                </include>
+
+                <androidx.recyclerview.widget.RecyclerView
+                    android:id="@+id/rv_uploaded_documents"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_margin="@dimen/ten_dp"
+                    android:orientation="vertical"
+                    android:visibility="gone" />
+
+
+                <androidx.appcompat.widget.LinearLayoutCompat
+                    android:id="@+id/ll_save_buttons"
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent"
+                    android:layout_margin="@dimen/ten_dp"
+                    android:orientation="horizontal"
+                    android:visibility="visible">
+
+                    <include
+                        android:id="@+id/btn_cancel_save"
+                        layout="@layout/cancel_button" />
+
+                    <include
+                        android:id="@+id/btn_submit"
+                        layout="@layout/submit_button" />
+
+                </androidx.appcompat.widget.LinearLayoutCompat>
+            </LinearLayout>
+        </androidx.cardview.widget.CardView>
+    </androidx.constraintlayout.widget.ConstraintLayout>
+</androidx.core.widget.NestedScrollView>

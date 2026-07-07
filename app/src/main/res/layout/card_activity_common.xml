@@ -1,0 +1,156 @@
+<?xml version="1.0" encoding="utf-8"?><!--
+  card_activity_common.xml
+  Shared layout for: Meeting · Appointment · Messages · Notification
+  ─────────────────────────────────────────────────────────────────
+  Wired IDs (all four card types use the same set):
+    iv_card_icon       – coloured icon (set tint/src per card in adapter)
+    iv_icon_bg         – oval background behind icon
+    tv_card_label      – small label row  ("Upcoming Meeting", "New Messages" …)
+    tv_badge           – pill badge count (top-right)
+    tv_primary_text    – bold main text   (subject / "3 Client | 2 Team" …)
+    tv_secondary_text  – lighter sub-line (time range / "10 mins ago" …)
+    tv_empty_text      – shown when no data ("No meetings today" …)
+    ll_content         – container for primary + secondary rows, GONE when empty
+-->
+<androidx.cardview.widget.CardView xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:id="@+id/Card_Layout"
+    android:layout_width="@dimen/ThreeHundred_dp"
+    android:layout_height="@dimen/one_sixty"
+    android:layout_margin="@dimen/six_dp"
+    app:cardBackgroundColor="@color/white"
+    app:cardCornerRadius="@dimen/eighteen_sp"
+    app:cardElevation="@dimen/four_dp">
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        android:padding="@dimen/Fifteen_dp">
+
+        <!-- ── Row 1 : icon · label · badge ─────────────────────────── -->
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:gravity="center_vertical"
+            android:orientation="horizontal">
+
+            <!-- Icon with oval background -->
+            <LinearLayout
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginEnd="@dimen/ten_dp"
+                android:layout_weight="1"
+                android:orientation="horizontal">
+
+                <FrameLayout
+                    android:layout_width="@dimen/forty_dp"
+                    android:layout_height="@dimen/forty_dp">
+
+                    <ImageView
+                        android:id="@+id/iv_icon_bg"
+                        android:layout_width="@dimen/forty_dp"
+                        android:layout_height="@dimen/forty_dp"
+                        android:src="@drawable/icon_bg_blue" />
+
+                    <ImageView
+                        android:id="@+id/iv_card_icon"
+                        android:layout_width="@dimen/twenty_dp"
+                        android:layout_height="@dimen/twenty_dp"
+                        android:layout_gravity="center"
+                        android:scaleType="fitCenter" />
+                </FrameLayout>
+
+            </LinearLayout>
+
+            <!-- Badge pill -->
+            <TextView
+                android:id="@+id/tv_badge"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:background="@drawable/pale_blue_circular"
+                android:fontFamily="@font/gill_sans_bold"
+                android:gravity="center"
+                android:minWidth="@dimen/twenty_dp"
+                android:paddingHorizontal="8dp"
+                android:paddingVertical="4dp"
+                android:text="0"
+                android:textColor="@color/white"
+                android:textSize="@dimen/Twelve_dp"
+                android:visibility="visible" />
+        </LinearLayout>
+
+        <!-- ── Divider ────────────────────────────────────────────────── -->
+        <!-- ── Row 2 : main content (shown when data exists) ─────────── -->
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:layout_gravity="center"
+            android:gravity="center"
+            android:orientation="vertical">
+
+            <TextView
+                android:id="@+id/tv_card_label"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="@dimen/four_dp"
+                android:ellipsize="end"
+                android:fontFamily="@font/gill_sans"
+                android:maxLines="1"
+                android:text="@string/meeting"
+                android:textColor="@color/grey_text"
+                android:textSize="@dimen/Fifteen_dp" />
+
+            <LinearLayout
+                android:id="@+id/ll_content"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:layout_gravity="center"
+                android:gravity="center"
+                android:orientation="vertical"
+                android:visibility="visible">
+
+                <TextView
+                    android:id="@+id/tv_primary_text"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="@dimen/two_dp"
+                    android:layout_marginBottom="@dimen/two_dp"
+                    android:autoSizeMaxTextSize="@dimen/seventeen_dp"
+                    android:autoSizeMinTextSize="@dimen/two_dp"
+                    android:autoSizeTextType="uniform"
+                    android:ellipsize="end"
+                    android:fontFamily="@font/gill_sans_bold"
+                    android:maxLines="2"
+                    android:text="@string/are_you_sure_you_want_send_relationship_request_to"
+                    android:textColor="@color/black"
+                    android:textSize="@dimen/seventeen_dp" />
+
+                <TextView
+                    android:id="@+id/tv_secondary_text"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:ellipsize="end"
+                    android:layout_marginTop="@dimen/two_dp"
+                    android:fontFamily="@font/gill_sans"
+                    android:maxLines="1"
+                    android:text="@string/accepted"
+                    android:textColor="@color/grey_text"
+                    android:textSize="@dimen/Twelve_dp" />
+            </LinearLayout>
+        </LinearLayout>
+
+        <!-- ── Row 2 alt : empty state ───────────────────────────────── -->
+        <TextView
+            android:id="@+id/tv_empty_text"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="@dimen/ten_dp"
+            android:fontFamily="@font/gill_sans"
+            android:text="No data available"
+            android:textColor="@color/grey_text"
+            android:textSize="@dimen/Twelve_dp"
+            android:visibility="gone" />
+
+    </LinearLayout>
+</androidx.cardview.widget.CardView>

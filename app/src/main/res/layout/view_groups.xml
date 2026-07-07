@@ -1,0 +1,159 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.constraintlayout.widget.ConstraintLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:layout_marginEnd="@dimen/ten_dp"
+    android:layout_marginTop="@dimen/ten_dp"
+    android:layout_marginStart="@dimen/ten_dp"
+    android:clipChildren="false"
+    android:clipToPadding="false">
+
+    <!-- ══ Main Group Info Card ══ -->
+    <androidx.cardview.widget.CardView
+        android:id="@+id/action_cv"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:elevation="@dimen/forty_dp"
+        app:cardBackgroundColor="@color/white"
+        app:cardCornerRadius="@dimen/eight_dp"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintVertical_bias="0.043">
+
+        <androidx.appcompat.widget.LinearLayoutCompat
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_margin="@dimen/four_dp"
+            android:orientation="vertical">
+
+            <!-- ══ ROW 1: Group name (left) + Action icon (end) ══ -->
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:gravity="center_vertical"
+                android:layout_marginTop="@dimen/four_dp"
+                android:orientation="horizontal">
+
+                <include
+                    android:id="@+id/tv_group_name"
+                    layout="@layout/blue_bold_txt"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:layout_marginStart="@dimen/eight_dp" />
+
+                <ImageView
+                    android:id="@+id/custom_spinner_cardview"
+                    android:layout_width="@dimen/thirty_dp"
+                    android:layout_height="@dimen/thirty_dp"
+                    android:layout_marginEnd="@dimen/eight_dp"
+                    android:padding="4dp"
+                    android:scaleType="fitCenter"
+                    android:src="@drawable/img_17" />
+
+            </LinearLayout>
+
+            <!-- ══ ROW 2: Owner + Created date + Members count ══ -->
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="vertical"
+                android:padding="@dimen/four_dp">
+
+                <!-- Owner row -->
+                <LinearLayout
+                    android:id="@+id/ll_owner"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:orientation="horizontal">
+
+                    <include
+                        layout="@layout/owner_layout"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content" />
+
+                    <include
+                        android:id="@+id/tv_group_head"
+                        layout="@layout/owner_layout"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content" />
+
+                </LinearLayout>
+
+                <!-- Created date row -->
+                <LinearLayout
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:orientation="horizontal">
+
+                    <include
+                        android:id="@+id/created_id"
+                        layout="@layout/owner_layout"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content" />
+
+                    <include
+                        android:id="@+id/tv_date"
+                        layout="@layout/owner_layout"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content" />
+
+                </LinearLayout>
+
+                <!-- Members count row -->
+                <LinearLayout
+                    android:id="@+id/ll_members_count"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:orientation="horizontal">
+
+                    <include
+                        android:id="@+id/tv_members"
+                        layout="@layout/owner_layout"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content" />
+
+                    <include
+                        android:id="@+id/tv_members_count"
+                        layout="@layout/owner_layout"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content" />
+
+                </LinearLayout>
+
+            </LinearLayout>
+
+        </androidx.appcompat.widget.LinearLayoutCompat>
+
+    </androidx.cardview.widget.CardView>
+
+    <!-- ══ Action List — overlapping floating dropdown ══ -->
+    <!-- ══ Action List — floating popup anchored below 3-dot icon ══ -->
+    <androidx.cardview.widget.CardView
+        android:id="@+id/action_list_card"
+        android:layout_width="180dp"
+        android:layout_height="wrap_content"
+        android:visibility="gone"
+        android:translationZ="50dp"
+        android:elevation="50dp"
+        android:layout_marginEnd="8dp"
+        android:layout_marginTop="36dp"
+        app:cardBackgroundColor="@color/white"
+        app:cardCornerRadius="8dp"
+        app:cardElevation="12dp"
+        app:cardUseCompatPadding="false"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintTop_toTopOf="@+id/action_cv">
+
+        <include
+            layout="@layout/action_layout_list"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content" />
+
+    </androidx.cardview.widget.CardView>
+
+</androidx.constraintlayout.widget.ConstraintLayout>

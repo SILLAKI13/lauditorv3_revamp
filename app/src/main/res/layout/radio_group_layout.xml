@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RadioGroup xmlns:android="http://schemas.android.com/apk/res/android"
+    android:id="@+id/selectionGroups"
+    android:layout_width="wrap_content"
+    android:layout_height="wrap_content"
+    android:layout_marginStart="@dimen/ten_dp"
+    android:orientation="horizontal">
+
+    <RadioButton
+        android:id="@+id/rbMatter"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:buttonTint="@color/light_blue"
+        android:checked="true"
+        android:fontFamily="@font/gill_sans_bold"
+        android:text="@string/matter"
+        android:textColor="@color/Blue_text_color" />
+
+    <RadioButton
+        android:id="@+id/rbClient"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="@dimen/twenty_dp"
+        android:buttonTint="@color/light_blue"
+        android:fontFamily="@font/gill_sans_bold"
+        android:text="@string/client"
+        android:textColor="@color/Blue_text_color" />
+
+</RadioGroup>

@@ -1,0 +1,121 @@
+<?xml version="1.0" encoding="utf-8"?>
+<menu xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="wrap_content"
+    android:layout_height="match_parent">
+    <group
+        android:id="@+id/menu_group"
+        android:checkableBehavior="none">
+        <!--menu items-->
+        <item
+            android:id="@+id/members"
+            android:icon="@drawable/teammember_dashboard_icon_"
+            android:title="@string/team_members"></item>
+        <item
+            android:id="@+id/audit"
+            android:icon="@drawable/audit"
+            android:title="@string/audit"></item>
+        <item
+            android:id="@+id/calendar"
+            android:icon="@drawable/meeting_sm_icon"
+            android:title="@string/meetings"></item>
+        <item
+            android:id="@+id/chat"
+            android:icon="@drawable/messages_sm_icon"
+            android:title="@string/messages"></item>
+        <item
+            android:id="@+id/notifications"
+            android:icon="@drawable/notification_sm_icon"
+            android:title="@string/notifications"></item>
+        <item
+            android:id="@+id/email"
+            android:icon="@drawable/email_icon_dashboard"
+            android:iconTint="@color/black"
+            android:title="@string/email"></item>
+        <item
+            android:id="@+id/logout"
+            android:icon="@drawable/logout_image"
+            android:title="@string/logout"></item>
+        <!--menu items-->
+        <item
+            android:id="@+id/Dashboard"
+            android:icon="@drawable/dashboard_new"
+            android:title="@string/dashboard" />
+        <item
+            android:id="@+id/firm_profile"
+            android:icon="@drawable/profile_icon_menu"
+            android:title="@string/firm_profile" />
+        <item
+            android:id="@+id/matter"
+            android:icon="@drawable/closed_matters"
+            android:iconTint="@color/black"
+            android:title="@string/matter"></item>
+        <item
+            android:id="@+id/documents"
+            android:icon="@drawable/document"
+            android:title="@string/documents"></item>
+        <item
+            android:id="@+id/relationships"
+            android:icon="@drawable/relationship"
+            android:title="@string/relationships"></item>
+        <item
+            android:id="@+id/timesheets"
+            android:icon="@drawable/timesheet"
+            android:title="@string/timesheets"></item>
+        <item
+            android:id="@+id/groups"
+            android:icon="@drawable/groups_new"
+            android:title="@string/groups"></item>
+        <item
+            android:id="@+id/invoices"
+            android:icon="@drawable/invoice_icon"
+            android:title="@string/invoice"></item>
+
+
+        <!--        <item android:title="Relationships">-->
+        <!--            <menu>-->
+        <!--                <item-->
+        <!--                    android:id="@+id/ClientRelationships"-->
+
+        <!--                    android:title="Client Relationship" />-->
+
+
+        <!--            </menu>-->
+        <!--        </item>-->
+
+        <!--        <item android:title="Chat">-->
+        <!--            <menu>-->
+        <!--                <item-->
+        <!--                    android:id="@+id/relationship_contacts"-->
+
+        <!--                    android:title="Relationship Chat" />-->
+        <!--                <item-->
+        <!--                    android:id="@+id/team_members"-->
+
+        <!--                    android:title="Team Chat" />-->
+        <!--            </menu>-->
+        <!--        </item>-->
+
+        <!--        <item android:title="">-->
+        <!--            <menu>-->
+        <!--                <item-->
+        <!--                    android:id="@+id/Reminders"-->
+
+        <!--                    android:title="Reminders" />-->
+        <!--                <item-->
+        <!--                    android:id="@+id/Notifications"-->
+
+        <!--                    android:title="Notifications" />-->
+
+
+        <!--                <item-->
+        <!--                    android:id="@+id/Logout"-->
+
+        <!--                    android:title="Logout" />-->
+
+<!--        <item-->
+<!--            android:id="@+id/Version"-->
+<!--            android:icon="@drawable/app_version_icon"-->
+<!--            android:title="" />-->
+    </group>
+
+</menu>

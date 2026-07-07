@@ -1,0 +1,152 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--  res/layout/super_user_kpi_data_storage.xml  -->
+<androidx.cardview.widget.CardView
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:id="@+id/Card_Layout"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:layout_margin="@dimen/ten_dp"
+    app:cardBackgroundColor="@color/white"
+    app:cardCornerRadius="@dimen/Fifteen_dp"
+    app:cardElevation="2dp">
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        android:padding="@dimen/Fifteen_dp">
+
+        <!-- Header row: icon + label + total GB value -->
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:gravity="center_vertical"
+            android:orientation="horizontal">
+
+            <LinearLayout
+                android:layout_width="36dp"
+                android:layout_height="36dp"
+                android:background="@drawable/pale_blue_circular"
+                android:gravity="center">
+                <ImageView
+                    android:layout_width="18dp"
+                    android:layout_height="18dp"
+                    android:src="@drawable/ic_storage_blue" />
+            </LinearLayout>
+
+            <!-- "Data Storage" label -->
+            <TextView
+                android:id="@+id/tv_total"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_marginStart="@dimen/ten_dp"
+                android:layout_weight="1"
+                android:textColor="@color/grey_color_dark"
+                android:textSize="@dimen/Twelve_dp" />
+
+            <!-- Total value + "GB" -->
+            <LinearLayout
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:gravity="center"
+                android:orientation="horizontal">
+
+                <TextView
+                    android:id="@+id/tv_total_data_storage"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:textColor="@color/black"
+                    android:textSize="@dimen/twenty_two_dp"
+                    android:textStyle="bold" />
+
+                <TextView
+                    android:id="@+id/tv_tot_gb1"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginStart="2dp"
+                    android:text="GB"
+                    android:textColor="@color/grey_color_dark"
+                    android:textSize="@dimen/Twelve_dp" />
+            </LinearLayout>
+        </LinearLayout>
+
+        <!-- Divider -->
+        <View
+            android:layout_width="match_parent"
+            android:layout_height="0.5dp"
+            android:layout_marginTop="@dimen/ten_dp"
+            android:layout_marginBottom="8dp"
+            android:background="@color/grey_color_light" />
+
+        <!-- Used Storage row -->
+        <LinearLayout
+            android:id="@+id/tv_ds_layout"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:gravity="center_vertical"
+            android:orientation="horizontal">
+
+            <TextView
+                android:id="@+id/tv_total1"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:textColor="@color/grey_color_dark"
+                android:textSize="@dimen/Twelve_dp" />
+
+            <TextView
+                android:id="@+id/tv_total_data_storage1"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:textColor="@color/Blue_text_color"
+                android:textSize="@dimen/Fifteen_dp"
+                android:textStyle="bold" />
+
+            <TextView
+                android:id="@+id/tv_tot_gb"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginStart="2dp"
+                android:text="GB"
+                android:textColor="@color/grey_color_dark"
+                android:textSize="@dimen/Twelve_dp" />
+        </LinearLayout>
+
+        <!-- Balance Storage row -->
+        <LinearLayout
+            android:id="@+id/tv_bs_layout"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="5dp"
+            android:gravity="center_vertical"
+            android:orientation="horizontal">
+
+            <TextView
+                android:id="@+id/tv_total2"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:textColor="@color/grey_color_dark"
+                android:textSize="@dimen/Twelve_dp" />
+
+            <TextView
+                android:id="@+id/tv_total_data_storage2"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:textColor="@color/scheduled_text"
+                android:textSize="@dimen/Fifteen_dp"
+                android:textStyle="bold" />
+
+            <TextView
+                android:id="@+id/tv_tot_gb2"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginStart="2dp"
+                android:text="GB"
+                android:textColor="@color/grey_color_dark"
+                android:textSize="@dimen/Twelve_dp" />
+        </LinearLayout>
+
+    </LinearLayout>
+</androidx.cardview.widget.CardView>

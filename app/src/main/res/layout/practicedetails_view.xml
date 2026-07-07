@@ -1,0 +1,268 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:id="@+id/ll_view"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:layout_marginBottom="@dimen/ten_dp"
+    android:elevation="@dimen/four_dp"
+    android:orientation="vertical"
+    android:padding="@dimen/ten_dp">
+
+    <!-- ═══ Professional Information Section ═══ -->
+    <LinearLayout
+        android:id="@+id/ll_professional_info_section"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginBottom="@dimen/ten_dp"
+        android:orientation="vertical">
+
+        <include
+            android:id="@+id/tv_professional_info_header"
+            layout="@layout/blue_bold_txt_layout"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content" />
+
+        <!-- Bar Council ID / Registration ID -->
+        <include
+            android:id="@+id/FirmName"
+            layout="@layout/title_name_layout" />
+
+        <include
+            android:id="@+id/tv_FirmName"
+            layout="@layout/title_name_layout"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content" />
+
+        <!-- Years of Experience / Year of Incorporation -->
+        <include
+            android:id="@+id/Country"
+            layout="@layout/title_name_layout" />
+
+        <include
+            android:id="@+id/tv_Country"
+            layout="@layout/title_name_layout"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content" />
+
+        <!-- Billing Currency -->
+        <include
+            android:id="@+id/billing_currency1"
+            layout="@layout/title_name_layout" />
+
+        <include
+            android:id="@+id/tv_billing_currency"
+            layout="@layout/title_name_layout"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content" />
+
+        <!-- Consultation Fee (My Profile only) -->
+        <include
+            android:id="@+id/con_fee"
+            layout="@layout/title_name_layout" />
+
+        <include
+            android:id="@+id/tv_con_fee"
+            layout="@layout/title_name_layout"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content" />
+
+        <!-- Practice Areas -->
+        <include
+            android:id="@+id/Email"
+            layout="@layout/title_name_layout" />
+
+        <include
+            android:id="@+id/tv_Email"
+            layout="@layout/title_name_layout"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:visibility="gone" />
+
+        <TextView
+            android:id="@+id/tvNoPractice"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:fontFamily="@font/gill_sans"
+            android:gravity="center"
+            android:padding="@dimen/Twelve_dp"
+            android:text="No practice areas specified"
+            android:textColor="#888888"
+            android:textSize="@dimen/Fifteen_dp"
+            android:visibility="gone" />
+
+        <androidx.recyclerview.widget.RecyclerView
+            android:id="@+id/rvPracticeAreas"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:nestedScrollingEnabled="false" />
+
+        <!-- Services Offered -->
+        <include
+            android:id="@+id/ContactPhone"
+            layout="@layout/title_name_layout" />
+
+        <include
+            android:id="@+id/tv_ContactPhone"
+            layout="@layout/title_name_layout"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:visibility="gone" />
+
+        <TextView
+            android:id="@+id/tvnoServices"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:fontFamily="@font/gill_sans"
+            android:gravity="center"
+            android:padding="@dimen/Twelve_dp"
+            android:text="No services specified"
+            android:textColor="#888888"
+            android:textSize="@dimen/Fifteen_dp"
+            android:visibility="gone" />
+
+        <androidx.recyclerview.widget.RecyclerView
+            android:id="@+id/rvServices"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:nestedScrollingEnabled="false"
+            android:overScrollMode="never" />
+
+        <!-- Languages Spoken -->
+        <include
+            android:id="@+id/ContactName"
+            layout="@layout/title_name_layout" />
+
+        <include
+            android:id="@+id/tv_ContactName"
+            layout="@layout/title_name_layout"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:visibility="gone" />
+
+        <TextView
+            android:id="@+id/tvnoLanguage"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:fontFamily="@font/gill_sans"
+            android:gravity="center"
+            android:padding="@dimen/Twelve_dp"
+            android:text="No languages specified"
+            android:textColor="#888888"
+            android:textSize="@dimen/Fifteen_dp"
+            android:visibility="gone" />
+
+        <androidx.recyclerview.widget.RecyclerView
+            android:id="@+id/rvLanguages"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:nestedScrollingEnabled="false" />
+
+        <!-- Cases Handled — hidden, moved to Courts & Cases tab -->
+        <include
+            android:id="@+id/cases_handled"
+            layout="@layout/title_name_layout"
+            android:visibility="gone" />
+
+        <TextView
+            android:id="@+id/tvnoCases"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:fontFamily="@font/gill_sans"
+            android:gravity="center"
+            android:padding="@dimen/Twelve_dp"
+            android:text="No Cases specified"
+            android:textColor="#888888"
+            android:textSize="@dimen/Fifteen_dp"
+            android:visibility="gone" />
+
+        <androidx.recyclerview.widget.RecyclerView
+            android:id="@+id/rvCasesHandled"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:nestedScrollingEnabled="false"
+            android:overScrollMode="never"
+            android:visibility="gone" />
+
+    </LinearLayout>
+
+    <!-- ═══ Address Information Section ═══ -->
+    <!-- ═══ Address Information Section ═══ -->
+    <LinearLayout
+        android:id="@+id/ll_address_info_section"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginBottom="@dimen/ten_dp"
+        android:orientation="vertical">
+
+        <include
+            android:id="@+id/tv_address_info_header"
+            layout="@layout/blue_bold_txt_layout"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content" />
+
+        <!-- Registered Address label + value -->
+        <include
+            android:id="@+id/tv_registered_address_label"
+            layout="@layout/title_name_layout" />
+
+        <include
+            android:id="@+id/tv_registered_address_value"
+            layout="@layout/title_name_layout"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content" />
+
+        <!-- Mailing Address label + value -->
+        <include
+            android:id="@+id/tv_mailing_address_label"
+            layout="@layout/title_name_layout" />
+
+        <include
+            android:id="@+id/tv_mailing_address_value"
+            layout="@layout/title_name_layout"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content" />
+
+    </LinearLayout>
+    <!-- ═══ Court Practice Details Section — hidden here, shown in Courts & Cases tab ═══ -->
+    <LinearLayout
+        android:id="@+id/ll_court_section"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        android:visibility="gone">
+
+        <include
+            android:id="@+id/tv_court_enrollments_label"
+            layout="@layout/blue_bold_txt_layout"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content" />
+
+        <include
+            android:id="@+id/tv_practiceAt"
+            layout="@layout/title_name_layout"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content" />
+
+        <TextView
+            android:id="@+id/tvNoCourtEnrollments"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:fontFamily="@font/gill_sans"
+            android:gravity="center"
+            android:padding="@dimen/Twelve_dp"
+            android:text="No courts added"
+            android:textColor="#888888"
+            android:textSize="@dimen/Fifteen_dp"
+            android:visibility="gone" />
+
+        <LinearLayout
+            android:id="@+id/ll_court_enrollments"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="@dimen/eight_dp"
+            android:orientation="vertical"
+            android:visibility="gone" />
+
+    </LinearLayout>
+
+</LinearLayout>

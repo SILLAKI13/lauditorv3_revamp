@@ -1,0 +1,12 @@
+<TextView xmlns:android="http://schemas.android.com/apk/res/android"
+    android:id="@+id/tv_from_date_timesheet"
+    android:layout_width="wrap_content"
+    android:layout_height="wrap_content"
+    android:layout_weight="1"
+    android:background="@drawable/background_transparent"
+    android:fontFamily="@font/gill_sans"
+    android:gravity="start"
+    android:text="@string/aa"
+    android:textColor="@android:color/black"
+    android:textFontWeight="450"
+    android:textSize="@dimen/Fifteen_dp" />

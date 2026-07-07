@@ -1,0 +1,33 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:layout_margin="@dimen/two_dp"
+    android:background="@drawable/rectangular_white_background"
+    android:elevation="@dimen/four_dp"
+    android:orientation="vertical">
+
+    <include
+        android:id="@+id/rv_doc_share"
+        layout="@layout/recyclerview"
+        android:layout_width="match_parent"
+        android:layout_height="@dimen/ThreeHundred_dp"
+        android:layout_margin="@dimen/ten_dp" />
+
+    <LinearLayout
+        android:id="@+id/ll_doc_button"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_margin="@dimen/ten_dp"
+        android:orientation="horizontal">
+
+        <include
+            android:id="@+id/btn_cancel_doc"
+            layout="@layout/cancel_button" />
+
+        <include
+            android:id="@+id/btn_share_doc"
+            layout="@layout/submit_button" />
+    </LinearLayout>
+
+</LinearLayout>

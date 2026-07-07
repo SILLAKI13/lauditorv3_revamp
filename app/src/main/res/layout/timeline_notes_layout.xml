@@ -1,0 +1,48 @@
+<!-- timeline_note_item.xml -->
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:layout_margin="@dimen/four_dp"
+    android:background="@drawable/rectangular_white_background"
+    android:elevation="@dimen/four_dp"
+    android:orientation="vertical"
+    android:padding="@dimen/ten_dp">
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_gravity="center"
+        android:orientation="horizontal">
+
+        <include
+            android:id="@+id/person_icon"
+            layout="@layout/person_icon" />
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="@dimen/ten_dp"
+            android:layout_marginEnd="@dimen/ten_dp"
+            android:orientation="vertical">
+
+            <include
+                android:id="@+id/tv_note_added_by"
+                layout="@layout/blue_bold_txt" />
+
+            <include
+                android:id="@+id/tv_note_added_on"
+                layout="@layout/black_normal_txt"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginStart="@dimen/two_dp" />
+        </LinearLayout>
+    </LinearLayout>
+
+    <include
+        android:id="@+id/tv_note_firm"
+        layout="@layout/black_normal_txt"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="@dimen/ten_dp"
+        android:layout_marginTop="@dimen/ten_dp" />
+</LinearLayout>

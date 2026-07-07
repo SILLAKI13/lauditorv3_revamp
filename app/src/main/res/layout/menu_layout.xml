@@ -1,0 +1,72 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:orientation="vertical">
+
+    <!-- Clickable main row — NO background drawable here, set entirely in Java -->
+    <LinearLayout
+        android:id="@+id/menu_row"
+        android:layout_width="match_parent"
+        android:layout_height="@dimen/Fifty_dp"
+        android:clickable="true"
+        android:focusable="true"
+        android:gravity="center_vertical"
+        android:orientation="horizontal"
+        android:layout_marginStart="@dimen/four_dp"
+        android:layout_marginEnd="@dimen/four_dp"
+        android:paddingStart="@dimen/Fifteen_dp"
+        android:paddingEnd="@dimen/Fifteen_dp">
+
+        <!-- Blue left accent bar (active state) -->
+        <TextView
+            android:id="@+id/checked_menu"
+            android:layout_width="3dp"
+            android:layout_height="@dimen/thirty_dp"
+            android:layout_marginEnd="@dimen/ten_dp"
+            android:background="#2A5FA5"
+            android:visibility="invisible" />
+
+        <!-- Icon -->
+        <ImageView
+            android:id="@+id/icon"
+            android:layout_width="@dimen/twenty_two_dp"
+            android:layout_height="@dimen/twenty_two_dp"
+            android:layout_marginEnd="@dimen/Fifteen_dp"
+            android:contentDescription="icon"
+            android:scaleType="fitCenter"
+            app:tint="@color/lite_grey" />
+
+        <!-- Label -->
+        <TextView
+            android:id="@+id/title"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:fontFamily="@font/gill_sans"
+            android:text="Item"
+            android:textColor="@color/lite_grey"
+            android:textSize="@dimen/Fifteen_dp" />
+
+        <!-- Chevron arrow — only for items with submenus -->
+        <ImageView
+            android:id="@+id/iv_arrow"
+            android:layout_width="@dimen/twenty_dp"
+            android:layout_height="@dimen/twenty_dp"
+            android:contentDescription="expand"
+            android:scaleType="fitCenter"
+            android:src="@drawable/down_arrow"
+            android:visibility="gone" />
+
+    </LinearLayout>
+
+    <!-- Submenu rows — injected at runtime, hidden by default -->
+    <LinearLayout
+        android:id="@+id/submenu_container"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        android:visibility="gone" />
+
+</LinearLayout>

@@ -1,0 +1,80 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+
+    <!-- ── List / Popup heights ───────────────────────────────────────────── -->
+    <dimen name="action_list_height_tm">168dp</dimen>   <!-- 140 × 1.2 -->
+    <dimen name="action_list_width">240dp</dimen>        <!-- 200 × 1.2 -->
+    <dimen name="action_list_height_gp">210dp</dimen>   <!-- 175 × 1.2 -->
+
+    <!-- ── Fixed size containers ─────────────────────────────────────────── -->
+    <dimen name="one_fifty_dp">180dp</dimen>             <!-- 150 × 1.2 -->
+    <dimen name="ThreeHundred_dp">360dp</dimen>
+    <dimen name="ThreeFifty">410dp</dimen><!-- 300 × 1.2 -->
+    <dimen name="FourHundred_dp">480dp</dimen>           <!-- 400 × 1.2 -->
+    <dimen name="FiveHundred_dp">600dp</dimen>           <!-- 500 × 1.2 -->
+
+    <!-- ── Login / Header ────────────────────────────────────────────────── -->
+    <dimen name="Login_header">48dp</dimen>              <!-- 40 × 1.2 -->
+
+    <!-- ── Text sizes (sp) ───────────────────────────────────────────────── -->
+    <dimen name="twenty_dp">24sp</dimen>                 <!-- 20 × 1.2 -->
+    <dimen name="twenty_two_dp">26sp</dimen>             <!-- 22 × 1.2 -->
+    <dimen name="seventeen_dp">20sp</dimen>              <!-- 17 × 1.2 -->
+    <dimen name="Thirteen_dp">16sp</dimen>               <!-- 13 × 1.2 -->
+    <dimen name="Fifteen_dp">18sp</dimen>                <!-- 15 × 1.2 -->
+    <dimen name="Fourteen">17sp</dimen>                  <!-- 14 × 1.2 -->
+    <dimen name="Twelve_dp">14sp</dimen>                 <!-- 12 × 1.2 -->
+    <dimen name="thirty_dp">36sp</dimen>                 <!-- 30 × 1.2 -->
+    <dimen name="twenty_five">30sp</dimen>               <!-- 25 × 1.2 -->
+    <dimen name="eighteen_sp">22sp</dimen>               <!-- 18 × 1.2 -->
+    <dimen name="EightyFive_dp">102sp</dimen>            <!-- 85 × 1.2 -->
+
+    <!-- ── Mixed dp ──────────────────────────────────────────────────────── -->
+    <dimen name="twenty_four_dp">29dp</dimen>            <!-- 24 × 1.2 -->
+
+    <!-- ── Small spacing / padding ───────────────────────────────────────── -->
+    <dimen name="one_dp">1dp</dimen>                     <!-- keep — hairline border -->
+    <dimen name="two_dp">2dp</dimen>                     <!-- 2 × 1.2 -->
+    <dimen name="four_dp">5dp</dimen>                    <!-- 4 × 1.2 -->
+    <dimen name="five_dp">6dp</dimen>                    <!-- 5 × 1.2 -->
+    <dimen name="six_dp">7dp</dimen>                     <!-- 6 × 1.2 -->
+    <dimen name="eight_dp">10dp</dimen>                  <!-- 8 × 1.2 -->
+    <dimen name="ten_dp">12dp</dimen>                    <!-- 10 × 1.2 -->
+
+    <!-- ── Sub-1dp values — keep as-is (dividers / stroke widths) ────────── -->
+    <dimen name="point_one">0.1dp</dimen>
+    <dimen name="point_five">0.5dp</dimen>
+    <dimen name="point_seven">0.7dp</dimen>
+    <dimen name="one_point_five">1.5dp</dimen>
+    <dimen name="zero_dp">0dp</dimen>
+
+    <!-- ── Negative offsets — keep as-is ────────────────────────────────── -->
+    <dimen name="_10dp">-10dp</dimen>
+    <dimen name="_15dp">-15dp</dimen>
+    <dimen name="_20dp">-20dp</dimen>
+
+    <!-- ── Medium spacing / component heights ────────────────────────────── -->
+    <dimen name="thirty_two_dp">38dp</dimen>             <!-- 32 × 1.2 -->
+    <dimen name="thirty_five_dp">42dp</dimen>            <!-- 35 × 1.2 -->
+    <dimen name="forty_dp">48dp</dimen>                  <!-- 40 × 1.2 -->
+    <dimen name="forty_five_dp">54dp</dimen>             <!-- 45 × 1.2 -->
+    <dimen name="Fifty_dp">60dp</dimen>                  <!-- 50 × 1.2 -->
+    <dimen name="Fifty_five_dp">66dp</dimen>             <!-- 55 × 1.2 -->
+    <dimen name="sixty_dp">72dp</dimen>                  <!-- 60 × 1.2 -->
+    <dimen name="seventy_dp">84dp</dimen>                <!-- 70 × 1.2 -->
+    <dimen name="Seventy_dp">84dp</dimen>                <!-- 70 × 1.2 (alias) -->
+    <dimen name="Eighty_dp">96dp</dimen>                 <!-- 80 × 1.2 -->
+
+    <!-- ── Large containers ──────────────────────────────────────────────── -->
+    <dimen name="hundred_dp">120dp</dimen>               <!-- 100 × 1.2 -->
+    <dimen name="one_thiry_dp">156dp</dimen>
+    <dimen name="one_forty_dp">160dp</dimen><!-- 130 × 1.2 -->
+    <dimen name="one_sixty">192dp</dimen>                <!-- 160 × 1.2 -->
+    <dimen name="two_hundred">240dp</dimen>              <!-- 200 × 1.2 -->
+    <dimen name="calendar_day_height">96dp</dimen>       <!-- 80 × 1.2 -->
+    <dimen name="module_btn_size">134dp</dimen>          <!-- 120 × 1.2 -->
+
+    <!-- ── Nav spacing ───────────────────────────────────────────────────── -->
+    <dimen name="nav_header_vertical_spacing">10dp</dimen> <!-- 8 × 1.2 -->
+
+</resources>

@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- res/drawable/badge_blue_bg.xml -->
+<!-- Light blue pill/badge background for the notification count next to title -->
+<shape xmlns:android="http://schemas.android.com/apk/res/android"
+    android:shape="rectangle">
+
+    <solid android:color="#DBEAFE" />  <!-- very light blue -->
+    <corners android:radius="20dp" />
+
+</shape>

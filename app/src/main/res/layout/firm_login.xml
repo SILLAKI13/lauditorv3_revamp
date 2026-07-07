@@ -1,0 +1,84 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="@color/blue">
+
+    <androidx.cardview.widget.CardView
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:layout_margin="@dimen/twenty_dp"
+        app:cardCornerRadius="@dimen/thirty_dp"
+        app:cardElevation="@dimen/twenty_dp"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent">
+
+
+        <androidx.constraintlayout.widget.ConstraintLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:background="@color/white">
+
+            <!-- 🔽 SCROLLABLE CONTENT -->
+            <ScrollView
+                android:id="@+id/scrollContent"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:fillViewport="true"
+                android:overScrollMode="never"
+                app:layout_constraintBottom_toTopOf="@id/buttonBar"
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintTop_toTopOf="parent">
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="vertical"
+                    android:padding="@dimen/ten_dp">
+
+                    <include layout="@layout/logo_layout" />
+
+                    <include
+                        android:id="@+id/textview_firm"
+                        layout="@layout/dialog_save_button" />
+
+                    <include layout="@layout/multifirm_layout" />
+
+                    <include layout="@layout/password_layout" />
+
+                    <TextView
+                        android:id="@+id/forgetpassword"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_marginStart="@dimen/Fifteen_dp"
+                        android:layout_marginTop="@dimen/Fifteen_dp"
+                        android:layout_marginEnd="@dimen/Fifteen_dp"
+                        android:text="@string/forgot_password_ul"
+                        android:textColor="@color/black"
+                        android:textStyle="bold" />
+
+                </LinearLayout>
+            </ScrollView>
+
+            <!-- 🔒 FIXED BUTTON BAR -->
+            <LinearLayout
+                android:id="@+id/buttonBar"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:orientation="horizontal"
+                android:padding="@dimen/ten_dp"
+                app:layout_constraintBottom_toBottomOf="parent"
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintStart_toStartOf="parent">
+
+                <include layout="@layout/layout_button" />
+
+            </LinearLayout>
+
+        </androidx.constraintlayout.widget.ConstraintLayout>
+    </androidx.cardview.widget.CardView>
+
+</androidx.constraintlayout.widget.ConstraintLayout>

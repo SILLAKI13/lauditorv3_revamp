@@ -1,0 +1,88 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:layout_gravity="center_vertical"
+    android:layout_margin="@dimen/four_dp"
+    android:background="@color/white"
+    android:gravity="end"
+    android:orientation="vertical">
+
+    <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+        android:id="@+id/document_layout"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_gravity="center_vertical"
+        android:background="@color/white"
+        android:gravity="end"
+        android:orientation="horizontal"
+        android:padding="@dimen/eight_dp">
+
+        <LinearLayout
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="center_vertical"
+            android:layout_weight="1"
+            android:orientation="vertical">
+
+            <include
+                android:id="@+id/tv_doc_name"
+                layout="@layout/black_bold_txt"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_margin="@dimen/four_dp"
+                android:layout_weight="1" />
+
+            <LinearLayout
+                android:id="@+id/ll_confidential"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:orientation="horizontal"
+                android:visibility="gone">
+
+                <include
+                    android:id="@+id/confidential_txt"
+                    layout="@layout/black_small_bold_txt"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content" />
+
+                <include
+                    android:id="@+id/tv_matter_details_name"
+                    layout="@layout/black_normal_txt"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content" />
+
+            </LinearLayout>
+        </LinearLayout>
+
+        <LinearLayout
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="center_vertical"
+            android:layout_margin="@dimen/four_dp"
+            android:gravity="end"
+            android:orientation="horizontal">
+
+            <include
+                android:id="@+id/iv_remove_doc"
+                layout="@layout/remove_icon" />
+
+            <androidx.appcompat.widget.LinearLayoutCompat
+                android:layout_width="@dimen/twenty_five"
+                android:layout_height="@dimen/twenty_five"
+                android:layout_gravity="center"
+                android:layout_marginStart="@dimen/ten_dp"
+                android:layout_marginEnd="@dimen/ten_dp"
+
+                android:elevation="@dimen/four_dp"
+                android:gravity="center_vertical">
+
+                <include
+                    android:id="@+id/cb_documents"
+                    layout="@layout/chk_box_layout" />
+            </androidx.appcompat.widget.LinearLayoutCompat>
+        </LinearLayout>
+    </LinearLayout>
+
+    <include layout="@layout/divider_line"/>
+</LinearLayout>

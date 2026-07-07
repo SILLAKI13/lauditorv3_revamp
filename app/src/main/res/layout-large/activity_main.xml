@@ -1,0 +1,157 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="@color/blue_pale"
+    android:fitsSystemWindows="true">
+
+    <!-- AppBar -->
+    <include
+        android:id="@+id/appbar"
+        layout="@layout/appbar"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent" />
+
+    <!-- DrawerLayout -->
+    <androidx.drawerlayout.widget.DrawerLayout
+        android:id="@+id/drawer_layout"
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        android:background="@color/white"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@id/appbar">
+
+        <!-- Main content -->
+        <include layout="@layout/content_menu" />
+
+        <!-- Navigation Drawer -->
+        <com.google.android.material.navigation.NavigationView
+            android:id="@+id/navigation"
+            android:layout_width="wrap_content"
+            android:layout_height="match_parent"
+            android:layout_gravity="start"
+            android:background="@color/white"
+            android:elevation="8dp">
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:orientation="vertical">
+
+                <!-- ── Scrollable Menu Items (no header at all) ── -->
+                <ScrollView
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent"
+                    android:overScrollMode="never"
+                    android:scrollbars="none">
+
+                    <LinearLayout
+                        android:id="@+id/nav_linear_layout"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:orientation="vertical"
+                        android:paddingTop="8dp"
+                        android:paddingBottom="@dimen/ten_dp">
+
+                        <!-- 1. Firm Profile -->
+                        <include
+                            android:id="@+id/sm_firmProfile"
+                            layout="@layout/menu_layout" />
+
+                        <!-- 2. Appointments -->
+                        <include
+                            android:id="@+id/sm_appointments"
+                            layout="@layout/menu_layout" />
+
+                        <!-- 3. Matters — submenu: Legal Matters / General Matters -->
+                        <include
+                            android:id="@+id/sm_matters"
+                            layout="@layout/menu_layout" />
+
+                        <!-- 4. Documents — submenu: Matter / Client / Firm / Deleted -->
+                        <include
+                            android:id="@+id/sm_documents"
+                            layout="@layout/menu_layout" />
+
+                        <!-- 5. Doc Editor -->
+                        <include
+                            android:id="@+id/sm_docEditor"
+                            layout="@layout/menu_layout" />
+
+                        <!-- 6. Relationships — submenu: Individuals / Business / Corporate / Deleted -->
+                        <include
+                            android:id="@+id/sm_relationships"
+                            layout="@layout/menu_layout" />
+
+                        <!-- 7. Timesheets — submenu: Aggregated / My Timesheet -->
+                        <include
+                            android:id="@+id/sm_timesheet"
+                            layout="@layout/menu_layout" />
+
+                        <include
+                            android:id="@+id/sm_invoice"
+                            layout="@layout/menu_layout" />
+
+                        <!-- 8. Meetings -->
+                        <include
+                            android:id="@+id/sm_meetings"
+                            layout="@layout/menu_layout" />
+
+                        <!-- 9. Emails -->
+                        <include
+                            android:id="@+id/sm_email"
+                            layout="@layout/menu_layout" />
+
+                        <!-- 10. Messages — submenu: Clients / Teams -->
+                        <include
+                            android:id="@+id/sm_messages"
+                            layout="@layout/menu_layout" />
+
+                        <!-- 11. Notifications -->
+                        <include
+                            android:id="@+id/sm_notification"
+                            layout="@layout/menu_layout" />
+
+                        <!-- 12. Audit Trails -->
+                        <include
+                            android:id="@+id/sm_audit"
+                            layout="@layout/menu_layout" />
+
+                        <!-- 13. Groups -->
+                        <include
+                            android:id="@+id/sm_groups"
+                            layout="@layout/menu_layout" />
+
+                        <!-- 14. Team Members -->
+                        <include
+                            android:id="@+id/sm_team_member"
+                            layout="@layout/menu_layout" />
+
+                        <!-- Divider before logout -->
+                        <View
+                            android:layout_width="match_parent"
+                            android:layout_height="1dp"
+                            android:layout_marginStart="16dp"
+                            android:layout_marginTop="8dp"
+                            android:layout_marginEnd="16dp"
+                            android:layout_marginBottom="4dp"
+                            android:background="#EDF2F7" />
+
+                        <!-- 16. Logout -->
+                        <include
+                            android:id="@+id/sm_logout"
+                            layout="@layout/menu_layout" />
+
+                    </LinearLayout>
+                </ScrollView>
+
+            </LinearLayout>
+        </com.google.android.material.navigation.NavigationView>
+
+    </androidx.drawerlayout.widget.DrawerLayout>
+
+</androidx.constraintlayout.widget.ConstraintLayout>

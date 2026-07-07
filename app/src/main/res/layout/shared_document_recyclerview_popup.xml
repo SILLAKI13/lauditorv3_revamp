@@ -1,0 +1,130 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.cardview.widget.CardView xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:elevation="@dimen/eight_dp"
+    app:cardBackgroundColor="@color/white"
+    tools:context=".MainActivity">
+
+    <androidx.constraintlayout.widget.ConstraintLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content">
+
+        <LinearLayout
+            android:id="@+id/ll_documents"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            android:visibility="visible"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toTopOf="parent">
+
+
+            <androidx.appcompat.widget.LinearLayoutCompat
+                android:id="@+id/linearLayoutCompat2"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="vertical"
+                android:padding="@dimen/four_dp"
+                android:paddingBottom="@dimen/thirty_dp">
+
+                <include layout="@layout/header_layout" />
+
+                <LinearLayout
+                    android:id="@+id/ll_hide_data"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:background="@color/white"
+                    android:orientation="vertical">
+
+
+                    <!--this is the actual edit text which takes the input-->
+                    <include
+                        android:id="@+id/et_search_relationships"
+                        layout="@layout/search_layout_new"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_gravity="start"
+                        android:layout_margin="@dimen/six_dp"
+                        app:layout_constraintBottom_toBottomOf="parent"
+                        app:layout_constraintEnd_toEndOf="parent"
+                        app:layout_constraintHorizontal_bias="0.0"
+                        app:layout_constraintStart_toStartOf="parent"
+                        app:layout_constraintTop_toBottomOf="@+id/cv_details_2"
+                        app:layout_constraintVertical_bias="0.0" />
+
+                    <LinearLayout
+                        android:id="@+id/ll_select_all"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_gravity="end"
+                        android:layout_marginEnd="@dimen/Twelve_dp"
+                        android:gravity="center_vertical"
+                        android:visibility="visible">
+
+                        <include
+                            android:id="@+id/tv_select_all"
+                            layout="@layout/title_name_layout"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content" />
+
+                        <androidx.appcompat.widget.LinearLayoutCompat
+                            android:layout_width="@dimen/twenty_five"
+                            android:layout_height="@dimen/twenty_five"
+                            android:layout_gravity="center"
+                            android:layout_margin="@dimen/ten_dp"
+
+                            android:elevation="@dimen/four_dp"
+                            android:gravity="center_vertical">
+
+                            <include
+                                android:id="@+id/chk_select_all"
+                                layout="@layout/chk_box_layout" />
+                        </androidx.appcompat.widget.LinearLayoutCompat>
+
+                    </LinearLayout>
+
+                    <include
+                        android:id="@+id/message"
+                        layout="@layout/title_name_layout"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_gravity="center"
+                        android:visibility="gone" />
+
+                    <ScrollView
+                        android:layout_width="match_parent"
+                        android:layout_height="@dimen/ThreeHundred_dp"
+                        android:background="@color/white"
+                        tools:context=".MainActivity">
+
+                        <include
+                            android:id="@+id/rv_relationship_documents"
+                            layout="@layout/recyclerview" />
+                    </ScrollView>
+
+                    <androidx.appcompat.widget.LinearLayoutCompat
+                        android:id="@+id/ll_buttons"
+                        android:layout_width="match_parent"
+                        android:layout_height="match_parent"
+                        android:layout_margin="@dimen/ten_dp"
+                        android:orientation="horizontal">
+
+                        <include
+                            android:id="@+id/btn_relationships_cancel"
+                            layout="@layout/cancel_button" />
+
+                        <include
+                            android:id="@+id/btn_send_request"
+                            layout="@layout/submit_button" />
+                    </androidx.appcompat.widget.LinearLayoutCompat>
+                </LinearLayout>
+            </androidx.appcompat.widget.LinearLayoutCompat>
+        </LinearLayout>
+
+    </androidx.constraintlayout.widget.ConstraintLayout>
+</androidx.cardview.widget.CardView>

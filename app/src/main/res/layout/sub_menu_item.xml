@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="utf-8"?>
+<TextView xmlns:android="http://schemas.android.com/apk/res/android"
+    android:id="@+id/sub_title"
+    android:layout_width="match_parent"
+    android:layout_height="@dimen/forty_five_dp"
+    android:clickable="true"
+    android:focusable="true"
+    android:fontFamily="@font/gill_sans"
+    android:gravity="center_vertical"
+    android:paddingStart="@dimen/Fifty_five_dp"
+    android:paddingEnd="@dimen/Fifteen_dp"
+    android:text="Sub Item"
+    android:textColor="@color/menu_items_color"
+    android:textSize="@dimen/Fifteen_dp" />

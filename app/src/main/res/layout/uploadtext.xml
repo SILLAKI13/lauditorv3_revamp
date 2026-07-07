@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="utf-8"?>
+<TextView xmlns:android="http://schemas.android.com/apk/res/android"
+    android:id="@+id/tv_document_display_name"
+    android:layout_width="wrap_content"
+    android:layout_height="wrap_content"
+    android:layout_gravity="start"
+    android:fontFamily="@font/gill_sans"
+    android:gravity="start"
+    android:maxLines="3"
+    android:ellipsize="end"
+    android:text="@string/upload"
+    android:textColor="@color/black"
+    android:textSize="@dimen/eighteen_sp" />

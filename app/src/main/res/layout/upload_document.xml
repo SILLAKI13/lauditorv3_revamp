@@ -1,0 +1,857 @@
+<ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    tools:context=".MainActivity">
+
+    <androidx.constraintlayout.widget.ConstraintLayout
+        android:id="@+id/cl_document"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content">
+
+        <androidx.appcompat.widget.LinearLayoutCompat
+            android:id="@+id/upload_view"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="@dimen/Fifteen_dp"
+            android:gravity="center"
+            android:orientation="horizontal"
+            android:padding="@dimen/ten_dp"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintHorizontal_bias="0.0"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toTopOf="parent">
+
+            <RelativeLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_gravity="center"
+                android:layout_weight="1"
+                android:gravity="center">
+
+                <com.google.android.material.imageview.ShapeableImageView
+                    android:id="@+id/upload_icon"
+                    android:layout_width="@dimen/sixty_dp"
+                    android:layout_height="@dimen/sixty_dp"
+                    android:background="@color/white"
+                    android:fontFamily="@font/gill_sans"
+                    android:src="@mipmap/uploadwhiteupload1"
+                    android:text="@string/create_group"
+                    android:textColor="@color/black"
+                    android:textSize="@dimen/Fifteen_dp"
+                    app:shapeAppearanceOverlay="@style/Circula" />
+
+                <include
+                    android:id="@+id/upload_name"
+                    layout="@layout/title_name_layout"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_below="@+id/upload_icon"
+                    android:layout_marginStart="@dimen/four_dp"
+                    android:layout_marginTop="@dimen/four_dp"
+                    android:layout_marginEnd="@dimen/four_dp" />
+
+            </RelativeLayout>
+
+            <RelativeLayout
+
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_gravity="center"
+                android:layout_weight="1"
+                android:gravity="center">
+
+                <com.google.android.material.imageview.ShapeableImageView
+                    android:id="@+id/view_icon"
+                    android:layout_width="@dimen/sixty_dp"
+                    android:layout_height="@dimen/sixty_dp"
+                    android:background="@color/white"
+                    android:fontFamily="@font/gill_sans"
+                    android:src="@mipmap/eye_whitebackground_icon"
+                    android:text="@string/create_group"
+                    android:textColor="@color/black"
+                    android:textSize="@dimen/Fifteen_dp"
+                    app:shapeAppearanceOverlay="@style/Circula">
+
+                </com.google.android.material.imageview.ShapeableImageView>
+
+                <include
+                    android:id="@+id/view_name"
+                    layout="@layout/title_name_layout"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_below="@+id/view_icon"
+                    android:layout_marginStart="@dimen/ten_dp"
+                    android:layout_marginTop="@dimen/four_dp"
+                    android:layout_marginEnd="@dimen/four_dp" />
+
+            </RelativeLayout>
+        </androidx.appcompat.widget.LinearLayoutCompat>
+
+        <LinearLayout
+            android:id="@+id/ll_upload_docs"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            android:visibility="gone"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintHorizontal_bias="0.0"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@id/upload_view"
+            app:layout_constraintVertical_bias="0.0">
+
+            <androidx.appcompat.widget.LinearLayoutCompat
+                android:id="@+id/client_type"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_gravity="center"
+                android:orientation="horizontal">
+
+                <include
+                    android:id="@+id/tv_client"
+                    layout="@layout/left_title_layout" />
+
+                <include
+                    android:id="@+id/tv_firm"
+                    layout="@layout/right_title_layout" />
+            </androidx.appcompat.widget.LinearLayoutCompat>
+
+            <androidx.cardview.widget.CardView
+                android:id="@+id/cv_client_details"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_margin="@dimen/Fifteen_dp"
+                android:elevation="@dimen/forty_dp"
+                android:padding="@dimen/four_dp"
+                android:visibility="visible"
+                app:cardBackgroundColor="@color/white"
+                app:cardCornerRadius="@dimen/eight_dp">
+
+                <RelativeLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginStart="@dimen/ten_dp"
+                    android:layout_marginTop="@dimen/ten_dp"
+                    android:layout_marginEnd="@dimen/eight_dp"
+                    android:layout_marginBottom="@dimen/ten_dp">
+
+                    <LinearLayout
+                        android:id="@+id/ll_client_name"
+                        android:layout_width="match_parent"
+                        android:layout_height="match_parent"
+                        android:orientation="vertical">
+
+                        <LinearLayout
+
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:layout_marginStart="@dimen/four_dp"
+                            android:layout_marginTop="@dimen/ten_dp"
+                            android:orientation="horizontal">
+
+                            <include
+                                android:id="@+id/tv_name"
+                                layout="@layout/title_name_layout"
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:layout_marginBottom="@dimen/ten_dp" />
+                            <!--                            android:text="Client Name"-->
+
+                            <include layout="@layout/astrick_layout" />
+
+                        </LinearLayout>
+
+
+                        <!--                        <include-->
+                        <!--                            android:id="@+id/custom_spinner"-->
+                        <!--                            layout="@layout/spinner_text_view" />-->
+                        <include
+                            android:id="@+id/customLayout1"
+                            layout="@layout/dropdown_spinner_layout" />
+
+                        <include
+                            android:id="@+id/list_client"
+                            layout="@layout/spinner_list"
+                            android:layout_width="match_parent"
+                            android:layout_height="@dimen/one_fifty_dp"
+                            android:layout_marginStart="@dimen/four_dp"
+                            android:layout_marginEnd="@dimen/four_dp" />
+
+                        <!--                            <include-->
+                        <!--                                android:id="@+id/at_search_client"-->
+                        <!--                                layout="@layout/spinner_layout" />-->
+
+                    </LinearLayout>
+
+                    <LinearLayout
+                        android:id="@+id/ll_matter"
+                        android:layout_width="match_parent"
+                        android:layout_height="match_parent"
+                        android:layout_below="@id/ll_client_name"
+                        android:orientation="vertical"
+                        android:visibility="visible">
+
+                        <include
+                            android:id="@+id/tv_matter"
+                            layout="@layout/title_name_layout"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:layout_marginStart="@dimen/four_dp"
+                            android:layout_marginTop="@dimen/ten_dp"
+                            android:layout_marginBottom="@dimen/ten_dp" />
+                        <!--                            android:text="Client Name"-->
+
+                        <include
+                            android:id="@+id/customLayout2"
+                            layout="@layout/dropdown_spinner_layout" />
+
+                        <include
+                            android:id="@+id/list_matter"
+                            layout="@layout/spinner_list"
+                            android:layout_width="match_parent"
+                            android:layout_height="@dimen/one_fifty_dp"
+                            android:layout_marginStart="@dimen/four_dp"
+                            android:layout_marginEnd="@dimen/four_dp" />
+                    </LinearLayout>
+
+                    <LinearLayout
+                        android:id="@+id/ll_upload_groups"
+                        android:layout_width="match_parent"
+                        android:layout_height="match_parent"
+                        android:layout_below="@id/ll_matter"
+                        android:orientation="vertical"
+                        android:visibility="gone">
+
+                        <LinearLayout
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:layout_marginTop="@dimen/ten_dp"
+                            android:orientation="horizontal">
+
+                            <include
+                                android:id="@+id/tv_select_upload_group_name"
+                                layout="@layout/title_name_layout"
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:layout_marginStart="@dimen/four_dp"
+                                android:layout_marginBottom="@dimen/ten_dp" />
+
+                            <include layout="@layout/astrick_layout" />
+
+                        </LinearLayout>
+
+
+                        <include
+                            android:id="@+id/tv_select_upload_groups"
+                            layout="@layout/spinner_text_view"
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:layout_marginStart="@dimen/four_dp"
+                            android:layout_marginEnd="@dimen/four_dp" />
+
+                        <LinearLayout
+                            android:id="@+id/ll_upload_client_group"
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:orientation="vertical"
+                            android:visibility="gone">
+
+                            <include
+                                android:id="@+id/rv_upload_groups"
+                                layout="@layout/recyclerview"
+                                android:layout_width="match_parent"
+                                android:layout_height="@dimen/one_fifty_dp"
+                                android:layout_marginStart="@dimen/four_dp"
+                                android:layout_marginEnd="@dimen/four_dp" />
+                        </LinearLayout>
+                    </LinearLayout>
+
+                    <LinearLayout
+                        android:id="@+id/ll_groups"
+                        android:layout_width="match_parent"
+                        android:layout_height="match_parent"
+                        android:layout_below="@id/ll_upload_groups"
+                        android:orientation="vertical"
+                        android:visibility="visible">
+
+                        <LinearLayout
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:layout_marginTop="@dimen/ten_dp"
+                            android:orientation="horizontal">
+
+                            <include
+                                android:id="@+id/tv_select_group_name"
+                                layout="@layout/title_name_layout"
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:layout_marginStart="@dimen/four_dp"
+                                android:layout_marginBottom="@dimen/ten_dp" />
+
+                            <include layout="@layout/astrick_layout" />
+
+                        </LinearLayout>
+
+
+                        <include
+                            android:id="@+id/tv_select_groups"
+                            layout="@layout/spinner_text_view"
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:layout_marginStart="@dimen/four_dp"
+                            android:layout_marginEnd="@dimen/four_dp" />
+
+                        <LinearLayout
+                            android:id="@+id/upload_group_layout"
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:orientation="vertical">
+
+                            <include
+                                android:id="@+id/rv_display_upload_groups_docs"
+                                layout="@layout/recyclerview"
+                                android:layout_width="match_parent"
+                                android:layout_height="@dimen/one_fifty_dp"
+                                android:layout_marginStart="@dimen/four_dp"
+                                android:layout_marginEnd="@dimen/four_dp" />
+
+                            <LinearLayout
+                                android:layout_width="match_parent"
+                                android:layout_height="wrap_content"
+                                android:layout_marginTop="@dimen/ten_dp"
+                                android:orientation="horizontal"
+                                android:visibility="gone">
+
+                                <include
+                                    android:id="@+id/btn_group_cancel"
+                                    layout="@layout/cancel_button" />
+
+                                <include
+                                    android:id="@+id/btn_group_submit"
+                                    layout="@layout/submit_button" />
+                            </LinearLayout>
+                        </LinearLayout>
+                    </LinearLayout>
+
+                    <LinearLayout
+                        android:id="@+id/ll_category"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_below="@id/ll_groups"
+                        android:orientation="vertical"
+                        android:visibility="gone">
+
+                        <include
+                            android:id="@+id/category_name"
+                            layout="@layout/title_name_layout"
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:layout_marginStart="@dimen/two_dp"
+                            android:layout_marginTop="@dimen/ten_dp" />
+
+                        <include
+                            android:id="@+id/tv_category"
+                            layout="@layout/title_description_layout" />
+                    </LinearLayout>
+
+                    <LinearLayout
+                        android:id="@+id/ll_select_doc"
+                        android:layout_width="match_parent"
+                        android:layout_height="match_parent"
+                        android:layout_below="@id/ll_category"
+                        android:orientation="vertical">
+
+                        <LinearLayout
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:layout_marginTop="@dimen/ten_dp"
+                            android:orientation="horizontal">
+
+                            <include
+                                android:id="@+id/select_documents"
+                                layout="@layout/title_name_layout"
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:layout_marginStart="@dimen/four_dp" />
+
+                            <include layout="@layout/astrick_layout" />
+                        </LinearLayout>
+
+                        <LinearLayout
+                            android:id="@+id/ll_select_file"
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:layout_gravity="center_vertical"
+                            android:layout_marginTop="@dimen/eight_dp"
+                            android:baselineAligned="false"
+                            android:orientation="horizontal">
+
+                            <include
+                                android:id="@+id/tv_selected_file"
+                                layout="@layout/select_doc_layout" />
+
+                            <include
+                                android:id="@+id/btn_browse"
+                                layout="@layout/submit_button"
+                                android:layout_width="wrap_content"
+                                android:layout_height="@dimen/forty_dp"
+                                android:layout_gravity="center" />
+
+                        </LinearLayout>
+
+                    </LinearLayout>
+
+                </RelativeLayout>
+
+            </androidx.cardview.widget.CardView>
+
+            <LinearLayout
+                android:id="@+id/ll_hide_doc_details"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="vertical"
+                android:visibility="visible"
+                app:layout_constraintBottom_toBottomOf="parent"
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintTop_toBottomOf="@id/cv_client_details">
+
+                <RelativeLayout
+                    android:id="@+id/rl_buttons"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_margin="@dimen/Fifteen_dp"
+                    app:layout_constraintEnd_toEndOf="parent"
+                    app:layout_constraintStart_toStartOf="parent"
+                    app:layout_constraintTop_toBottomOf="@id/cv_client_details">
+
+                    <androidx.appcompat.widget.LinearLayoutCompat
+                        android:id="@+id/tag_meta"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_gravity="center_vertical"
+                        android:orientation="horizontal"
+                        android:padding="@dimen/four_dp">
+
+                        <include
+                            android:id="@+id/tv_add_tag"
+                            layout="@layout/left_title_layout" />
+
+                        <include
+                            android:id="@+id/tv_edit_meta"
+                            layout="@layout/right_title_layout" />
+
+                        <LinearLayout
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:layout_gravity="center_vertical"
+                            android:layout_marginStart="@dimen/Fifteen_dp"
+                            android:gravity="end">
+
+                            <include
+                                layout="@layout/check_select_all"
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:layout_gravity="center_vertical"
+                                android:layout_margin="@dimen/four_dp" />
+                        </LinearLayout>
+
+                    </androidx.appcompat.widget.LinearLayoutCompat>
+                </RelativeLayout>
+
+                <androidx.appcompat.widget.LinearLayoutCompat
+                    android:id="@+id/ll_download"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_margin="@dimen/Fifteen_dp"
+                    android:orientation="horizontal"
+                    android:padding="@dimen/four_dp"
+                    app:layout_constraintBottom_toTopOf="@id/cv_details_2"
+                    app:layout_constraintEnd_toEndOf="parent"
+                    app:layout_constraintHorizontal_bias="0.145"
+                    app:layout_constraintStart_toStartOf="parent"
+                    app:layout_constraintTop_toBottomOf="@id/rl_buttons"
+                    app:layout_constraintVertical_bias="0.0">
+
+                    <LinearLayout
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_gravity="center_vertical"
+                        android:layout_weight="1"
+                        android:gravity="start"
+                        android:orientation="horizontal">
+
+                        <include
+                            android:id="@+id/tv_enable_download"
+                            layout="@layout/left_title_layout" />
+
+                        <include
+                            android:id="@+id/tv_disable_download"
+                            layout="@layout/right_title_layout" />
+                    </LinearLayout>
+
+                    <LinearLayout
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_gravity="end"
+                        android:layout_marginStart="@dimen/ten_dp"
+                        android:layout_marginEnd="@dimen/four_dp"
+                        android:layout_weight="1"
+                        android:gravity="end"
+                        android:orientation="horizontal">
+
+                        <include
+                            android:id="@+id/tv_enable_encryption"
+                            layout="@layout/left_title_layout" />
+
+                        <include
+                            android:id="@+id/tv_disable_encryption"
+                            layout="@layout/right_title_layout" />
+                    </LinearLayout>
+
+                </androidx.appcompat.widget.LinearLayoutCompat>
+
+                <androidx.cardview.widget.CardView
+                    android:id="@+id/cv_details_2"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_margin="@dimen/ten_dp"
+                    android:elevation="@dimen/four_dp"
+                    android:padding="@dimen/ten_dp"
+                    android:visibility="visible"
+                    app:cardBackgroundColor="@color/white"
+                    app:cardCornerRadius="@dimen/eight_dp"
+                    app:layout_constraintEnd_toEndOf="parent"
+                    app:layout_constraintStart_toStartOf="parent"
+                    app:layout_constraintTop_toBottomOf="@+id/rl_buttons">
+
+                    <androidx.appcompat.widget.LinearLayoutCompat
+                        android:id="@+id/linearLayoutCompat2"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_margin="@dimen/four_dp"
+                        android:orientation="vertical"
+                        android:padding="@dimen/four_dp">
+
+                        <androidx.recyclerview.widget.RecyclerView
+                            android:id="@+id/rv_documents"
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:layout_margin="@dimen/ten_dp"
+                            android:orientation="vertical" />
+
+                        <androidx.appcompat.widget.LinearLayoutCompat
+                            android:id="@+id/ll_buttons"
+                            android:layout_width="match_parent"
+                            android:layout_height="match_parent"
+                            android:layout_margin="@dimen/ten_dp"
+                            android:orientation="horizontal">
+
+                            <include
+                                android:id="@+id/btn_cancel"
+                                layout="@layout/cancel_button" />
+
+                            <include
+                                android:id="@+id/btn_upload"
+                                layout="@layout/submit_button" />
+
+                            <include
+                                android:id="@+id/btn_add_tag"
+                                layout="@layout/submit_button" />
+
+                        </androidx.appcompat.widget.LinearLayoutCompat>
+                    </androidx.appcompat.widget.LinearLayoutCompat>
+                </androidx.cardview.widget.CardView>
+            </LinearLayout>
+
+
+        </LinearLayout>
+
+        <LinearLayout
+            android:id="@+id/ll_view_docs"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            android:visibility="visible"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintHorizontal_bias="0.0"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@id/upload_view"
+            app:layout_constraintVertical_bias="0.0">
+
+            <LinearLayout
+                android:id="@+id/entity"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginStart="@dimen/ten_dp"
+                android:gravity="center"
+                android:orientation="horizontal"
+                android:visibility="visible">
+
+                <LinearLayout
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_gravity="center"
+                    android:gravity="center">
+
+                    <include
+                        android:id="@+id/tv_client_view"
+                        layout="@layout/left_title_layout" />
+
+                    <include
+                        android:id="@+id/tv_firm_view"
+                        layout="@layout/center_title_layout" />
+
+                    <include
+                        android:id="@+id/tv_deleted_view"
+                        layout="@layout/right_title_layout" />
+                </LinearLayout>
+
+                <LinearLayout
+                    android:id="@+id/ll_merge_pdf"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_gravity="center_vertical"
+                    android:gravity="end"
+                    android:visibility="visible">
+
+                    <include
+                        android:id="@+id/merge_pdf"
+                        layout="@layout/left_title_layout"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_marginStart="@dimen/Twelve_dp"
+                        android:layout_marginTop="@dimen/Twelve_dp"
+                        android:layout_marginEnd="@dimen/Fifteen_dp"
+                        android:layout_marginBottom="@dimen/Twelve_dp" />
+                </LinearLayout>
+
+            </LinearLayout>
+
+            <androidx.cardview.widget.CardView
+                android:id="@+id/cv_view_details"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_margin="@dimen/Fifteen_dp"
+                android:elevation="@dimen/forty_dp"
+                android:padding="@dimen/four_dp"
+                android:visibility="visible"
+                app:cardBackgroundColor="@color/white"
+                app:cardCornerRadius="@dimen/eight_dp">
+
+                <RelativeLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_margin="@dimen/ten_dp">
+
+                    <include
+                        android:id="@+id/tv_client_doc"
+                        layout="@layout/title_name_layout" />
+
+                    <LinearLayout
+                        android:id="@+id/ll_client_name_view"
+                        android:layout_width="match_parent"
+                        android:layout_height="match_parent"
+                        android:layout_below="@+id/tv_client_doc"
+                        android:orientation="vertical">
+
+                        <LinearLayout
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:layout_marginTop="@dimen/ten_dp"
+                            android:layout_marginBottom="@dimen/ten_dp"
+                            android:orientation="horizontal">
+
+                            <include
+                                android:id="@+id/tv_name_view"
+                                layout="@layout/title_name_layout"
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content" />
+
+                            <include layout="@layout/astrick_layout" />
+                        </LinearLayout>
+
+                        <LinearLayout
+                            android:id="@+id/client_spinner"
+                            android:layout_width="match_parent"
+                            android:layout_height="@dimen/zero_dp"
+                            android:layout_weight=".28"
+                            android:background="@drawable/background_transparent"
+                            android:gravity="center"
+                            android:orientation="vertical">
+
+                            <include
+                                android:id="@+id/customLayout3"
+                                layout="@layout/dropdown_spinner_layout" />
+
+                            <include
+                                android:id="@+id/list_client_view"
+                                layout="@layout/spinner_list"
+                                android:layout_width="match_parent"
+                                android:layout_height="@dimen/one_fifty_dp"
+                                android:layout_marginStart="@dimen/four_dp"
+                                android:layout_marginEnd="@dimen/four_dp" />
+
+                        </LinearLayout>
+
+                    </LinearLayout>
+
+                    <LinearLayout
+                        android:id="@+id/ll_matter_view"
+                        android:layout_width="match_parent"
+                        android:layout_height="match_parent"
+                        android:layout_below="@id/ll_client_name_view"
+                        android:orientation="vertical">
+
+                        <include
+                            android:id="@+id/matter_name"
+                            layout="@layout/title_name_layout"
+                            android:layout_width="wrap_content"
+                            android:layout_height="match_parent"
+                            android:layout_marginTop="@dimen/ten_dp"
+                            android:layout_marginBottom="@dimen/ten_dp" />
+
+                        <include
+                            android:id="@+id/customLayout4"
+                            layout="@layout/dropdown_spinner_layout" />
+
+                        <include
+                            android:id="@+id/list_matter_view"
+                            layout="@layout/spinner_list"
+                            android:layout_width="match_parent"
+                            android:layout_height="@dimen/one_fifty_dp"
+                            android:layout_marginStart="@dimen/four_dp"
+                            android:layout_marginEnd="@dimen/four_dp" />
+                    </LinearLayout>
+
+                    <LinearLayout
+                        android:id="@+id/ll_document_type_view"
+                        android:layout_width="match_parent"
+                        android:layout_height="match_parent"
+                        android:layout_below="@id/ll_matter_view"
+                        android:orientation="vertical"
+                        android:visibility="visible">
+
+                        <LinearLayout
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:layout_marginTop="@dimen/ten_dp"
+                            android:layout_marginBottom="@dimen/ten_dp"
+                            android:orientation="horizontal">
+
+                            <include
+                                android:id="@+id/select_doc_type"
+                                layout="@layout/title_name_layout"
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:layout_marginStart="@dimen/four_dp" />
+
+                            <include layout="@layout/astrick_layout" />
+
+                        </LinearLayout>
+
+                        <include
+                            android:id="@+id/tv_select_groups_view"
+                            layout="@layout/spinner_text_view"
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:layout_marginStart="@dimen/four_dp"
+                            android:layout_marginEnd="@dimen/four_dp" />
+
+                        <LinearLayout
+                            android:id="@+id/view_group_layout"
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:orientation="vertical">
+
+                            <include
+                                android:id="@+id/rv_display_view_groups_docs"
+                                layout="@layout/recyclerview"
+                                android:layout_width="match_parent"
+                                android:layout_height="@dimen/one_fifty_dp"
+                                android:layout_marginStart="@dimen/four_dp"
+                                android:layout_marginEnd="@dimen/four_dp" />
+
+                            <LinearLayout
+                                android:layout_width="match_parent"
+                                android:layout_height="wrap_content"
+                                android:layout_marginTop="@dimen/ten_dp"
+                                android:orientation="horizontal"
+                                android:visibility="gone">
+
+                                <include
+                                    android:id="@+id/btn_group_view_cancel"
+                                    layout="@layout/cancel_button" />
+
+                                <include
+                                    android:id="@+id/btn_group_view_submit"
+                                    layout="@layout/submit_button" />
+                            </LinearLayout>
+                        </LinearLayout>
+                    </LinearLayout>
+
+                    <LinearLayout
+                        android:id="@+id/ll_categories_layout"
+                        android:layout_width="match_parent"
+                        android:layout_height="match_parent"
+                        android:layout_below="@id/ll_document_type_view"
+                        android:layout_margin="@dimen/four_dp"
+                        android:orientation="vertical"
+                        android:visibility="visible">
+
+                        <include
+                            android:id="@+id/category_name_id"
+                            layout="@layout/title_name_layout"
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:layout_marginStart="@dimen/two_dp"
+                            android:layout_marginTop="@dimen/ten_dp"
+                            android:layout_marginBottom="@dimen/ten_dp" />
+
+                        <include
+                            android:id="@+id/tv_category_name"
+                            layout="@layout/title_description_layout"
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content" />
+                    </LinearLayout>
+
+                    <include
+                        android:id="@+id/tv_search_client_view"
+                        layout="@layout/search_layout"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_below="@id/ll_categories_layout"
+                        android:layout_marginStart="@dimen/four_dp"
+                        android:layout_marginTop="@dimen/ten_dp"
+                        android:layout_marginEnd="@dimen/four_dp"
+                        android:layout_marginBottom="@dimen/ten_dp"
+                        android:visibility="visible" />
+
+                    <include
+                        android:id="@+id/tv_search_client_views"
+                        layout="@layout/search_layout"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_below="@id/tv_search_client_view"
+                        android:layout_marginStart="@dimen/four_dp"
+                        android:layout_marginTop="@dimen/ten_dp"
+                        android:layout_marginEnd="@dimen/four_dp"
+                        android:layout_marginBottom="@dimen/ten_dp"
+                        android:visibility="visible" />
+                </RelativeLayout>
+            </androidx.cardview.widget.CardView>
+
+            <include
+                android:id="@+id/rv_display_view_docs"
+                layout="@layout/recyclerview" />
+
+            <include
+                android:id="@+id/ll_page_navigaiton"
+                layout="@layout/pagination_layout"
+                android:visibility="gone" />
+        </LinearLayout>
+    </androidx.constraintlayout.widget.ConstraintLayout>
+</ScrollView>

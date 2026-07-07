@@ -1,0 +1,64 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--  res/layout/matter_row_item.xml
+      Included inside super_user_matter_kpi.xml for the Active row.
+      The same IDs are duplicated in the parent XML for the Closed row. -->
+<LinearLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:gravity="center_vertical"
+    android:orientation="horizontal">
+
+    <!-- "Active" / "Closed" label -->
+    <TextView
+        android:id="@+id/tv_closed"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Active"
+        android:textColor="@color/scheduled_text"
+        android:textSize="@dimen/Twelve_dp" />
+
+    <!-- "Matters" sub-label -->
+    <TextView
+        android:id="@+id/tv_closed_members"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="4dp"
+        android:textColor="@color/grey_color_dark"
+        android:textSize="@dimen/Twelve_dp" />
+
+    <!-- Count badge -->
+    <TextView
+        android:id="@+id/tv_total_matters_count"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="6dp"
+        android:background="@drawable/completed_badge"
+        android:paddingStart="6dp"
+        android:paddingEnd="6dp"
+        android:paddingTop="1dp"
+        android:paddingBottom="1dp"
+        android:textColor="@color/white"
+        android:textSize="@dimen/Twelve_dp"
+        android:textStyle="bold" />
+
+    <Space android:layout_width="0dp" android:layout_height="1dp" android:layout_weight="1" />
+
+    <!-- Legal count e.g. "12 Legal" -->
+    <TextView
+        android:id="@+id/tv_total_legal_matter_count"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginEnd="8dp"
+        android:textColor="@color/black"
+        android:textSize="@dimen/Fifteen_dp" />
+
+    <!-- General count e.g. "7 General" -->
+    <TextView
+        android:id="@+id/tv_total_general_matter_count"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:textColor="@color/black"
+        android:textSize="@dimen/Fifteen_dp" />
+
+</LinearLayout>

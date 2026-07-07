@@ -1,0 +1,73 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content">
+
+    <!-- First CardView -->
+    <androidx.cardview.widget.CardView
+        android:id="@+id/cardView1"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_margin="@dimen/ten_dp"
+        android:elevation="@dimen/four_dp"
+        app:cardBackgroundColor="@color/white"
+        app:cardCornerRadius="@dimen/eight_dp"
+        app:cardElevation="@dimen/ten_dp">
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            android:padding="@dimen/ten_dp">
+
+            <!-- TextView inside the first CardView -->
+            <TextView
+                android:id="@+id/sender_name"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="@string/sender_name"
+                android:textColor="@color/black"
+                android:textSize="@dimen/twenty_dp"
+                android:textStyle="bold" />
+
+            <!-- Second TextView below the first TextView -->
+            <TextView
+                android:id="@+id/subject"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginBottom="9dp"
+                android:text="@string/subject"
+                android:textColor="@color/black"
+                android:textSize="@dimen/Fifteen_dp" />
+
+
+            <androidx.cardview.widget.CardView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:elevation="@dimen/four_dp"
+                android:orientation="vertical"
+                android:translationZ="@dimen/ten_dp"
+                app:cardBackgroundColor="@color/white"
+                app:cardElevation="@dimen/ten_dp">
+
+
+                <!-- GridView -->
+<!--                <TextView-->
+<!--                    android:id="@+id/textView3"-->
+<!--                    android:layout_width="wrap_content"-->
+<!--                    android:layout_height="wrap_content" />-->
+
+                <androidx.recyclerview.widget.RecyclerView
+                    android:id="@+id/gridRecyclerView"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:nestedScrollingEnabled="false"
+                    android:overScrollMode="never"
+                    android:visibility="gone"/>
+            </androidx.cardview.widget.CardView>
+        </LinearLayout>
+    </androidx.cardview.widget.CardView>
+
+</RelativeLayout>

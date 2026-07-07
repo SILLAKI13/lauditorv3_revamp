@@ -1,0 +1,13 @@
+<TextView xmlns:android="http://schemas.android.com/apk/res/android"
+    android:id="@+id/frozen_PageText"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:layout_gravity="center"
+    android:layout_margin="@dimen/eight_dp"
+    android:fontFamily="@font/gill_sans"
+    android:background="@drawable/background_transparent"
+    android:gravity="center"
+    android:padding="@dimen/ten_dp"
+    android:text="@string/timesheet_already_submitted_please_select_other_week"
+    android:textColor="@color/black"
+    android:textSize="@dimen/seventeen_dp" />

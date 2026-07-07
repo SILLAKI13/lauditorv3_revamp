@@ -1,0 +1,94 @@
+<ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+
+    tools:context=".MainActivity">
+
+
+        <androidx.appcompat.widget.LinearLayoutCompat
+            android:id="@+id/linearLayoutCompat2"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            android:padding="@dimen/four_dp"
+            android:paddingBottom="@dimen/thirty_dp">
+
+            <com.google.android.material.textfield.TextInputLayout
+                android:id="@+id/search_tm"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_margin="@dimen/ten_dp"
+                android:hint="Search Group"
+
+                android:textColorHint="@color/black"
+                app:boxBackgroundMode="none"
+                app:layout_constraintBottom_toBottomOf="parent"
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintHorizontal_bias="0.0"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintTop_toBottomOf="@+id/cv_details_2"
+                app:layout_constraintVertical_bias="0.0">
+
+                <!--this is the actual edit text which takes the input-->
+                <com.google.android.material.textfield.TextInputEditText
+                    android:id="@+id/et_search_members"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_gravity="start"
+                    android:layout_margin="@dimen/four_dp"
+                    android:layout_weight="1"
+                    android:background="@drawable/rectangle_light_grey"
+                    android:drawableRight="@drawable/search_groups"
+                    android:gravity="start" />
+
+            </com.google.android.material.textfield.TextInputLayout>
+
+            <TextView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:fontFamily="@font/gill_sans"
+                android:text="Select Head of the Practice"
+                android:textColor="@color/Blue_text_color"
+                android:textSize="@dimen/twenty_dp"
+                android:visibility="gone">
+
+            </TextView>
+
+            <androidx.recyclerview.widget.RecyclerView
+                android:id="@+id/rv_selected_member"
+                android:layout_width="match_parent"
+                android:layout_height="@dimen/ThreeHundred_dp"
+
+                android:layout_margin="@dimen/ten_dp"
+                android:orientation="vertical" />
+
+            <androidx.appcompat.widget.LinearLayoutCompat
+                android:id="@+id/ll_buttons_1"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:layout_margin="@dimen/ten_dp"
+                android:orientation="horizontal"
+
+                >
+
+                <include
+                    android:id="@+id/btn_cancel_save"
+
+                    layout="@layout/cancel_button" />
+
+                <include
+                    android:id="@+id/btn_create"
+
+
+                    layout="@layout/submit_button" />
+
+
+            </androidx.appcompat.widget.LinearLayoutCompat>
+        </androidx.appcompat.widget.LinearLayoutCompat>
+
+</ScrollView>
+
+
+

@@ -1,0 +1,346 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/2.10.377/pdf.min.js"></script>
+    <title>PDF Viewer</title>
+    <style>
+        body { margin: 0; }
+        #pdf-container {
+            border: 0px solid black;
+            width: 100%;
+        }
+        iframe {
+        /* - 40px */
+            width: calc(100%);
+            height: calc(100vh - 40px);
+            border: none;
+            padding: 10px;
+            box-sizing: border-box;
+            background-color: #f0f0f0;
+        }
+
+        img{
+            width: calc(100%);
+        }
+
+        #loader-overlay {
+             position: fixed;
+            top: 0;
+            left: 0;
+             height: 100%;
+             width: 100%;
+             background: rgba(255, 255, 255, 0.8);
+             display: flex;
+             justify-content: center;
+            align-items: center;
+            z-index: 9999;
+            visibility: hidden;
+            opacity: 0;
+            transition: opacity 0.3s, visibility 0.3s;
+        }
+
+        #loader-overlay.active {
+            visibility: visible;
+            opacity: 1;
+         }
+
+         .spinner {
+            width: 50px;
+             height: 50px;
+             border: 6px solid #ccc;
+            border-top: 6px solid #3498db;
+            border-radius: 50%;
+            animation: spin 0.8s linear infinite;
+        }
+
+        @keyframes spin {
+            100% { transform: rotate(360deg); }
+        }
+
+    </style>
+</head>
+<body>
+<!--        <h1 id="h1">PDF Viewer</h1>-->
+<!--    <button id="loadPdf" onclick="fetchPdf()">Load PDF</button>-->
+<div id="loader-overlay">
+    <div class="spinner"></div>
+</div>
+<iframe id="pdfViewer"></iframe>
+<!-- <canvas id="pdf-canvas"></canvas> -->
+<div id="pdf-container"></div>
+<script type="module" src="pdf.mjs"></script>
+
+<script>
+
+    var decryptUrl = 'https://api.digicoffer.com/professional/v3/decrypt';
+    const docfilepdfUrl = 'https://prod.utils.doc2pdf.digicoffer.com/api/v1/docfile2pdf';
+    const doctopdfUrl = 'https://prod.utils.doc2pdf.digicoffer.com/api/v1/doc2pdf'
+    var token = '';
+    var docid = '';
+    var viewdecrydocto = '';
+    var docType = '';
+    var isdoc = false;
+    var fileurl = ''
+    var postBolb = ''
+    async function fetchPdf(apiUrl) {
+        try {
+            showLoader();
+            const formData = new FormData();
+            if (apiUrl == docfilepdfUrl && viewdecrydocto == "decrypt"){
+                const fileBlob = new Blob([postBolb], { type: docType });
+                formData.append('file', fileBlob, 'blob');
+            }else if (apiUrl == doctopdfUrl && viewdecrydocto == "docto"){
+                formData.append("url", fileurl);
+            }else{
+                formData.append("docid", docid);
+            }
+
+            const response = await fetch(apiUrl, {
+                method: 'POST',
+                headers: {
+                    'Authorization': `Bearer ${token}`
+                },
+                body: formData
+            });
+
+            if (!response.ok) {
+//                    document.getElementById('h1').textContent = 'Network response was not ok';
+                throw new Error('Network response was not ok');
+            }
+             const pdfBlob = await response.blob();
+            if (viewdecrydocto == "decrypt" && isdoc){
+                hideLoader();
+                    postBolb = pdfBlob
+                    isdoc = false
+                    fetchPdf(docfilepdfUrl)
+            }else{
+                var localDocType = docType;
+                if (getContType(docType)){
+                    localDocType = 'application/pdf';
+                }
+                const pdfWithMimeType = new Blob([pdfBlob], { type: localDocType });//'application/pdf'
+                const pdfUrl = URL.createObjectURL(pdfWithMimeType);
+                if (localDocType == 'application/pdf'){
+                    document.getElementById('pdfViewer').style.display = "none";
+                    loadPDF(pdfUrl);
+                }else{
+                    hideLoader();
+                    document.getElementById('pdfViewer').src = pdfUrl;
+                }
+            }
+        } catch (error) {
+            //  document.getElementById('h1').textContent = 'Network response was Error';
+            hideLoader();
+            console.error('There was a problem with the fetch operation:', error);
+        }
+    }
+
+    function getQueryStringParameter(name) {
+        const urlParams = new URLSearchParams(window.location.search);
+        return urlParams.get(name);
+    }
+
+    document.addEventListener("DOMContentLoaded", function() {
+        showLoader();
+            // Get the full URL of the current page
+         const url = window.location.href;
+
+         // Create a URL object
+         const urlObj = new URL(url);
+
+         // Get the search parameters
+         queryParams = new URLSearchParams(urlObj.search);
+
+         // Loop through the query parameters and log them
+         queryParams.forEach((value, key) => {
+          console.log(`${key}: ${value}`);
+        });
+
+         // Example of accessing a specific parameter
+         const dataurl = getQueryStringParameter('dataurl');
+         token = queryParams.get('token');
+         docid = queryParams.get('docid');
+         viewdecrydocto = queryParams.get('viewdecrydocto');
+         docType = queryParams.get('docType');
+         isdoc = getContType(docType);
+         let array2 = url.split('dataurl=');
+         fileurl = array2[1];
+        if (viewdecrydocto == "decrypt") {
+            fetchPdf(decryptUrl);
+        }else if (viewdecrydocto == "view" && !isdoc){
+            hideLoader();
+            document.getElementById('pdfViewer').src = array2[1];
+        }else{
+            docPdf(doctopdfUrl);
+        }
+    });
+
+    async function docPdf(apiUrl) {
+        try {
+            showLoader();
+            const jsonData = {
+                'url': fileurl
+            };
+
+            const response = await fetch(apiUrl, {
+                method: 'POST',
+                headers: {
+                    'Authorization': `Bearer ${token}`,
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify(jsonData)
+            });
+
+            if (!response.ok) {
+                hideLoader();
+//                    document.getElementById('h1').textContent = 'Network response was not ok';
+                throw new Error('Network response was not ok');
+            }
+             const pdfBlob = await response.blob();
+                const pdfWithMimeType = new Blob([pdfBlob], { type: 'application/pdf' });
+                const pdfUrl = URL.createObjectURL(pdfWithMimeType);
+                // document.getElementById('pdfViewer').src = pdfUrl;
+                document.getElementById('pdfViewer').style.display = "none";
+                loadPDF(pdfUrl)
+
+        } catch (error) {
+//                document.getElementById('h1').textContent = 'Network response was Error';
+            hideLoader();
+            console.error('There was a problem with the fetch operation:', error);
+        }
+    }
+
+    /* async function loadPDF(url) {
+        const loadingTask = pdfjsLib.getDocument(url);
+        const pdf = await loadingTask.promise;
+
+         // Fetch the first page
+         const numPages = pdf.numPages;
+        //  const canvas = document.getElementById('pdf-canvas');
+         const container = document.getElementById('pdf-container');
+
+         for (let pageNumber = 1; pageNumber <= numPages; pageNumber++) {
+             const page = await pdf.getPage(pageNumber);
+             const scale = 1.0;
+             const viewport = page.getViewport({ scale: scale });
+            viewport.width = window.innerWidth;
+        // Prepare canvas using PDF page dimensions
+            const canvas = document.createElement('canvas');
+            canvas.height = viewport.height;
+            canvas.width =  viewport.width;//window.innerWidth;//
+            container.appendChild(canvas);
+            const context = canvas.getContext('2d');
+            context.scale(1, 1);
+
+         // Render PDF page into canvas context
+             const renderContext = {
+                 canvasContext: context,
+                 viewport: viewport
+            };
+            await page.render(renderContext).promise.then(() => {
+                console.log("Rendered at scale:", scale);
+                fitCanvasToWindow(canvas);
+            });
+
+         }
+    }
+         */
+
+    async function loadPDF(url) {
+        showLoader();
+        const loadingTask = pdfjsLib.getDocument(url);
+        const pdf = await loadingTask.promise;
+
+         // Fetch the first page
+         const numPages = pdf.numPages;
+         const container = document.getElementById('pdf-container');
+
+         for (let pageNumber = 1; pageNumber <= numPages; pageNumber++) {
+             const page = await pdf.getPage(pageNumber);
+             const scale = 3;
+             const viewport = page.getViewport({ scale: scale });
+            const canvas = document.createElement('canvas');
+            // context.imageSmoothingQuality = false;
+            // context.scale(3, 3);
+            canvas.height = viewport.height;
+            canvas.width =  viewport.width; //window.innerWidth;// * scale;//
+            container.appendChild(canvas);
+            const context = canvas.getContext('2d');
+            context.scale(1, 1);
+
+         // Render PDF page into canvas context
+             const renderContext = {
+                 canvasContext: context,
+                 viewport: viewport
+            };
+            await page.render(renderContext).promise.then(() => {
+                console.log("Rendered at scale:", scale);
+                fitCanvasToWindow(canvas);
+            });
+
+         }
+
+         hideLoader();
+    }
+
+    function fitCanvasToWindow(canvas) {
+        const containerWidth = window.innerWidth;
+        const containerHeight = window.innerHeight;
+
+         const scaleX = containerWidth / canvas.width;
+        const scaleY = containerHeight / canvas.height;
+         const fitScale = Math.min(scaleX, scaleY); // Maintain aspect ratio
+
+         // Reduce visual size without re-rendering
+        canvas.style.width = `${canvas.width * 0.2}px`;
+        canvas.style.height = `${canvas.height * 0.2}px`;
+    }
+
+    function getContType(docType) {
+        switch (docType) {
+        case "application/vnd.openxmlformats-officedocument.wordprocessingml.document", "application/docx" : //docx extension
+            return true
+        case "application/msword" :
+            return true
+        case "application/pdf":
+            return false
+        case "image/png":
+            return false
+        case "image/gif" :
+            return false
+        case "image/jpg":
+            return false
+        case "image/jpg", "image/jpeg":
+            return false
+        case "application/vnd.ms-excel":
+            return true
+        case "application/vnd.ms-powerpoint":
+            return true
+        case "application/vnd.openxmlformats-officedocument.presentationml.presentation":
+            return true
+        case "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet":
+            return true
+        case "text/csv":
+            return true
+        case "application/rtf":
+            return true
+        case "text/rtf":
+            return true
+        default:
+            return true
+    }
+    }
+
+    function showLoader() {
+      document.getElementById('loader-overlay').classList.add('active');
+    }
+
+    function hideLoader() {
+      document.getElementById('loader-overlay').classList.remove('active');
+    }
+
+</script>
+</body>
+</html>

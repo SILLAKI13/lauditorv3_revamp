@@ -1,0 +1,42 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:id="@+id/Card_Layout"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:layout_margin="@dimen/ten_dp"
+    android:background="@drawable/rectangular_white_background"
+    android:elevation="@dimen/four_dp"
+    android:orientation="vertical"
+    android:padding="@dimen/ten_dp">
+
+    <androidx.appcompat.widget.LinearLayoutCompat
+        android:id="@+id/ll_2"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:gravity="top"
+        android:orientation="horizontal">
+
+        <ImageView
+            android:id="@+id/Card_Image"
+            android:layout_width="@dimen/forty_dp"
+            android:layout_height="@dimen/forty_dp"
+            android:layout_gravity="center"
+            android:layout_marginEnd="@dimen/ten_dp"
+            android:contentDescription="@string/todo"
+            android:src="@drawable/closed_matters" />
+
+        <include
+            android:id="@+id/ClosedMatterLayout"
+            layout="@layout/dashboard_matter_layout" />
+
+        <include layout="@layout/notifcation_side_line" />
+
+        <include
+            android:id="@+id/ActiveMatterLayout"
+            layout="@layout/dashboard_matter_layout" />
+
+    </androidx.appcompat.widget.LinearLayoutCompat>
+
+</LinearLayout>

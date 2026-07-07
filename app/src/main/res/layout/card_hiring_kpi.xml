@@ -1,0 +1,137 @@
+<?xml version="1.0" encoding="utf-8"?><!--  card_messages.xml  -->
+    <androidx.cardview.widget.CardView xmlns:android="http://schemas.android.com/apk/res/android"
+        xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:id="@+id/Card_Layout"
+    android:layout_width="@dimen/ThreeHundred_dp"
+    android:layout_height="@dimen/one_sixty"
+    android:layout_margin="@dimen/six_dp"
+    app:cardBackgroundColor="@color/white"
+    app:cardCornerRadius="@dimen/eighteen_sp"
+    app:cardElevation="@dimen/four_dp">
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            android:padding="16dp">
+
+            <!-- Header -->
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:gravity="center_vertical"
+                android:orientation="horizontal">
+
+                <ImageView
+                    android:layout_width="40dp"
+                    android:layout_height="40dp"
+                    android:background="@drawable/icon_bg_green"
+                    android:padding="9dp"
+                    android:visibility="gone"
+                    android:scaleType="fitCenter"
+                    android:src="@drawable/ic_chat_green" />
+
+                <TextView
+                    android:id="@+id/tv_trend_title"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:fontFamily="@font/gill_sans_bold"
+                    android:text="@string/new_hires"
+                    android:layout_weight="1"
+                    android:textColor="@color/black"
+                    android:textSize="@dimen/Fifteen_dp" />
+
+                <TextView
+                    android:id="@+id/tv_badge"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:background="@drawable/pale_blue_circular"
+                    android:fontFamily="@font/gill_sans_bold"
+                    android:gravity="center"
+                    android:minWidth="@dimen/twenty_dp"
+                    android:paddingHorizontal="8dp"
+                    android:paddingVertical="4dp"
+                    android:text="0"
+                    android:textColor="@color/white"
+                    android:textSize="@dimen/Twelve_dp"
+                    android:visibility="visible" />
+            </LinearLayout>
+
+            <View
+                android:layout_width="match_parent"
+                android:layout_height="@dimen/point_seven"
+                android:layout_marginVertical="@dimen/ten_dp"
+                android:background="@color/grey" />
+
+            <!-- Two stat boxes: Client | Team -->
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="horizontal">
+
+                <!-- Client Messages -->
+                <LinearLayout
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_marginEnd="@dimen/five_dp"
+                    android:layout_weight="1"
+                    android:background="@drawable/stat_box_blue"
+                    android:gravity="center"
+                    android:orientation="vertical"
+                    android:padding="@dimen/ten_dp">
+
+                    <TextView
+                        android:id="@+id/tv_client_count"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="0"
+                        android:fontFamily="@font/gill_sans"
+                        android:textColor="@color/blue"
+                        android:textSize="@dimen/twenty_five"
+                        android:textStyle="bold" />
+
+                    <TextView
+                        android:id="@+id/tv_client_label"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:gravity="center"
+                        android:fontFamily="@font/gill_sans"
+                        android:text="Client Messages"
+                        android:textColor="@color/blue"
+                        android:textSize="@dimen/Twelve_dp" />
+                </LinearLayout>
+
+                <!-- Team Messages -->
+                <LinearLayout
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_marginStart="@dimen/five_dp"
+                    android:layout_weight="1"
+                    android:background="@drawable/stat_box_purple"
+                    android:gravity="center"
+                    android:orientation="vertical"
+                    android:padding="@dimen/ten_dp">
+
+                    <TextView
+                        android:id="@+id/tv_team_count"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="0"
+                        android:fontFamily="@font/gill_sans"
+                        android:textColor="@color/chart_purple"
+                        android:textSize="@dimen/twenty_five"
+                        android:textStyle="bold" />
+
+                    <TextView
+                        android:id="@+id/tv_team_label"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:gravity="center"
+                        android:text="Team Messages"
+                        android:fontFamily="@font/gill_sans"
+                        android:textColor="@color/chart_purple"
+                        android:textSize="@dimen/Twelve_dp" />
+                </LinearLayout>
+            </LinearLayout>
+        </LinearLayout>
+    </androidx.cardview.widget.CardView>

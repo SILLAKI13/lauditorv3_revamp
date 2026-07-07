@@ -1,0 +1,60 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content">
+
+    <LinearLayout
+        android:id="@+id/ll_tags"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_margin="@dimen/four_dp"
+        android:background="@drawable/cancel_button_background"
+        android:elevation="@dimen/four_dp"
+        android:orientation="horizontal"
+        android:padding="@dimen/four_dp"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintHorizontal_bias="1.0"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintVertical_bias="0.029">
+
+        <TextView
+            android:id="@+id/tv_opponent_name"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_below="@+id/tv_title"
+            android:layout_gravity="center"
+            android:layout_marginStart="@dimen/ten_dp"
+            android:layout_marginEnd="@dimen/ten_dp"
+            android:layout_weight="1"
+            android:fontFamily="@font/gill_sans"
+            android:gravity="start"
+            android:padding="@dimen/four_dp"
+            android:text="@string/date"
+            android:textColor="@color/cardview_dark_background"
+            android:textSize="@dimen/Fifteen_dp" />
+
+        <include
+            layout="@layout/eye_icon"
+            android:layout_width="@dimen/thirty_dp"
+            android:layout_height="@dimen/thirty_dp"
+            android:layout_gravity="center_vertical"
+            android:visibility="gone" />
+
+        <include
+            android:id="@+id/iv_edit_opponent"
+            layout="@layout/edit_icon"
+            android:layout_width="@dimen/thirty_dp"
+            android:layout_height="@dimen/thirty_dp"
+            android:layout_gravity="center_vertical"
+            android:layout_margin="@dimen/four_dp" />
+
+        <include
+            android:id="@+id/iv_remove_opponent"
+            layout="@layout/remove_icon" />
+    </LinearLayout>
+
+</androidx.constraintlayout.widget.ConstraintLayout>

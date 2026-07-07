@@ -1,0 +1,68 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:id="@+id/ll_moduleView"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:layout_margin="@dimen/ten_dp"
+    android:elevation="@dimen/four_dp"
+    android:gravity="end"
+    android:minHeight="@dimen/forty_dp"
+    android:orientation="horizontal">
+
+    <include
+        android:id="@+id/title_name"
+        layout="@layout/blue_bold_txt_layout"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_gravity="center"
+        android:layout_weight="1"
+        android:visibility="visible" />
+
+    <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+        xmlns:app="http://schemas.android.com/apk/res-auto"
+        android:id="@+id/ll_module"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_gravity="center"
+        android:layout_margin="@dimen/two_dp"
+        android:background="@drawable/white_circular_background"
+        android:elevation="@dimen/two_dp"
+        android:gravity="center_vertical"
+        android:minHeight="@dimen/forty_dp"
+        android:orientation="horizontal">
+
+        <FrameLayout
+            android:layout_width="@dimen/thirty_dp"
+            android:layout_height="@dimen/thirty_dp"
+            android:layout_margin="@dimen/four_dp"
+            android:background="@drawable/circle_blue_bg"
+            android:elevation="@dimen/four_dp"
+            android:padding="@dimen/eight_dp">
+
+            <ImageView
+                android:id="@+id/iv_Icon"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:scaleType="centerInside"
+                android:src="@drawable/eye_icon" />
+
+        </FrameLayout>
+
+        <TextView
+            android:id="@+id/tv_module_name"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:ellipsize="end"
+            android:fontFamily="@font/gill_sans"
+            android:gravity="center_vertical"
+            android:maxLines="1"
+            android:paddingTop="@dimen/six_dp"
+            android:paddingEnd="@dimen/six_dp"
+            android:paddingBottom="@dimen/six_dp"
+            android:text="@string/view_document"
+            android:textColor="@color/Blue_text_color"
+            android:textSize="@dimen/Thirteen_dp" />
+
+    </LinearLayout>
+</LinearLayout>

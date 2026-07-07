@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="utf-8"?><!-- checkbox_background.xml -->
+<selector xmlns:android="http://schemas.android.com/apk/res/android">
+    <!-- Checked state -->
+    <item>
+        <shape android:shape="rectangle">
+            <corners android:bottomLeftRadius="@dimen/zero_dp" android:bottomRightRadius="@dimen/zero_dp" android:radius="@dimen/zero_dp" android:topLeftRadius="@dimen/zero_dp" android:topRightRadius="@dimen/zero_dp" />
+            <gradient  android:centerColor="@color/white" android:endColor="@color/white" android:startColor="@color/white" android:type="linear" android:angle="90" />
+            <padding android:bottom="@dimen/zero_dp" android:left="@dimen/zero_dp" android:right="@dimen/zero_dp" android:top="@dimen/zero_dp" />
+            <stroke android:width="@dimen/one_dp" android:color="@color/grey_color_dark" />
+        </shape>
+    </item>
+
+</selector>

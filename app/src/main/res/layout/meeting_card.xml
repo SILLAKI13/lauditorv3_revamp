@@ -1,0 +1,115 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:id="@+id/Card_Layout"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:layout_margin="@dimen/ten_dp"
+    android:background="@drawable/rectangular_white_background"
+    android:elevation="@dimen/four_dp"
+    android:gravity="center_vertical"
+    android:orientation="horizontal"
+    android:padding="@dimen/ten_dp">
+
+    <!-- LEFT SECTION -->
+    <LinearLayout
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:layout_weight="1"
+        android:gravity="center_vertical"
+        android:orientation="horizontal">
+
+        <!-- ICON -->
+        <ImageView
+            android:id="@+id/imageViewMeeting"
+            android:layout_width="@dimen/forty_dp"
+            android:layout_height="@dimen/forty_dp"
+            android:layout_marginEnd="@dimen/ten_dp"
+            android:background="@drawable/meeting_new"
+            android:contentDescription="@string/todo" />
+
+        <!-- TEXT COLUMN -->
+        <LinearLayout
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:orientation="vertical"
+            android:paddingStart="@dimen/five_dp">
+
+            <!-- SUBJECT -->
+            <FrameLayout
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content">
+
+                <include
+                    android:id="@+id/tv_meeting_subject"
+                    layout="@layout/blue_normal_txt" />
+            </FrameLayout>
+
+            <!-- DATE -->
+            <FrameLayout
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginStart="@dimen/five_dp"
+                android:layout_marginTop="2dp">
+
+                <include
+                    android:id="@+id/tv_date"
+                    layout="@layout/black_normal_txt"
+                    android:visibility="gone" />
+            </FrameLayout>
+
+            <!-- DESCRIPTION -->
+            <FrameLayout
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginStart="@dimen/five_dp">
+
+                <include
+                    android:id="@+id/tv_subject_meeting"
+                    layout="@layout/count_green_normal_txt" />
+            </FrameLayout>
+
+            <!-- TIME (FROM - TO) -->
+            <FrameLayout
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginStart="@dimen/five_dp"
+                android:layout_marginTop="4dp">
+
+                <androidx.appcompat.widget.LinearLayoutCompat
+                    android:id="@+id/time_duration"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:orientation="horizontal"
+                    android:visibility="gone">
+
+                    <include
+                        android:id="@+id/tv_from_ts"
+                        layout="@layout/black_normal_txt" />
+
+                    <include
+                        android:id="@+id/tv_time_meeting"
+                        layout="@layout/black_normal_txt" />
+
+                    <include
+                        android:id="@+id/tv_to_ts"
+                        layout="@layout/black_normal_txt" />
+                </androidx.appcompat.widget.LinearLayoutCompat>
+
+            </FrameLayout>
+
+        </LinearLayout>
+    </LinearLayout>
+
+    <!-- SIDE LINE -->
+    <include layout="@layout/notifcation_side_line" />
+
+    <!-- COUNT BADGE -->
+    <include
+        android:id="@+id/tv_meeting_count"
+        layout="@layout/tv_count_circle"
+        android:layout_width="@dimen/forty_dp"
+        android:layout_height="@dimen/forty_dp"
+        android:layout_marginStart="@dimen/eight_dp" />
+
+</LinearLayout>

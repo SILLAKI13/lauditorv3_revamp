@@ -1,0 +1,185 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:id="@+id/ll_address"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:layout_marginBottom="@dimen/ten_dp"
+    android:layout_marginStart="@dimen/two_dp"
+    android:layout_marginEnd="@dimen/two_dp"
+    android:background="@drawable/rectangular_white_background"
+    android:elevation="@dimen/four_dp"
+    android:orientation="vertical"
+    android:padding="@dimen/ten_dp">
+
+    <include
+        android:id="@+id/tv_Address"
+        layout="@layout/black_small_bold_txt"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="@dimen/four_dp"
+        android:visibility="visible" />
+
+    <Button
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_gravity="end"
+        android:gravity="end"
+        android:text="Upgrade"
+        android:textAllCaps="false"
+        android:visibility="gone" />
+
+
+    <include
+        android:id="@+id/Building"
+        layout="@layout/grey_normal_txt"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="@dimen/four_dp"
+        android:layout_marginTop="@dimen/ten_dp" />
+
+    <include
+        android:id="@+id/tv_Building"
+        layout="@layout/title_name_layout"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content" />
+
+    <include
+        android:id="@+id/City"
+        layout="@layout/grey_normal_txt"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="@dimen/four_dp"
+        android:layout_marginTop="@dimen/ten_dp" />
+
+    <include
+        android:id="@+id/tv_City"
+        layout="@layout/title_name_layout"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content" />
+
+    <include
+        android:id="@+id/Ad_Country"
+        layout="@layout/grey_normal_txt"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="@dimen/four_dp"
+        android:layout_marginTop="@dimen/ten_dp" />
+
+    <include
+        android:id="@+id/tv_Ad_Country"
+        layout="@layout/title_name_layout"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content" />
+    <include
+        android:id="@+id/termsDate"
+        layout="@layout/grey_normal_txt"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="@dimen/four_dp"
+        android:layout_marginTop="@dimen/ten_dp" />
+
+    <include
+        android:id="@+id/tv_termsDate"
+        layout="@layout/title_name_layout"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content" />
+
+    <LinearLayout
+        android:id="@+id/ll_payment"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical">
+
+        <include
+            android:id="@+id/Street"
+            layout="@layout/grey_normal_txt"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="@dimen/four_dp"
+            android:layout_marginTop="@dimen/ten_dp" />
+
+        <include
+            android:id="@+id/tv_Street"
+            layout="@layout/title_name_layout"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content" />
+
+        <include
+            android:id="@+id/amount"
+            layout="@layout/grey_normal_txt"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="@dimen/four_dp"
+            android:layout_marginTop="@dimen/ten_dp" />
+
+        <include
+            android:id="@+id/tv_amount"
+            layout="@layout/title_name_layout"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content" />
+
+        <include
+            android:id="@+id/State"
+            layout="@layout/grey_normal_txt"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="@dimen/four_dp"
+            android:layout_marginTop="@dimen/ten_dp" />
+
+        <include
+            android:id="@+id/tv_State"
+            layout="@layout/title_name_layout"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content" />
+
+        <include
+            android:id="@+id/Zip"
+            layout="@layout/grey_normal_txt"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="@dimen/four_dp"
+            android:layout_marginTop="@dimen/ten_dp" />
+
+        <include
+            android:id="@+id/tv_Zip"
+            layout="@layout/title_name_layout"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:textColor="@color/grey_light" />
+    </LinearLayout>
+
+    <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+        android:id="@+id/ll_delete_account"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="@dimen/ten_dp"
+        android:layout_marginBottom="@dimen/ten_dp"
+        android:elevation="@dimen/four_dp"
+        android:orientation="horizontal">
+
+        <include
+            android:id="@+id/account_del"
+            layout="@layout/grey_normal_txt"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_weight="1" />
+
+        <TextView xmlns:android="http://schemas.android.com/apk/res/android"
+            android:id="@+id/tv_delete_account"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:background="@drawable/rectangle_red_bg"
+            android:breakStrategy="simple"
+            android:fontFamily="@font/gill_sans"
+            android:gravity="center"
+            android:hyphenationFrequency="none"
+            android:padding="@dimen/four_dp"
+            android:text="@string/delete_account"
+            android:textColor="@color/white"
+            android:textSize="@dimen/Fifteen_dp" />
+
+
+    </LinearLayout>
+
+</LinearLayout>

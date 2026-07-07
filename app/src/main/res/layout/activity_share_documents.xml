@@ -1,0 +1,151 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="@color/blue_pale"
+    android:fitsSystemWindows="true"
+    android:orientation="vertical">
+
+    <!-- Custom Header -->
+    <include layout="@layout/custom_header" />
+
+    <!--
+        height="0dp" + weight="1" lets this card grow to fill all space
+        between the header and the screen bottom, keeping buttons pinned inside.
+    -->
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        android:layout_margin="@dimen/ten_dp"
+        android:layout_weight="1"
+        android:background="@drawable/rectangular_white_background"
+        android:elevation="@dimen/four_dp"
+        android:orientation="vertical"
+        android:padding="@dimen/Fifteen_dp">
+
+        <!-- Client / Firm tab toggle -->
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginBottom="@dimen/ten_dp"
+            android:orientation="horizontal">
+
+            <TextView
+                android:id="@+id/rb_share_docs_client"
+                android:layout_width="0dp"
+                android:layout_height="@dimen/forty_dp"
+                android:layout_marginEnd="@dimen/one_dp"
+                android:layout_weight="1"
+                android:background="@drawable/button_left_green_round_background"
+                android:fontFamily="@font/gill_sans"
+                android:gravity="center"
+                android:text="@string/client_documents"
+                android:textColor="@color/white"
+                android:textSize="@dimen/Fifteen_dp" />
+
+            <TextView
+                android:id="@+id/rb_share_docs_firm"
+                android:layout_width="0dp"
+                android:layout_height="@dimen/forty_dp"
+                android:layout_weight="1"
+                android:background="@drawable/button_right_round_background"
+                android:fontFamily="@font/gill_sans"
+                android:gravity="center"
+                android:text="@string/firm_documents"
+                android:textColor="@color/black"
+                android:textSize="@dimen/Fifteen_dp" />
+
+        </LinearLayout>
+
+        <!-- Search bar -->
+        <include
+            android:id="@+id/tl_share_docs_search"
+            layout="@layout/search_layout_new" />
+
+        <!-- Select All row -->
+        <LinearLayout
+            android:id="@+id/ll_share_docs_select_all_row"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginBottom="@dimen/ten_dp"
+            android:gravity="center_vertical"
+            android:orientation="horizontal"
+            android:visibility="visible">
+
+            <CheckBox
+                android:id="@+id/chk_share_docs_select_all"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:buttonTint="@color/blue" />
+
+            <TextView
+                android:id="@+id/tv_share_docs_select_all"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:text="@string/select_all"
+                android:textColor="@color/black"
+                android:textSize="@dimen/Fifteen_dp" />
+
+            <TextView
+                android:id="@+id/tv_share_docs_count"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:fontFamily="@font/gill_sans"
+                android:textColor="@color/blue"
+                android:textSize="@dimen/Twelve_dp"
+                android:textStyle="bold"
+                android:visibility="gone" />
+
+        </LinearLayout>
+
+        <!-- Divider -->
+        <include layout="@layout/divider_line"/>
+        <!-- Empty state -->
+        <TextView
+            android:id="@+id/tv_share_docs_no_docs"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:fontFamily="@font/gill_sans"
+            android:gravity="center"
+            android:paddingTop="40dp"
+            android:paddingBottom="40dp"
+            android:text="No documents to show"
+            android:textColor="@color/grey_color_dark"
+            android:textSize="@dimen/Fifteen_dp"
+            android:visibility="gone" />
+
+        <!--
+            height="0dp" + weight="1" makes the RecyclerView absorb all leftover
+            space so the button bar below it is always pushed to the bottom.
+        -->
+        <include
+            android:id="@+id/rv_share_docs_list"
+            layout="@layout/recyclerview"
+            android:layout_width="match_parent"
+            android:layout_height="0dp"
+            android:layout_weight="1" />
+
+        <!-- Sticky bottom bar – pinned inside the card -->
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:elevation="@dimen/four_dp"
+            android:gravity="center_vertical"
+            android:orientation="horizontal"
+            android:padding="@dimen/ten_dp">
+
+            <include
+                android:id="@+id/btn_share_docs_cancel"
+                layout="@layout/cancel_button" />
+
+            <include
+                android:id="@+id/btn_share_docs_share"
+                layout="@layout/submit_button" />
+
+        </LinearLayout>
+
+    </LinearLayout>
+
+</LinearLayout>

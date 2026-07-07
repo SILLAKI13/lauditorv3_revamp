@@ -1,0 +1,152 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.cardview.widget.CardView xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:id="@+id/Card_Layout"
+    android:layout_width="@dimen/ThreeHundred_dp"
+    android:layout_height="@dimen/one_sixty"
+    android:layout_margin="@dimen/six_dp"
+    app:cardBackgroundColor="@color/white"
+    app:cardCornerRadius="@dimen/eighteen_sp"
+    app:cardElevation="@dimen/four_dp">
+
+    <LinearLayout
+        android:id="@+id/subscription_card"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+       android:padding="@dimen/Fifteen_dp">
+
+        <!-- ═══════════════════════════════════════════════════════════
+             ROW 1 – "Subscription"  title  +  status chip (right)
+             ═══════════════════════════════════════════════════════════ -->
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginBottom="12dp"
+            android:gravity="center_vertical"
+            android:orientation="horizontal">
+
+            <TextView
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:fontFamily="@font/gill_sans_bold"
+                android:text="Subscription"
+                android:textColor="@color/black"
+                android:textSize="@dimen/Fifteen_dp" />
+
+            <!-- Active / Expired pill -->
+            <TextView
+                android:id="@+id/tv_sub_status_chip"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:background="@drawable/completed_badge"
+                android:fontFamily="@font/gill_sans_bold"
+                android:paddingStart="12dp"
+                android:paddingTop="4dp"
+                android:paddingEnd="12dp"
+                android:paddingBottom="4dp"
+                android:text="Active"
+                android:textColor="@color/chart_green"
+                android:textSize="@dimen/Twelve_dp" />
+        </LinearLayout>
+
+        <!-- ═══════════════════════════════════════════════════════════
+             ROW 2 – Blue banner: plan label + plan name
+             ═══════════════════════════════════════════════════════════ -->
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginBottom="@dimen/ten_dp"
+            android:background="@drawable/subscription_banner"
+            android:orientation="vertical"
+            android:padding="@dimen/ten_dp">
+
+            <!-- "Product Subscription" caption -->
+            <TextView
+                android:id="@+id/tv_product_subscription"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginBottom="4dp"
+                android:alpha="0.85"
+                android:fontFamily="@font/gill_sans"
+                android:text="Product Subscription"
+                android:textColor="#FFFFFF"
+                android:textSize="11sp" />
+
+            <!-- Plan name hero (e.g. "Premium Plan") -->
+            <TextView
+                android:id="@+id/tv_ps_year"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:ellipsize="end"
+                android:fontFamily="@font/gill_sans_bold"
+                android:maxLines="1"
+                android:text="—"
+                android:textColor="#FFFFFF"
+                android:textSize="@dimen/Fifteen_dp" />
+        </LinearLayout>
+
+        <!-- ═══════════════════════════════════════════════════════════
+             ROW 3 – "Expired On / Valid till"  |  date value
+             ═══════════════════════════════════════════════════════════ -->
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:gravity="center_vertical"
+            android:orientation="horizontal">
+
+            <!-- "Expired On" / "Valid till" label -->
+            <TextView
+                android:id="@+id/tv_pending_txt"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:fontFamily="@font/gill_sans"
+                android:text="Expired On"
+                android:textColor="@color/grey_text"
+                android:textSize="@dimen/ten_dp" />
+
+            <!-- Date value -->
+            <TextView
+                android:id="@+id/tv_validity_date"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:fontFamily="@font/gill_sans"
+                android:text="—"
+                android:textColor="@color/black"
+                android:textSize="@dimen/ten_dp" />
+        </LinearLayout>
+
+        <!-- ═══════════════════════════════════════════════════════════
+             ROW 4 – Pay Now CTA button (full width, visible when expired)
+             ═══════════════════════════════════════════════════════════ -->
+        <androidx.appcompat.widget.AppCompatButton
+            android:id="@+id/btn_pay_now"
+            android:layout_width="match_parent"
+            android:layout_height="@dimen/thirty_dp"
+            android:background="@drawable/rectangular_complete_blue_background"
+            android:text="Pay Now"
+            android:textAllCaps="false"
+            android:textColor="@color/white"
+            android:textSize="@dimen/Twelve_dp"
+            android:textStyle="bold"
+            android:visibility="gone" />
+
+        <!-- ── Hidden / compat view ───────────────────────────────── -->
+        <LinearLayout
+            android:id="@+id/rightLayout"
+            android:layout_width="0dp"
+            android:layout_height="0dp"
+            android:orientation="vertical"
+            android:visibility="gone" />
+
+        <TextView
+            android:id="@+id/tv_message"
+            android:layout_width="0dp"
+            android:layout_height="0dp"
+            android:fontFamily="@font/gill_sans"
+            android:visibility="gone" />
+
+    </LinearLayout>
+</androidx.cardview.widget.CardView>

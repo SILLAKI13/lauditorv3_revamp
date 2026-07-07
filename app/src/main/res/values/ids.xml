@@ -1,0 +1,4 @@
+<resources>
+    <item name="tag_search_bar" type="id" />
+    <item name="tag_search_edittext" type="id" />
+</resources>

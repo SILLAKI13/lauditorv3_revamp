@@ -1,0 +1,12 @@
+<ImageView xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:id="@+id/iv_delete_events"
+    android:layout_width="@dimen/twenty_two_dp"
+    android:layout_height="@dimen/twenty_two_dp"
+    android:layout_gravity="center"
+    android:layout_margin="@dimen/four_dp"
+   android:src="@drawable/delete_de"
+    android:contentDescription="@string/delete"
+    android:gravity="center_vertical"
+    android:textColor="@color/cardview_dark_background"
+    android:textStyle="normal" />

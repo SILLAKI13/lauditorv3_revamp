@@ -1,0 +1,88 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content">
+
+    <LinearLayout
+        android:id="@+id/ll_tags"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_margin="@dimen/four_dp"
+        android:background="@drawable/rectangle_light_grey"
+        android:elevation="@dimen/four_dp"
+        android:orientation="horizontal"
+        android:padding="@dimen/four_dp"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintHorizontal_bias="1.0"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintVertical_bias="0.029">
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:orientation="vertical">
+
+            <include
+                android:id="@+id/tv_opponent_name"
+                layout="@layout/grp_name_layout" />
+
+            <include
+                android:id="@+id/btn_view_tags"
+                layout="@layout/submit_button"
+                android:layout_width="wrap_content"
+                android:layout_height="@dimen/forty_dp"
+                android:layout_marginStart="@dimen/four_dp"
+                android:layout_marginEnd="@dimen/four_dp"
+                android:layout_marginBottom="@dimen/four_dp"
+                android:visibility="gone" />
+
+        </LinearLayout>
+
+
+        <include
+            android:id="@+id/iv_edit_opponent"
+            layout="@layout/edit_icon"
+            android:layout_width="@dimen/thirty_dp"
+            android:layout_height="@dimen/thirty_dp"
+            android:layout_gravity="center" />
+
+        <ImageView
+            android:id="@+id/iv_edit_tag"
+            android:layout_width="@dimen/thirty_dp"
+            android:layout_height="@dimen/thirty_dp"
+            android:layout_gravity="center"
+            android:layout_margin="@dimen/two_dp"
+            android:padding="@dimen/two_dp"
+            android:src="@drawable/doc_tag"
+            android:visibility="visible">
+
+        </ImageView>
+
+        <ImageView
+            android:id="@+id/enable_download_icon"
+            android:layout_width="@dimen/thirty_dp"
+            android:layout_height="@dimen/thirty_dp"
+            android:layout_gravity="center"
+            android:src="@drawable/download_icon"
+            android:visibility="gone" />
+
+        <ImageView
+            android:id="@+id/disable_download_icon"
+            android:layout_width="@dimen/thirty_dp"
+            android:layout_height="@dimen/thirty_dp"
+            android:layout_gravity="center"
+            android:alpha="0.3"
+            android:src="@drawable/download_icon"
+            android:visibility="visible" />
+
+        <include
+            android:id="@+id/iv_remove_opponent"
+            layout="@layout/remove_icon" />
+    </LinearLayout>
+
+</androidx.constraintlayout.widget.ConstraintLayout>

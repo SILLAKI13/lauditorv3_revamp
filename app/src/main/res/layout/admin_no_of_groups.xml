@@ -1,0 +1,64 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:id="@+id/Card_Layout"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:layout_margin="@dimen/ten_dp"
+    android:background="@drawable/rectangular_white_background"
+    android:elevation="@dimen/four_dp"
+    android:orientation="vertical"
+    android:padding="@dimen/ten_dp">
+
+    <LinearLayout
+        android:id="@+id/ll_1"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:gravity="top"
+        android:orientation="horizontal">
+
+        <ImageView
+            android:id="@+id/Card_Image"
+            android:layout_width="@dimen/forty_dp"
+            android:layout_height="@dimen/forty_dp"
+            android:layout_gravity="center_horizontal"
+            android:layout_marginEnd="@dimen/ten_dp"
+            android:background="@drawable/groups_new"
+            android:contentDescription="@string/todo" />
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_gravity="center_vertical"
+            android:orientation="vertical">
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginEnd="@dimen/four_dp"
+                android:orientation="horizontal">
+
+                <include
+                    android:id="@+id/Card_Name"
+                    layout="@layout/black_normal_txt"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1" />
+
+                <include
+                    android:id="@+id/tv_nog_count"
+                    layout="@layout/count_green_normal_txt"
+                    android:layout_marginTop="@dimen/ten_dp"
+                    android:layout_marginEnd="@dimen/twenty_dp"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content" />
+            </LinearLayout>
+
+            <include
+                android:id="@+id/tv_bhours"
+                layout="@layout/blue_normal_txt"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content" />
+        </LinearLayout>
+    </LinearLayout>
+</LinearLayout>

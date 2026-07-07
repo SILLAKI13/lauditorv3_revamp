@@ -1,0 +1,36 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent">
+
+    <LinearLayout
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginLeft="@dimen/ten_dp"
+        android:orientation="horizontal"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintHorizontal_bias="0"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintVertical_bias="0">
+
+        <androidx.appcompat.widget.AppCompatButton
+            android:id="@+id/page_number_button"
+            android:layout_width="@dimen/thirty_dp"
+            android:layout_height="@dimen/thirty_dp"
+            android:autoSizeMaxTextSize="@dimen/seventeen_dp"
+            android:autoSizeMinTextSize="@dimen/one_dp"
+            android:layout_gravity="center_vertical"
+            android:autoSizeTextType="uniform"
+            android:background="@drawable/background_transparent"
+            android:maxLines="1"
+            android:fontFamily="@font/gill_sans"
+            android:text="20"
+            android:textColor="@color/blue"
+            android:textSize="@dimen/seventeen_dp">
+
+        </androidx.appcompat.widget.AppCompatButton>
+    </LinearLayout>
+</androidx.constraintlayout.widget.ConstraintLayout>

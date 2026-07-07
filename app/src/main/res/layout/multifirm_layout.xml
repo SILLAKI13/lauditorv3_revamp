@@ -1,0 +1,41 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:layout_gravity="center"
+    android:orientation="vertical"
+    android:elevation="@dimen/four_dp"
+    android:background="@drawable/rectangle_light_grey"
+    android:layout_margin="@dimen/ten_dp">
+
+    <TextView
+        android:id="@+id/firm_name_id"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="@dimen/Fifteen_dp"
+        android:layout_marginTop="@dimen/four_dp"
+        android:fontFamily="@font/gill_sans"
+        android:text="@string/select_firm_name"
+        android:textColor="@color/black"
+        android:textSize="@dimen/Thirteen_dp"
+        app:cardBackgroundColor="@color/white" />
+
+    <include
+        android:id="@+id/spinner_firm_view"
+        layout="@layout/spinner_text_view"
+        android:layout_width="match_parent"
+        android:layout_height="@dimen/thirty_dp"
+     android:layout_marginTop="@dimen/two_dp"
+        android:layout_marginStart="@dimen/ten_dp"
+        android:layout_marginEnd="@dimen/ten_dp"
+        android:layout_marginBottom="@dimen/four_dp" />
+
+    <include
+        android:id="@+id/sp_firm"
+        layout="@layout/spinner_list"
+        android:layout_width="match_parent"
+        android:layout_height="@dimen/hundred_dp"
+        android:visibility="gone" />
+    <!--spinner added text-->
+</LinearLayout>

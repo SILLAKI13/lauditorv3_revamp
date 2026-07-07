@@ -1,0 +1,41 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:layout_marginStart="@dimen/four_dp"
+    android:layout_marginTop="@dimen/ten_dp"
+    android:layout_marginEnd="@dimen/four_dp"
+    android:layout_marginBottom="@dimen/zero_dp"
+    android:background="@drawable/rectangle_light_grey"
+    android:orientation="horizontal">
+
+    <com.google.android.material.textfield.TextInputEditText
+        android:id="@+id/et_content"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:layout_gravity="center"
+        android:layout_weight="1"
+        android:autoSizeMaxTextSize="@dimen/Fifteen_dp"
+        android:autoSizeMinTextSize="@dimen/one_dp"
+        android:autoSizeTextType="uniform"
+        android:background="@drawable/background_transparent"
+        android:ellipsize="end"
+        android:fontFamily="@font/gill_sans"
+        android:gravity="start"
+        android:layoutDirection="locale"
+        android:padding="@dimen/ten_dp"
+        android:textAlignment="viewStart"
+        android:textColor="@color/black"
+        android:textColorHint="@color/grey_color_dark"
+        android:textSize="@dimen/Fifteen_dp" />
+
+    <ImageView
+        android:id="@+id/img_clear_icon"
+        android:layout_width="@dimen/thirty_dp"
+        android:layout_height="@dimen/thirty_dp"
+        android:layout_gravity="center_vertical"
+        android:layout_marginStart="@dimen/four_dp"
+        android:layout_marginEnd="@dimen/eight_dp"
+        android:contentDescription="@string/image_2"
+        android:src="@drawable/simple_cancel_blue" />
+</LinearLayout>

@@ -1,0 +1,34 @@
+<androidx.appcompat.widget.LinearLayoutCompat xmlns:android="http://schemas.android.com/apk/res/android"
+    android:id="@+id/ll_calender"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:layout_marginTop="@dimen/ten_dp"
+    android:background="@drawable/rectangle_light_grey"
+    android:orientation="horizontal"
+    android:paddingStart="@dimen/ten_dp"
+    android:paddingEnd="@dimen/ten_dp">
+
+    <androidx.appcompat.widget.AppCompatButton xmlns:android="http://schemas.android.com/apk/res/android"
+        android:id="@+id/btn_from_date"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_gravity="center"
+        android:layout_weight="1"
+        android:background="@drawable/background_transparent"
+        android:gravity="center_vertical"
+        android:hint="@string/from"
+        android:textAllCaps="false"
+        android:textColor="@color/black"
+        android:textColorHint="@color/grey_color_dark" />
+
+    <include
+        android:id="@+id/iv_cancel_black_icon"
+        layout="@layout/cancel_black_icon"
+        android:visibility="gone" />
+
+    <ImageView
+        android:layout_width="@dimen/thirty_dp"
+        android:layout_height="@dimen/thirty_dp"
+        android:layout_gravity="center"
+        android:src="@drawable/calendar_icon" />
+</androidx.appcompat.widget.LinearLayoutCompat>

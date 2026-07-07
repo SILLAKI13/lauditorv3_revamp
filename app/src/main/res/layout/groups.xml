@@ -1,0 +1,604 @@
+<ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    tools:context=".MainActivity">
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical">
+
+        <androidx.appcompat.widget.LinearLayoutCompat
+            android:id="@+id/linearLayoutCompat"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="center"
+            android:layout_marginTop="@dimen/ten_dp"
+            android:gravity="center"
+            android:orientation="horizontal"
+            android:visibility="gone">
+
+            <include
+                android:id="@+id/tv_create_group"
+                layout="@layout/left_title_layout" />
+
+            <include
+                android:id="@+id/tv_view_group"
+                layout="@layout/right_title_layout" />
+        </androidx.appcompat.widget.LinearLayoutCompat>
+
+        <androidx.appcompat.widget.LinearLayoutCompat
+            android:id="@+id/ll_Views"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="@dimen/Twelve_dp"
+            android:layout_marginEnd="@dimen/Twelve_dp"
+            android:orientation="vertical">
+
+            <include
+                android:id="@+id/tv_switchView"
+                layout="@layout/common_title_icon" />
+
+            <include
+                android:id="@+id/tv_switchCreate"
+                layout="@layout/common_title_icon" />
+        </androidx.appcompat.widget.LinearLayoutCompat>
+
+
+        <androidx.cardview.widget.CardView
+            android:id="@+id/cv_details"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_margin="@dimen/ten_dp"
+            android:elevation="@dimen/four_dp"
+            android:padding="@dimen/ten_dp"
+            app:cardBackgroundColor="@color/white"
+            app:cardCornerRadius="@dimen/eight_dp">
+
+            <androidx.appcompat.widget.LinearLayoutCompat
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_margin="@dimen/ten_dp"
+                android:orientation="vertical">
+
+                <!--include the group name -->
+                <LinearLayout
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="@dimen/ten_dp"
+                    android:orientation="horizontal">
+
+                    <include
+                        layout="@layout/title_name_layout"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content" />
+
+                    <include layout="@layout/astrick_layout" />
+                </LinearLayout>
+
+                <!--include the group name layout -->
+
+                <!--include the group name Box -->
+                <include
+                    android:id="@+id/tv_group_name"
+                    layout="@layout/title_description_layout" />
+                <!--include the group description layout -->
+                <LinearLayout
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="@dimen/ten_dp"
+                    android:orientation="horizontal">
+
+                    <!--Adding a description name-->
+                    <include
+                        android:id="@+id/description_name"
+                        layout="@layout/title_name_layout"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content" />
+
+                    <include layout="@layout/astrick_layout" />
+                </LinearLayout>
+                <!--include the group description box -->
+                <include
+                    android:id="@+id/tv_description"
+                    layout="@layout/title_description_layout"
+                    android:layout_width="match_parent"
+                    android:layout_height="@dimen/one_fifty_dp"
+                    android:layout_marginTop="@dimen/ten_dp" />
+
+                <include
+                    layout="@layout/team_member_selection"
+                    android:layout_width="wrap_content"
+                    android:layout_height="match_parent"
+                    android:layout_marginTop="@dimen/twenty_dp" />
+
+                <LinearLayout
+                    android:id="@+id/ll_deleteGroups"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginBottom="@dimen/ten_dp"
+                    android:orientation="vertical"
+                    android:visibility="gone">
+
+                    <androidx.cardview.widget.CardView
+                        android:id="@+id/cv_delete_team"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="@dimen/ten_dp"
+                        android:layout_marginBottom="@dimen/ten_dp"
+                        android:backgroundTint="@color/scheduled_text"
+                        android:elevation="@dimen/forty_dp"
+                        android:padding="@dimen/ten_dp"
+                        app:cardCornerRadius="@dimen/eight_dp">
+
+                        <LinearLayout
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:orientation="vertical">
+
+                            <LinearLayout
+                                android:layout_width="match_parent"
+                                android:layout_height="wrap_content"
+                                android:layout_marginStart="@dimen/ten_dp"
+                                android:layout_marginEnd="@dimen/twenty_dp"
+                                android:layout_marginBottom="@dimen/ten_dp"
+                                android:gravity="end"
+                                android:orientation="horizontal"
+                                android:padding="@dimen/ten_dp">
+
+                                <include
+                                    android:id="@+id/group_name_delete"
+                                    layout="@layout/header_title"
+                                    android:layout_width="match_parent"
+                                    android:layout_height="wrap_content"
+                                    android:layout_weight="1" />
+
+                                <ImageView
+                                    android:layout_width="@dimen/forty_dp"
+                                    android:layout_height="@dimen/forty_dp"
+                                    android:layout_gravity="center"
+                                    android:contentDescription="@string/delete"
+                                    android:src="@drawable/delete_white_icon" />
+                            </LinearLayout>
+
+                            <LinearLayout
+                                android:id="@+id/ll_Delete_view"
+                                android:layout_width="match_parent"
+                                android:layout_height="wrap_content"
+                                android:orientation="vertical">
+
+                                <include
+                                    android:id="@+id/tv_documents"
+                                    layout="@layout/txt_background" />
+
+                                <include
+                                    android:id="@+id/tv_matters"
+                                    layout="@layout/txt_background" />
+
+                                <include
+                                    android:id="@+id/tv_relationships"
+                                    layout="@layout/txt_background" />
+
+                                <include
+                                    android:id="@+id/tv_members"
+                                    layout="@layout/txt_background" />
+                            </LinearLayout>
+
+                        </LinearLayout>
+                    </androidx.cardview.widget.CardView>
+
+                    <LinearLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_marginStart="@dimen/four_dp"
+                        android:layout_marginTop="@dimen/ten_dp"
+                        android:layout_marginBottom="@dimen/ten_dp"
+                        android:orientation="horizontal">
+
+                        <include
+                            android:id="@+id/tv_groupName"
+                            layout="@layout/title_name_layout"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content" />
+
+                        <include layout="@layout/astrick_layout" />
+
+                    </LinearLayout>
+
+                    <include
+                        android:id="@+id/tv_sp_groups"
+                        layout="@layout/dropdown_spinner_layout" />
+
+
+                    <include
+                        android:id="@+id/sp_groupslist"
+                        layout="@layout/spinner_list"
+                        android:layout_width="match_parent"
+                        android:layout_height="@dimen/one_fifty_dp"
+                        android:layout_marginStart="@dimen/four_dp"
+                        android:layout_marginEnd="@dimen/four_dp" />
+
+                </LinearLayout>
+
+                <androidx.appcompat.widget.LinearLayoutCompat
+                    android:id="@+id/ll_edit_buttons"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginLeft="@dimen/ten_dp"
+                    android:layout_marginTop="@dimen/ten_dp"
+                    android:layout_marginRight="@dimen/ten_dp"
+                    android:layout_marginBottom="@dimen/ten_dp"
+                    android:orientation="horizontal"
+                    android:visibility="gone">
+
+                    <!--include the submit and cancel layout -->
+                    <include
+                        android:id="@+id/btn_cancel_edit"
+                        layout="@layout/cancel_button" />
+
+                    <include
+                        android:id="@+id/btn_update"
+                        layout="@layout/submit_button" />
+
+                </androidx.appcompat.widget.LinearLayoutCompat>
+            </androidx.appcompat.widget.LinearLayoutCompat>
+        </androidx.cardview.widget.CardView>
+
+        <androidx.appcompat.widget.LinearLayoutCompat
+            android:id="@+id/linearLayoutCompat1"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            android:padding="@dimen/ten_dp"
+            android:paddingStart="@dimen/forty_dp"
+            android:paddingEnd="@dimen/forty_dp"
+            android:visibility="gone">
+
+            <include
+                android:id="@+id/add_tm"
+                layout="@layout/left_title_layout"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginEnd="@dimen/one_dp" />
+
+            <include
+                android:id="@+id/add_phead"
+                layout="@layout/right_title_layout"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content" />
+        </androidx.appcompat.widget.LinearLayoutCompat>
+
+
+        <androidx.appcompat.widget.LinearLayoutCompat
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_gravity="end"
+            android:layout_marginTop="@dimen/twenty_dp"
+            android:layout_marginEnd="@dimen/Fifteen_dp"
+            android:gravity="end"
+            android:orientation="horizontal"
+            android:visibility="visible">
+
+
+            <TextView
+                android:id="@+id/tv_label"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_margin="@dimen/ten_dp"
+                android:layout_weight="1"
+                android:gravity="start|center_vertical"
+                android:text="@string/team_members"
+                android:fontFamily="@font/gill_sans"
+                android:textColor="@color/blue"
+                android:textSize="@dimen/seventeen_dp"
+                android:visibility="gone" />
+
+
+            <androidx.appcompat.widget.LinearLayoutCompat
+                android:id="@+id/ll_select_all"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:background="@drawable/checkbox_background"
+                android:orientation="horizontal">
+
+
+                <include
+                    layout="@layout/check_select_all"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content" />
+
+            </androidx.appcompat.widget.LinearLayoutCompat>
+
+        </androidx.appcompat.widget.LinearLayoutCompat>
+
+        <androidx.cardview.widget.CardView
+            android:id="@+id/cv_details_2"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_margin="@dimen/ten_dp"
+            android:elevation="@dimen/four_dp"
+            android:padding="@dimen/ten_dp"
+            android:visibility="visible"
+            app:cardBackgroundColor="@color/white"
+            app:cardCornerRadius="@dimen/eight_dp">
+
+            <androidx.appcompat.widget.LinearLayoutCompat
+                android:id="@+id/linearLayoutCompat2"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="vertical"
+                android:padding="@dimen/four_dp"
+                android:paddingBottom="@dimen/thirty_dp">
+
+                <include
+                    android:id="@+id/select_ghead"
+                    layout="@layout/title_name_layout"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginStart="@dimen/ten_dp"
+                    android:layout_marginTop="@dimen/four_dp"
+                    android:layout_marginEnd="@dimen/ten_dp"
+                    android:layout_marginBottom="@dimen/four_dp"
+                    android:visibility="visible" />
+
+                <!--include the search box -->
+                <include
+                    android:id="@+id/tl_et_search_tm"
+                    layout="@layout/search_layout_new"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginStart="@dimen/twenty_dp"
+                    android:layout_marginTop="@dimen/twenty_dp"
+                    android:layout_marginEnd="@dimen/twenty_dp" />
+                <!--this is the actual edit text which takes the input-->
+                <include
+                    android:id="@+id/tl_et_search_delete"
+                    layout="@layout/search_layout_new"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginStart="@dimen/twenty_dp"
+                    android:layout_marginTop="@dimen/twenty_dp"
+                    android:layout_marginEnd="@dimen/twenty_dp"
+                    android:visibility="gone" />
+
+                <include
+                    android:id="@+id/group_head_name"
+                    layout="@layout/grouphead_view"
+                    android:layout_width="match_parent"
+                    android:layout_height="@dimen/forty_dp"
+                    android:layout_margin="@dimen/twenty_dp"
+                    android:visibility="visible" />
+
+                <androidx.recyclerview.widget.RecyclerView
+                    android:id="@+id/rv_selected_tm"
+                    android:layout_width="match_parent"
+                    android:layout_height="@dimen/ThreeHundred_dp"
+                    android:layout_margin="@dimen/ten_dp"
+                    android:orientation="vertical" />
+
+                <androidx.appcompat.widget.LinearLayoutCompat
+                    android:id="@+id/ll_buttons"
+                    android:layout_width="match_parent"
+                    android:layout_height="@dimen/sixty_dp"
+                    android:layout_margin="@dimen/ten_dp"
+                    android:orientation="horizontal">
+
+                    <!--Submit and Cancel Button-->
+                    <include layout="@layout/cancel_button" />
+
+                    <include layout="@layout/submit_button" />
+                    <!--end-->
+                </androidx.appcompat.widget.LinearLayoutCompat>
+            </androidx.appcompat.widget.LinearLayoutCompat>
+        </androidx.cardview.widget.CardView>
+
+        <!--this is the actual edit text which takes the input-->
+        <include
+            android:id="@+id/tl_et_search"
+            layout="@layout/search_layout_new"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="@dimen/twenty_dp"
+            android:layout_marginTop="@dimen/_10dp"
+            android:layout_marginEnd="@dimen/twenty_dp"
+            android:visibility="gone" />
+
+        <androidx.recyclerview.widget.RecyclerView
+            android:id="@+id/rv_view_group"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_margin="@dimen/ten_dp"
+            android:paddingBottom="@dimen/forty_dp"
+            android:orientation="vertical" />
+
+        <androidx.cardview.widget.CardView
+            android:id="@+id/cv_details_activity_log"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_margin="@dimen/ten_dp"
+            android:elevation="@dimen/forty_dp"
+            android:padding="@dimen/ten_dp"
+            android:visibility="gone"
+            app:cardBackgroundColor="@color/white"
+            app:cardCornerRadius="@dimen/eight_dp">
+
+            <androidx.appcompat.widget.LinearLayoutCompat
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_margin="@dimen/ten_dp"
+                android:orientation="vertical">
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="horizontal">
+
+                    <!--Changing sub title name to category-->
+                    <include
+                        android:id="@+id/category_id"
+                        layout="@layout/title_name_layout"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content" />
+
+                    <include layout="@layout/astrick_layout" />
+
+                </LinearLayout>
+
+                <RelativeLayout
+                    android:id="@+id/spinnerLayout"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_alignParentTop="true"
+                    android:layout_marginTop="@dimen/ten_dp"
+                    android:layout_marginEnd="@dimen/four_dp"
+                    android:layout_weight=".28"
+                    android:background="@drawable/rectangle_light_grey"
+                    android:gravity="center"
+                    android:orientation="horizontal">
+                    <!--Adding a spinner to choose a category-->
+                    <include layout="@layout/spinner_layout" />
+
+                    <include layout="@layout/spinner_drop_down" />
+
+                </RelativeLayout>
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="vertical">
+                    <!--Adding a Client name-->
+                    <include
+                        android:id="@+id/client_id_name"
+                        layout="@layout/title_name_layout" />
+
+                    <include
+                        android:id="@+id/tv_Client_name_id"
+                        layout="@layout/title_description_layout" />
+                </LinearLayout>
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="horizontal">
+                    <!--Adding a team_member name-->
+                    <include
+                        android:id="@+id/team_member_id"
+                        layout="@layout/title_name_layout" />
+
+                </LinearLayout>
+
+                <RelativeLayout
+                    android:id="@+id/spinnerLayout2"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_alignParentTop="true"
+                    android:layout_marginTop="@dimen/ten_dp"
+                    android:layout_marginEnd="@dimen/four_dp"
+                    android:layout_weight=".28"
+                    android:background="@drawable/rectangle_light_grey"
+                    android:gravity="center"
+                    android:orientation="horizontal">
+
+                    <!--Adding a spinner to choose Team member-->
+                    <include
+                        android:id="@+id/sp_team_member"
+                        layout="@layout/spinner_layout" />
+
+                    <include layout="@layout/spinner_drop_down" />
+                </RelativeLayout>
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="vertical">
+
+                    <include
+                        android:id="@+id/search_name"
+                        layout="@layout/title_name_layout" />
+                    <!--this is the actual edit text which takes the input-->
+                    <include
+                        android:id="@+id/tv_search_name"
+                        layout="@layout/title_description_layout" />
+                </LinearLayout>
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:baselineAligned="false"
+                    android:orientation="horizontal">
+
+                    <LinearLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_margin="@dimen/four_dp"
+                        android:layout_weight="1"
+                        android:orientation="vertical">
+
+                        <include
+                            android:id="@+id/from_id"
+                            layout="@layout/title_name_layout" />
+                        <!--        Adding a F rom date calender button-->
+                        <include layout="@layout/button_calender" />
+                    </LinearLayout>
+
+                    <LinearLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_margin="@dimen/four_dp"
+                        android:layout_weight="1"
+                        android:orientation="vertical">
+
+                        <include
+                            android:id="@+id/to_id"
+                            layout="@layout/title_name_layout" />
+
+                        <!--        Adding a To date calender button-->
+                        <include
+                            android:id="@+id/btn_to_date"
+                            layout="@layout/button_calender" />
+                    </LinearLayout>
+                </LinearLayout>
+
+                <androidx.appcompat.widget.LinearLayoutCompat
+                    android:id="@+id/ll_activity_buttons"
+                    android:layout_width="match_parent"
+                    android:layout_height="@dimen/forty_dp"
+                    android:layout_marginLeft="@dimen/ten_dp"
+                    android:layout_marginTop="@dimen/twenty_dp"
+                    android:layout_marginRight="@dimen/ten_dp"
+                    android:layout_marginBottom="@dimen/ten_dp"
+                    android:orientation="horizontal"
+                    android:visibility="visible">
+                    <!--                 Adding a cancel and search button-->
+                    <include
+                        android:id="@+id/btn_cancel_activity_log"
+                        layout="@layout/cancel_button"
+                        android:visibility="gone" />
+
+                    <include
+                        android:id="@+id/btn_update_activity_log"
+                        layout="@layout/submit_button" />
+                </androidx.appcompat.widget.LinearLayoutCompat>
+
+                <!--this is the actual edit text which takes the input-->
+                <include
+                    android:id="@+id/tl_et_search_message"
+                    layout="@layout/search_layout_new"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginStart="@dimen/twenty_dp"
+                    android:layout_marginTop="@dimen/twenty_dp"
+                    android:layout_marginEnd="@dimen/twenty_dp" />
+
+                <androidx.recyclerview.widget.RecyclerView
+                    android:id="@+id/rv_view_activity_log"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_margin="@dimen/ten_dp"
+                    android:orientation="vertical" />
+            </androidx.appcompat.widget.LinearLayoutCompat>
+        </androidx.cardview.widget.CardView>
+    </LinearLayout>
+</ScrollView>
