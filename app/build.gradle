@@ -1,6 +1,7 @@
 plugins {
     id 'com.android.application'
     id 'com.google.gms.google-services'
+    id 'org.jetbrains.kotlin.android'
 }
 
 // ✅ Control environment from here — change these flags only
@@ -86,9 +87,16 @@ android {
         targetCompatibility JavaVersion.VERSION_1_8
     }
 
+    kotlinOptions {
+        jvmTarget = '1.8'
+    }
+
     packagingOptions {
         jniLibs {
             useLegacyPackaging = false
+        }
+        resources {
+            excludes += 'META-INF/versions/9/OSGI-INF/MANIFEST.MF'
         }
     }
 }
@@ -135,6 +143,8 @@ dependencies {
     // Networking & Play Services
     implementation 'com.google.android.gms:play-services-auth:21.5.0'
     implementation 'com.squareup.okhttp3:okhttp:5.3.2'
+    implementation 'com.squareup.okhttp3:logging-interceptor:5.3.2'
+    implementation 'com.squareup.retrofit2:retrofit:2.11.0'
     implementation 'info.guardianproject.netcipher:netcipher:2.1.0'
     implementation 'com.google.android.play:app-update:2.1.0'
     implementation "com.google.android.flexbox:flexbox:3.0.0"
