@@ -309,7 +309,7 @@ class OtpVerificationActivity : AppCompatActivity(), AsyncTaskCompleteListener {
             this,
             this,
             WebServiceHelper.RestMethodType.GET,
-            Constants.Dashboard,
+            Constants.Dashboard ?: "",
             "Dashboard",
             jsonObject.toString()
         )
@@ -642,15 +642,11 @@ class OtpVerificationActivity : AppCompatActivity(), AsyncTaskCompleteListener {
 
             val dashboardArray = result.getJSONArray("cards")
             DashboardData(dashboardArray)
-            if (Constants.loginActivity != null) {
-                Constants.loginActivity.syncDevice()
-            }
+            Constants.loginActivity?.syncDevice()
             saveXmppPreferences()
             startActivity(Intent(this, MainActivity::class.java))
             android.os.Handler(android.os.Looper.getMainLooper()).postDelayed({
-                if (Constants.mainActivity != null) {
-                    Constants.mainActivity.registerPendingFCMToken()
-                }
+                Constants.mainActivity?.registerPendingFCMToken()
             }, 2000)
             finish()
 

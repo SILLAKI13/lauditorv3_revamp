@@ -36,7 +36,7 @@ class UploadImageTask(
             }
 
             val headers = HashMap<String, String>()
-            headers["Cofferid"] = Constants.USER_ID
+            headers["Cofferid"] = Constants.USER_ID ?: ""
             headers["Authorization"] = "Bearer ${Constants.TOKEN}"
 
             val builder = MultipartBody.Builder().setType(MultipartBody.FORM)

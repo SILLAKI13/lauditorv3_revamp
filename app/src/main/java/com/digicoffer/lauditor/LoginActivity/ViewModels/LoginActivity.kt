@@ -221,7 +221,7 @@ class LoginActivity : AppCompatActivity(), AsyncTaskCompleteListener {
                         addFlags(Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK)
                     }
                     startActivity(mainIntent)
-                    Log.d("Refresh_Token", Constants.Refresh_token)
+                    Log.d("Refresh_Token", Constants.Refresh_token ?: "")
                     finish()
                     return
 
@@ -1003,8 +1003,8 @@ class LoginActivity : AppCompatActivity(), AsyncTaskCompleteListener {
 
                 if (savedToken.isNotEmpty()) {
                     Dashboard()
-                } else if (Constants.Email.isNotEmpty()) {
-                    LoginAPI(Constants.Email)
+                } else if (!Constants.Email.isNullOrEmpty()) {
+                    LoginAPI(Constants.Email ?: "")
                 }
 
             } catch (e: JSONException) {
@@ -1301,10 +1301,10 @@ class LoginActivity : AppCompatActivity(), AsyncTaskCompleteListener {
                     Log.d("FCM_NAV", "Saved pending nav: $pendingNav")
                 }
 
-                if (Constants.TOKEN.isNotEmpty()) {
+                if (!Constants.TOKEN.isNullOrEmpty()) {
                     Dashboard()
-                } else if (Constants.Email.isNotEmpty()) {
-                    LoginAPI(Constants.Email)
+                } else if (!Constants.Email.isNullOrEmpty()) {
+                    LoginAPI(Constants.Email ?: "")
                 }
             }
         } catch (e: JSONException) {
@@ -1358,7 +1358,7 @@ class LoginActivity : AppCompatActivity(), AsyncTaskCompleteListener {
         val jsonObject = JSONObject()
         Constants.base_URL = Constants.PROF_URL
         WebServiceHelper.callHttpWebService(this, this,
-            WebServiceHelper.RestMethodType.GET, Constants.Dashboard, "Dashboard",
+            WebServiceHelper.RestMethodType.GET, Constants.Dashboard ?: "", "Dashboard",
             jsonObject.toString())
     }
 
@@ -1580,7 +1580,7 @@ class LoginActivity : AppCompatActivity(), AsyncTaskCompleteListener {
 
     private fun Bio_metric_access() {
         val token = Constants.TOKEN
-        val email = Constants.Email
+        val email = Constants.Email ?: ""
         val password = et_login_password?.text?.toString() ?: ""
         val sharedPreferences = getSharedPreferences("MyPrefs", Context.MODE_PRIVATE)
         sharedPreferences.edit().apply {
@@ -1696,17 +1696,17 @@ class LoginActivity : AppCompatActivity(), AsyncTaskCompleteListener {
                             if (result.optString("redirect_to") == "mobile") {
                                 AndroidUtils.showAlert("Phone number is already registered. Please log in using the OTP sent via SMS", this, "Success") {
                                     et_login_email?.setText(Constants.Mobile)
-                                    LoginAPI(Constants.Mobile)
+                                    LoginAPI(Constants.Mobile ?: "")
                                 }
                             } else if (result.optString("redirect_to") == "email") {
                                 AndroidUtils.showAlert("Email is already registered. Please log in using the OTP sent to your inbox.", this, "Success") {
                                     et_login_email?.setText(Constants.Email)
-                                    LoginAPI(Constants.Email)
+                                    LoginAPI(Constants.Email ?: "")
                                 }
                             } else {
                                 AndroidUtils.showAlert("Account already exists. Please login via OTP sent to your inbox.", this, "Success") {
                                     et_login_email?.setText(Constants.Email)
-                                    LoginAPI(Constants.Email)
+                                    LoginAPI(Constants.Email ?: "")
                                 }
                             }
                         } else {
@@ -1782,9 +1782,7 @@ class LoginActivity : AppCompatActivity(), AsyncTaskCompleteListener {
                     saveXmppPreferences()
                     
                     android.os.Handler(android.os.Looper.getMainLooper()).postDelayed({
-                        if (Constants.mainActivity != null) {
-                            Constants.mainActivity.registerPendingFCMToken()
-                        }
+                        Constants.mainActivity?.registerPendingFCMToken()
                     }, 2000)
                     finish()
                 }
@@ -1824,9 +1822,7 @@ class LoginActivity : AppCompatActivity(), AsyncTaskCompleteListener {
             saveXmppPreferences()
             
             android.os.Handler(android.os.Looper.getMainLooper()).postDelayed({
-                if (Constants.mainActivity != null) {
-                    Constants.mainActivity.registerPendingFCMToken()
-                }
+                Constants.mainActivity?.registerPendingFCMToken()
             }, 2000)
             
             val mainIntent = Intent(this, MainActivity::class.java).apply {

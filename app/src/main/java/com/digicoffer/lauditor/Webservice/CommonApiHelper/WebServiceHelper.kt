@@ -21,9 +21,9 @@ class WebServiceHelper {
     companion object {
         init {
             // Bind the generic networking framework configuration to LexiZ Lawyers Constants
-            NetworkConfig.baseUrl = { Constants.base_URL }
-            NetworkConfig.tokenProvider = { Constants.TOKEN }
-            NetworkConfig.cofferIdProvider = { Constants.USER_ID }
+            NetworkConfig.baseUrl = { Constants.base_URL ?: "" }
+            NetworkConfig.tokenProvider = { Constants.TOKEN ?: "" }
+            NetworkConfig.cofferIdProvider = { Constants.USER_ID ?: "" }
         }
 
         @JvmStatic
