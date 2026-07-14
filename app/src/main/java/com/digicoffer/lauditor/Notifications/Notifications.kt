@@ -321,9 +321,8 @@ class Notifications : Fragment(), AsyncTaskCompleteListener, View.OnClickListene
         Constants.notificationBundle.clear()
     }
 
-    override fun onAsyncTaskComplete(httpResult: HttpResultDo?) {
+    override fun onAsyncTaskComplete(httpResult: HttpResultDo) {
         dismissProgress()
-        if (httpResult == null) return
 
         if (httpResult.result == WebServiceHelper.ServiceCallStatus.Success) {
             try {
@@ -396,7 +395,7 @@ class Notifications : Fragment(), AsyncTaskCompleteListener, View.OnClickListene
         updateSelectAllIcon(allSelected)
     }
 
-    override fun onClick(view: View?) {}
+    override fun onClick(view: View) {}
 
     private fun dismissProgress() {
         if (progress_dialog != null && progress_dialog!!.isShowing) {

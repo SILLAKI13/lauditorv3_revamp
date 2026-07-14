@@ -338,17 +338,12 @@ class OtpVerificationActivity : AppCompatActivity(), AsyncTaskCompleteListener {
         }
     }
 
-    override fun onClick(view: View?) {
+    override fun onClick(view: View) {
         // unused
     }
 
-    override fun onAsyncTaskComplete(httpResult: HttpResultDo?) {
+    override fun onAsyncTaskComplete(httpResult: HttpResultDo) {
         dismissDialog()
-
-        if (httpResult == null) {
-            Toast.makeText(this, "No server response", Toast.LENGTH_SHORT).show()
-            return
-        }
 
         val requestType = httpResult.requestType ?: ""
 

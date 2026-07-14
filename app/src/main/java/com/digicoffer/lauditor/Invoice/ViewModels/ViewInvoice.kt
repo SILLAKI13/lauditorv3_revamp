@@ -1501,9 +1501,8 @@ class ViewInvoice : Fragment(), AsyncTaskCompleteListener, ViewInvoiceAdapter.In
         }
     }
 
-    override fun onAsyncTaskComplete(httpResult: HttpResultDo?) {
+    override fun onAsyncTaskComplete(httpResult: HttpResultDo) {
         dismissProgress()
-        if (httpResult == null) return
 
         try {
             if (httpResult.result == WebServiceHelper.ServiceCallStatus.Success) {
@@ -2338,5 +2337,5 @@ class ViewInvoice : Fragment(), AsyncTaskCompleteListener, ViewInvoiceAdapter.In
         return Character.toUpperCase(s[0]) + s.substring(1).lowercase(Locale.ROOT)
     }
 
-    override fun onClick(view: View?) {}
+    override fun onClick(view: View) {}
 }

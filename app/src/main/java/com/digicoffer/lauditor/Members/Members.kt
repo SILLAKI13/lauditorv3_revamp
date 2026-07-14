@@ -671,9 +671,9 @@ class Members : Fragment(), AsyncTaskCompleteListener, MembersAdapter.EventListe
         }
     }
 
-    override fun onClick(view: View?) {
+    override fun onClick(view: View) {
         try {
-            when (view?.id) {
+            when (view.id) {
                 R.id.btn_create -> {
                     if (Validation()) {
                         val tag = "Create"
@@ -699,11 +699,10 @@ class Members : Fragment(), AsyncTaskCompleteListener, MembersAdapter.EventListe
         }
     }
 
-    override fun onAsyncTaskComplete(httpResult: HttpResultDo?) {
+    override fun onAsyncTaskComplete(httpResult: HttpResultDo) {
         if (progress_dialog != null && progress_dialog!!.isShowing) {
             AndroidUtils.dismiss_dialog(progress_dialog)
         }
-        if (httpResult == null) return
 
         if (httpResult.result == WebServiceHelper.ServiceCallStatus.Success) {
             try {

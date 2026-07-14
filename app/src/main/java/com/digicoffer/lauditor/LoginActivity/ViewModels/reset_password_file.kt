@@ -222,11 +222,10 @@ class reset_password_file : AppCompatActivity(), AsyncTaskCompleteListener {
         }
     }
 
-    override fun onAsyncTaskComplete(httpResult: HttpResultDo?) {
+    override fun onAsyncTaskComplete(httpResult: HttpResultDo) {
         if (progressDialog != null && progressDialog!!.isShowing) {
             AndroidUtils.dismiss_dialog(progressDialog)
         }
-        if (httpResult == null) return
 
         if (httpResult.result == WebServiceHelper.ServiceCallStatus.Success) {
             try {
@@ -263,7 +262,7 @@ class reset_password_file : AppCompatActivity(), AsyncTaskCompleteListener {
         }
     }
 
-    override fun onClick(v: View?) {
+    override fun onClick(v: View) {
         // Not used
     }
 

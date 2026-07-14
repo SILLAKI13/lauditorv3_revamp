@@ -389,13 +389,12 @@ class AuditTrails : Fragment(), AsyncTaskCompleteListener, DateUtils.OnDateSelec
         }
     }
 
-    override fun onClick(view: View?) {}
+    override fun onClick(view: View) {}
 
-    override fun onAsyncTaskComplete(httpResult: HttpResultDo?) {
+    override fun onAsyncTaskComplete(httpResult: HttpResultDo) {
         if (progress_dialog != null && progress_dialog!!.isShowing) {
             AndroidUtils.dismiss_dialog(progress_dialog)
         }
-        if (httpResult == null) return
 
         if (httpResult.result == WebServiceHelper.ServiceCallStatus.Success) {
             try {

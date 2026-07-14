@@ -233,11 +233,10 @@ class ForgetPassword : AppCompatActivity(), AsyncTaskCompleteListener {
         }
     }
 
-    override fun onAsyncTaskComplete(httpResult: HttpResultDo?) {
+    override fun onAsyncTaskComplete(httpResult: HttpResultDo) {
         if (progressDialog != null && progressDialog!!.isShowing) {
             AndroidUtils.dismiss_dialog(progressDialog)
         }
-        if (httpResult == null) return
 
         if (httpResult.result == WebServiceHelper.ServiceCallStatus.Success) {
             try {
@@ -309,7 +308,7 @@ class ForgetPassword : AppCompatActivity(), AsyncTaskCompleteListener {
         super.onBackPressed()
     }
 
-    override fun onClick(view: View?) {
+    override fun onClick(view: View) {
         // unused
     }
 

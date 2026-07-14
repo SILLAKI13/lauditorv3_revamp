@@ -24,7 +24,7 @@ class ConfirmationLogin : AppCompatActivity(), View.OnClickListener, AsyncTaskCo
         supportActionBar?.hide()
     }
 
-    override fun onClick(v: View?) {
+    override fun onClick(v: View) {
         // Commented out in original Java code
     }
 
@@ -49,12 +49,11 @@ class ConfirmationLogin : AppCompatActivity(), View.OnClickListener, AsyncTaskCo
         }
     }
 
-    override fun onAsyncTaskComplete(httpResult: HttpResultDo?) {
+    override fun onAsyncTaskComplete(httpResult: HttpResultDo) {
         if (progressDialog != null && progressDialog!!.isShowing) {
             AndroidUtils.dismiss_dialog(progressDialog)
         }
-        if (httpResult != null) {
-            if (httpResult.result == WebServiceHelper.ServiceCallStatus.Success) {
+        if (httpResult.result == WebServiceHelper.ServiceCallStatus.Success) {
                 try {
                     val result = JSONObject(httpResult.responseContent)
                     if (!result.getBoolean("error")) {
@@ -68,7 +67,6 @@ class ConfirmationLogin : AppCompatActivity(), View.OnClickListener, AsyncTaskCo
             } else {
                 AndroidUtils.showAlert(httpResult.responseContent, this)
             }
-        }
     }
 
     @Suppress("DEPRECATION")

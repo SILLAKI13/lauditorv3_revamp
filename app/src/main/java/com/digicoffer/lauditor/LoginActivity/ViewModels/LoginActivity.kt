@@ -1595,9 +1595,7 @@ class LoginActivity : AppCompatActivity(), AsyncTaskCompleteListener {
         }.apply()
     }
 
-    override fun onAsyncTaskComplete(httpResult: HttpResultDo?) {
-        if (httpResult == null) return
-
+    override fun onAsyncTaskComplete(httpResult: HttpResultDo) {
         if (progress_dialog != null && progress_dialog!!.isShowing) {
             AndroidUtils.dismiss_dialog(progress_dialog)
         }
@@ -2156,7 +2154,7 @@ class LoginActivity : AppCompatActivity(), AsyncTaskCompleteListener {
         }
     }
 
-    override fun onClick(view: View?) {}
+    override fun onClick(view: View) {}
 
     private inner class JsonTask : AsyncTask<String, String, String>() {
         override fun onPreExecute() {
