@@ -22,17 +22,26 @@ class AttachmentModel {
         this.filename = filename
     }
 
-    @get:JvmName("getSize")
-    @set:JvmName("setSize")
-    var Size: Int = 0
+    @JvmField
+    var size: Int = 0
+    fun getSize(): Int = size
+    fun setSize(size: Int) {
+        this.size = size
+    }
 
-    @get:JvmName("getId")
-    @set:JvmName("setId")
-    var Id: String? = null
+    @JvmField
+    var id: String? = null
+    fun getId(): String? = id
+    fun setId(id: String?) {
+        this.id = id
+    }
 
-    @get:JvmName("getContentType")
-    @set:JvmName("setContentType")
-    var ContentType: String? = null
+    @JvmField
+    var contentType: String? = null
+    fun getContentType(): String? = contentType
+    fun setContentType(contentType: String?) {
+        this.contentType = contentType
+    }
 
     fun setHeaders(headers: List<Header>?) {}
     fun setBody(body: Body?) {}

@@ -45,7 +45,7 @@ import org.json.JSONException
 import org.json.JSONObject
 import java.util.ArrayList
 
-class emailadapter(
+class EmailAdapter(
     private var messages: List<MessageModel>?,
     private val email: Email,
     private val activity: Activity
@@ -77,7 +77,7 @@ class emailadapter(
         val msgList = messages
         if (msgList != null && msgList[position].getAttachment() != null) {
             val atts = msgList[position].getAttachment()
-            if (atts != null && !atts.isEmpty() && msgList[position].isAttachment) {
+            if (atts != null && !atts.isEmpty() && msgList[position].isAttachment()) {
                 return VIEW_TYPE_ATTACHMENT
             }
         }
@@ -204,7 +204,7 @@ class emailadapter(
                 gridRecyclerView.visibility = VISIBLE
             }
             if (emailModel.getAttachment() != null && !emailModel.getAttachment()!!.isEmpty()) {
-                gridRecyclerView.layoutManager = GridLayoutManager(context_type, 2)
+                gridRecyclerView.layoutManager = GridLayoutManager(context_type!!, 2)
                 gridRecyclerView.isNestedScrollingEnabled = false
                 gridRecyclerView.setHasFixedSize(false)
 
@@ -455,7 +455,7 @@ class emailadapter(
 
         private fun callClientGroupsWebservice() {
             try {
-                progress_dialog = AndroidUtils.get_progress(context_type as Activity)
+                Email.progress_dialog = AndroidUtils.get_progress(context_type as Activity)
                 val jsonObject = JSONObject()
                 val clientGroups = JSONArray()
                 val clients = JSONObject()
@@ -469,17 +469,17 @@ class emailadapter(
                 }
                 jsonObject.put("clients", clientGroups)
                 jsonObject.put("matterid", matter_id)
-                WebServiceHelper.callHttpWebService(this, context_type, WebServiceHelper.RestMethodType.PUT, "v3/documents/groupslist", "Client Groups", jsonObject.toString())
+                WebServiceHelper.callHttpWebService(this, context_type!!, WebServiceHelper.RestMethodType.PUT, "v3/documents/groupslist", "Client Groups", jsonObject.toString())
             } catch (e: Exception) {
-                if (progress_dialog != null && progress_dialog!!.isShowing) {
-                    AndroidUtils.dismiss_dialog(progress_dialog)
+                if (Email.progress_dialog != null && Email.progress_dialog!!.isShowing) {
+                    AndroidUtils.dismiss_dialog(Email.progress_dialog)
                 }
             }
         }
 
         fun callUploadDocument(uploadUrl: String, token: String, msgId: String, partId: String) {
             try {
-                progress_dialog = AndroidUtils.get_progress(context_type as Activity)
+                Email.progress_dialog = AndroidUtils.get_progress(context_type as Activity)
                 try {
                     val clients = JSONArray()
                     for (clientsModel in selectedClients) {
@@ -515,7 +515,7 @@ class emailadapter(
                     Log.e("Generated JSON", jsonObject.toString())
                     val url = "$uploadUrl${Constants.mail_document}$token/$msgId?partid=$partId"
 
-                    WebServiceHelper.callEmailHttpWebService(this, context_type, WebServiceHelper.RestMethodType.POST, url, "uploaded file", jsonObject.toString())
+                    WebServiceHelper.callEmailHttpWebService(this, context_type!!, WebServiceHelper.RestMethodType.POST, url, "uploaded file", jsonObject.toString())
                     Log.d("json_value", url)
 
                 } catch (e: Exception) {
@@ -524,8 +524,8 @@ class emailadapter(
                 }
             } catch (e: Exception) {
                 Log.e("callUploadDocument", "Error occurred while executing callUploadDocument: " + e.message)
-                if (progress_dialog != null && progress_dialog!!.isShowing) {
-                    AndroidUtils.dismiss_dialog(progress_dialog)
+                if (Email.progress_dialog != null && Email.progress_dialog!!.isShowing) {
+                    AndroidUtils.dismiss_dialog(Email.progress_dialog)
                 }
                 e.fillInStackTrace()
             }
@@ -533,29 +533,29 @@ class emailadapter(
 
         private fun callClientWebservice() {
             try {
-                progress_dialog = AndroidUtils.get_progress(context_type as Activity)
+                Email.progress_dialog = AndroidUtils.get_progress(context_type as Activity)
                 val jsonObject = JSONObject()
-                WebServiceHelper.callHttpWebService(this, context_type, WebServiceHelper.RestMethodType.GET, "v3/client/all/list", "Clients List", jsonObject.toString())
+                WebServiceHelper.callHttpWebService(this, context_type!!, WebServiceHelper.RestMethodType.GET, "v3/client/all/list", "Clients List", jsonObject.toString())
             } catch (e: Exception) {
-                if (progress_dialog != null && progress_dialog!!.isShowing) {
-                    AndroidUtils.dismiss_dialog(progress_dialog)
+                if (Email.progress_dialog != null && Email.progress_dialog!!.isShowing) {
+                    AndroidUtils.dismiss_dialog(Email.progress_dialog)
                 }
             }
         }
 
         private fun callGroupsWebservice() {
             try {
-                progress_dialog = AndroidUtils.get_progress(context_type as Activity)
+                Email.progress_dialog = AndroidUtils.get_progress(context_type as Activity)
                 val jsonObject = JSONObject()
-                WebServiceHelper.callHttpWebService(this, context_type, WebServiceHelper.RestMethodType.GET, "v3/groups", "Groups", jsonObject.toString())
+                WebServiceHelper.callHttpWebService(this, context_type!!, WebServiceHelper.RestMethodType.GET, "v3/groups", "Groups", jsonObject.toString())
             } catch (e: Exception) {
-                if (progress_dialog != null && progress_dialog!!.isShowing) {
-                    AndroidUtils.dismiss_dialog(progress_dialog)
+                if (Email.progress_dialog != null && Email.progress_dialog!!.isShowing) {
+                    AndroidUtils.dismiss_dialog(Email.progress_dialog)
                 }
             }
         }
 
-        private fun loadClients(data: JSONObject) throws JSONException {
+        private fun loadClients(data: JSONObject) {
             val relationships = data.getJSONArray("relationships")
             clientsList.clear()
             for (i in 0 until relationships.length()) {
@@ -568,7 +568,7 @@ class emailadapter(
             }
         }
 
-        private fun loadCorpClients(data: JSONObject) throws JSONException {
+        private fun loadCorpClients(data: JSONObject) {
             val relationships = data.getJSONArray("relationships")
             CorpClientsList.clear()
             for (i in 0 until relationships.length()) {
@@ -639,7 +639,7 @@ class emailadapter(
                     }
                 }
 
-                val layoutManager = LinearLayoutManager(context_type, LinearLayoutManager.VERTICAL, false)
+                val layoutManager = LinearLayoutManager(context_type!!, LinearLayoutManager.VERTICAL, false)
                 rv_display_upload_groups_docs.layoutManager = layoutManager
                 val documentsAdapter = GroupsListAdapter(groupsList, Documents::class.java.newInstance(), GroupsListAdapter.OnCheckedChangeListener { documentsModel ->
                     if (documentsModel.isGroupChecked) {
@@ -667,7 +667,7 @@ class emailadapter(
                 val str = TextUtils.join(",", value)
                 tv_select_groups.text = str
                 rv_display_upload_groups_docs.adapter = documentsAdapter
-                AndroidUtils.LoadList(rv_display_upload_groups_docs, context_type, groupsList.size, true)
+                AndroidUtils.LoadList(rv_display_upload_groups_docs, context_type!!, groupsList.size, true)
             } catch (e: Exception) {
                 throw RuntimeException(e)
             }
@@ -675,18 +675,18 @@ class emailadapter(
 
         private fun callLegalMatter() {
             try {
-                progress_dialog = AndroidUtils.get_progress(context_type as Activity)
+                Email.progress_dialog = AndroidUtils.get_progress(context_type as Activity)
                 val jsonObject = JSONObject()
-                WebServiceHelper.callHttpWebService(this, context_type, WebServiceHelper.RestMethodType.GET, "v2/matter/list", "Legal Matter", jsonObject.toString())
+                WebServiceHelper.callHttpWebService(this, context_type!!, WebServiceHelper.RestMethodType.GET, "v2/matter/list", "Legal Matter", jsonObject.toString())
             } catch (e: Exception) {
-                if (progress_dialog != null && progress_dialog!!.isShowing) {
-                    AndroidUtils.dismiss_dialog(progress_dialog)
+                if (Email.progress_dialog != null && Email.progress_dialog!!.isShowing) {
+                    AndroidUtils.dismiss_dialog(Email.progress_dialog)
                 }
                 e.fillInStackTrace()
             }
         }
 
-        private fun loadMatters(matters: JSONArray) throws JSONException {
+        private fun loadMatters(matters: JSONArray) {
             matterlist.clear()
             for (i in 0 until matters.length()) {
                 val jsonObject = matters.getJSONObject(i)
@@ -744,17 +744,17 @@ class emailadapter(
         private fun callCorpClientWebservice() {
             try {
                 val jsonObject = JSONObject()
-                WebServiceHelper.callHttpWebService(this, context_type, WebServiceHelper.RestMethodType.GET, "v3/corporate/list", "Corp Clients List", jsonObject.toString())
+                WebServiceHelper.callHttpWebService(this, context_type!!, WebServiceHelper.RestMethodType.GET, "v3/corporate/list", "Corp Clients List", jsonObject.toString())
             } catch (e: Exception) {
-                if (progress_dialog != null && progress_dialog!!.isShowing) {
-                    AndroidUtils.dismiss_dialog(progress_dialog)
+                if (Email.progress_dialog != null && Email.progress_dialog!!.isShowing) {
+                    AndroidUtils.dismiss_dialog(Email.progress_dialog)
                 }
             }
         }
 
         override fun onAsyncTaskComplete(httpResult: HttpResultDo) {
-            if (progress_dialog != null && progress_dialog!!.isShowing) {
-                AndroidUtils.dismiss_dialog(progress_dialog)
+            if (Email.progress_dialog != null && Email.progress_dialog!!.isShowing) {
+                AndroidUtils.dismiss_dialog(Email.progress_dialog)
             }
             if (httpResult.result == WebServiceHelper.ServiceCallStatus.Success) {
                 try {

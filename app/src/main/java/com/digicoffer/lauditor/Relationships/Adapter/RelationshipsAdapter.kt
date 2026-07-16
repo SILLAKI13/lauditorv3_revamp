@@ -58,7 +58,7 @@ import com.digicoffer.lauditor.CommonFiles.GlobalFiles.NewModel
 import com.digicoffer.lauditor.CommonFiles.PdfUtils.File_Content_Type
 import com.digicoffer.lauditor.CommonFiles.PdfUtils.RetrievePDFfromUrl
 import com.digicoffer.lauditor.CommonFiles.ValidationUtils.Validation
-import com.digicoffer.lauditor.Documents.Documents.replaceLastDotWithSlash
+import com.digicoffer.lauditor.Documents.Documents
 import com.digicoffer.lauditor.Groups.Models.ViewGroupModel
 import com.digicoffer.lauditor.Members.Adapters.GroupsAdapter
 import com.digicoffer.lauditor.R
@@ -1888,7 +1888,7 @@ open class RelationshipsAdapter : RecyclerView.Adapter<RelationshipsAdapter.MyVi
                         }
 
                         var ReceivedFileName = ""
-                        val content_type = replaceLastDotWithSlash(sharedDocumentsDo!!.filename)
+                        val content_type = Documents.replaceLastDotWithSlash(sharedDocumentsDo!!.filename ?: "")
                         val content_type1 = content_type.split("/".toRegex()).dropLastWhile { it.isEmpty() }.toTypedArray()
 
                         if (content_type1.size >= 2) {

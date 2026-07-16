@@ -110,22 +110,22 @@ class SharedDocumentsAdapter(
         val sharedDocumentsDo = sharedList[position]
         if (Objects.equals(Shared_tag, "withme")) {
             holder.tv_doc_name.text = sharedDocumentsDo.name
-            holder.tv_file_name.text = sharedDocumentsDo.description
-            holder.tv_doc_date.text = sharedDocumentsDo.created
+            holder.tv_file_name?.text = sharedDocumentsDo.description
+            holder.tv_doc_date?.text = sharedDocumentsDo.created
             if (sharedDocumentsDo.has_Confidential) {
                 val matterName = sharedDocumentsDo.matter_details_name ?: ""
                 if (matterName.isNotEmpty()) {
-                    holder.ll_confidential.visibility = View.VISIBLE
-                    holder.tv_matter_details_name.text = matterName
+                    holder.ll_confidential?.visibility = View.VISIBLE
+                    holder.tv_matter_details_name?.text = matterName
                 } else {
-                    holder.ll_confidential.visibility = View.GONE
+                    holder.ll_confidential?.visibility = View.GONE
                 }
             } else {
-                holder.ll_confidential.visibility = View.GONE
+                holder.ll_confidential?.visibility = View.GONE
             }
         } else {
-            holder.cb_documents.isChecked = sharedList[position].isChecked
-            holder.cb_documents.tag = position
+            holder.cb_documents?.isChecked = sharedList[position].isChecked
+            holder.cb_documents?.tag = position
             holder.tv_doc_name.text = sharedDocumentsDo.name
             check_allselected()
 
@@ -151,16 +151,16 @@ class SharedDocumentsAdapter(
             if (sharedDocumentsDo.has_Confidential) {
                 val matterName = sharedDocumentsDo.matter_details_name ?: ""
                 if (matterName.isNotEmpty()) {
-                    holder.ll_confidential.visibility = View.VISIBLE
-                    holder.tv_matter_details_name.text = matterName
+                    holder.ll_confidential?.visibility = View.VISIBLE
+                    holder.tv_matter_details_name?.text = matterName
                 } else {
-                    holder.ll_confidential.visibility = View.GONE
+                    holder.ll_confidential?.visibility = View.GONE
                 }
             } else {
-                holder.ll_confidential.visibility = View.GONE
+                holder.ll_confidential?.visibility = View.GONE
             }
-            holder.cb_documents.setOnClickListener {
-                val pos = holder.cb_documents.tag as Int
+            holder.cb_documents?.setOnClickListener {
+                val pos = holder.cb_documents?.tag as Int
                 val item = sharedList[pos]
                 item.isChecked = !item.isChecked
 
@@ -269,18 +269,18 @@ class SharedDocumentsAdapter(
     }
 
     inner class ViewHolder(itemView: View) : RecyclerView.ViewHolder(itemView) {
-        val cb_documents: CheckBox = itemView.findViewById(R.id.cb_documents)
-        val tv_tm_name: TextView = itemView.findViewById(R.id.tv_tm_name)
+        val cb_documents: CheckBox? = itemView.findViewById(R.id.cb_documents)
+        val tv_tm_name: TextView? = itemView.findViewById(R.id.tv_tm_name)
         val tv_doc_name: TextView = itemView.findViewById(R.id.tv_doc_name)
-        val tv_file_name: TextView = itemView.findViewById(R.id.tv_file_name)
-        val tv_doc_date: TextView = itemView.findViewById(R.id.tv_doc_date)
-        val confidential_txt: TextView = itemView.findViewById(R.id.confidential_txt)
-        val tv_matter_details_name: TextView = itemView.findViewById(R.id.tv_matter_details_name)
+        val tv_file_name: TextView? = itemView.findViewById(R.id.tv_file_name)
+        val tv_doc_date: TextView? = itemView.findViewById(R.id.tv_doc_date)
+        val confidential_txt: TextView? = itemView.findViewById(R.id.confidential_txt)
+        val tv_matter_details_name: TextView? = itemView.findViewById(R.id.tv_matter_details_name)
         val document_layout: LinearLayout = itemView.findViewById(R.id.document_layout)
-        val ll_confidential: LinearLayout = itemView.findViewById(R.id.ll_confidential)
+        val ll_confidential: LinearLayout? = itemView.findViewById(R.id.ll_confidential)
         var iv_remove_doc: ImageView? = null
-        val iv_view: ImageButton = itemView.findViewById(R.id.iv_view)
-        val iv_copy: ImageButton = itemView.findViewById(R.id.iv_copy)
+        val iv_view: ImageButton? = itemView.findViewById(R.id.iv_view)
+        val iv_copy: ImageButton? = itemView.findViewById(R.id.iv_copy)
 
         init {
             if (Shared_tag == "withme") {
@@ -295,9 +295,9 @@ class SharedDocumentsAdapter(
                     iv_remove_doc?.visibility = View.GONE
                 }
             }
-            confidential_txt.setTextColor(mContext.getColor(R.color.blue))
-            confidential_txt.setText(R.string.confidential)
-            tv_matter_details_name.textSize = 12f
+            confidential_txt?.setTextColor(mContext.getColor(R.color.blue))
+            confidential_txt?.setText(R.string.confidential)
+            tv_matter_details_name?.textSize = 12f
         }
     }
 }
