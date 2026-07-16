@@ -8,7 +8,6 @@ import android.widget.Filterable
 import android.widget.TextView
 import androidx.recyclerview.widget.RecyclerView
 import com.digicoffer.lauditor.CommonFiles.GlobalFiles.AndroidUtils
-import com.digicoffer.lauditor.CommonFiles.GlobalFiles.AndroidUtils.formatTimestamp
 import com.digicoffer.lauditor.Groups.Models.SearchDo
 import com.digicoffer.lauditor.R
 import java.util.ArrayList
@@ -28,7 +27,7 @@ class SearchAdapter(private var itemsArrayList: ArrayList<SearchDo>) :
         val searchDo = arrayList[position]
         arrayList = itemsArrayList
         holder.tv_category.text = searchDo.category
-        val formattedDate = formatTimestamp(searchDo.timestamp)
+        val formattedDate = AndroidUtils.formatTimestamp(searchDo.timestamp)
         holder.tv_timestamp.text = formattedDate
         holder.tv_message.text = searchDo.msg
     }
