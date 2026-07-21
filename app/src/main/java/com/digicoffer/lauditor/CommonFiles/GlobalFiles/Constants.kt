@@ -7,7 +7,7 @@ import android.widget.TextView
 import androidx.recyclerview.widget.RecyclerView
 import com.digicoffer.lauditor.Chat.Model.ChildDO
 import com.digicoffer.lauditor.Dashboard.DahboardModels.UnreadCountModel
-import com.digicoffer.lauditor.Dashboard.Dashboard
+import com.digicoffer.lauditor.Dashboard.NewRevampViewModels.Dashboard
 import com.digicoffer.lauditor.FirmProfile.FirmProfileModel
 import com.digicoffer.lauditor.FirmProfile.ViewPracticePartnerAdapter
 import com.digicoffer.lauditor.LoginActivity.Models.Dashboard_Model

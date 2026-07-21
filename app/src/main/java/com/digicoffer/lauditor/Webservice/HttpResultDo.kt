@@ -6,6 +6,9 @@ import org.json.JSONObject
 
 class HttpResultDo {
     var requestId: String? = null
+    var requestName: String?
+        get() = requestId
+        set(value) { requestId = value }
     var responseObject: JSONObject? = null
     var responseArray: JSONArray? = null
     var result: WebServiceHelper.ServiceCallStatus = WebServiceHelper.ServiceCallStatus.Pending

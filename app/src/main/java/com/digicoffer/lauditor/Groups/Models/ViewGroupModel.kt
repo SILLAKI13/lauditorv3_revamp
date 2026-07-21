@@ -26,7 +26,12 @@ class ViewGroupModel {
     var isSelected: Boolean = false
     var isChecked: Boolean = false
 
+    @get:JvmName("getIsCan_delete_property")
+    @set:JvmName("setIsCan_delete_property")
     var isCan_delete: Boolean = true
+    var can_delete: Boolean
+        get() = isCan_delete
+        set(value) { isCan_delete = value }
     var isCan_assign_docs: Boolean = false
     var isIsdisabled: Boolean = false
 }

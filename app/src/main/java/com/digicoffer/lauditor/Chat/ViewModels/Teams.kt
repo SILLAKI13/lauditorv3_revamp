@@ -254,7 +254,7 @@ class Teams : Fragment(), AsyncTaskCompleteListener, TeamsAdapter.EventListener,
                 for (guid in userGuids) {
                     for (unreadCount in Constants.unreadList) {
                         if (guid == unreadCount.fromjid) {
-                            unreadCountStr = unreadCount.count
+                            unreadCountStr = unreadCount.count ?: ""
                             matchedGuid = guid
                             break
                         }
@@ -393,7 +393,7 @@ class Teams : Fragment(), AsyncTaskCompleteListener, TeamsAdapter.EventListener,
                     unread.fromjid.equals(client.guid, ignoreCase = true)
                 ) {
                     try {
-                        totalUnread += unread.count.toInt()
+                        totalUnread += unread.count?.toIntOrNull() ?: 0
                     } catch (ignored: Exception) {
                     }
                 }

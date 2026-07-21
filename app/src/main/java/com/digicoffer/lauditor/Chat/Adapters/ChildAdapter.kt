@@ -46,7 +46,7 @@ class ChildAdapter(
             val guid = childDO.guid
             if (fromjid != null && guid != null && fromjid.contains(guid)) {
                 try {
-                    totalUnreadCount += unreadCount.count.toInt()
+                    totalUnreadCount += unreadCount.count?.toIntOrNull() ?: 0
                 } catch (e: Exception) {
                 }
             }

@@ -410,7 +410,7 @@ class Clients : Fragment(), AsyncTaskCompleteListener, ChatAdapter.EventListener
                     unread.fromjid.equals(client.guid, ignoreCase = true)
                 ) {
                     try {
-                        totalUnread += unread.count.toInt()
+                        totalUnread += unread.count?.toIntOrNull() ?: 0
                     } catch (ignored: Exception) {
                     }
                 }

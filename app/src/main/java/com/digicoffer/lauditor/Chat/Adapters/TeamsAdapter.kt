@@ -66,7 +66,7 @@ class TeamsAdapter(
         for (unreadCount in Constants.unreadList) {
             if (unreadCount.fromjid == clientRelationshipsDo.guid) {
                 try {
-                    totalUnreadCount += unreadCount.count.toInt()
+                    totalUnreadCount += unreadCount.count?.toIntOrNull() ?: 0
                 } catch (e: Exception) {
                 }
             }

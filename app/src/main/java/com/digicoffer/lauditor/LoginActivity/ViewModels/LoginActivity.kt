@@ -244,7 +244,7 @@ class LoginActivity : AppCompatActivity(), AsyncTaskCompleteListener {
         setupListeners()
 
         Constants.ISPRODUCTION = false
-        Constants.IS_STAGING = false
+        Constants.IS_STAGING = true
         DynamicUtils.loadRefreshDynamicSizes(applicationContext)
 
         supportFragmentManager.addOnBackStackChangedListener {
