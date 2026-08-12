@@ -601,15 +601,27 @@ class CreateEvent() : Fragment(), AsyncTaskCompleteListener, View.OnClickListene
         }
         img_clear_sp_corp_clients?.setOnClickListener {
             corp_client_id = ""
-            AndroidUtils.DisplaySpinnerView(sp_corp_clients, tv_sp_corp_clients, corp_client_id, img_dropdown_sp_corp_clients, img_clear_sp_corp_clients, false, corpAdapter, "Search Corp Client")
+            if (::corpAdapter.isInitialized) {
+                AndroidUtils.DisplaySpinnerView(sp_corp_clients, tv_sp_corp_clients, corp_client_id, img_dropdown_sp_corp_clients, img_clear_sp_corp_clients, false, corpAdapter, "Search Corp Client")
+            } else {
+                tv_sp_corp_clients.text = ""
+                img_clear_sp_corp_clients.visibility = View.GONE
+                img_dropdown_sp_corp_clients.visibility = View.VISIBLE
+            }
             is_corp = true
         }
         img_clear_sp_entity?.setOnClickListener {
-            AndroidUtils.DisplaySpinnerView(sp_entity, tv_sp_entity, entity_id, img_dropdown_sp_entity, img_clear_sp_entity, false, entityAdapter, "Search Entity")
+            if (::entityAdapter.isInitialized) {
+                AndroidUtils.DisplaySpinnerView(sp_entity, tv_sp_entity, entity_id, img_dropdown_sp_entity, img_clear_sp_entity, false, entityAdapter, "Search Entity")
+            } else {
+                tv_sp_entity.text = ""
+                img_clear_sp_entity.visibility = View.GONE
+                img_dropdown_sp_entity.visibility = View.VISIBLE
+            }
             is_entity = true
         }
         ll_sp_task.setOnClickListener {
-            if (taskSpinnerAdapter == null) {
+            if (!::taskSpinnerAdapter.isInitialized) {
                 AndroidUtils.display_listview(ischecked_task, sp_task)
                 ischecked_task = !ischecked_task
                 return@setOnClickListener
@@ -621,7 +633,7 @@ class CreateEvent() : Fragment(), AsyncTaskCompleteListener, View.OnClickListene
                     !isVisible, taskSpinnerAdapter, "Search Task")
         }
         ll_sp_project.setOnClickListener {
-            if (spinner_adapter == null) {
+            if (!::spinner_adapter.isInitialized) {
                 AndroidUtils.display_listview(ischecked_project, sp_project)
                 ischecked_project = !ischecked_project
                 return@setOnClickListener
@@ -634,7 +646,7 @@ class CreateEvent() : Fragment(), AsyncTaskCompleteListener, View.OnClickListene
         }
 
         ll_sp_mattername?.setOnClickListener {
-            if (matterSpinnerAdapter == null) {
+            if (!::matterSpinnerAdapter.isInitialized) {
                 AndroidUtils.display_listview(ischecked_matter, sp_matter_name)
                 ischecked_matter = !ischecked_matter
                 return@setOnClickListener
@@ -647,7 +659,7 @@ class CreateEvent() : Fragment(), AsyncTaskCompleteListener, View.OnClickListene
         }
 
         ll_sp_timezone?.setOnClickListener {
-            if (timezoneAdapter == null) {
+            if (!::timezoneAdapter.isInitialized) {
                 AndroidUtils.display_listview(ischecked_time, sp_time_zone)
                 ischecked_time = !ischecked_time
                 return@setOnClickListener
@@ -660,7 +672,7 @@ class CreateEvent() : Fragment(), AsyncTaskCompleteListener, View.OnClickListene
         }
 
         ll_sp_repetetion?.setOnClickListener {
-            if (repetitionAdapter == null) {
+            if (!::repetitionAdapter.isInitialized) {
                 AndroidUtils.display_listview(ischecked_repetetion, sp_repetetion)
                 ischecked_repetetion = !ischecked_repetetion
                 return@setOnClickListener
@@ -673,7 +685,7 @@ class CreateEvent() : Fragment(), AsyncTaskCompleteListener, View.OnClickListene
         }
         
         ll_sp_corp_clients?.setOnClickListener {
-            if (corpAdapter == null || Corp_client_list.isEmpty()) {
+            if (!::corpAdapter.isInitialized || Corp_client_list.isEmpty()) {
                 if (is_corp) {
                     if (Corp_client_list.isNotEmpty()) {
                         sp_corp_clients.visibility = View.VISIBLE
@@ -693,7 +705,7 @@ class CreateEvent() : Fragment(), AsyncTaskCompleteListener, View.OnClickListene
         }
         
         ll_sp_entity?.setOnClickListener {
-            if (entityAdapter == null || entities_list.isEmpty()) {
+            if (!::entityAdapter.isInitialized || entities_list.isEmpty()) {
                 if (is_entity) {
                     if (entities_list.isNotEmpty()) {
                         sp_entity.visibility = View.VISIBLE
@@ -3473,7 +3485,9 @@ private fun display_duration(start_time: String, end_time: String) {
         img_dropdown_sp_entity.visibility = View.VISIBLE
         img_clear_sp_task.visibility = View.GONE
         img_dropdown_sp_task.visibility = View.VISIBLE
-        img_clear_sp_corp_clients.performClick()
+        if (::corpAdapter.isInitialized) {
+            img_clear_sp_corp_clients.performClick()
+        }
         selected_entity_corp_client_list.clear()
         ll_corp_clients.visibility = View.GONE
         ll_assign_clients.visibility = View.GONE
@@ -3535,7 +3549,9 @@ private fun display_duration(start_time: String, end_time: String) {
         img_dropdown_sp_entity.visibility = View.VISIBLE
 //        img_clear_sp_task.setVisibility(View.GONE);
 //        img_dropdown_sp_task.setVisibility(View.VISIBLE);
-        img_clear_sp_corp_clients.performClick()
+        if (::corpAdapter.isInitialized) {
+            img_clear_sp_corp_clients.performClick()
+        }
         selected_entity_corp_client_list.clear()
         ll_corp_clients.visibility = View.GONE
         ll_assign_clients.visibility = View.GONE

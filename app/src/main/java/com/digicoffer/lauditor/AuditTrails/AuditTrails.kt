@@ -1,28 +1,21 @@
 package com.digicoffer.lauditor.AuditTrails
 
 import android.app.Dialog
-import android.content.res.ColorStateList
 import android.os.Bundle
-import android.text.Editable
-import android.text.TextWatcher
 import android.util.Log
+import android.widget.TextView
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import android.widget.AdapterView
-import android.widget.Button
-import android.widget.HorizontalScrollView
-import android.widget.ImageView
-import android.widget.LinearLayout
-import android.widget.ListView
-import android.widget.TextView
 import androidx.appcompat.widget.AppCompatButton
-import androidx.appcompat.widget.LinearLayoutCompat
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.ViewModelProvider
-import androidx.recyclerview.widget.GridLayoutManager
-import androidx.recyclerview.widget.RecyclerView
-import com.digicoffer.lauditor.AuditTrails.Adapters.AuditsAdapter
+import androidx.compose.ui.platform.ComposeView
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.setValue
+import androidx.compose.runtime.mutableStateOf
+import com.digicoffer.lauditor.AuditTrails.ui.AuditTrailsScreen
+import com.digicoffer.lauditor.AuditTrails.Model.AuditTrailsStateHolder
 import com.digicoffer.lauditor.AuditTrails.Adapters.PaginationHelper
 import com.digicoffer.lauditor.AuditTrails.Model.AuditsModel
 import com.digicoffer.lauditor.AuditTrails.Model.SpinnerItemModal
@@ -50,23 +43,14 @@ import java.util.regex.Pattern
 
 class AuditTrails : Fragment(), AsyncTaskCompleteListener, DateUtils.OnDateSelectedListener, DateUtilsEndDate.OnDateSelectedListenerEndDate {
     
+    private val stateHolder = AuditTrailsStateHolder()
+    private var isDatePickerVisibleState by mutableStateOf(false)
+    private var startDateTextState by mutableStateOf("")
+    private var endDateTextState by mutableStateOf("")
+
     var categoryList = ArrayList<SpinnerItemModal>()
-    var categoryAdapter: CommonSpinnerAdapter<SpinnerItemModal>? = null
-    private val pagebuttons = ArrayList<TextView>()
-    var tv_name: TextView? = null
-    var tv_advanced_search: TextView? = null
-    var tv_history_act: TextView? = null
-    var tv_category: TextView? = null
-    var tv_sp_category: TextView? = null
-    var ll_category: LinearLayout? = null
     var filterlist = ArrayList<AuditsModel>()
     var isListFiltered = false
-    var iscategory_checked = true
-    var img_dropdown_icon: ImageView? = null
-    var img_clear_icon: ImageView? = null
-    var scrollView: HorizontalScrollView? = null
-    private var previousPageButton: Button? = null
-    var audit_adapter: AuditsAdapter? = null
     var startDate: Date? = null
     var endDate: Date? = null
     var end_temp = 0
@@ -81,13 +65,7 @@ class AuditTrails : Fragment(), AsyncTaskCompleteListener, DateUtils.OnDateSelec
     var merge_pdf_list = ArrayList<AuditsModel>()
     var legal_matter_list = ArrayList<AuditsModel>()
     var general_matter_list = ArrayList<AuditsModel>()
-    private var greenButtonTint: ColorStateList? = null
-    private var whiteButtonTint: ColorStateList? = null
     var pageItems = ArrayList<AuditsModel>()
-    var sp_category: ListView? = null
-    var ll_page_navigation: LinearLayout? = null
-    var ll_list: LinearLayoutCompat? = null
-    var rv_audits: RecyclerView? = null
     var tv_event_start_time: AppCompatButton? = null
     var tv_event_end_time: AppCompatButton? = null
     private var currentPage = 1
@@ -95,186 +73,189 @@ class AuditTrails : Fragment(), AsyncTaskCompleteListener, DateUtils.OnDateSelec
     var progress_dialog: Dialog? = null
     var CategoryType = ""
     var et_search_audit_list: TextInputEditText? = null
-    var datePickersLayout: LinearLayout? = null
     private val itemsPerPage = 10
-    var pageNumberLayout: LinearLayout? = null
-    var tv_list: TextView? = null
     var isAdvancedSearchEnabled = false
-    var iv_forward_button: ImageView? = null
-    var iv_backward_button: ImageView? = null
-    var ib_start_mandatory: ImageView? = null
-    var ib_end_mandatory: ImageView? = null
-    var ib_cancel_button: ImageView? = null
-    var ib_cancel_button_end_date: ImageView? = null
-    private var isDatePickerVisible = false
-    var rootView: View? = null
     private var mViewModel: NewModel? = null
 
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View? {
         try {
-            rootView = inflater.inflate(R.layout.audit_trials, container, false)
+            // Programmatically instantiate views referenced by legacy filter/search routines to avoid NullPointerExceptions
+            tv_event_start_time = AppCompatButton(requireContext())
+            tv_event_end_time = AppCompatButton(requireContext())
+            et_search_audit_list = TextInputEditText(requireContext())
+
             mViewModel = ViewModelProvider(requireActivity()).get(NewModel::class.java)
             mViewModel?.setData(requireContext().getString(R.string.audit_trails))
-            greenButtonTint = ColorStateList.valueOf(resources.getColor(R.color.blue))
-            whiteButtonTint = ColorStateList.valueOf(resources.getColor(R.color.blue_pale))
-            datePickersLayout = rootView?.findViewById(R.id.datePickersLayout)
-            tv_advanced_search = rootView?.findViewById(R.id.tv_advancedSearch)
-            rv_audits = rootView?.findViewById(R.id.rv_audits)
-            tv_list = rootView?.findViewById(R.id.tv_list)
-            rv_audits?.layoutManager = GridLayoutManager(requireContext(), 1)
-            val from_date = rootView?.findViewById<TextView>(R.id.from_date)
-            val to_date = rootView?.findViewById<TextView>(R.id.to_date)
-            from_date?.setText(R.string.from)
-            tv_list?.setTextColor(requireContext().getColor(R.color.grey_medium))
-            tv_list?.setText(R.string.data_not_available)
-            to_date?.setText(R.string.to)
-            to_date?.visibility = View.VISIBLE
-            ib_cancel_button = rootView?.findViewById(R.id.cancel_button)
-            ib_cancel_button_end_date = rootView?.findViewById(R.id.cancel_button_end_date)
-            ib_start_mandatory = rootView?.findViewById(R.id.mandatory)
-            ib_end_mandatory = rootView?.findViewById(R.id.mandatory_end_date)
-            ib_start_mandatory?.visibility = View.GONE
-            ib_end_mandatory?.visibility = View.GONE
-            ib_cancel_button?.visibility = View.GONE
-            ib_cancel_button_end_date?.visibility = View.GONE
-            val tl_search_audit_list = rootView?.findViewById<View>(R.id.tl_search_audit_list)
-            et_search_audit_list = tl_search_audit_list?.findViewById(R.id.et_Search)
-            et_search_audit_list?.setHint(R.string.search)
-            ll_page_navigation = rootView?.findViewById(R.id.ll_page_navigaiton)
-            ll_list = rootView?.findViewById(R.id.ll_list)
-            val dateUtils = DateUtils(this)
-            val dateUtilsEndDate = DateUtilsEndDate(this)
-            dateUtilsEndDate.setOnDateSelectedListener(this)
-            dateUtils.setOnDateSelectedListener(this)
-            tv_event_start_time = rootView?.findViewById(R.id.tv_event_start_time)
-            tv_event_start_time?.setHint(R.string.from)
-            tv_event_end_time = rootView?.findViewById(R.id.tv_event_end_time)
-            tv_event_end_time?.setHint(R.string.to)
-            scrollView = rootView?.findViewById(R.id.scrollView)
-            iv_forward_button = rootView?.findViewById(R.id.iv_forward_button)
-            iv_backward_button = rootView?.findViewById(R.id.iv_backward_button)
 
-            tv_history_act = rootView?.findViewById(R.id.tv_history_act)
-            tv_category = rootView?.findViewById(R.id.tv_category)
-            tv_history_act?.textSize = DynamicUtils.twenty.toFloat()
-
-            tv_category?.setText(R.string.category)
-            tv_history_act?.setText(R.string.history_of_actions)
-            tv_advanced_search?.setText(R.string.advanced_search)
-            ll_category = rootView?.findViewById(R.id.ll_category)
-            tv_sp_category = ll_category?.findViewById(R.id.tv_spinner_view)
-            tv_sp_category?.setText(R.string.select_category)
-            sp_category = rootView?.findViewById(R.id.sp__category)
-            sp_category?.visibility = View.GONE
-            img_dropdown_icon = ll_category?.findViewById(R.id.img_dropdown_icon)
-            img_clear_icon = ll_category?.findViewById(R.id.img_clear_icon)
-            ll_page_navigation?.visibility = View.GONE
-
-            ll_category?.setOnClickListener {
-                AndroidUtils.display_listview(iscategory_checked, sp_category)
-                iscategory_checked = !iscategory_checked
-            }
-            img_clear_icon?.setOnClickListener {
-                AndroidUtils.DisplaySpinnerView(
-                    sp_category,
-                    tv_sp_category,
-                    CategoryType,
-                    img_dropdown_icon,
-                    img_clear_icon,
-                    false,
-                    categoryAdapter,
-                    "Search Category"
-                )
-                CategoryType = ""
-                iscategory_checked = true
-                isDatePickerVisible = false
-                datePickersLayout?.visibility = View.GONE
-                et_search_audit_list?.setText("")
-                tv_event_start_time?.setText("")
-                tv_event_end_time?.setText("")
-                loadGeneralList()
-            }
-            tv_event_start_time?.setOnClickListener {
-                AndroidUtils.showDatePicker(tv_event_start_time, true) {
-                    val FLAG = "St Time"
-                    loadnewPage(tv_event_start_time?.text.toString(), FLAG)
-                    fetchpagedata()
-                }
-            }
-
-            tv_event_end_time?.setOnClickListener {
-                AndroidUtils.showDatePicker(tv_event_end_time, false) {
-                    val FLAG = "End Time"
-                    loadnewPage(tv_event_end_time?.text.toString(), FLAG)
-                    fetchpagedata()
-                }
-            }
-            ib_cancel_button?.setOnClickListener {
-                tv_event_start_time?.setText("")
-                clearDates()
-            }
-            ib_cancel_button_end_date?.setOnClickListener {
-                tv_event_end_time?.setText("")
-                clearDates()
-            }
-            iv_forward_button?.setOnClickListener {
-                currentPage += 1
-                val startIndex = PaginationHelper.startIndexForCurrentPage(currentPage, 10)
-                val endIndex = if (isListFiltered) {
-                    PaginationHelper.endIndexForCurrentPage(startIndex, filterlist.size, 10)
-                } else if (isAdvancedSearchEnabled) {
-                    PaginationHelper.endIndexForCurrentPage(startIndex, sorted_list.size, 10)
-                } else if (CategoryType.isEmpty()) {
-                    PaginationHelper.endIndexForCurrentPage(startIndex, auditsList.size, 10)
-                } else {
-                    PaginationHelper.endIndexForCurrentPage(startIndex, sorted_list.size, 10)
-                }
-                if (endIndex > end_temp) {
-                    load_ChosenType_list()
-                    UpdatePageButton(currentPage)
-                } else {
-                    currentPage -= 1
-                }
-                Log.d("current_page", "" + currentPage)
-            }
-
-            iv_backward_button?.setOnClickListener {
-                currentPage -= 1
-                if (currentPage > 0) {
-                    load_ChosenType_list()
-                    UpdatePageButton(currentPage)
-                } else {
-                    currentPage = 1
-                }
-            }
-
-            pageNumberLayout = rootView?.findViewById(R.id.pageNumberLayout)
             loadSpinnerData()
-            tv_advanced_search?.setOnClickListener {
-                isDatePickerVisible = !isDatePickerVisible
-                datePickersLayout?.visibility = if (isDatePickerVisible) View.VISIBLE else View.GONE
-                if (!isDatePickerVisible) {
-                    tv_event_start_time?.setText("")
-                    tv_event_end_time?.setText("")
-                    sorted_list.clear()
-                    clearDates()
+
+            return ComposeView(requireContext()).apply {
+                setContent {
+                    com.digicoffer.lauditor.core.designsystem.theme.LauditorTheme {
+                        val uiState = stateHolder.uiState.value
+                        val categoryNames = categoryList.map { it.name ?: "" }
+
+                        AuditTrailsScreen(
+                            state = uiState,
+                            categories = categoryNames,
+                            onCategorySelected = { category ->
+                                stateHolder.updateSelectedCategory(category)
+                                handleCategorySelected(category)
+                            },
+                            onQueryChanged = { query ->
+                                stateHolder.updateSearchQuery(query)
+                                et_search_audit_list?.setText(query)
+                                Searchfilter()
+                            },
+                            onStartDateClick = {
+                                val tempTv = TextView(requireContext()).apply { text = startDateTextState }
+                                AndroidUtils.showDatePicker(tempTv, true) {
+                                    val dateStr = tempTv.text.toString()
+                                    startDateTextState = dateStr
+                                    stateHolder.updateDateRange(
+                                        DateUtils.stringToDate(dateStr),
+                                        stateHolder.uiState.value.endDate
+                                    )
+                                    loadnewPage(dateStr, "St Time")
+                                    fetchpagedata()
+                                }
+                            },
+                            onEndDateClick = {
+                                val tempTv = TextView(requireContext()).apply { text = endDateTextState }
+                                AndroidUtils.showDatePicker(tempTv, false) {
+                                    val dateStr = tempTv.text.toString()
+                                    endDateTextState = dateStr
+                                    stateHolder.updateDateRange(
+                                        stateHolder.uiState.value.startDate,
+                                        DateUtils.stringToDate(dateStr)
+                                    )
+                                    loadnewPage(dateStr, "End Time")
+                                    fetchpagedata()
+                                }
+                            },
+                            onClearStartDate = {
+                                startDateTextState = ""
+                                tv_event_start_time?.setText("")
+                                stateHolder.updateDateRange(null, stateHolder.uiState.value.endDate)
+                                clearDates()
+                            },
+                            onClearEndDate = {
+                                endDateTextState = ""
+                                tv_event_end_time?.setText("")
+                                stateHolder.updateDateRange(stateHolder.uiState.value.startDate, null)
+                                clearDates()
+                            },
+                            onPageSelected = { page ->
+                                currentPage = page
+                                load_ChosenType_list()
+                                stateHolder.updateCurrentPage(page)
+                            },
+                            onClearCategory = {
+                                CategoryType = ""
+                                stateHolder.updateSelectedCategory("")
+                                isDatePickerVisibleState = false
+                                startDateTextState = ""
+                                endDateTextState = ""
+                                tv_event_start_time?.setText("")
+                                tv_event_end_time?.setText("")
+                                stateHolder.updateDateRange(null, null)
+                                et_search_audit_list?.setText("")
+                                stateHolder.updateSearchQuery("")
+                                loadGeneralList()
+                            },
+                            onAdvancedSearchToggle = {
+                                isDatePickerVisibleState = !isDatePickerVisibleState
+                                if (!isDatePickerVisibleState) {
+                                    startDateTextState = ""
+                                    endDateTextState = ""
+                                    tv_event_start_time?.setText("")
+                                    tv_event_end_time?.setText("")
+                                    stateHolder.updateDateRange(null, null)
+                                    clearDates()
+                                }
+                            },
+                            isDatePickerVisible = isDatePickerVisibleState,
+                            startDateText = startDateTextState,
+                            endDateText = endDateTextState
+                        )
+                    }
                 }
             }
         } catch (e: Exception) {
             throw RuntimeException(e)
         }
-        return rootView
+    }
+
+    private fun handleCategorySelected(selectedCategoryName: String) {
+        try {
+            et_search_audit_list?.setText("")
+            stateHolder.updateSearchQuery("")
+            startDate = null
+            endDate = null
+            tv_event_start_time?.setText("")
+            tv_event_end_time?.setText("")
+            startDateTextState = ""
+            endDateTextState = ""
+            stateHolder.updateDateRange(null, null)
+
+            if (selectedCategoryName.equals("Authorization", ignoreCase = true)) {
+                CategoryType = "AUTH"
+            } else if (selectedCategoryName.equals("Groups", ignoreCase = true)) {
+                CategoryType = "GROUPS"
+            } else if (selectedCategoryName.equals("Team Members", ignoreCase = true)) {
+                CategoryType = "TEAM MEMBER"
+            } else if (selectedCategoryName.equals("Relationships", ignoreCase = true)) {
+                CategoryType = "RELATIONSHIP"
+            } else if (selectedCategoryName.equals("Share", ignoreCase = true)) {
+                CategoryType = "SHARE"
+            } else if (selectedCategoryName.equals("Relationship Invite", ignoreCase = true)) {
+                CategoryType = "RELATIONSHIP INVITE"
+            } else if (selectedCategoryName.equals("Documents", ignoreCase = true)) {
+                CategoryType = "DOCUMENT"
+            } else if (selectedCategoryName.equals("Merge PDF", ignoreCase = true)) {
+                CategoryType = "MERGE PDF"
+            } else if (selectedCategoryName.equals("Legal Matters", ignoreCase = true)) {
+                CategoryType = "LEGAL MATTER"
+            } else if (selectedCategoryName.equals("General Matters", ignoreCase = true)) {
+                CategoryType = "GENERAL MATTER"
+            } else {
+                CategoryType = ""
+            }
+
+            if (startDate != null || endDate != null) {
+                sorted_list.clear()
+                et_search_audit_list?.setText("")
+                val FLAG = "End Time"
+                loadnewPage(null, FLAG)
+            } else {
+                isAdvancedSearchEnabled = false
+                tv_event_start_time?.setText("")
+                tv_event_end_time?.setText("")
+                et_search_audit_list?.setText("")
+                currentPage = 1
+                loadPage(currentPage, isAdvancedSearchEnabled)
+                if (CategoryType.isEmpty()) {
+                    setupPagination(auditsList)
+                } else {
+                    setupPagination(sorted_list)
+                }
+            }
+        } catch (e: Exception) {
+            e.printStackTrace()
+        }
     }
 
     private fun clearDates() {
         sorted_list.clear()
         et_search_audit_list?.setText("")
+        stateHolder.updateSearchQuery("")
         val FLAG = ""
         loadnewPage(null, FLAG)
         fetchpagedata()
     }
 
     private fun callAuditWebservice() {
+        stateHolder.setLoading(true)
         progress_dialog = AndroidUtils.get_progress(activity)
         val postData = JSONObject()
         try {
@@ -287,6 +268,7 @@ class AuditTrails : Fragment(), AsyncTaskCompleteListener, DateUtils.OnDateSelec
                 postData.toString()
             )
         } catch (e: Exception) {
+            stateHolder.setLoading(false)
             if (progress_dialog != null && progress_dialog!!.isShowing) {
                 AndroidUtils.dismiss_dialog(progress_dialog)
             }
@@ -294,6 +276,7 @@ class AuditTrails : Fragment(), AsyncTaskCompleteListener, DateUtils.OnDateSelec
     }
 
     private fun loadSpinnerData() {
+        categoryList.clear()
         categoryList.add(SpinnerItemModal("Authorization"))
         if ("solo" != Constants.CATEGORY) {
             categoryList.add(SpinnerItemModal("Groups"))
@@ -306,92 +289,16 @@ class AuditTrails : Fragment(), AsyncTaskCompleteListener, DateUtils.OnDateSelec
         categoryList.add(SpinnerItemModal("Merge PDF"))
         categoryList.add(SpinnerItemModal("Legal Matters"))
         categoryList.add(SpinnerItemModal("General Matters"))
-        categoryAdapter = CommonSpinnerAdapter(activity, categoryList)
-        sp_category?.adapter = categoryAdapter
-        loadItemSelectedListner()
+
         if (autentication_list.isEmpty() && groups_list.isEmpty() && relationship_invite_list.isEmpty() && tm_list.isEmpty() && relationships_list.isEmpty() && share_list.isEmpty() && documents_list.isEmpty() && merge_pdf_list.isEmpty() && legal_matter_list.isEmpty() && general_matter_list.isEmpty()) {
             callAuditWebservice()
-        }
-    }
-
-    private fun loadItemSelectedListner() {
-        sp_category?.onItemClickListener = AdapterView.OnItemClickListener { parent, view, i, id ->
-            try {
-                rv_audits?.removeAllViews()
-                et_search_audit_list?.setText("")
-                startDate = null
-                endDate = null
-                tv_event_start_time?.setText("")
-                tv_event_end_time?.setText("")
-
-                val selectedCategoryName = categoryList[i].name ?: ""
-                if (selectedCategoryName.equals("Authorization", ignoreCase = true)) {
-                    CategoryType = "AUTH"
-                } else if (selectedCategoryName.equals("Groups", ignoreCase = true)) {
-                    CategoryType = "GROUPS"
-                } else if (selectedCategoryName.equals("Team Members", ignoreCase = true)) {
-                    CategoryType = "TEAM MEMBER"
-                } else if (selectedCategoryName.equals("Relationships", ignoreCase = true)) {
-                    CategoryType = "RELATIONSHIP"
-                } else if (selectedCategoryName.equals("Share", ignoreCase = true)) {
-                    CategoryType = "SHARE"
-                } else if (selectedCategoryName.equals("Relationship Invite", ignoreCase = true)) {
-                    CategoryType = "RELATIONSHIP INVITE"
-                } else if (selectedCategoryName.equals("Documents", ignoreCase = true)) {
-                    CategoryType = "DOCUMENT"
-                } else if (selectedCategoryName.equals("Merge PDF", ignoreCase = true)) {
-                    CategoryType = "MERGE PDF"
-                } else if (selectedCategoryName.equals("Legal Matters", ignoreCase = true)) {
-                    CategoryType = "LEGAL MATTER"
-                } else if (selectedCategoryName.equals("General Matters", ignoreCase = true)) {
-                    CategoryType = "GENERAL MATTER"
-                } else {
-                    CategoryType = ""
-                }
-                Log.d("Category_type", CategoryType)
-                Log.d("AuditSize", auditsList.size.toString())
-
-                if (startDate != null || endDate != null) {
-                    sorted_list.clear()
-                    et_search_audit_list?.setText("")
-                    val FLAG = "End Time"
-                    loadnewPage(null, FLAG)
-                } else {
-                    isAdvancedSearchEnabled = false
-                    tv_event_start_time?.setText("")
-                    tv_event_end_time?.setText("")
-                    et_search_audit_list?.setText("")
-                    currentPage = 1
-                    loadPage(currentPage, isAdvancedSearchEnabled)
-                    if (CategoryType.isEmpty()) {
-                        setupPagination(auditsList)
-                    } else {
-                        setupPagination(sorted_list)
-                    }
-                }
-                UpdatePageButton(currentPage)
-
-            } catch (e: Exception) {
-                Log.d("Exception", e.message ?: "")
-                throw RuntimeException(e)
-            }
-            AndroidUtils.DisplaySpinnerView(
-                sp_category,
-                tv_sp_category,
-                categoryList[i].name,
-                img_dropdown_icon,
-                img_clear_icon,
-                false,
-                categoryAdapter,
-                "Search Category"
-            )
-            iscategory_checked = true
         }
     }
 
     override fun onClick(view: View) {}
 
     override fun onAsyncTaskComplete(httpResult: HttpResultDo) {
+        stateHolder.setLoading(false)
         if (progress_dialog != null && progress_dialog!!.isShowing) {
             AndroidUtils.dismiss_dialog(progress_dialog)
         }
@@ -404,6 +311,7 @@ class AuditTrails : Fragment(), AsyncTaskCompleteListener, DateUtils.OnDateSelec
                 if ("Audit Logs" == httpResult.requestType) {
                     val jsonArray = result.getJSONArray("data")
                     et_search_audit_list?.setText("")
+                    stateHolder.updateSearchQuery("")
                     loadNewAuditsData(jsonArray)
                 }
             } catch (e: JSONException) {
@@ -431,34 +339,8 @@ class AuditTrails : Fragment(), AsyncTaskCompleteListener, DateUtils.OnDateSelec
     }
 
     private fun setupPagination(sorted_list: ArrayList<AuditsModel>) {
-        pageNumberLayout?.removeAllViews()
-        pagebuttons.clear()
-
         val totalPages = PaginationHelper.calculateTotalNoOfPages(sorted_list.size, 10)
-        Log.d("total_pages", "$totalPages..${sorted_list.size}")
-        if (totalPages == 0) {
-            ll_list?.visibility = View.GONE
-            tv_list?.visibility = View.VISIBLE
-        } else {
-            ll_list?.visibility = View.VISIBLE
-            tv_list?.visibility = View.GONE
-        }
-
-        for (i in 1..totalPages) {
-            val view_opponents = LayoutInflater.from(context).inflate(R.layout.page_number_layout, null)
-            val pageButton = view_opponents.findViewById<Button>(R.id.page_number_button)
-            pageButton.text = i.toString()
-            val pageNumber = i
-            pageButton.setOnClickListener {
-                currentPage = pageNumber
-                load_ChosenType_list()
-                UpdatePageButton(currentPage)
-                previousPageButton = pageButton
-            }
-
-            pageNumberLayout?.addView(view_opponents)
-            pagebuttons.add(pageButton)
-        }
+        stateHolder.updateLists(sorted_list, pageItems, totalPages)
     }
 
     private fun loadPage(page: Int, isAdvancedSearchEnabled: Boolean) {
@@ -479,7 +361,7 @@ class AuditTrails : Fragment(), AsyncTaskCompleteListener, DateUtils.OnDateSelec
                     else -> sorted_list.addAll(auditsList)
                 }
             }
-            loadRecyclerView(page, sorted_list)
+            syncPageData(page, sorted_list)
         } catch (e: Exception) {
             e.printStackTrace()
         }
@@ -523,7 +405,6 @@ class AuditTrails : Fragment(), AsyncTaskCompleteListener, DateUtils.OnDateSelec
                 }
             }
             Log.d("auth_size", "" + auditsList.size)
-            ll_page_navigation?.visibility = View.VISIBLE
             loadGeneralList()
         } catch (e: Exception) {
             throw RuntimeException(e)
@@ -532,9 +413,8 @@ class AuditTrails : Fragment(), AsyncTaskCompleteListener, DateUtils.OnDateSelec
 
     private fun loadGeneralList() {
         currentPage = 1
-        loadRecyclerView(currentPage, auditsList)
+        syncPageData(currentPage, auditsList)
         setupPagination(auditsList)
-        UpdatePageButton(currentPage)
     }
 
     private fun clearLists() {
@@ -551,7 +431,7 @@ class AuditTrails : Fragment(), AsyncTaskCompleteListener, DateUtils.OnDateSelec
         auditsList.clear()
     }
 
-    private fun loadRecyclerView(page: Int, sorted_list: ArrayList<AuditsModel>) {
+    private fun syncPageData(page: Int, sorted_list: ArrayList<AuditsModel>) {
         try {
             Log.d("Sorted_list_new", sorted_list.size.toString())
             if (sorted_list.isNotEmpty()) {
@@ -560,27 +440,13 @@ class AuditTrails : Fragment(), AsyncTaskCompleteListener, DateUtils.OnDateSelec
                 end_temp = endIndex
                 pageItems = ArrayList(sorted_list.subList(startIndex, endIndex))
 
-                if (audit_adapter == null) {
-                    audit_adapter = AuditsAdapter(sorted_list)
-                    rv_audits?.adapter = audit_adapter
-                    Log.d("sorted_list", "" + sorted_list.size)
-                    audit_adapter?.setData(pageItems)
-                    AndroidUtils.LoadingRecyclerview(rv_audits, context)
-                    AndroidUtils.setupBottomSpacerFooter(
-                        rv_audits,
-                        resources.getDimensionPixelSize(R.dimen.twentyeight_dp)
-                    )
-                    et_search_audit_list?.addTextChangedListener(object : TextWatcher {
-                        override fun beforeTextChanged(s: CharSequence?, start: Int, count: Int, after: Int) {}
-                        override fun onTextChanged(s: CharSequence?, start: Int, before: Int, count: Int) {}
-                        override fun afterTextChanged(s: Editable?) {
-                            Searchfilter()
-                        }
-                    })
-                } else {
-                    audit_adapter?.setData(pageItems)
-                }
-                UpdatePageButton(1)
+                val totalPages = PaginationHelper.calculateTotalNoOfPages(sorted_list.size, 10)
+                stateHolder.updateLists(sorted_list, pageItems, totalPages)
+                stateHolder.updateCurrentPage(currentPage)
+            } else {
+                pageItems.clear()
+                stateHolder.updateLists(emptyList(), emptyList(), 0)
+                stateHolder.updateCurrentPage(1)
             }
         } catch (e: Exception) {
             Log.d("Recyclervie_Exception", e.message ?: "")
@@ -608,23 +474,22 @@ class AuditTrails : Fragment(), AsyncTaskCompleteListener, DateUtils.OnDateSelec
     private fun load_ChosenType_list() {
         if (CategoryType.isEmpty()) {
             if (isListFiltered) {
-                loadRecyclerView(currentPage, filterlist)
+                syncPageData(currentPage, filterlist)
             } else if (isAdvancedSearchEnabled) {
-                loadRecyclerView(currentPage, sorted_list)
+                syncPageData(currentPage, sorted_list)
             } else {
-                loadRecyclerView(currentPage, auditsList)
+                syncPageData(currentPage, auditsList)
             }
         } else {
             if (isListFiltered) {
-                loadRecyclerView(currentPage, filterlist)
+                syncPageData(currentPage, filterlist)
             } else {
-                loadRecyclerView(currentPage, sorted_list)
+                syncPageData(currentPage, sorted_list)
             }
         }
     }
 
     private fun Searchfilter() {
-        rv_audits?.removeAllViews()
         filterlist.clear()
         val searchText = et_search_audit_list?.text?.toString() ?: ""
         when (CategoryType) {
@@ -709,25 +574,23 @@ class AuditTrails : Fragment(), AsyncTaskCompleteListener, DateUtils.OnDateSelec
         currentPage = 1
         if (CategoryType.isEmpty()) {
             if (searchText.isNotEmpty()) {
-                loadRecyclerView(currentPage, filterlist)
+                syncPageData(currentPage, filterlist)
                 setupPagination(filterlist)
             } else if (!isAdvancedSearchEnabled) {
-                loadRecyclerView(currentPage, auditsList)
+                syncPageData(currentPage, auditsList)
                 setupPagination(auditsList)
             } else {
-                loadRecyclerView(currentPage, sorted_list)
+                syncPageData(currentPage, sorted_list)
                 setupPagination(sorted_list)
             }
-            UpdatePageButton(currentPage)
         } else {
             if (searchText.isNotEmpty()) {
-                loadRecyclerView(currentPage, filterlist)
+                syncPageData(currentPage, filterlist)
                 setupPagination(filterlist)
             } else {
-                loadRecyclerView(currentPage, sorted_list)
+                syncPageData(currentPage, sorted_list)
                 setupPagination(sorted_list)
             }
-            UpdatePageButton(currentPage)
         }
     }
 
@@ -759,9 +622,6 @@ class AuditTrails : Fragment(), AsyncTaskCompleteListener, DateUtils.OnDateSelec
     private fun loadnewPage(selectedDate: String?, FLAG: String?) {
         try {
             sorted_list.clear()
-            rv_audits?.removeAllViews()
-            et_search_audit_list?.setText("")
-
             val startTimeString = tv_event_start_time?.text?.toString() ?: ""
             val endTimeString = tv_event_end_time?.text?.toString() ?: ""
 
@@ -783,24 +643,9 @@ class AuditTrails : Fragment(), AsyncTaskCompleteListener, DateUtils.OnDateSelec
             }
 
             filterByDateRange()
-
-            audit_adapter = AuditsAdapter(sorted_list)
-            rv_audits?.adapter = audit_adapter
-            AndroidUtils.LoadingRecyclerview(rv_audits, context)
-            AndroidUtils.setupBottomSpacerFooter(
-                rv_audits,
-                resources.getDimensionPixelSize(R.dimen.twentyeight_dp)
-            )
             currentPage = 1
-            UpdatePageButton(currentPage)
-            audit_adapter?.updateData(sorted_list)
-            et_search_audit_list?.addTextChangedListener(object : TextWatcher {
-                override fun beforeTextChanged(s: CharSequence?, start: Int, count: Int, after: Int) {}
-                override fun onTextChanged(s: CharSequence?, start: Int, before: Int, count: Int) {}
-                override fun afterTextChanged(s: Editable?) {
-                    Searchfilter()
-                }
-            })
+            syncPageData(currentPage, sorted_list)
+            setupPagination(sorted_list)
         } catch (e: Exception) {
             throw RuntimeException(e)
         }
@@ -827,20 +672,7 @@ class AuditTrails : Fragment(), AsyncTaskCompleteListener, DateUtils.OnDateSelec
         }
     }
 
-    private fun UpdatePageButton(currentPage: Int) {
-        for (i in pagebuttons.indices) {
-            val pageButton = pagebuttons[i]
-            if (currentPage >= 0) {
-                if (i + 1 == currentPage) {
-                    pageButton.setTextColor(requireActivity().getColor(R.color.white))
-                    pageButton.background = requireActivity().getDrawable(R.drawable.blue_gradient_card)
-                } else {
-                    pageButton.setTextColor(requireActivity().getColor(R.color.blue))
-                    pageButton.background = requireActivity().getDrawable(R.drawable.background_transparent)
-                }
-            }
-        }
-    }
+
 
     private fun loadAdvancedData(advanced_list: ArrayList<AuditsModel>) {
         sorted_list.clear()

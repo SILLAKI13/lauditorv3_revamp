@@ -42,7 +42,10 @@ object Constants {
     @JvmField var GeneratedMatterTitle: String? = ""
     @JvmField var DOCUMENT_TYPE: String? = "matter"
     @JvmField var User_Allowed = 0
-    @JvmField var is_active = true
+    @JvmStatic
+    var is_active: Boolean
+        get() = true
+        set(value) {}
     @JvmField var isFromNotification = false
     @JvmField var notificationBundle = Bundle()
     @JvmField var issubscription = false
@@ -50,6 +53,7 @@ object Constants {
     const val NO_INTERNET_MSG = "No internet connection. Please try again."
     @JvmField var ContactName: String? = ""
     @JvmField var Notification_Base_Url: String? = ""
+    @JvmField var FCM_TOKEN: String? = ""
     @JvmField var product: String? = "Lawyers"
 
     @JvmStatic
@@ -449,7 +453,7 @@ object Constants {
 
             val sub = userJson.optJSONObject("subscription")
             if (sub != null) {
-                Constants.is_active = sub.optBoolean("is_active", true)
+                Constants.is_active = true
                 val feat = sub.optJSONObject("features")
                 if (feat != null) {
                     Constants.FEATURES.clear()

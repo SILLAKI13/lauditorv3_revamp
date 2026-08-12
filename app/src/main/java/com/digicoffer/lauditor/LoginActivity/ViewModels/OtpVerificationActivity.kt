@@ -41,6 +41,11 @@ import java.util.Arrays
 import java.util.HashSet
 import java.util.concurrent.Executors
 
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.setValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+
 class OtpVerificationActivity : AppCompatActivity(), AsyncTaskCompleteListener {
 
     var otp = ""
@@ -64,143 +69,93 @@ class OtpVerificationActivity : AppCompatActivity(), AsyncTaskCompleteListener {
     private var canResend = false
     private var isProgrammaticChange = false
 
+    private var composeOtpValue: String = ""
+    private var composeTimerText: String = "Resend OTP in 60s"
+    private var composeCanResendState: Boolean = false
+
     var dashboardModels = ArrayList<Dashboard_Model>()
     private var mConnection: ChatConnection? = null
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        setContentView(R.layout.otpverification)
+
+        emailOrMobile = intent.getStringExtra("email")
+        isCheckBoxChecked = intent.getBooleanExtra("Check_box", false)
+        isRegister = intent.getBooleanExtra("is_register", false)
+
+        val composeView = androidx.compose.ui.platform.ComposeView(this).apply {
+            setContent {
+                com.digicoffer.lauditor.core.designsystem.theme.LauditorTheme {
+                    var otpState by remember { mutableStateOf(composeOtpValue) }
+                    var timerTextState by remember { mutableStateOf(composeTimerText) }
+                    var canResendState by remember { mutableStateOf(composeCanResendState) }
+
+                    // Sync timer state periodically
+                    timerTextState = composeTimerText
+                    canResendState = composeCanResendState
+
+                    com.digicoffer.lauditor.ui.auth.OtpVerificationScreen(
+                        otpValue = otpState,
+                        onOtpChange = {
+                            otpState = it
+                            composeOtpValue = it
+                            otp = it
+                        },
+                        timerText = timerTextState,
+                        canResend = canResendState,
+                        onResendClick = {
+                            if (canResend) {
+                                resendOtp()
+                            }
+                        },
+                        onVerifyClick = { verifyOtp() },
+                        onCancelClick = {
+                            val prefs = android.preference.PreferenceManager.getDefaultSharedPreferences(applicationContext)
+                            prefs.edit()
+                                .remove("xmpp_jid")
+                                .remove("xmpp_password")
+                                .remove("xmpp_logged_in")
+                                .remove("EXTRA_CONTACT_JID")
+                                .remove("CURRENTCHAT_JID")
+                                .apply()
+                            Constants.Chat_id = ""
+                            Constants.fromjid = ""
+                            Constants.isClient_chat = true
+                            
+                            getSharedPreferences("MyPrefs", Context.MODE_PRIVATE).edit().clear().apply()
+                            getSharedPreferences("BIO", Context.MODE_PRIVATE).edit().clear().apply()
+                            
+                            Constants.is_biometric = false
+                            finish()
+                        },
+                        onRegisterHereClick = {
+                            val intent = Intent(this@OtpVerificationActivity, LoginActivity::class.java).apply {
+                                flags = Intent.FLAG_ACTIVITY_CLEAR_TOP or Intent.FLAG_ACTIVITY_SINGLE_TOP
+                                putExtra("show_register", true)
+                            }
+                            Constants.show_register = true
+                            startActivity(intent)
+                            finish()
+                        }
+                    )
+                }
+            }
+        }
+        setContentView(composeView)
+
         window.statusBarColor = ContextCompat.getColor(this, R.color.Blue_text_color)
         WindowCompat.getInsetsController(window, window.decorView)
             .isAppearanceLightStatusBars = true
 
         supportActionBar?.hide()
 
-        initializeViews()
-        setupOtpBoxes()
-        setupClickListeners()
-
-        emailOrMobile = intent.getStringExtra("email")
-        isCheckBoxChecked = intent.getBooleanExtra("Check_box", false)
-        isRegister = intent.getBooleanExtra("is_register", false)
-
         startResendTimer()
         canResend = false
     }
 
-    private fun initializeViews() {
-        otpBox1 = findViewById(R.id.otpBox1)
-        otpBox2 = findViewById(R.id.otpBox2)
-        otpBox3 = findViewById(R.id.otpBox3)
-        otpBox4 = findViewById(R.id.otpBox4)
-        otpBox5 = findViewById(R.id.otpBox5)
-        otpBox6 = findViewById(R.id.otpBox6)
-
-        otpBoxes = arrayOf(otpBox1!!, otpBox2!!, otpBox3!!, otpBox4!!, otpBox5!!, otpBox6!!)
-
-        btnCancel = findViewById(R.id.btnCancel)
-        btnCancel?.text = "Cancel"
-        btnVerifyOtp = findViewById(R.id.btnVerifyOtp)
-        btnVerifyOtp?.text = "Verify OTP"
-        
-        tvResendOtp = findViewById(R.id.tvResendOtp)
-        tvResendOtp?.paintFlags = tvResendOtp?.paintFlags?.or(Paint.UNDERLINE_TEXT_FLAG) ?: Paint.UNDERLINE_TEXT_FLAG
-        
-        tvRegisterHere = findViewById(R.id.tv_register_here)
-        tvRegisterHere?.paintFlags = tvRegisterHere?.paintFlags?.or(Paint.UNDERLINE_TEXT_FLAG) ?: Paint.UNDERLINE_TEXT_FLAG
-    }
-
-    private fun setupOtpBoxes() {
-        for (i in otpBoxes.indices) {
-            val index = i
-
-            otpBoxes[i].filters = arrayOf(InputFilter { source, _, _, dest, _, _ ->
-                val incoming = source.toString().replace(Regex("[^0-9]"), "")
-
-                if (incoming.length > 1) {
-                    handlePaste(incoming)
-                    return@InputFilter ""
-                }
-
-                if (incoming.length == 1) {
-                    if (dest.length >= 1) {
-                        isProgrammaticChange = true
-                        otpBoxes[index].setText(incoming)
-                        otpBoxes[index].setSelection(1)
-                        isProgrammaticChange = false
-                        if (index < otpBoxes.size - 1) {
-                            otpBoxes[index + 1].requestFocus()
-                        }
-                        return@InputFilter null
-                    }
-                    return@InputFilter incoming
-                }
-
-                null
-            })
-
-            otpBoxes[i].addTextChangedListener(OtpTextWatcher(index))
-
-            otpBoxes[i].setOnKeyListener(View.OnKeyListener { v, keyCode, event ->
-                if (keyCode == KeyEvent.KEYCODE_DEL && event.action == KeyEvent.ACTION_DOWN) {
-                    val currentBox = v as EditText
-                    if (currentBox.text.toString().isEmpty() && index > 0) {
-                        otpBoxes[index - 1].setText("")
-                        otpBoxes[index - 1].requestFocus()
-                        return@OnKeyListener true
-                    }
-                }
-                false
-            })
-
-            otpBoxes[i].setOnClickListener { v ->
-                val editText = v as EditText
-                editText.setSelection(editText.text.length)
-            }
-        }
-
-        otpBoxes[0].requestFocus()
-    }
-
-    private fun setupClickListeners() {
-        btnCancel?.setOnClickListener {
-            val prefs = android.preference.PreferenceManager.getDefaultSharedPreferences(applicationContext)
-            prefs.edit()
-                .remove("xmpp_jid")
-                .remove("xmpp_password")
-                .remove("xmpp_logged_in")
-                .remove("EXTRA_CONTACT_JID")
-                .remove("CURRENTCHAT_JID")
-                .apply()
-            Constants.Chat_id = ""
-            Constants.fromjid = ""
-            Constants.isClient_chat = true
-            
-            getSharedPreferences("MyPrefs", Context.MODE_PRIVATE).edit().clear().apply()
-            getSharedPreferences("BIO", Context.MODE_PRIVATE).edit().clear().apply()
-            
-            Constants.is_biometric = false
-            finish()
-        }
-
-        btnVerifyOtp?.setOnClickListener { verifyOtp() }
-
-        tvResendOtp?.setOnClickListener {
-            if (canResend) {
-                resendOtp()
-            }
-        }
-
-        tvRegisterHere?.setOnClickListener {
-            val intent = Intent(this, LoginActivity::class.java).apply {
-                flags = Intent.FLAG_ACTIVITY_CLEAR_TOP or Intent.FLAG_ACTIVITY_SINGLE_TOP
-                putExtra("show_register", true)
-            }
-            Constants.show_register = true
-            startActivity(intent)
-            finish()
-        }
-    }
+    private fun initializeViews() {}
+    private fun setupOtpBoxes() {}
+    private fun setupClickListeners() {}
 
     private fun handlePaste(pastedText: String) {
         val sanitized = pastedText.replace(Regex("[^0-9]"), "")
@@ -225,6 +180,7 @@ class OtpVerificationActivity : AppCompatActivity(), AsyncTaskCompleteListener {
 
     private fun startResendTimer() {
         canResend = false
+        composeCanResendState = false
         tvResendOtp?.isEnabled = false
         tvResendOtp?.setTextColor(ContextCompat.getColor(this, R.color.grey))
 
@@ -233,11 +189,14 @@ class OtpVerificationActivity : AppCompatActivity(), AsyncTaskCompleteListener {
         resendTimer = object : CountDownTimer(RESEND_TIMER_DURATION, 1000) {
             override fun onTick(millisUntilFinished: Long) {
                 val secondsRemaining = millisUntilFinished / 1000
-                tvResendOtp?.text = "Resend OTP in ${secondsRemaining}s"
+                composeTimerText = "Resend OTP in ${secondsRemaining}s"
+                tvResendOtp?.text = composeTimerText
             }
 
             override fun onFinish() {
                 canResend = true
+                composeCanResendState = true
+                composeTimerText = "Resend OTP"
                 tvResendOtp?.isEnabled = true
                 tvResendOtp?.setText(R.string.resend_otp)
                 tvResendOtp?.setTextColor(ContextCompat.getColor(this@OtpVerificationActivity, R.color.Primary_new))
@@ -246,12 +205,16 @@ class OtpVerificationActivity : AppCompatActivity(), AsyncTaskCompleteListener {
     }
 
     private fun verifyOtp() {
-        otp = (otpBoxes[0].text.toString().trim() +
-                otpBoxes[1].text.toString().trim() +
-                otpBoxes[2].text.toString().trim() +
-                otpBoxes[3].text.toString().trim() +
-                otpBoxes[4].text.toString().trim() +
-                otpBoxes[5].text.toString().trim())
+        if (composeOtpValue.isNotEmpty()) {
+            otp = composeOtpValue.trim()
+        } else if (otpBoxes != null && otpBoxes.isNotEmpty()) {
+            otp = (otpBoxes[0].text.toString().trim() +
+                    otpBoxes[1].text.toString().trim() +
+                    otpBoxes[2].text.toString().trim() +
+                    otpBoxes[3].text.toString().trim() +
+                    otpBoxes[4].text.toString().trim() +
+                    otpBoxes[5].text.toString().trim())
+        }
 
         if (otp.isEmpty()) {
             Toast.makeText(this, "OTP is required", Toast.LENGTH_SHORT).show()

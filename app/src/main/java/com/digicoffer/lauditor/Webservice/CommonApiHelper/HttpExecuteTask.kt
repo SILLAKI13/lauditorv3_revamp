@@ -41,6 +41,8 @@ class HttpExecuteTask(
     }
 
     private var lastBody = ""
+    @JvmField var isRetry = false
+
 
     override fun onPreExecute() {
         super.onPreExecute()
@@ -101,7 +103,6 @@ class HttpExecuteTask(
                 && typeString != "RESEND_OTP"
                 && typeString != "SWITCH_FIRM"
                 && typeString != "SIGNUP"
-                && typeString != "UPDATE"
                 && typeString != "LOGIN_PASSWORD"
                 && typeString != "FORGET_PASSWORD"
                 && typeString != "VERIFY_TOKEN"
@@ -240,7 +241,7 @@ class HttpExecuteTask(
                     || typeString == "REFRESH_TOKEN_INTERNAL"
                     || urlString.contains(Constants.EMAIL_UPLOAD_URL))
 
-            if (result.status_code == 401 && !skipRefresh) {
+            if (result.status_code == 401 && !skipRefresh && !isRetry) {
                 val retryRequest = RetryRequest(
                     requestId,
                     restMethodType,

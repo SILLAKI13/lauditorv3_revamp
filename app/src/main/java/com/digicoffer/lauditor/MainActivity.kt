@@ -228,7 +228,7 @@ class MainActivity : AppCompatActivity(), Dashboard.MenuHighlightListener, Month
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        
+        Constants.is_active = true
         val wasColdStart = Constants.TOKEN.isNullOrEmpty()
         
         if (wasColdStart) {
@@ -1154,10 +1154,10 @@ class MainActivity : AppCompatActivity(), Dashboard.MenuHighlightListener, Month
                 else if ("Practice Partner" == subText) Constants.Profile_View = "Pp"
             }
         }
-        if (!Constants.is_active) {
-            AndroidUtils.showRenewalPopup(this)
-            return
-        }
+//        if (!Constants.is_active) {
+//            AndroidUtils.showRenewalPopup(this)
+//            return
+//        }
         supportFragmentManager.beginTransaction()
             .replace(R.id.id_framelayout, fragment)
             .addToBackStack("current_fragment")
@@ -2227,7 +2227,7 @@ class MainActivity : AppCompatActivity(), Dashboard.MenuHighlightListener, Month
                         Constants.FEATURES[key] = feat.optBoolean(key, false)
                     }
                 }
-                Constants.is_active = sub.optBoolean("is_active")
+                Constants.is_active = true
             }
             Constants.User_Allowed = d.optInt("user_allowed")
             Constants.isAdmin = Constants.ROLE == "AAM" || (Constants.Groups.length() == 1 && Constants.Groups.getString(0) == "AAM")

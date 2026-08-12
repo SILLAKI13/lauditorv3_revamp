@@ -1496,7 +1496,6 @@ class Events_Adapter : RecyclerView.Adapter<Events_Adapter.MyViewHolder>, Filter
         @JvmField val tv_matter_title: TextView = itemView.findViewById(R.id.tv_matter_title)
         @JvmField val event_notification: TextView = itemView.findViewById(R.id.event_notification)
         @JvmField val tv_appointment_status: TextView = itemView.findViewById(R.id.tv_appointment_status)
-        @JvmField val time: TextView? = itemView.findViewById(R.id.time)
         @JvmField val meeting_link: TextView = itemView.findViewById(R.id.tv_meeting_link)
         @JvmField val dialin: TextView = itemView.findViewById(R.id.dialin)
         @JvmField val location: TextView = itemView.findViewById(R.id.location)

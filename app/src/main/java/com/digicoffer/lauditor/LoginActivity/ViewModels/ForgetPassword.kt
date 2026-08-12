@@ -1,21 +1,16 @@
 package com.digicoffer.lauditor.LoginActivity.ViewModels
 
 import android.app.Dialog
-import android.content.Context
 import android.content.Intent
-import android.content.res.ColorStateList
 import android.os.Bundle
-import android.text.Editable
-import android.text.TextWatcher
 import android.util.Log
 import android.view.MenuItem
 import android.view.View
-import android.widget.AdapterView
-import android.widget.Button
-import android.widget.LinearLayout
-import android.widget.ListView
-import android.widget.TextView
 import androidx.appcompat.app.AppCompatActivity
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateListOf
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.setValue
 import androidx.core.content.ContextCompat
 import androidx.core.view.WindowCompat
 import com.digicoffer.lauditor.LoginActivity.Models.FirmsDo
@@ -25,140 +20,77 @@ import com.digicoffer.lauditor.Webservice.HttpResultDo
 import com.digicoffer.lauditor.Webservice.CommonApiHelper.WebServiceHelper
 import com.digicoffer.lauditor.CommonFiles.GlobalFiles.AndroidUtils
 import com.digicoffer.lauditor.CommonFiles.GlobalFiles.Constants
-import com.digicoffer.lauditor.CommonFiles.GlobalFiles.DynamicUtils
-import com.digicoffer.lauditor.CommonFiles.CommonAdapters.CommonSpinnerAdapter
-import com.google.android.material.textfield.TextInputEditText
 import org.json.JSONArray
 import org.json.JSONObject
 import java.util.ArrayList
 
-class ForgetPassword : AppCompatActivity(), AsyncTaskCompleteListener {
+class ForgetPassword : AppCompatActivity(), AsyncTaskCompleteListener, View.OnClickListener {
 
-    private var submitButton: Button? = null
-    private var cancel: Button? = null
-    private var tetEmail: TextInputEditText? = null
     private var progressDialog: Dialog? = null
-
-    private var spFirm: ListView? = null
-    private var firmLayout: LinearLayout? = null
     private val list = ArrayList<FirmsDo>()
 
     private var firmName = ""
     private var firmListName = ""
-    private val ischecked = true
 
-    // true once the server has returned firms and user must pick one before submitting
-    private var awaitingFirmSelection = false
-
-    private var spinnerFirmView: TextView? = null
-    private var tvMsgInfo: TextView? = null
-    private var tvForgotPwd: TextView? = null
-    private var tvContentText: TextView? = null
+    // Reactive Compose States
+    private var emailState by mutableStateOf("")
+    private var firmSelectedState by mutableStateOf("")
+    private var awaitingFirmSelectionState by mutableStateOf(false)
+    private var isLoadingState by mutableStateOf(false)
+    private val firmListState = mutableStateListOf<String>()
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        setContentView(R.layout.activity_forgetpassword)
+
+        val composeView = androidx.compose.ui.platform.ComposeView(this).apply {
+            setContent {
+                com.digicoffer.lauditor.core.designsystem.theme.LauditorTheme {
+                    com.digicoffer.lauditor.ui.auth.ForgotPasswordScreen(
+                        emailValue = emailState,
+                        onEmailChange = { emailState = it },
+                        firmList = firmListState,
+                        selectedFirm = firmSelectedState,
+                        onFirmSelected = { selected ->
+                            val match = list.find { it.getName() == selected }
+                            if (match != null) {
+                                firmName = match.value ?: ""
+                                firmSelectedState = selected
+                                submitWithSelectedFirm()
+                            }
+                        },
+                        awaitingFirmSelection = awaitingFirmSelectionState,
+                        isLoading = isLoadingState,
+                        onSubmitClick = {
+                            val email = emailState.trim()
+                            Log.d("FORGOT_PASSWORD", "Submit clicked with email: $email")
+                            if (email.isEmpty()) {
+                                AndroidUtils.showAlert("Please enter your email address", this@ForgetPassword)
+                            } else if (!isValidEmail(email)) {
+                                AndroidUtils.showAlert("Please enter a valid email address", this@ForgetPassword)
+                            } else {
+                                Log.d("FORGOT_PASSWORD", "resetPassword invoked")
+                                resetPassword()
+                            }
+                        },
+                        onCancelClick = { navigateToLoginActivity() }
+                    )
+                }
+            }
+        }
+        setContentView(composeView)
 
         window.statusBarColor = ContextCompat.getColor(this, R.color.Blue_text_color)
         WindowCompat.getInsetsController(window, window.decorView)
             .isAppearanceLightStatusBars = true
         supportActionBar?.hide()
-
-        initViews()
-        setupListeners()
-    }
-
-    private fun initViews() {
-        tetEmail = findViewById(R.id.et_login_email)
-        spFirm = findViewById(R.id.sp_firm)
-        spinnerFirmView = findViewById(R.id.spinner_firm_view)
-        firmLayout = findViewById(R.id.firm_layout)
-        tvMsgInfo = findViewById(R.id.tv_msg_info)
-        tvForgotPwd = findViewById(R.id.tv_forgot_pwd)
-        tvContentText = findViewById(R.id.tv_contentText)
-        submitButton = findViewById(R.id.Submit)
-        cancel = findViewById(R.id.Cancel)
-
-        tvContentText?.text = "Don't worry ! It happens. Please enter the email associated with your account"
-        tvForgotPwd?.setText(R.string.forgot_password)
-        tvMsgInfo?.setText(R.string.note_text)
-        tvMsgInfo?.textSize = DynamicUtils.fifteen.toFloat()
-
-        firmLayout?.visibility = View.GONE
-        spFirm?.visibility = View.GONE
-
-        spFirm?.background = ContextCompat.getDrawable(this, R.drawable.rectangular_white_background)
-        spinnerFirmView?.background = ContextCompat.getDrawable(this, R.drawable.background_transparent)
-        spinnerFirmView?.setPadding(30, 3, 3, 0)
-        spinnerFirmView?.text = ""
-
-        val adapter = CommonSpinnerAdapter(this, list)
-        spFirm?.adapter = adapter
-
-        submitButton?.setText(R.string.submit)
-        submitButton?.isEnabled = false
-        submitButton?.backgroundTintList = ColorStateList.valueOf(
-            resources.getColor(R.color.dullBlueColor)
-        )
-    }
-
-    private fun setupListeners() {
-        tetEmail?.addTextChangedListener(object : TextWatcher {
-            override fun beforeTextChanged(s: CharSequence?, start: Int, count: Int, after: Int) {}
-            override fun onTextChanged(s: CharSequence?, start: Int, before: Int, count: Int) {}
-            override fun afterTextChanged(s: Editable?) {
-                val hasText = !s.toString().trim().isEmpty()
-                submitButton?.isEnabled = hasText
-                submitButton?.backgroundTintList = ColorStateList.valueOf(
-                    resources.getColor(if (hasText) R.color.blue else R.color.dullBlueColor)
-                )
-
-                if (awaitingFirmSelection) {
-                    resetFirmSelection()
-                }
-            }
-        })
-
-        spinnerFirmView?.setOnClickListener {
-            AndroidUtils.display_listview(ischecked, spFirm)
-        }
-
-        spFirm?.onItemClickListener = AdapterView.OnItemClickListener { _, _, position, _ ->
-            firmName = list[position].value ?: ""
-            firmListName = list[position].getName() ?: ""
-            Log.d("FIRM_SELECTED", "id=$firmName name=$firmListName")
-
-            spinnerFirmView?.text = firmListName
-            spFirm?.visibility = View.GONE
-
-            submitWithSelectedFirm()
-        }
-
-        submitButton?.setOnClickListener {
-            val email = tetEmail?.text?.toString()?.trim() ?: ""
-            if (email.isEmpty()) {
-                AndroidUtils.showAlert("Please enter your email address", this)
-                return@setOnClickListener
-            }
-            if (!AndroidUtils.isValidEmail(email)) {
-                AndroidUtils.showAlert("Please enter a valid email address", this)
-                return@setOnClickListener
-            }
-            if (awaitingFirmSelection && firmName.isEmpty()) {
-                AndroidUtils.showAlert("Please select a firm to continue", this)
-                return@setOnClickListener
-            }
-            resetPassword()
-        }
-
-        cancel?.setOnClickListener { navigateToLoginActivity() }
     }
 
     private fun showFirmDropdown(lauditorFirms: JSONArray) {
         list.clear()
+        firmListState.clear()
         firmName = ""
         firmListName = ""
-        spinnerFirmView?.text = ""
+        firmSelectedState = ""
 
         try {
             for (i in 0 until lauditorFirms.length()) {
@@ -167,54 +99,41 @@ class ForgetPassword : AppCompatActivity(), AsyncTaskCompleteListener {
                 firmsDo.setName(obj.getString("firmName"))
                 firmsDo.value = obj.getString("id")
                 list.add(firmsDo)
+                firmListState.add(obj.getString("firmName"))
             }
         } catch (e: Exception) {
             e.printStackTrace()
         }
 
         if (list.isNotEmpty()) {
-            val adapter = CommonSpinnerAdapter(this, list)
-            spFirm?.adapter = adapter
-
-            firmLayout?.visibility = View.VISIBLE
-            awaitingFirmSelection = true
-
-            tvMsgInfo?.text = "Multiple firms found. Please select the firm you want to reset the password for."
-            Log.d("FirmDropdown", "Showing ${list.size} firms")
+            awaitingFirmSelectionState = true
+            Log.d("FORGOT_PASSWORD", "Showing ${list.size} firms in dropdown")
         } else {
-            firmLayout?.visibility = View.GONE
+            awaitingFirmSelectionState = false
         }
     }
 
     private fun submitWithSelectedFirm() {
         if (firmName.isEmpty()) return
-        awaitingFirmSelection = false
+        awaitingFirmSelectionState = false
         resetPassword()
-    }
-
-    private fun resetFirmSelection() {
-        awaitingFirmSelection = false
-        firmName = ""
-        firmListName = ""
-        list.clear()
-        spinnerFirmView?.text = ""
-        firmLayout?.visibility = View.GONE
-        spFirm?.visibility = View.GONE
-        tvMsgInfo?.text = getString(R.string.note_text)
     }
 
     private fun resetPassword() {
         try {
+            isLoadingState = true
             Constants.check_url()
             Constants.PROBIZ_TYPE = "PROFESSIONAL"
             Constants.base_URL = Constants.PROF_URL
 
-            val email = tetEmail?.text?.toString()?.trim() ?: ""
+            val email = emailState.trim()
 
             val postData = JSONObject()
             postData.put("email", email)
             postData.put("userid", firmName)
             postData.put("plan", "lauditor")
+
+            Log.d("FORGOT_PASSWORD", "API Request payload: $postData")
             progressDialog = AndroidUtils.get_progress(this)
 
             WebServiceHelper.callHttpWebService(
@@ -226,6 +145,7 @@ class ForgetPassword : AppCompatActivity(), AsyncTaskCompleteListener {
                 postData.toString()
             )
         } catch (e: Exception) {
+            isLoadingState = false
             if (progressDialog != null && progressDialog!!.isShowing) {
                 AndroidUtils.dismiss_dialog(progressDialog)
             }
@@ -234,9 +154,12 @@ class ForgetPassword : AppCompatActivity(), AsyncTaskCompleteListener {
     }
 
     override fun onAsyncTaskComplete(httpResult: HttpResultDo) {
+        isLoadingState = false
         if (progressDialog != null && progressDialog!!.isShowing) {
             AndroidUtils.dismiss_dialog(progressDialog)
         }
+
+        Log.d("FORGOT_PASSWORD", "API Response Received: status=${httpResult.result}, content=${httpResult.responseContent}")
 
         if (httpResult.result == WebServiceHelper.ServiceCallStatus.Success) {
             try {
@@ -244,12 +167,14 @@ class ForgetPassword : AppCompatActivity(), AsyncTaskCompleteListener {
 
                 if (httpResult.requestType == "FORGET_PASSWORD") {
                     if (!result.getBoolean("error")) {
+                        Log.d("FORGOT_PASSWORD", "API Success")
                         val message = result.getString("msg")
                         AndroidUtils.showToast(message, this)
                         Constants.forgot_pwd_request = true
-                        Constants.Email = tetEmail?.text?.toString()?.trim() ?: ""
+                        Constants.Email = emailState.trim()
                         navigateToLoginActivity()
                     } else {
+                        Log.d("FORGOT_PASSWORD", "API Failure: ${result.optString("msg")}")
                         Constants.forgot_pwd_request = false
 
                         if (result.has("msg")) {
@@ -258,13 +183,13 @@ class ForgetPassword : AppCompatActivity(), AsyncTaskCompleteListener {
 
                         if (result.has("firms")) {
                             val firms = result.getJSONObject("firms")
-                            Log.d("ForgetPassword", "firms=$firms")
+                            Log.d("FORGOT_PASSWORD", "firms=$firms")
 
                             val lauditorFirms = firms.optJSONArray("lauditor")
                             if (lauditorFirms != null && lauditorFirms.length() > 0) {
                                 showFirmDropdown(lauditorFirms)
                             } else {
-                                firmLayout?.visibility = View.GONE
+                                awaitingFirmSelectionState = false
                                 AndroidUtils.showAlert(
                                     "No firms found for this email. Please contact support.",
                                     this
@@ -278,12 +203,13 @@ class ForgetPassword : AppCompatActivity(), AsyncTaskCompleteListener {
                 AndroidUtils.showToast(e.message, this)
             }
         } else {
+            Log.d("FORGOT_PASSWORD", "API Network Error")
             AndroidUtils.showToast(httpResult.responseContent, this)
         }
     }
 
     private fun navigateToLoginActivity() {
-        val email = tetEmail?.text?.toString()?.trim() ?: ""
+        val email = emailState.trim()
         Constants.Email = email
 
         val intent = Intent(this, LoginActivity::class.java).apply {
@@ -308,7 +234,7 @@ class ForgetPassword : AppCompatActivity(), AsyncTaskCompleteListener {
         super.onBackPressed()
     }
 
-    override fun onClick(view: View) {
+    override fun onClick(v: View) {
         // unused
     }
 

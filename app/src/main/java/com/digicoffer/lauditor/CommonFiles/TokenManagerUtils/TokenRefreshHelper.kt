@@ -196,6 +196,7 @@ class TokenRefreshHelper : AsyncTaskCompleteListener {
                 context,
                 req.requestType
             )
+            task.isRetry = true
             task.execute(req.body)
         }
 

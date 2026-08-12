@@ -9,8 +9,6 @@ import android.widget.Filterable
 import android.widget.LinearLayout
 import android.widget.TextView
 import androidx.recyclerview.widget.RecyclerView
-import com.digicoffer.lauditor.Relationships.Adapter.RelationshipsAdapter
-import com.digicoffer.lauditor.Relationships.ClientRelationship
 import com.digicoffer.lauditor.Groups.Models.ViewGroupModel
 import com.digicoffer.lauditor.Matter.ViewModels.ViewMatter
 import com.digicoffer.lauditor.R
@@ -22,9 +20,9 @@ class GroupsAdapter : RecyclerView.Adapter<GroupsAdapter.ViewHolder>, Filterable
     var groupsList = ArrayList<ViewGroupModel>()
     var listItems = ArrayList<ViewGroupModel>()
     var filtered_List = ArrayList<ViewGroupModel>()
-    var relationshipsAdapter: RelationshipsAdapter? = null
+    var relationshipsAdapter: Any? = null
     var viewMatter: ViewMatter? = null
-    var clientRelationship: ClientRelationship? = null
+    var clientRelationship: Any? = null
 
     constructor(groupsList: ArrayList<ViewGroupModel>) {
         this.groupsList = groupsList
@@ -41,8 +39,8 @@ class GroupsAdapter : RecyclerView.Adapter<GroupsAdapter.ViewHolder>, Filterable
 
     constructor(
         groupsList: ArrayList<ViewGroupModel>,
-        relationshipsAdapter: RelationshipsAdapter?,
-        clientRelationship: ClientRelationship?
+        relationshipsAdapter: Any?,
+        clientRelationship: Any?
     ) {
         this.groupsList = groupsList
         this.listItems = groupsList
@@ -72,34 +70,8 @@ class GroupsAdapter : RecyclerView.Adapter<GroupsAdapter.ViewHolder>, Filterable
                 val group = filtered_List[adapterPos]
                 val isChecked = group.isChecked
 
-                if (relationshipsAdapter != null) {
-                    if (Constants.isAlterPopup) {
-                        group.isChecked = !isChecked
-                        relationshipsAdapter?.loadNewGroups(filtered_List)
-                    } else {
-                        if (isChecked) {
-                            if (!group.isCan_delete) {
-                                AndroidUtils.showAlert(
-                                    "Matters are associated with this Group. So you cannot delete this group",
-                                    clientRelationship?.activity
-                                )
-                                holder.cb_team_members.isChecked = true
-                            } else {
-                                if (group.isCan_assign_docs) {
-                                    group.isChecked = true
-                                    relationshipsAdapter?.checkRemoveGroups(group.id, group.name, groupsList)
-                                    notifyItemChanged(adapterPos)
-                                } else {
-                                    group.isChecked = false
-                                    groupsList[adapterPos].isChecked = false
-                                    relationshipsAdapter?.load_selected_groups(groupsList)
-                                }
-                            }
-                        } else {
-                            group.isChecked = true
-                            relationshipsAdapter?.load_selected_groups(groupsList)
-                        }
-                    }
+                if (false) {
+                    // commented out relationshipsAdapter blocks
                 } else if (viewMatter != null) {
                     if (Constants.isAlterPopup) {
                         group.isChecked = !isChecked

@@ -1,0 +1,433 @@
+package com.digicoffer.lauditor.feature.appointments.presentation.viewmodel
+
+import androidx.lifecycle.ViewModel
+import androidx.lifecycle.viewModelScope
+import com.digicoffer.lauditor.Appointments.Models.AppointmentModel
+import com.digicoffer.lauditor.Appointments.Models.PaymentModel
+import com.digicoffer.lauditor.Webservice.CommonApiHelper.WebServiceHelper
+import com.digicoffer.lauditor.feature.appointments.data.repository.AppointmentsRepository
+import com.digicoffer.lauditor.feature.appointments.presentation.state.AppointmentsUiEvent
+import com.digicoffer.lauditor.feature.appointments.presentation.state.AppointmentsUiState
+import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.update
+import kotlinx.coroutines.launch
+import org.json.JSONArray
+import org.json.JSONObject
+import java.text.SimpleDateFormat
+import java.util.Locale
+
+class AppointmentsViewModel(
+    private val repository: AppointmentsRepository
+) : ViewModel() {
+
+    private val _uiState = MutableStateFlow(AppointmentsUiState())
+    val uiState: StateFlow<AppointmentsUiState> = _uiState.asStateFlow()
+
+    private val PAGE_SIZE = 10
+    private val dateFormat = SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss", Locale.ENGLISH)
+
+    fun onEvent(event: AppointmentsUiEvent) {
+        when (event) {
+            is AppointmentsUiEvent.LoadAppointments -> loadAppointments()
+            is AppointmentsUiEvent.SearchQueryChanged -> {
+                _uiState.update { it.copy(searchQuery = event.query) }
+                applyFilterAndSorting()
+            }
+            is AppointmentsUiEvent.PageNext -> {
+                val state = _uiState.value
+                if (state.currentPage < state.totalPages - 1) {
+                    val nextPage = state.currentPage + 1
+                    _uiState.update { it.copy(currentPage = nextPage) }
+                    renderCurrentPage()
+                }
+            }
+            is AppointmentsUiEvent.PagePrev -> {
+                val state = _uiState.value
+                if (state.currentPage > 0) {
+                    val prevPage = state.currentPage - 1
+                    _uiState.update { it.copy(currentPage = prevPage) }
+                    renderCurrentPage()
+                }
+            }
+            is AppointmentsUiEvent.ToggleActionMenu -> {
+                val current = _uiState.value.expandedCardPosition
+                val newPos = if (current == event.position) -1 else event.position
+                _uiState.update { it.copy(expandedCardPosition = newPos) }
+            }
+            is AppointmentsUiEvent.CancelAppointment -> cancelAppointment(event.model)
+            is AppointmentsUiEvent.DeleteAppointment -> deleteAppointment(event.model)
+            is AppointmentsUiEvent.OpenHistory -> {
+                _uiState.update {
+                    it.copy(
+                        historyClientId = event.model.client_id,
+                        historyClientName = event.model.client_name,
+                        historyClientProfilePic = event.model.client_profile_pic,
+                        historyList = emptyList()
+                    )
+                }
+                loadHistory(event.model.client_id)
+            }
+            is AppointmentsUiEvent.CloseHistory -> {
+                _uiState.update {
+                    it.copy(
+                        historyClientId = "",
+                        historyClientName = "",
+                        historyClientProfilePic = "",
+                        historyList = emptyList()
+                    )
+                }
+            }
+            is AppointmentsUiEvent.DismissDialogs -> {
+                _uiState.update { it.copy(alertTitle = null, alertMessage = null, toastMessage = null) }
+            }
+            is AppointmentsUiEvent.ToggleNotesExpanded -> {
+                val currentMap = _uiState.value.noteExpandedState
+                val isExpanded = currentMap[event.appointmentId] ?: false
+                val newMap = currentMap.toMutableMap().apply {
+                    put(event.appointmentId, !isExpanded)
+                }
+                _uiState.update { it.copy(noteExpandedState = newMap) }
+            }
+            is AppointmentsUiEvent.NoteAddingDraftChanged -> {
+                val newMap = _uiState.value.noteAddingMap.toMutableMap().apply {
+                    put(event.appointmentId, event.noteText)
+                }
+                _uiState.update { it.copy(noteAddingMap = newMap) }
+            }
+            is AppointmentsUiEvent.NoteEditingDraftChanged -> {
+                val newMap = _uiState.value.noteEditingMap.toMutableMap().apply {
+                    put(event.noteId, event.noteText)
+                }
+                _uiState.update { it.copy(noteEditingMap = newMap) }
+            }
+            is AppointmentsUiEvent.SaveNewNote -> saveNewNote(event.appointmentId)
+            is AppointmentsUiEvent.StartEditingNote -> {
+                val editingStates = _uiState.value.noteEditingState.toMutableMap().apply {
+                    put(event.noteId, true)
+                }
+                val draftMap = _uiState.value.noteEditingMap.toMutableMap().apply {
+                    put(event.noteId, event.initialText)
+                }
+                _uiState.update { it.copy(noteEditingState = editingStates, noteEditingMap = draftMap) }
+            }
+            is AppointmentsUiEvent.CancelEditingNote -> {
+                val editingStates = _uiState.value.noteEditingState.toMutableMap().apply {
+                    put(event.noteId, false)
+                }
+                _uiState.update { it.copy(noteEditingState = editingStates) }
+            }
+            is AppointmentsUiEvent.SaveEditedNote -> saveEditedNote(event.appointmentId, event.noteId)
+            is AppointmentsUiEvent.DeleteNote -> deleteNote(event.appointmentId, event.noteId)
+            is AppointmentsUiEvent.SetPendingHighlight -> {
+                _uiState.update { it.copy(pendingHighlightId = event.highlightId) }
+            }
+        }
+    }
+
+    private fun loadAppointments() {
+        viewModelScope.launch {
+            _uiState.update { it.copy(isLoading = true) }
+            val result = repository.fetchAppointments()
+            _uiState.update { it.copy(isLoading = false) }
+
+            if (result.result == WebServiceHelper.ServiceCallStatus.Success) {
+                try {
+                    val rootJson = JSONObject(result.responseContent ?: "")
+                    if (!rootJson.getBoolean("error")) {
+                        val appointmentsArray = rootJson.optJSONArray("appointments") ?: JSONArray()
+                        val list = parseAppointments(appointmentsArray)
+                        _uiState.update { it.copy(appointmentList = list) }
+                        applyFilterAndSorting()
+                    } else {
+                        _uiState.update {
+                            it.copy(
+                                alertTitle = "Alert",
+                                alertMessage = rootJson.optString("msg", "Failed to fetch appointments")
+                            )
+                        }
+                    }
+                } catch (e: Exception) {
+                    _uiState.update { it.copy(alertTitle = "Exception", alertMessage = e.message ?: "Failed parsing response") }
+                }
+            } else {
+                _uiState.update {
+                    it.copy(
+                        alertTitle = "Error",
+                        alertMessage = result.responseContent ?: "Failed to connect to web service"
+                    )
+                }
+            }
+        }
+    }
+
+    private fun parseAppointments(array: JSONArray): List<AppointmentModel> {
+        val list = mutableListOf<AppointmentModel>()
+        for (i in 0 until array.length()) {
+            val jsonObject = array.optJSONObject(i) ?: continue
+            val model = AppointmentModel().apply {
+                id = jsonObject.optString("id", "")
+                client_id = jsonObject.optString("client_id", "")
+                guid = jsonObject.optString("guid", "")
+                client_name = jsonObject.optString("client_name", "")
+                appointment_from = jsonObject.optString("appointment_from", "")
+                appointment_to = jsonObject.optString("appointment_to", "")
+                consultation_mode = jsonObject.optString("consultation_mode", "")
+                appointment_status = jsonObject.optString("appointment_status", "")
+                meeting_room_id = jsonObject.optString("meeting_room_id", "")
+                meeting_room_expires_at = jsonObject.optString("meeting_room_expires_at", "")
+                rsvp_status = jsonObject.optString("rsvp_status", "")
+                created_at = jsonObject.optString("created_at", "")
+
+                if (jsonObject.has("client_profile_pic")) {
+                    client_profile_pic = jsonObject.optString("client_profile_pic", "")
+                }
+                if (jsonObject.has("services_offered")) {
+                    services_offered = jsonObject.optJSONArray("services_offered") ?: JSONArray()
+                }
+                if (jsonObject.has("payment")) {
+                    val paymentObj = jsonObject.getJSONObject("payment")
+                    payment = PaymentModel().apply {
+                        status = paymentObj.optString("status")
+                        amount_paid = paymentObj.optString("amount_paid")
+                        currency = paymentObj.optString("currency")
+                        symbol = paymentObj.optString("symbol")
+                        label = paymentObj.optString("label")
+                    }
+                }
+                if (jsonObject.has("notes")) {
+                    notes = jsonObject.optJSONArray("notes") ?: JSONArray()
+                }
+            }
+            list.add(model)
+        }
+        return list
+    }
+
+    private fun applyFilterAndSorting() {
+        val state = _uiState.value
+        val query = state.searchQuery.trim().lowercase(Locale.ROOT)
+
+        val filtered = if (query.isEmpty()) {
+            state.appointmentList
+        } else {
+            state.appointmentList.filter { model ->
+                model.client_name.lowercase(Locale.ROOT).contains(query) ||
+                        model.appointment_status.lowercase(Locale.ROOT).contains(query) ||
+                        model.consultation_mode.lowercase(Locale.ROOT).contains(query)
+            }
+        }
+
+        // Sort items using legacy algorithm rules
+        val sorted = filtered.sortedWith { o1, o2 ->
+            try {
+                val status1 = o1.appointment_status.lowercase(Locale.ROOT)
+                val status2 = o2.appointment_status.lowercase(Locale.ROOT)
+
+                val isPriority1 = status1 == "upcoming" || status1 == "ongoing"
+                val isPriority2 = status2 == "upcoming" || status2 == "ongoing"
+
+                if (isPriority1 && isPriority2) {
+                    val d1 = dateFormat.parse(o1.appointment_from)
+                    val d2 = dateFormat.parse(o2.appointment_from)
+                    if (d1 == null || d2 == null) 0 else d1.compareTo(d2)
+                } else if (isPriority1) {
+                    -1
+                } else if (isPriority2) {
+                    1
+                } else {
+                    val d1 = dateFormat.parse(o1.appointment_from)
+                    val d2 = dateFormat.parse(o2.appointment_from)
+                    if (d1 == null || d2 == null) 0 else d2.compareTo(d1)
+                }
+            } catch (e: Exception) {
+                0
+            }
+        }
+
+        val total = sorted.size
+        val pages = if (total == 0) 0 else Math.ceil(total.toDouble() / PAGE_SIZE).toInt()
+
+        _uiState.update {
+            it.copy(
+                filteredList = sorted,
+                totalPages = pages,
+                currentPage = 0
+            )
+        }
+        renderCurrentPage()
+    }
+
+    private fun renderCurrentPage() {
+        val state = _uiState.value
+        val startIndex = state.currentPage * PAGE_SIZE
+        val endIndex = Math.min(startIndex + PAGE_SIZE, state.filteredList.size)
+
+        val pageList = if (startIndex < state.filteredList.size) {
+            state.filteredList.subList(startIndex, endIndex)
+        } else {
+            emptyList()
+        }
+
+        _uiState.update { it.copy(currentPageList = pageList) }
+    }
+
+    private fun cancelAppointment(model: AppointmentModel) {
+        viewModelScope.launch {
+            _uiState.update { it.copy(isLoading = true) }
+            val result = repository.cancelAppointment(model.id)
+            _uiState.update { it.copy(isLoading = false) }
+
+            if (result.result == WebServiceHelper.ServiceCallStatus.Success) {
+                val rootJson = JSONObject(result.responseContent ?: "")
+                val msg = rootJson.optString("msg", "Success")
+                _uiState.update { it.copy(toastMessage = msg) }
+                loadAppointments()
+            } else {
+                _uiState.update {
+                    it.copy(
+                        alertTitle = "Error",
+                        alertMessage = result.responseContent ?: "Failed to cancel appointment"
+                    )
+                }
+            }
+        }
+    }
+
+    private fun deleteAppointment(model: AppointmentModel) {
+        viewModelScope.launch {
+            _uiState.update { it.copy(isLoading = true) }
+            val result = repository.deleteAppointment(model.id)
+            _uiState.update { it.copy(isLoading = false) }
+
+            if (result.result == WebServiceHelper.ServiceCallStatus.Success) {
+                val rootJson = JSONObject(result.responseContent ?: "")
+                val msg = rootJson.optString("msg", "Success")
+                _uiState.update { it.copy(toastMessage = msg) }
+                loadAppointments()
+            } else {
+                _uiState.update {
+                    it.copy(
+                        alertTitle = "Error",
+                        alertMessage = result.responseContent ?: "Failed to delete appointment"
+                    )
+                }
+            }
+        }
+    }
+
+    private fun loadHistory(clientId: String) {
+        viewModelScope.launch {
+            _uiState.update { it.copy(isLoading = true) }
+            val result = repository.fetchHistory(clientId)
+            _uiState.update { it.copy(isLoading = false) }
+
+            if (result.result == WebServiceHelper.ServiceCallStatus.Success) {
+                try {
+                    val rootJson = JSONObject(result.responseContent ?: "")
+                    if (!rootJson.getBoolean("error")) {
+                        val historyArray = rootJson.optJSONArray("appointments") ?: JSONArray()
+                        val list = parseAppointments(historyArray)
+                        _uiState.update { it.copy(historyList = list) }
+                    } else {
+                        _uiState.update {
+                            it.copy(
+                                alertTitle = "Alert",
+                                alertMessage = rootJson.optString("msg", "Failed to fetch appointment history")
+                            )
+                        }
+                    }
+                } catch (e: Exception) {
+                    _uiState.update { it.copy(alertTitle = "Exception", alertMessage = e.message ?: "Failed parsing response") }
+                }
+            } else {
+                _uiState.update {
+                    it.copy(
+                        alertTitle = "Error",
+                        alertMessage = result.responseContent ?: "Failed to connect to history service"
+                    )
+                }
+            }
+        }
+    }
+
+    private fun saveNewNote(appointmentId: String) {
+        val noteText = _uiState.value.noteAddingMap[appointmentId]?.trim() ?: ""
+        if (noteText.isEmpty()) return
+
+        viewModelScope.launch {
+            _uiState.update { it.copy(isLoading = true) }
+            val result = repository.addNote(appointmentId, noteText)
+            _uiState.update { it.copy(isLoading = false) }
+
+            if (result.result == WebServiceHelper.ServiceCallStatus.Success) {
+                val rootJson = JSONObject(result.responseContent ?: "")
+                val msg = rootJson.optString("msg", "Success")
+                _uiState.update {
+                    val clearedAddingMap = it.noteAddingMap.toMutableMap().apply { remove(appointmentId) }
+                    it.copy(toastMessage = msg, noteAddingMap = clearedAddingMap)
+                }
+                loadHistory(_uiState.value.historyClientId)
+            } else {
+                _uiState.update {
+                    it.copy(
+                        alertTitle = "Error",
+                        alertMessage = result.responseContent ?: "Failed to save note"
+                    )
+                }
+            }
+        }
+    }
+
+    private fun saveEditedNote(appointmentId: String, noteId: String) {
+        val noteText = _uiState.value.noteEditingMap[noteId]?.trim() ?: ""
+        if (noteText.isEmpty()) return
+
+        viewModelScope.launch {
+            _uiState.update { it.copy(isLoading = true) }
+            val result = repository.updateNote(appointmentId, noteId, noteText)
+            _uiState.update { it.copy(isLoading = false) }
+
+            if (result.result == WebServiceHelper.ServiceCallStatus.Success) {
+                val rootJson = JSONObject(result.responseContent ?: "")
+                val msg = rootJson.optString("msg", "Success")
+                _uiState.update {
+                    val clearedStates = it.noteEditingState.toMutableMap().apply { put(noteId, false) }
+                    val clearedEditingMap = it.noteEditingMap.toMutableMap().apply { remove(noteId) }
+                    it.copy(toastMessage = msg, noteEditingState = clearedStates, noteEditingMap = clearedEditingMap)
+                }
+                loadHistory(_uiState.value.historyClientId)
+            } else {
+                _uiState.update {
+                    it.copy(
+                        alertTitle = "Error",
+                        alertMessage = result.responseContent ?: "Failed to update note"
+                    )
+                }
+            }
+        }
+    }
+
+    private fun deleteNote(appointmentId: String, noteId: String) {
+        viewModelScope.launch {
+            _uiState.update { it.copy(isLoading = true) }
+            val result = repository.deleteNote(appointmentId, noteId)
+            _uiState.update { it.copy(isLoading = false) }
+
+            if (result.result == WebServiceHelper.ServiceCallStatus.Success) {
+                val rootJson = JSONObject(result.responseContent ?: "")
+                val msg = rootJson.optString("msg", "Success")
+                _uiState.update { it.copy(toastMessage = msg) }
+                loadHistory(_uiState.value.historyClientId)
+            } else {
+                _uiState.update {
+                    it.copy(
+                        alertTitle = "Error",
+                        alertMessage = result.responseContent ?: "Failed to delete note"
+                    )
+                }
+            }
+        }
+    }
+}

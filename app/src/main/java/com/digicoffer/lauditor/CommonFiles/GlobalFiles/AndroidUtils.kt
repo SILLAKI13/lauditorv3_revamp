@@ -2256,60 +2256,7 @@ class AndroidUtils {
         }
 
         @JvmStatic
-        fun showRenewalPopup(activity: Activity) {
-            val dialogBuilder = AlertDialog.Builder(activity)
-            val inflater = activity.layoutInflater
-            val dialogLayout = inflater.inflate(R.layout.reneval_popup, null)
-
-            val tv_confirmation = dialogLayout.findViewById<TextView>(R.id.tv_confirmation)
-            val tv_confirmContent = dialogLayout.findViewById<TextView>(R.id.tv_confirmContent)
-            val iv_close = dialogLayout.findViewById<ImageView>(R.id.iv_close)
-            val btnSave = dialogLayout.findViewById<Button>(R.id.btnSave)
-            if (Constants.ROLE == "SU") {
-                btnSave.visibility = VISIBLE
-            } else {
-                btnSave.visibility = GONE
-            }
-            btnSave.setText(R.string.renew_now)
-            tv_confirmation.setText(R.string.subscription_expired)
-            if (Constants.CATEGORY == "solo") {
-                btnSave.setText(R.string.upgrade)
-                tv_confirmContent.setText(R.string.this_option_is_unavailable_on_the_free_plan_click_here_to_upgrade)
-            } else {
-                tv_confirmContent.setText(R.string.your_subscription_has_expired_renew_now_to_keep_your_account_active_and_access_all_features)
-            }
-            val dialog = dialogBuilder.create()
-            dialog.setView(dialogLayout)
-            dialog.setCancelable(false)
-            dialog.setCanceledOnTouchOutside(false)
-            dialog.show()
-
-            val window = dialog.window
-            if (window != null) {
-                window.setBackgroundDrawable(ColorDrawable(Color.TRANSPARENT))
-
-                val marginInDp = 20
-                val scale = activity.resources.displayMetrics.density
-                val marginInPx = (marginInDp * scale + 0.5f).toInt()
-
-                val screenWidth = activity.resources.displayMetrics.widthPixels
-                val dialogWidth = screenWidth - (2 * marginInPx)
-
-                window.setLayout(dialogWidth, WindowManager.LayoutParams.WRAP_CONTENT)
-
-                val layoutParams = window.attributes
-                layoutParams.gravity = Gravity.CENTER
-                window.attributes = layoutParams
-            }
-
-            btnSave.setOnClickListener {
-                launchPaySubscriptionPage(activity)
-            }
-
-            iv_close.setOnClickListener {
-                dialog.dismiss()
-            }
-        }
+        fun showRenewalPopup(activity: Activity) {}
 
         @JvmStatic
         fun launchPaySubscriptionPage(activity: Activity?) {
