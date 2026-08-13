@@ -4,6 +4,7 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -51,7 +52,7 @@ fun ShareDocsDialog(
     val selectedDocIds = remember { mutableStateListOf<String>() }
 
     // Fetch initial documents matching relationship context
-    LaunchedEffect(selectedSubTab, searchQuery) {
+    LaunchedEffect(selectedSubTab) {
         isLoading = true
         val payload = if (selectedSubTab == "client") {
             JSONObject().apply {
@@ -68,14 +69,16 @@ fun ShareDocsDialog(
             }
         }
         onSearchDocs(payload) { results ->
-            docsList = results.filter { doc ->
-                if (searchQuery.isNotEmpty()) {
-                    doc.name?.lowercase()?.contains(searchQuery.lowercase()) == true
-                } else {
-                    true
-                }
-            }
+            docsList = results
             isLoading = false
+        }
+    }
+
+    val filteredDocsList = remember(docsList, searchQuery) {
+        if (searchQuery.isEmpty()) {
+            docsList
+        } else {
+            docsList.filter { it.name?.lowercase()?.contains(searchQuery.lowercase()) == true }
         }
     }
 
@@ -84,211 +87,365 @@ fun ShareDocsDialog(
             .fillMaxSize()
             .background(Color(0xFFE4F2FF))
     ) {
-            Column(
+        Column(
+            modifier = Modifier
+                .fillMaxSize()
+                .padding(10.dp)
+        ) {
+            // Header
+            Row(
+                verticalAlignment = Alignment.CenterVertically,
                 modifier = Modifier
-                    .fillMaxSize()
-                    .padding(16.dp)
+                    .fillMaxWidth()
+                    .padding(start = 5.dp, top = 5.dp, end = 5.dp, bottom = 10.dp)
             ) {
-                // Header
-                Row(
-                    verticalAlignment = Alignment.CenterVertically,
+                Image(
+                    painter = painterResource(id = R.drawable.back_arrow),
+                    contentDescription = "Back",
                     modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(start = 15.dp, top = 15.dp, end = 15.dp, bottom = 10.dp)
-                ) {
-                    Image(
-                        painter = painterResource(id = R.drawable.back_arrow),
-                        contentDescription = "Back",
-                        modifier = Modifier
-                            .size(20.dp)
-                            .clickable { onDismiss() },
-                        colorFilter = androidx.compose.ui.graphics.ColorFilter.tint(Color(0xFF004D87))
-                    )
-                    Spacer(modifier = Modifier.width(8.dp))
-                    Text(
-                        text = "Share Documents",
-                        color = Color(0xFF004D87),
-                        fontWeight = FontWeight.Bold,
-                        fontFamily = GillSans,
-                        fontSize = 18.sp
-                    )
-                }
-
-                // Search Bar
-                NotificationsSearchBar(
-                    query = searchQuery,
-                    onQueryChange = { searchQuery = it },
-                    placeholder = "Search Documents"
+                        .size(20.dp)
+                        .clickable { onDismiss() },
+                    colorFilter = androidx.compose.ui.graphics.ColorFilter.tint(Color(0xFF004D87))
                 )
+                Spacer(modifier = Modifier.width(8.dp))
+                Text(
+                    text = "Share Documents",
+                    color = Color(0xFF004D87),
+                    fontWeight = FontWeight.Bold,
+                    fontFamily = GillSans,
+                    fontSize = 18.sp
+                )
+            }
 
-                Spacer(modifier = Modifier.height(12.dp))
-
-                // Sub-tabs (Client Documents / Firm Documents) matching legacy style
-                Row(
+            // Card container wrapping all page content below the header
+            Card(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .weight(1f),
+                colors = CardDefaults.cardColors(containerColor = Color.White),
+                shape = RoundedCornerShape(10.dp),
+                elevation = CardDefaults.cardElevation(defaultElevation = 4.dp)
+            ) {
+                Column(
                     modifier = Modifier
-                        .fillMaxWidth()
-                        .height(40.dp)
+                        .fillMaxSize()
+                        .padding(15.dp)
                 ) {
-                    // Left Pill: Client Documents
-                    Box(
+                    // Sub-tabs (Client Documents / Firm Documents)
+                    Row(
                         modifier = Modifier
-                            .weight(1f)
-                            .fillMaxHeight()
-                            .clip(RoundedCornerShape(topStart = 20.dp, bottomStart = 20.dp))
-                            .background(if (selectedSubTab == "client") Color(0xFF004D87) else Color(0xFFEEEEEE))
-                            .clickable { selectedSubTab = "client"; selectedDocIds.clear() },
-                        contentAlignment = Alignment.Center
+                            .fillMaxWidth()
+                            .height(40.dp)
                     ) {
-                        Text(
-                            text = "Client Documents",
-                            color = if (selectedSubTab == "client") Color.White else Color.Black,
-                            fontWeight = FontWeight.Bold,
-                            fontFamily = GillSans,
-                            fontSize = 15.sp
-                        )
+                        // Left Pill: Client Documents
+                        Box(
+                            modifier = Modifier
+                                .weight(1f)
+                                .fillMaxHeight()
+                                .clip(RoundedCornerShape(topStart = 20.dp, bottomStart = 20.dp))
+                                .background(if (selectedSubTab == "client") Color(0xFF004D87) else Color(0xFFEEEEEE))
+                                .clickable { selectedSubTab = "client"; selectedDocIds.clear() },
+                            contentAlignment = Alignment.Center
+                        ) {
+                            Text(
+                                text = "Client Documents",
+                                color = if (selectedSubTab == "client") Color.White else Color.Black,
+                                fontWeight = FontWeight.Bold,
+                                fontFamily = GillSans,
+                                fontSize = 15.sp
+                            )
+                        }
+
+                        Spacer(modifier = Modifier.width(1.dp))
+
+                        // Right Pill: Firm Documents
+                        Box(
+                            modifier = Modifier
+                                .weight(1f)
+                                .fillMaxHeight()
+                                .clip(RoundedCornerShape(topEnd = 20.dp, bottomEnd = 20.dp))
+                                .background(if (selectedSubTab == "firm") Color(0xFF004D87) else Color(0xFFEEEEEE))
+                                .clickable { selectedSubTab = "firm"; selectedDocIds.clear() },
+                            contentAlignment = Alignment.Center
+                        ) {
+                            Text(
+                                text = "Firm Documents",
+                                color = if (selectedSubTab == "firm") Color.White else Color.Black,
+                                fontWeight = FontWeight.Bold,
+                                fontFamily = GillSans,
+                                fontSize = 15.sp
+                            )
+                        }
                     }
 
-                    Spacer(modifier = Modifier.width(1.dp))
+                    Spacer(modifier = Modifier.height(10.dp))
 
-                    // Right Pill: Firm Documents
-                    Box(
-                        modifier = Modifier
-                            .weight(1f)
-                            .fillMaxHeight()
-                            .clip(RoundedCornerShape(topEnd = 20.dp, bottomEnd = 20.dp))
-                            .background(if (selectedSubTab == "firm") Color(0xFF004D87) else Color(0xFFEEEEEE))
-                            .clickable { selectedSubTab = "firm"; selectedDocIds.clear() },
-                        contentAlignment = Alignment.Center
-                    ) {
-                        Text(
-                            text = "Firm Documents",
-                            color = if (selectedSubTab == "firm") Color.White else Color.Black,
-                            fontWeight = FontWeight.Bold,
-                            fontFamily = GillSans,
-                            fontSize = 15.sp
+                    if (docsList.isNotEmpty() && !isLoading) {
+                        // Search Bar
+                        NotificationsSearchBar(
+                            query = searchQuery,
+                            onQueryChange = { searchQuery = it },
+                            placeholder = "Search Documents"
                         )
-                    }
-                }
 
-                Spacer(modifier = Modifier.height(12.dp))
+                        Spacer(modifier = Modifier.height(10.dp))
 
-                // Documents List Card
-                Card(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .weight(1f)
-                        .border(width = 0.5.dp, color = Color(0xFFDDDDDE), shape = RoundedCornerShape(10.dp)),
-                    colors = CardDefaults.cardColors(containerColor = Color.White),
-                    elevation = CardDefaults.cardElevation(defaultElevation = 2.dp)
-                ) {
-                    Column(
-                        modifier = Modifier
-                            .fillMaxSize()
-                            .padding(16.dp)
-                    ) {
-                        if (isLoading) {
-                            Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
-                                CircularProgressIndicator(color = Color(0xFF004D87))
-                            }
-                        } else if (docsList.isEmpty()) {
-                            Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
-                                Text(text = "No documents found", color = Color.Gray, fontSize = 14.sp)
-                            }
-                        } else {
-                            LazyColumn(
-                                modifier = Modifier
-                                    .fillMaxWidth()
-                                    .weight(1f)
-                            ) {
-                                items(docsList) { doc ->
-                                    Row(
-                                        modifier = Modifier
-                                            .fillMaxWidth()
-                                            .padding(vertical = 8.dp)
-                                            .border(
-                                                width = 0.5.dp,
-                                                color = Color(0xFFDDDDDE),
-                                                shape = RoundedCornerShape(8.dp)
-                                            )
-                                            .clickable {
-                                                onViewDoc(doc)
+                        // Select All row (Right aligned checkbox)
+                        val allSelected = filteredDocsList.isNotEmpty() && filteredDocsList.all { selectedDocIds.contains(it.id) }
+                        Row(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .padding(start = 12.dp),
+                            horizontalArrangement = Arrangement.Start,
+                            verticalAlignment = Alignment.CenterVertically
+                        ) {
+                            Checkbox(
+                                checked = allSelected,
+                                onCheckedChange = { checked ->
+                                    if (checked) {
+                                        filteredDocsList.forEach { doc ->
+                                            if (!selectedDocIds.contains(doc.id)) {
+                                                selectedDocIds.add(doc.id ?: "")
                                             }
-                                            .padding(12.dp),
-                                        verticalAlignment = Alignment.CenterVertically,
-                                        horizontalArrangement = Arrangement.SpaceBetween
-                                    ) {
-                                        Column(modifier = Modifier.weight(1f)) {
-                                            Text(
-                                                text = doc.name ?: "",
-                                                color = Color.Black,
-                                                fontWeight = FontWeight.Bold,
-                                                fontSize = 14.sp
-                                            )
                                         }
-
-                                        Checkbox(
-                                            checked = selectedDocIds.contains(doc.id),
-                                            onCheckedChange = { checked ->
-                                                if (checked) {
-                                                    if (!selectedDocIds.contains(doc.id)) {
-                                                        selectedDocIds.add(doc.id ?: "")
-                                                    }
-                                                } else {
-                                                    selectedDocIds.remove(doc.id)
-                                                }
-                                            },
-                                            modifier = Modifier.size(24.dp)
-                                        )
+                                    } else {
+                                        selectedDocIds.clear()
                                     }
-                                }
-                            }
+                                },
+                                modifier = Modifier.size(24.dp)
+                            )
+                            Spacer(modifier = Modifier.width(8.dp))
+                            Text(
+                                text = "Select All",
+                                color = Color.Black,
+                                fontFamily = GillSans,
+                                fontSize = 15.sp
+                            )
+                        }
+                    }
 
-                            Spacer(modifier = Modifier.height(16.dp))
+                    Divider(color = Color(0xFFDDDDDE), thickness = 0.5.dp, modifier = Modifier.padding(vertical = 5.dp))
 
-                            // Bottom Buttons
-                            Row(
-                                modifier = Modifier.fillMaxWidth(),
-                                horizontalArrangement = Arrangement.SpaceAround
+                    // Document List or states
+                    Box(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .weight(1f)
+                    ) {
+                        if (filteredDocsList.isEmpty() && !isLoading) {
+                            Text(
+                                text = "No documents to show",
+                                color = Color.Gray,
+                                fontFamily = GillSans,
+                                fontSize = 15.sp,
+                                modifier = Modifier.align(Alignment.Center)
+                            )
+                        } else if (filteredDocsList.isNotEmpty()) {
+                            LazyColumn(
+                                modifier = Modifier.fillMaxSize()
                             ) {
-                                Button(
-                                    onClick = onDismiss,
-                                    colors = ButtonDefaults.buttonColors(containerColor = Color(0xFFE0E0E0)),
-                                    shape = RoundedCornerShape(20.dp),
-                                    modifier = Modifier.width(120.dp)
-                                ) {
-                                    Text(text = "Cancel", color = Color.Black)
-                                }
-
-                                Button(
-                                    onClick = {
-                                        val addArray = JSONArray()
-                                        for (id in selectedDocIds) {
-                                            addArray.put(JSONObject().apply {
-                                                put("docid", id)
-                                                put("doctype", "general")
-                                            })
-                                        }
-                                        val payload = JSONObject().apply {
-                                            if (isCorporate) {
-                                                put("relid", model.id)
+                                items(filteredDocsList) { doc ->
+                                    DocumentRow(
+                                        doc = doc,
+                                        sharedTag = "share",
+                                        onViewDoc = { onViewDoc(doc) },
+                                        isSelected = selectedDocIds.contains(doc.id),
+                                        onCheckedChange = { checked ->
+                                            if (checked) {
+                                                if (!selectedDocIds.contains(doc.id)) {
+                                                    selectedDocIds.add(doc.id ?: "")
+                                                }
+                                            } else {
+                                                selectedDocIds.remove(doc.id)
                                             }
-                                            put("add", addArray)
-                                            put("remove", JSONArray())
-                                            put("message", "")
                                         }
-                                        onShareDocs(payload)
-                                    },
-                                    colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF004D87)),
-                                    enabled = selectedDocIds.isNotEmpty(),
-                                    shape = RoundedCornerShape(20.dp),
-                                    modifier = Modifier.width(120.dp)
-                                ) {
-                                    Text(text = "Share", color = Color.White)
+                                    )
                                 }
                             }
                         }
                     }
+
+                    Spacer(modifier = Modifier.height(16.dp))
+
+                    // Bottom Buttons (always visible)
+                    Row(
+                        modifier = Modifier.fillMaxWidth(),
+                        horizontalArrangement = Arrangement.SpaceAround
+                    ) {
+                        OutlinedButton(
+                            onClick = onDismiss,
+                            colors = ButtonDefaults.outlinedButtonColors(
+                                containerColor = Color(0xFFEEEEEE),
+                                contentColor = Color.Black
+                            ),
+                            border = BorderStroke(1.dp, Color(0xFFDDDDDE)),
+                            shape = RoundedCornerShape(10.dp),
+                            modifier = Modifier.width(120.dp)
+                        ) {
+                            Text(text = "Cancel", color = Color.Black, fontFamily = GillSans, fontWeight = FontWeight.Bold)
+                        }
+
+                        Button(
+                            onClick = {
+                                val addArray = JSONArray()
+                                for (id in selectedDocIds) {
+                                    val doc = docsList.find { it.id == id }
+                                    addArray.put(JSONObject().apply {
+                                        put("docid", id)
+                                        put("doctype", "general")
+                                        val matters = JSONArray()
+                                        if (doc?.has_Confidential == true) {
+                                            matters.put(doc.matter_details_id)
+                                        }
+                                        put("matters", matters)
+                                    })
+                                }
+                                val payload = JSONObject().apply {
+                                    if (isCorporate) {
+                                        put("relid", model.id)
+                                    }
+                                    put("add", addArray)
+                                    put("remove", JSONArray())
+                                    put("message", "")
+                                }
+                                onShareDocs(payload)
+                            },
+                            colors = ButtonDefaults.buttonColors(
+                                containerColor = Color(0xFF004D87),
+                                disabledContainerColor = Color(0xFF004D87).copy(alpha = 0.5f)
+                            ),
+                            enabled = selectedDocIds.isNotEmpty(),
+                            shape = RoundedCornerShape(10.dp),
+                            modifier = Modifier.width(120.dp)
+                        ) {
+                            val buttonText = if (selectedDocIds.isNotEmpty()) "Share (${selectedDocIds.size})" else "Share"
+                            Text(text = buttonText, color = Color.White, fontFamily = GillSans, fontWeight = FontWeight.Bold)
+                        }
+                    }
                 }
             }
+        }
+    }
+}
+
+@Composable
+private fun DocumentRow(
+    doc: SharedDocumentsDo,
+    sharedTag: String, // "withme", "byme", or "share"
+    onViewDoc: (SharedDocumentsDo) -> Unit,
+    isSelected: Boolean = false,
+    onCheckedChange: ((Boolean) -> Unit)? = null,
+    onRemoveClick: (() -> Unit)? = null
+) {
+    Column(
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(4.dp)
+            .background(Color.White)
+            .clickable { onViewDoc(doc) }
+    ) {
+        Row(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(8.dp),
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            // Document info column
+            Column(
+                modifier = Modifier
+                    .weight(1f)
+                    .padding(4.dp)
+            ) {
+                // Name
+                Text(
+                    text = doc.name ?: "",
+                    color = if (sharedTag == "withme") Color(0xFF004D87) else Color.Black,
+                    fontWeight = FontWeight.Normal,
+                    fontFamily = GillSans,
+                    fontSize = if (sharedTag == "withme") 18.sp else 17.sp
+                )
+
+                // Confidential Label
+                if (doc.has_Confidential) {
+                    Row(
+                        modifier = Modifier.padding(top = 2.dp),
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        Text(
+                            text = "Confidential : ",
+                            color = Color.Black,
+                            fontWeight = FontWeight.Bold,
+                            fontFamily = GillSans,
+                            fontSize = 15.sp
+                        )
+                        Text(
+                            text = doc.matter_details_name ?: "",
+                            color = Color.Black,
+                            fontWeight = FontWeight.Normal,
+                            fontFamily = GillSans,
+                            fontSize = 15.sp
+                        )
+                    }
+                }
+
+                // Date and description for shared with me
+                if (sharedTag == "withme") {
+                    // Date
+                    Text(
+                        text = doc.created ?: "",
+                        color = Color(0xFF1976D2),
+                        fontWeight = FontWeight.Medium,
+                        fontFamily = GillSans,
+                        fontSize = 17.sp,
+                        modifier = Modifier.padding(top = 2.dp)
+                    )
+                    // Description
+                    Text(
+                        text = doc.description ?: doc.filename ?: "",
+                        color = Color.Black,
+                        fontWeight = FontWeight.Normal,
+                        fontFamily = GillSans,
+                        fontSize = 17.sp,
+                        modifier = Modifier.padding(top = 2.dp)
+                    )
+                }
+            }
+
+            // Right side buttons/checkboxes
+            Row(
+                verticalAlignment = Alignment.CenterVertically,
+                horizontalArrangement = Arrangement.End
+            ) {
+                if (onRemoveClick != null) {
+                    IconButton(
+                        onClick = onRemoveClick,
+                        modifier = Modifier.size(30.dp)
+                    ) {
+                        Icon(
+                            painter = painterResource(id = R.drawable.cancel_red_icon),
+                            contentDescription = "Remove",
+                            tint = Color.Unspecified,
+                            modifier = Modifier.size(30.dp)
+                        )
+                    }
+                }
+
+                if (onCheckedChange != null) {
+                    Checkbox(
+                        checked = isSelected,
+                        onCheckedChange = onCheckedChange,
+                        modifier = Modifier
+                            .padding(horizontal = 10.dp)
+                            .size(25.dp)
+                    )
+                }
+            }
+        }
+        Divider(
+            color = Color(0xFFA0A0A0),
+            thickness = 0.5.dp,
+            modifier = Modifier.fillMaxWidth()
+        )
+        Spacer(modifier = Modifier.height(10.dp))
     }
 }

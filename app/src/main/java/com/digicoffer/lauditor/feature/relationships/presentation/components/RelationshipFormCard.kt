@@ -26,6 +26,8 @@ import androidx.compose.ui.text.SpanStyle
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.focus.onFocusChanged
+import androidx.compose.ui.focus.FocusRequester
+import androidx.compose.ui.focus.focusRequester
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.foundation.text.BasicTextField
 import androidx.compose.foundation.text.KeyboardOptions
@@ -40,6 +42,7 @@ import com.digicoffer.lauditor.Webservice.AsyncTaskCompleteListener
 import com.digicoffer.lauditor.Webservice.HttpResultDo
 import com.digicoffer.lauditor.Webservice.CommonApiHelper.WebServiceHelper
 import org.json.JSONObject
+import com.digicoffer.lauditor.core.ui.feedback.AppLoader
 
 private val GillSans = FontFamily(
     Font(R.font.gill_sans)
@@ -73,7 +76,7 @@ fun RelationshipCustomTextField(
     modifier: Modifier = Modifier
 ) {
     val inputBorderColor = Color(0xFFC0C0C0)
-    val inputBgColor = Color(0xFFF9FAFB)
+    val inputBgColor = if (enabled) Color(0xFFF9FAFB) else Color(0xFFEEEEEE)
     val textStyle = TextStyle(
         fontSize = 15.sp,
         fontFamily = GillSans,
@@ -186,23 +189,22 @@ fun RelationshipFormCard(
                             val list = mutableListOf<IndividualModel>()
                             for (i in 0 until data.length()) {
                                 val jsonObject = data.getJSONObject(i)
-                                val model = IndividualModel().apply {
-                                    id = jsonObject.optString("id")
-                                    first_name = jsonObject.optString("first_name", "")
-                                    last_name = jsonObject.optString("last_name", "")
-                                    email = jsonObject.optString("email")
-                                    confirmEmail = jsonObject.optString("email")
-                                    mobile = jsonObject.optString("mobile")
-                                    val rawFirstName = jsonObject.optString("first_name", "").trim()
-                                    val rawLastName = jsonObject.optString("last_name", "").trim()
-                                    name = when {
-                                        rawFirstName.isNotEmpty() && rawLastName.isNotEmpty() -> "$rawFirstName $rawLastName"
-                                        rawFirstName.isNotEmpty() -> rawFirstName
-                                        rawLastName.isNotEmpty() -> rawLastName
-                                        else -> jsonObject.optString("email", "Unknown")
-                                    }
-                                    country = jsonObject.optString("country")
+                                val model = IndividualModel()
+                                model.id = jsonObject.optString("id")
+                                model.first_name = jsonObject.optString("first_name", "")
+                                model.last_name = jsonObject.optString("last_name", "")
+                                model.email = jsonObject.optString("email")
+                                model.confirmEmail = jsonObject.optString("email")
+                                model.mobile = jsonObject.optString("mobile")
+                                val rawFirstName = jsonObject.optString("first_name", "").trim()
+                                val rawLastName = jsonObject.optString("last_name", "").trim()
+                                model.name = when {
+                                    rawFirstName.isNotEmpty() && rawLastName.isNotEmpty() -> "$rawFirstName $rawLastName"
+                                    rawFirstName.isNotEmpty() -> rawFirstName
+                                    rawLastName.isNotEmpty() -> rawLastName
+                                    else -> jsonObject.optString("email", "Unknown")
                                 }
+                                model.country = jsonObject.optString("country")
                                 list.add(model)
                             }
                             individualSuggestions = list
@@ -215,8 +217,8 @@ fun RelationshipFormCard(
                                 isConfirmEmailVisible = true
                                 firstName = ""
                                 lastName = ""
-                                email = ""
-                                confirmEmail = ""
+                                email = query.trim()
+                                confirmEmail = query.trim()
                                 mobile = ""
                                 selectedCountry = null
                                 searchStatusMessage = "$query - not found. Please fill in the details below to send relationship invite."
@@ -241,9 +243,9 @@ fun RelationshipFormCard(
         individualId = selected.id ?: ""
         firstName = selected.first_name ?: ""
         lastName = selected.last_name ?: ""
-        email = selected.email ?: ""
-        confirmEmail = selected.email ?: ""
-        mobile = selected.mobile ?: ""
+        email = com.digicoffer.lauditor.CommonFiles.GlobalFiles.AndroidUtils.maskEmail(selected.email ?: "")
+        confirmEmail = com.digicoffer.lauditor.CommonFiles.GlobalFiles.AndroidUtils.maskEmail(selected.email ?: "")
+        mobile = com.digicoffer.lauditor.CommonFiles.GlobalFiles.AndroidUtils.maskPhoneNumber(selected.mobile ?: "")
         
         val countryMatch = countriesList.find { 
             it.name?.trim()?.equals(selected.country?.trim() ?: "", ignoreCase = true) == true || 
@@ -385,22 +387,10 @@ fun RelationshipFormCard(
             "Individual" -> onTitleChange("Add Relationships")
             "Entity" -> {
                 onTitleChange("Entity")
-                fetchEntityCorporateList("Entity")
             }
             "Corporate" -> {
                 onTitleChange("Corporate")
-                fetchEntityCorporateList("Corporate")
             }
-        }
-    }
-
-    // Trigger individual search as user types or on text changes in Individual tab
-    LaunchedEffect(searchQuery) {
-        if (activeTab == "Individual" && searchQuery.trim().isNotEmpty()) {
-            performIndividualSearch(searchQuery)
-        } else if (activeTab == "Individual") {
-            individualSuggestions = emptyList()
-            showIndividualSuggestions = false
         }
     }
 
@@ -413,6 +403,50 @@ fun RelationshipFormCard(
                 .padding(16.dp)
                 .verticalScroll(scrollState)
         ) {
+            // 1. Separate Tabs (Segmented Control style at the very top)
+            Row(
+                modifier = Modifier
+                    .fillMaxWidth(),
+                horizontalArrangement = Arrangement.Center,
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                val tabs = listOf("Individual", "Entity", "Corporate")
+                tabs.forEachIndexed { index, tab ->
+                    val isSelected = activeTab == tab
+                    val shape = when (index) {
+                        0 -> RoundedCornerShape(topStart = 8.dp, bottomStart = 8.dp)
+                        tabs.size - 1 -> RoundedCornerShape(topEnd = 8.dp, bottomEnd = 8.dp)
+                        else -> RoundedCornerShape(0.dp)
+                    }
+                    Box(
+                        modifier = Modifier
+                            .width(90.dp)
+                            .height(36.dp)
+                            .border(
+                                width = 0.5.dp,
+                                color = if (isSelected) Color(0xFF004D87) else Color(0xFFC0C0C0),
+                                shape = shape
+                            )
+                            .background(
+                                color = if (isSelected) Color(0xFF004D87) else Color.White,
+                                shape = shape
+                            )
+                            .clickable { activeTab = tab },
+                        contentAlignment = Alignment.Center
+                    ) {
+                        Text(
+                            text = tab,
+                            color = if (isSelected) Color.White else Color.Black,
+                            fontFamily = GillSans,
+                            fontWeight = FontWeight.Normal,
+                            fontSize = 14.sp
+                        )
+                    }
+                }
+            }
+
+            Spacer(modifier = Modifier.height(10.dp))
+
             // Top Page Title and View Relationships trigger button (outside card container)
             Row(
                 modifier = Modifier.fillMaxWidth(),
@@ -466,7 +500,7 @@ fun RelationshipFormCard(
 
             Spacer(modifier = Modifier.height(10.dp))
 
-            // Single White Card Container containing Tabs + Search + Form fields
+            // Single White Card Container containing Search + Form fields
             Card(
                 modifier = Modifier
                     .fillMaxWidth()
@@ -480,42 +514,6 @@ fun RelationshipFormCard(
                         .fillMaxWidth()
                         .padding(10.dp)
                 ) {
-                    // 1. Separate Tabs
-                    Row(
-                        modifier = Modifier.fillMaxWidth().height(40.dp),
-                        horizontalArrangement = Arrangement.spacedBy(4.dp)
-                    ) {
-                        val tabs = listOf("Individual", "Entity", "Corporate")
-                        tabs.forEach { tab ->
-                            val isSelected = activeTab == tab
-                            Box(
-                                modifier = Modifier
-                                    .weight(1f)
-                                    .fillMaxHeight()
-                                    .border(
-                                        width = 0.5.dp,
-                                        color = if (isSelected) Color(0xFF004D87) else Color(0xFFC0C0C0),
-                                        shape = RoundedCornerShape(8.dp)
-                                    )
-                                    .background(
-                                        color = if (isSelected) Color(0xFF004D87) else Color.White,
-                                        shape = RoundedCornerShape(8.dp)
-                                    )
-                                    .clickable { activeTab = tab },
-                                contentAlignment = Alignment.Center
-                            ) {
-                                Text(
-                                    text = tab,
-                                    color = if (isSelected) Color.White else Color.Black,
-                                    fontFamily = GillSans,
-                                    fontWeight = FontWeight.Bold,
-                                    fontSize = 14.sp
-                                )
-                            }
-                        }
-                    }
-
-                    Spacer(modifier = Modifier.height(10.dp))
 
                     // 2. Search input section
                     Box(modifier = Modifier.fillMaxWidth()) {
@@ -524,6 +522,7 @@ fun RelationshipFormCard(
                             verticalAlignment = Alignment.CenterVertically
                         ) {
                             Box(modifier = Modifier.weight(1f)) {
+                                val focusRequester = remember { FocusRequester() }
                                 RelationshipCustomTextField(
                                     value = searchQuery,
                                     onValueChange = {
@@ -533,33 +532,42 @@ fun RelationshipFormCard(
                                         }
                                     },
                                     placeholder = "Search",
-                                    modifier = Modifier.onFocusChanged { focusState ->
-                                        if (focusState.isFocused) {
-                                            if (activeTab == "Individual") {
-                                                if (searchQuery.trim().isNotEmpty()) {
-                                                    performIndividualSearch(searchQuery)
+                                    modifier = Modifier
+                                        .focusRequester(focusRequester)
+                                        .onFocusChanged { focusState ->
+                                            if (focusState.isFocused && activeTab != "Individual") {
+                                                if (entityCorporateSuggestions.isEmpty()) {
+                                                    fetchEntityCorporateList(activeTab)
+                                                } else {
+                                                    showEntityCorporateSuggestions = true
                                                 }
-                                            } else {
-                                                fetchEntityCorporateList(activeTab)
                                             }
                                         }
-                                    }.clickable {
-                                        if (activeTab != "Individual") {
-                                            fetchEntityCorporateList(activeTab)
+                                )
+                                Box(
+                                    modifier = Modifier
+                                        .matchParentSize()
+                                        .clickable {
+                                            focusRequester.requestFocus()
+                                            if (activeTab != "Individual") {
+                                                if (entityCorporateSuggestions.isEmpty()) {
+                                                    fetchEntityCorporateList(activeTab)
+                                                } else {
+                                                    showEntityCorporateSuggestions = true
+                                                }
+                                            }
                                         }
-                                    }
                                 )
                             }
                             Spacer(modifier = Modifier.width(8.dp))
                             Button(
                                 onClick = {
                                     if (searchQuery.trim().isEmpty()) {
-                                        onValidationError("Please check the search field")
+                                        onValidationError("Please check the search field..,")
                                         return@Button
                                     }
                                     if (activeTab == "Individual") {
                                         performIndividualSearch(searchQuery)
-                                        searchQuery = "" // Clear search text field
                                     } else {
                                         val match = entityCorporateSuggestions.find {
                                             it.name?.trim()?.equals(searchQuery.trim(), ignoreCase = true) == true
@@ -643,24 +651,28 @@ fun RelationshipFormCard(
                                                     color = Color.Black,
                                                     fontFamily = GillSans,
                                                     fontSize = 15.sp,
-                                                    fontWeight = FontWeight.Bold
+                                                    fontWeight = FontWeight.Normal
                                                 )
                                                 Spacer(modifier = Modifier.height(2.dp))
                                                 Text(
                                                     text = com.digicoffer.lauditor.CommonFiles.GlobalFiles.AndroidUtils.maskEmail(item.email),
                                                     color = Color(0xFF707070),
                                                     fontFamily = GillSans,
-                                                    fontSize = 13.sp
+                                                    fontSize = 15.sp,
+                                                    fontWeight = FontWeight.Normal
                                                 )
-                                                Spacer(modifier = Modifier.height(2.dp))
-                                                Text(
-                                                    text = com.digicoffer.lauditor.CommonFiles.GlobalFiles.AndroidUtils.maskPhoneNumber(item.mobile),
-                                                    color = Color(0xFF707070),
-                                                    fontFamily = GillSans,
-                                                    fontSize = 13.sp
-                                                )
+                                                if (!item.mobile.isNullOrBlank()) {
+                                                    Spacer(modifier = Modifier.height(2.dp))
+                                                    Text(
+                                                        text = com.digicoffer.lauditor.CommonFiles.GlobalFiles.AndroidUtils.maskPhoneNumber(item.mobile),
+                                                        color = Color(0xFF707070),
+                                                        fontFamily = GillSans,
+                                                        fontSize = 15.sp,
+                                                        fontWeight = FontWeight.Normal
+                                                    )
+                                                }
                                             }
-                                            HorizontalDivider(thickness = 0.5.dp, color = Color(0xFFDDDDDE))
+                                            HorizontalDivider(thickness = 1.dp, color = Color(0xFFDDDDDE))
                                         }
                                     }
                                 }
@@ -711,13 +723,7 @@ fun RelationshipFormCard(
                     Spacer(modifier = Modifier.height(10.dp))
 
                     if (isLoading) {
-                        Box(
-                            modifier = Modifier.fillMaxWidth().height(60.dp),
-                            contentAlignment = Alignment.Center
-                        ) {
-                            CircularProgressIndicator(color = Color(0xFF004D87))
-                        }
-                        Spacer(modifier = Modifier.height(10.dp))
+                        AppLoader()
                     }
 
                     // Found / Not Found Status messages
@@ -741,7 +747,7 @@ fun RelationshipFormCard(
                         Box(
                             modifier = Modifier
                                 .fillMaxWidth()
-                                .background(Color(0xFFF9FAFB), shape = RoundedCornerShape(6.dp))
+                                .background(if (isFormEnabled && isFieldsEditable) Color(0xFFF9FAFB) else Color(0xFFEEEEEE), shape = RoundedCornerShape(6.dp))
                                 .border(width = 0.5.dp, color = Color(0xFFC0C0C0), shape = RoundedCornerShape(6.dp))
                                 .clickable(enabled = isFormEnabled && isFieldsEditable) { countryMenuExpanded = !countryMenuExpanded }
                                 .padding(10.dp),
@@ -759,10 +765,16 @@ fun RelationshipFormCard(
                                     fontSize = 15.sp
                                 )
                                 Icon(
-                                    painter = painterResource(id = R.drawable.drop_down_blue),
-                                    contentDescription = "Open Country List",
+                                    painter = painterResource(
+                                        id = if (selectedCountry != null) R.drawable.cancel_red_icon else R.drawable.drop_down_blue
+                                    ),
+                                    contentDescription = "Country selector icon",
                                     tint = Color(0xFF004D87),
-                                    modifier = Modifier.size(20.dp)
+                                    modifier = Modifier
+                                        .size(20.dp)
+                                        .clickable(enabled = isFormEnabled && isFieldsEditable && selectedCountry != null) {
+                                            selectedCountry = null
+                                        }
                                 )
                             }
                         }
@@ -985,7 +997,8 @@ fun RelationshipFormCard(
 
                             Button(
                                 onClick = onCancel,
-                                colors = ButtonDefaults.buttonColors(containerColor = Color(0xFFE0E0E0)),
+                                colors = ButtonDefaults.buttonColors(containerColor = Color(0xFFEEEEEE)),
+                                border = BorderStroke(1.dp, Color(0xFFDDDDDE)),
                                 shape = RoundedCornerShape(8.dp),
                                 modifier = Modifier.width(120.dp).height(40.dp)
                             ) {
@@ -1108,122 +1121,227 @@ fun RelationshipFormCard(
 
     // Confirmation dialogues
     if (showConfirmDialog) {
-        AlertDialog(
-            onDismissRequest = { showConfirmDialog = false },
-            title = {
-                Text(
-                    text = "Confirmation",
-                    color = Color(0xFF004D87),
-                    fontFamily = GillSans,
-                    fontWeight = FontWeight.Bold,
-                    fontSize = 18.sp
-                )
-            },
-            text = {
-                Text(
-                    text = "Do you want to send relationship invitation?",
-                    color = Color.Black,
-                    fontFamily = GillSans,
-                    fontSize = 15.sp
-                )
-            },
-            confirmButton = {
-                TextButton(
-                    onClick = {
-                        showConfirmDialog = false
-                        savedPayload?.let { payload ->
-                            isLoading = true
-                            onSubmitRequest(payload) { success, msg ->
-                                isLoading = false
-                                if (success) {
-                                    successDialogMessage = "Invitation sent successfully"
-                                    showSuccessDialog = true
-                                } else {
-                                    errorDialogMessage = msg
-                                    showErrorDialog = true
+        val name = if (activeTab == "Individual") "$firstName $lastName".trim() else entityName.trim()
+        val confirmText = "Are you sure you want to send relationship request to $name?"
+
+        androidx.compose.ui.window.Dialog(onDismissRequest = { showConfirmDialog = false }) {
+            Card(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(16.dp),
+                shape = RoundedCornerShape(6.dp),
+                colors = CardDefaults.cardColors(containerColor = Color.White),
+                elevation = CardDefaults.cardElevation(defaultElevation = 10.dp)
+            ) {
+                Column(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(12.dp),
+                    horizontalAlignment = Alignment.CenterHorizontally
+                ) {
+                    Box(modifier = Modifier.fillMaxWidth(), contentAlignment = Alignment.TopEnd) {
+                        Icon(
+                            painter = painterResource(id = R.drawable.cancel_red_icon),
+                            contentDescription = "Close",
+                            tint = Color(0xFF004D87),
+                            modifier = Modifier
+                                .size(24.dp)
+                                .clickable { showConfirmDialog = false }
+                        )
+                    }
+
+                    Spacer(modifier = Modifier.height(4.dp))
+
+                    Text(
+                        text = "Confirmation",
+                        color = Color(0xFF004D87),
+                        fontFamily = GillSans,
+                        fontWeight = FontWeight.Bold,
+                        fontSize = 20.sp
+                    )
+
+                    Spacer(modifier = Modifier.height(10.dp))
+
+                    Text(
+                        text = confirmText,
+                        color = Color.Black,
+                        fontFamily = GillSans,
+                        fontSize = 17.sp,
+                        textAlign = androidx.compose.ui.text.style.TextAlign.Center,
+                        modifier = Modifier.padding(horizontal = 10.dp)
+                    )
+
+                    Spacer(modifier = Modifier.height(20.dp))
+
+                    Row(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(bottom = 8.dp),
+                        horizontalArrangement = Arrangement.Center,
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        Button(
+                            onClick = { showConfirmDialog = false },
+                            colors = ButtonDefaults.buttonColors(containerColor = Color(0xFFEEEEEE)),
+                            border = BorderStroke(1.dp, Color(0xFFDDDDDE)),
+                            shape = RoundedCornerShape(10.dp),
+                            modifier = Modifier
+                                .width(90.dp)
+                                .height(40.dp)
+                        ) {
+                            Text(
+                                text = "No",
+                                color = Color.Black,
+                                fontFamily = GillSans,
+                                fontWeight = FontWeight.Bold,
+                                fontSize = 15.sp
+                            )
+                        }
+
+                        Spacer(modifier = Modifier.width(30.dp))
+
+                        Button(
+                            onClick = {
+                                showConfirmDialog = false
+                                savedPayload?.let { payload ->
+                                    isLoading = true
+                                    onSubmitRequest(payload) { success, msg ->
+                                        isLoading = false
+                                        if (success) {
+                                            successDialogMessage = msg
+                                            showSuccessDialog = true
+                                        } else {
+                                            errorDialogMessage = msg
+                                            showErrorDialog = true
+                                        }
+                                    }
                                 }
-                            }
+                            },
+                            colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF004D87)),
+                            shape = RoundedCornerShape(10.dp),
+                            modifier = Modifier
+                                .width(90.dp)
+                                .height(40.dp)
+                        ) {
+                            Text(
+                                text = "Yes",
+                                color = Color.White,
+                                fontFamily = GillSans,
+                                fontWeight = FontWeight.Bold,
+                                fontSize = 15.sp
+                            )
                         }
                     }
-                ) {
-                    Text("Yes", color = Color(0xFF004D87), fontFamily = GillSans, fontWeight = FontWeight.Bold)
                 }
-            },
-            dismissButton = {
-                TextButton(onClick = { showConfirmDialog = false }) {
-                    Text("No", color = Color.Gray, fontFamily = GillSans)
-                }
-            },
-            containerColor = Color.White,
-            shape = RoundedCornerShape(8.dp)
-        )
+            }
+        }
     }
 
     if (showSuccessDialog) {
-        AlertDialog(
-            onDismissRequest = { 
-                showSuccessDialog = false 
-                onCancel() 
-            },
-            title = {
-                Text(
-                    text = "Alert !",
-                    color = Color(0xFF004D87),
-                    fontFamily = GillSans,
-                    fontWeight = FontWeight.Bold,
-                    fontSize = 18.sp
-                )
-            },
-            text = {
-                Text(
-                    text = successDialogMessage,
-                    color = Color.Black,
-                    fontFamily = GillSans,
-                    fontSize = 15.sp
-                )
-            },
-            confirmButton = {
-                TextButton(
-                    onClick = {
-                        showSuccessDialog = false
-                        onCancel()
-                    }
+        androidx.compose.ui.window.Dialog(onDismissRequest = { 
+            showSuccessDialog = false 
+            onCancel()
+        }) {
+            Card(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(horizontal = 24.dp),
+                shape = RoundedCornerShape(8.dp),
+                colors = CardDefaults.cardColors(containerColor = Color.White),
+                elevation = CardDefaults.cardElevation(defaultElevation = 8.dp)
+            ) {
+                Column(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(top = 15.dp),
+                    horizontalAlignment = Alignment.CenterHorizontally
                 ) {
-                    Text("OK", color = Color(0xFF004D87), fontFamily = GillSans, fontWeight = FontWeight.Bold)
+                    Text(
+                        text = "Alert !",
+                        color = Color.Black,
+                        fontFamily = GillSans,
+                        fontWeight = FontWeight.Bold,
+                        fontSize = 17.sp,
+                        modifier = Modifier.padding(horizontal = 15.dp)
+                    )
+                    Spacer(modifier = Modifier.height(10.dp))
+                    Text(
+                        text = successDialogMessage,
+                        color = Color.Black,
+                        fontFamily = GillSans,
+                        fontSize = 15.sp,
+                        textAlign = androidx.compose.ui.text.style.TextAlign.Center,
+                        modifier = Modifier.padding(start = 15.dp, end = 15.dp, bottom = 10.dp)
+                    )
+                    HorizontalDivider(thickness = 0.5.dp, color = Color(0xFFDDDDDE))
+                    TextButton(
+                        onClick = {
+                            showSuccessDialog = false
+                            onCancel()
+                        },
+                        modifier = Modifier.fillMaxWidth().height(48.dp)
+                    ) {
+                        Text(
+                            text = "OK",
+                            color = Color(0xFF1976D2),
+                            fontFamily = GillSans,
+                            fontSize = 17.sp,
+                            fontWeight = FontWeight.Bold
+                        )
+                    }
                 }
-            },
-            containerColor = Color.White,
-            shape = RoundedCornerShape(8.dp)
-        )
+            }
+        }
     }
 
     if (showErrorDialog) {
-        AlertDialog(
-            onDismissRequest = { showErrorDialog = false },
-            title = {
-                Text(
-                    text = "Alert !",
-                    color = Color(0xFF004D87),
-                    fontFamily = GillSans,
-                    fontWeight = FontWeight.Bold,
-                    fontSize = 18.sp
-                )
-            },
-            text = {
-                Text(
-                    text = errorDialogMessage,
-                    color = Color.Black,
-                    fontFamily = GillSans,
-                    fontSize = 15.sp
-                )
-            },
-            confirmButton = {
-                TextButton(onClick = { showErrorDialog = false }) {
-                    Text("OK", color = Color(0xFF004D87), fontFamily = GillSans, fontWeight = FontWeight.Bold)
+        androidx.compose.ui.window.Dialog(onDismissRequest = { showErrorDialog = false }) {
+            Card(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(horizontal = 24.dp),
+                shape = RoundedCornerShape(8.dp),
+                colors = CardDefaults.cardColors(containerColor = Color.White),
+                elevation = CardDefaults.cardElevation(defaultElevation = 8.dp)
+            ) {
+                Column(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(top = 15.dp),
+                    horizontalAlignment = Alignment.CenterHorizontally
+                ) {
+                    Text(
+                        text = "Alert !",
+                        color = Color.Black,
+                        fontFamily = GillSans,
+                        fontWeight = FontWeight.Bold,
+                        fontSize = 17.sp,
+                        modifier = Modifier.padding(horizontal = 15.dp)
+                    )
+                    Spacer(modifier = Modifier.height(10.dp))
+                    Text(
+                        text = errorDialogMessage,
+                        color = Color.Black,
+                        fontFamily = GillSans,
+                        fontSize = 15.sp,
+                        textAlign = androidx.compose.ui.text.style.TextAlign.Center,
+                        modifier = Modifier.padding(start = 15.dp, end = 15.dp, bottom = 10.dp)
+                    )
+                    HorizontalDivider(thickness = 0.5.dp, color = Color(0xFFDDDDDE))
+                    TextButton(
+                        onClick = { showErrorDialog = false },
+                        modifier = Modifier.fillMaxWidth().height(48.dp)
+                    ) {
+                        Text(
+                            text = "OK",
+                            color = Color(0xFF1976D2),
+                            fontFamily = GillSans,
+                            fontSize = 17.sp,
+                            fontWeight = FontWeight.Bold
+                        )
+                    }
                 }
-            },
-            containerColor = Color.White,
-            shape = RoundedCornerShape(8.dp)
-        )
+            }
+        }
     }
 }

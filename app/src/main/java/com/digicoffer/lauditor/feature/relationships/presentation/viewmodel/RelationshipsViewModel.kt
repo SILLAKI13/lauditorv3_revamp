@@ -97,6 +97,9 @@ class RelationshipsViewModel(application: Application) : AndroidViewModel(applic
                 event.payload,
                 event.onResult
             )
+            is RelationshipsUiEvent.SetLoading -> {
+                _uiState.update { it.copy(isLoading = event.isLoading) }
+            }
         }
     }
 

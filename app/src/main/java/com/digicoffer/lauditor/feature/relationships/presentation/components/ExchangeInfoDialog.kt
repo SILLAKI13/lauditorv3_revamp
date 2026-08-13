@@ -19,13 +19,18 @@ import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.compose.ui.window.Dialog
+import androidx.compose.ui.window.DialogProperties
 import com.digicoffer.lauditor.R
 import com.digicoffer.lauditor.Relationships.Model.RelationshipsModel
 import com.digicoffer.lauditor.Relationships.Model.SharedDocumentsDo
+import com.digicoffer.lauditor.feature.notifications.presentation.components.NotificationsSearchBar
 import androidx.compose.ui.text.font.Font
 import androidx.compose.ui.text.font.FontFamily
 import org.json.JSONArray
 import org.json.JSONObject
+import androidx.compose.foundation.BorderStroke
+
 
 private val GillSans = FontFamily(
     Font(R.font.gill_sans)
@@ -36,15 +41,22 @@ fun ExchangeInfoDialog(
     model: RelationshipsModel,
     sharedDocs: List<SharedDocumentsDo>,
     isLoading: Boolean,
+    isCorporate: Boolean,
     onDismiss: () -> Unit,
     onLoadProfile: ((JSONObject?) -> Unit) -> Unit,
     onLoadDocs: (String) -> Unit, // "withme" or "byme"
     onUnshareDocs: (JSONObject) -> Unit,
     onShareClick: (String) -> Unit,
+    onSearchDocs: (JSONObject, (List<SharedDocumentsDo>) -> Unit) -> Unit,
+    onShareDocs: (JSONObject) -> Unit,
     onViewDoc: (SharedDocumentsDo, String) -> Unit
 ) {
     var hideDetails by remember { mutableStateOf(true) } // collapsed by default
     var selectedSharedTab by remember { mutableStateOf("withme") } // "withme" or "byme"
+    var selectedSubTab by remember { mutableStateOf<String?>(null) } // "client" or "firm"
+    var showDocPickerPopup by remember { mutableStateOf(false) }
+    var pickerCategory by remember { mutableStateOf("client") }
+    var validationAlertMessage by remember { mutableStateOf("") }
 
     // Store selected doc ids for unsharing
     val selectedDocIds = remember { mutableStateListOf<String>() }
@@ -203,12 +215,7 @@ fun ExchangeInfoDialog(
                                 )
 
                                 if (isProfileLoading) {
-                                    Box(
-                                        modifier = Modifier.fillMaxWidth().padding(vertical = 20.dp),
-                                        contentAlignment = Alignment.Center
-                                    ) {
-                                        CircularProgressIndicator(color = Color(0xFF004D87), modifier = Modifier.size(30.dp))
-                                    }
+                                    // Do not render inline progress indicator as global AppLoader covers it
                                 } else {
                                     if (isIndividual) {
                                         // Individual detail fields (no icons)
@@ -355,7 +362,10 @@ fun ExchangeInfoDialog(
                                              .fillMaxHeight()
                                              .clip(RoundedCornerShape(topStart = 20.dp, bottomStart = 20.dp))
                                              .background(if (selectedSharedTab == "withme") Color(0xFF004D87) else Color(0xFFEEEEEE))
-                                             .clickable { selectedSharedTab = "withme" },
+                                             .clickable { 
+                                                 selectedSharedTab = "withme"
+                                                 selectedSubTab = null
+                                             },
                                          contentAlignment = Alignment.Center
                                      ) {
                                          Text(
@@ -376,7 +386,10 @@ fun ExchangeInfoDialog(
                                              .fillMaxHeight()
                                              .clip(RoundedCornerShape(topEnd = 20.dp, bottomEnd = 20.dp))
                                              .background(if (selectedSharedTab == "byme") Color(0xFF004D87) else Color(0xFFEEEEEE))
-                                             .clickable { selectedSharedTab = "byme" },
+                                             .clickable { 
+                                                 selectedSharedTab = "byme"
+                                                 selectedSubTab = null
+                                             },
                                          contentAlignment = Alignment.Center
                                      ) {
                                          Text(
@@ -389,185 +402,321 @@ fun ExchangeInfoDialog(
                                      }
                                  }
 
-                                 if (selectedSharedTab == "byme") {
-                                     Spacer(modifier = Modifier.height(12.dp))
-                                     Row(
-                                         modifier = Modifier.fillMaxWidth(),
-                                         horizontalArrangement = Arrangement.SpaceAround,
-                                         verticalAlignment = Alignment.CenterVertically
+                                   if (selectedSharedTab == "byme") {
+                                       Spacer(modifier = Modifier.height(12.dp))
+                                       Row(
+                                           modifier = Modifier
+                                               .fillMaxWidth()
+                                               .height(34.dp)
+                                       ) {
+                                           // Left Pill: Client Documents
+                                           Box(
+                                               modifier = Modifier
+                                                   .weight(1f)
+                                                   .fillMaxHeight()
+                                                   .clip(RoundedCornerShape(topStart = 10.dp, bottomStart = 10.dp))
+                                                   .background(Color(0xFFEEEEEE))
+                                                   .clickable {
+                                                       onShareClick("client")
+                                                   },
+                                               contentAlignment = Alignment.Center
+                                           ) {
+                                               Text(
+                                                   text = "Client Documents",
+                                                   color = Color.Black,
+                                                   fontWeight = FontWeight.Bold,
+                                                   fontFamily = GillSans,
+                                                   fontSize = 12.sp
+                                               )
+                                           }
+
+                                           Spacer(modifier = Modifier.width(3.dp))
+
+                                           // Right Pill: Firm Documents
+                                           Box(
+                                               modifier = Modifier
+                                                   .weight(1f)
+                                                   .fillMaxHeight()
+                                                   .clip(RoundedCornerShape(topEnd = 10.dp, bottomEnd = 10.dp))
+                                                   .background(Color(0xFFEEEEEE))
+                                                   .clickable {
+                                                       onShareClick("firm")
+                                                   },
+                                               contentAlignment = Alignment.Center
+                                           ) {
+                                               Text(
+                                                   text = "Firm Documents",
+                                                   color = Color.Black,
+                                                   fontWeight = FontWeight.Bold,
+                                                   fontFamily = GillSans,
+                                                   fontSize = 12.sp
+                                               )
+                                           }
+                                       }
+                                   }
+
+                                  Spacer(modifier = Modifier.height(16.dp))
+
+                                  // Document listing or empty state
+                                  if (sharedDocs.isEmpty() && !isLoading) {
+                                      Box(
+                                          modifier = Modifier.fillMaxWidth().height(100.dp),
+                                          contentAlignment = Alignment.Center
+                                      ) {
+                                          Text(
+                                              text = "No documents to show",
+                                              color = Color.Gray,
+                                              fontFamily = GillSans,
+                                              fontSize = 15.sp
+                                          )
+                                      }
+                                  } else if (sharedDocs.isNotEmpty()) {
+                                     Column(
+                                         modifier = Modifier.fillMaxWidth()
                                      ) {
-                                         Text(
-                                             text = "Client Documents",
-                                             color = Color(0xFF004D87),
-                                             fontWeight = FontWeight.Bold,
-                                             fontFamily = GillSans,
-                                             fontSize = 14.sp,
-                                             modifier = Modifier.clickable {
-                                                 onShareClick("client")
-                                             }
-                                         )
-                                         Text(
-                                             text = "Firm Documents",
-                                             color = Color(0xFF004D87),
-                                             fontWeight = FontWeight.Bold,
-                                             fontFamily = GillSans,
-                                             fontSize = 14.sp,
-                                             modifier = Modifier.clickable {
-                                                 onShareClick("firm")
-                                             }
-                                         )
+                                         sharedDocs.forEach { doc ->
+                                             DocumentRow(
+                                                 doc = doc,
+                                                 sharedTag = selectedSharedTab,
+                                                 onViewDoc = { onViewDoc(doc, selectedSharedTab) },
+                                                 isSelected = selectedDocIds.contains(doc.id),
+                                                 onCheckedChange = if (selectedSharedTab == "byme") { checked: Boolean ->
+                                                     if (checked) {
+                                                         if (!selectedDocIds.contains(doc.id)) {
+                                                             selectedDocIds.add(doc.id ?: "")
+                                                         }
+                                                     } else {
+                                                         selectedDocIds.remove(doc.id)
+                                                     }
+                                                 } else null,
+                                                 onRemoveClick = if (selectedSharedTab == "byme") {
+                                                     {
+                                                         val removeArray = JSONArray().apply {
+                                                             put(JSONObject().apply {
+                                                                 put("docid", doc.id)
+                                                                 put("doctype", "general")
+                                                             })
+                                                         }
+                                                         val payload = JSONObject().apply {
+                                                             if (isCorporate) {
+                                                                 put("relid", model.id)
+                                                             }
+                                                             put("remove", removeArray)
+                                                             put("add", JSONArray())
+                                                             put("message", "")
+                                                         }
+                                                         onUnshareDocs(payload)
+                                                     }
+                                                 } else null
+                                             )
+                                         }
                                      }
                                  }
 
-                                 Spacer(modifier = Modifier.height(16.dp))
+                                  // Batch Unshare Button Bar
+                                  if (selectedSharedTab == "byme") {
+                                      Spacer(modifier = Modifier.height(16.dp))
+                                      Row(
+                                          modifier = Modifier.fillMaxWidth(),
+                                          horizontalArrangement = Arrangement.SpaceAround
+                                      ) {
+                                          OutlinedButton(
+                                              onClick = {
+                                                  selectedDocIds.clear()
+                                                  onDismiss()
+                                              },
+                                              colors = ButtonDefaults.outlinedButtonColors(
+                                                  containerColor = Color(0xFFEEEEEE),
+                                                  contentColor = Color.Black
+                                              ),
+                                              border = BorderStroke(1.dp, Color(0xFFDDDDDE)),
+                                              shape = RoundedCornerShape(10.dp),
+                                              modifier = Modifier.width(120.dp)
+                                          ) {
+                                              Text(text = "Cancel", color = Color.Black, fontFamily = GillSans, fontWeight = FontWeight.Bold)
+                                          }
 
-                                 // Document listing or empty state
-                                 if (isLoading) {
-                                    Box(
-                                        modifier = Modifier.fillMaxWidth().height(150.dp),
-                                        contentAlignment = Alignment.Center
-                                    ) {
-                                        CircularProgressIndicator(color = Color(0xFF004D87))
-                                    }
-                                } else if (sharedDocs.isEmpty()) {
-                                    Box(
-                                        modifier = Modifier.fillMaxWidth().height(100.dp),
-                                        contentAlignment = Alignment.Center
-                                    ) {
-                                        Text(
-                                            text = "No documents to show",
-                                            color = Color.Gray,
-                                            fontFamily = GillSans,
-                                            fontSize = 15.sp
-                                        )
-                                    }
-                                } else {
-                                    Column(
-                                        modifier = Modifier.fillMaxWidth(),
-                                        verticalArrangement = Arrangement.spacedBy(8.dp)
-                                    ) {
-                                        sharedDocs.forEach { doc ->
-                                            Row(
-                                                modifier = Modifier
-                                                    .fillMaxWidth()
-                                                    .border(
-                                                        width = 0.5.dp,
-                                                        color = Color(0xFFDDDDDE),
-                                                        shape = RoundedCornerShape(8.dp)
-                                                    )
-                                                    .clickable {
-                                                        onViewDoc(doc, selectedSharedTab)
-                                                    }
-                                                    .padding(12.dp),
-                                                verticalAlignment = Alignment.CenterVertically,
-                                                horizontalArrangement = Arrangement.SpaceBetween
-                                            ) {
-                                                Column(modifier = Modifier.weight(1f)) {
-                                                    Text(
-                                                        text = doc.name ?: "",
-                                                        color = Color.Black,
-                                                        fontWeight = FontWeight.Bold,
-                                                        fontFamily = GillSans,
-                                                        fontSize = 14.sp
-                                                    )
-                                                }
+                                          Button(
+                                              onClick = {
+                                                  if (selectedDocIds.isEmpty()) {
+                                                      validationAlertMessage = "Please select at least one document"
+                                                  } else {
+                                                      val removeArray = JSONArray()
+                                                      for (id in selectedDocIds) {
+                                                          removeArray.put(JSONObject().apply {
+                                                              put("docid", id)
+                                                              put("doctype", "general")
+                                                          })
+                                                      }
+                                                      val payload = JSONObject().apply {
+                                                          if (isCorporate) {
+                                                              put("relid", model.id)
+                                                          }
+                                                          put("remove", removeArray)
+                                                          put("add", JSONArray())
+                                                          put("message", "")
+                                                      }
+                                                      onUnshareDocs(payload)
+                                                      selectedDocIds.clear()
+                                                  }
+                                              },
+                                              colors = ButtonDefaults.buttonColors(
+                                                  containerColor = Color(0xFF004D87),
+                                                  disabledContainerColor = Color(0xFF004D87).copy(alpha = 0.5f)
+                                              ),
+                                              enabled = selectedDocIds.isNotEmpty(),
+                                              shape = RoundedCornerShape(10.dp),
+                                              modifier = Modifier.width(120.dp)
+                                          ) {
+                                              val buttonText = if (selectedDocIds.isNotEmpty()) "Unshare (${selectedDocIds.size})" else "Unshare"
+                                              Text(text = buttonText, color = Color.White, fontFamily = GillSans, fontWeight = FontWeight.Bold)
+                                          }
+                                      }
+                                  }
+                              }
+                          }
+                      }
+                  }
+             }
+         }
+     }
 
-                                                if (selectedSharedTab == "byme") {
-                                                    Row(verticalAlignment = Alignment.CenterVertically) {
-                                                        IconButton(
-                                                            onClick = {
-                                                                val removeArray = JSONArray().apply {
-                                                                    put(JSONObject().apply {
-                                                                        put("docid", doc.id)
-                                                                        put("doctype", "general")
-                                                                    })
-                                                                }
-                                                                val payload = JSONObject().apply {
-                                                                    put("relid", model.id)
-                                                                    put("remove", removeArray)
-                                                                    put("add", JSONArray())
-                                                                    put("message", "")
-                                                                }
-                                                                onUnshareDocs(payload)
-                                                            },
-                                                            modifier = Modifier.size(24.dp)
-                                                        ) {
-                                                            Icon(
-                                                                painter = painterResource(id = R.drawable.cancel_red_icon),
-                                                                contentDescription = "Delete",
-                                                                tint = Color.Unspecified,
-                                                                modifier = Modifier.size(20.dp)
-                                                            )
-                                                        }
-                                                        Spacer(modifier = Modifier.width(12.dp))
-                                                        Checkbox(
-                                                            checked = selectedDocIds.contains(doc.id),
-                                                            onCheckedChange = { checked ->
-                                                                if (checked) {
-                                                                    if (!selectedDocIds.contains(doc.id)) {
-                                                                        selectedDocIds.add(doc.id ?: "")
-                                                                    }
-                                                                } else {
-                                                                    selectedDocIds.remove(doc.id)
-                                                                }
-                                                            },
-                                                            modifier = Modifier.size(24.dp)
-                                                        )
-                                                    }
-                                                }
-                                            }
-                                        }
-                                    }
-                                }
+     if (validationAlertMessage.isNotEmpty()) {
+         AlertDialog(
+             onDismissRequest = { validationAlertMessage = "" },
+             title = { Text("Lauditor", fontFamily = GillSans, fontWeight = FontWeight.Bold) },
+             text = { Text(validationAlertMessage, fontFamily = GillSans) },
+             confirmButton = {
+                 Button(
+                     onClick = { validationAlertMessage = "" },
+                     colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF004D87))
+                 ) {
+                     Text("OK", color = Color.White, fontFamily = GillSans)
+                 }
+             }
+         )
+     }
+}
 
-                                // Batch Unshare Button Bar
-                                if (selectedSharedTab == "byme" && selectedDocIds.isNotEmpty()) {
-                                    Spacer(modifier = Modifier.height(16.dp))
-                                    Row(
-                                        modifier = Modifier.fillMaxWidth(),
-                                        horizontalArrangement = Arrangement.SpaceAround
-                                    ) {
-                                        Button(
-                                            onClick = { selectedDocIds.clear() },
-                                            colors = ButtonDefaults.buttonColors(containerColor = Color(0xFFE0E0E0)),
-                                            shape = RoundedCornerShape(20.dp),
-                                            modifier = Modifier.width(120.dp)
-                                        ) {
-                                            Text(text = "Cancel", color = Color.Black, fontFamily = GillSans)
-                                        }
+@Composable
+private fun DocumentRow(
+    doc: SharedDocumentsDo,
+    sharedTag: String, // "withme", "byme", or "share"
+    onViewDoc: (SharedDocumentsDo) -> Unit,
+    isSelected: Boolean = false,
+    onCheckedChange: ((Boolean) -> Unit)? = null,
+    onRemoveClick: (() -> Unit)? = null
+) {
+    Column(
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(4.dp)
+            .background(Color.White)
+            .clickable { onViewDoc(doc) }
+    ) {
+        Row(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(8.dp),
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            // Document info column
+            Column(
+                modifier = Modifier
+                    .weight(1f)
+                    .padding(4.dp)
+            ) {
+                // Name
+                Text(
+                    text = doc.name ?: "",
+                    color = if (sharedTag == "withme") Color(0xFF004D87) else Color.Black,
+                    fontWeight = FontWeight.Normal,
+                    fontFamily = GillSans,
+                    fontSize = if (sharedTag == "withme") 18.sp else 17.sp
+                )
 
-                                        Button(
-                                            onClick = {
-                                                val removeArray = JSONArray()
-                                                for (id in selectedDocIds) {
-                                                    removeArray.put(JSONObject().apply {
-                                                        put("docid", id)
-                                                        put("doctype", "general")
-                                                    })
-                                                }
-                                                val payload = JSONObject().apply {
-                                                    put("relid", model.id)
-                                                    put("remove", removeArray)
-                                                    put("add", JSONArray())
-                                                    put("message", "")
-                                                }
-                                                onUnshareDocs(payload)
-                                                selectedDocIds.clear()
-                                            },
-                                            colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF004D87)),
-                                            shape = RoundedCornerShape(20.dp),
-                                            modifier = Modifier.width(120.dp)
-                                        ) {
-                                            Text(text = "Unshare", color = Color.White, fontFamily = GillSans)
-                                        }
-                                    }
-                                }
-                            }
-                        }
+                // Confidential Label
+                if (doc.has_Confidential) {
+                    Row(
+                        modifier = Modifier.padding(top = 2.dp),
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        Text(
+                            text = "Confidential : ",
+                            color = Color.Black,
+                            fontWeight = FontWeight.Bold,
+                            fontFamily = GillSans,
+                            fontSize = 15.sp
+                        )
+                        Text(
+                            text = doc.matter_details_name ?: "",
+                            color = Color.Black,
+                            fontWeight = FontWeight.Normal,
+                            fontFamily = GillSans,
+                            fontSize = 15.sp
+                        )
                     }
+                }
+
+                // Date and description for shared with me
+                if (sharedTag == "withme") {
+                    // Date
+                    Text(
+                        text = doc.created ?: "",
+                        color = Color(0xFF1976D2),
+                        fontWeight = FontWeight.Medium,
+                        fontFamily = GillSans,
+                        fontSize = 17.sp,
+                        modifier = Modifier.padding(top = 2.dp)
+                    )
+                    // Description
+                    Text(
+                        text = doc.description ?: doc.filename ?: "",
+                        color = Color.Black,
+                        fontWeight = FontWeight.Normal,
+                        fontFamily = GillSans,
+                        fontSize = 17.sp,
+                        modifier = Modifier.padding(top = 2.dp)
+                    )
+                }
+            }
+
+            // Right side buttons/checkboxes
+            Row(
+                verticalAlignment = Alignment.CenterVertically,
+                horizontalArrangement = Arrangement.End
+            ) {
+                if (onRemoveClick != null) {
+                    IconButton(
+                        onClick = onRemoveClick,
+                        modifier = Modifier.size(30.dp)
+                    ) {
+                        Icon(
+                            painter = painterResource(id = R.drawable.cancel_red_icon),
+                            contentDescription = "Remove",
+                            tint = Color.Unspecified,
+                            modifier = Modifier.size(30.dp)
+                        )
+                    }
+                }
+
+                if (onCheckedChange != null) {
+                    Checkbox(
+                        checked = isSelected,
+                        onCheckedChange = onCheckedChange,
+                        modifier = Modifier
+                            .padding(horizontal = 10.dp)
+                            .size(25.dp)
+                    )
                 }
             }
         }
+        Divider(
+            color = Color(0xFFA0A0A0),
+            thickness = 0.5.dp,
+            modifier = Modifier.fillMaxWidth()
+        )
+        Spacer(modifier = Modifier.height(10.dp))
     }
 }
 

@@ -37,6 +37,7 @@ import com.digicoffer.lauditor.R
 import com.digicoffer.lauditor.Relationships.Model.RelationshipsModel
 import com.digicoffer.lauditor.feature.groups.presentation.components.CustomTextField
 import com.digicoffer.lauditor.feature.members.presentation.components.MembersAlertDialog
+import com.digicoffer.lauditor.core.ui.feedback.AppLoader
 import com.digicoffer.lauditor.feature.notifications.presentation.components.NotificationsSearchBar
 import com.digicoffer.lauditor.feature.relationships.presentation.components.ExchangeInfoDialog
 import com.digicoffer.lauditor.feature.relationships.presentation.components.RelationshipCardItem
@@ -49,6 +50,7 @@ import androidx.compose.ui.platform.LocalContext
 import org.json.JSONArray
 import org.json.JSONObject
 
+import kotlinx.coroutines.launch
 import com.digicoffer.lauditor.CommonFiles.GlobalFiles.Constants
 
 enum class ScreenMode {
@@ -96,7 +98,12 @@ fun RelationshipsScreen(
     var activeRelationModel by remember { mutableStateOf<RelationshipsModel?>(null) }
     var validationAlertMessage by remember { mutableStateOf<String?>(null) }
 
+    val coroutineScope = rememberCoroutineScope()
+
     val handleViewDoc: (SharedDocumentsDo, String) -> Unit = { doc, sharedTag ->
+        val effContentType = getEffectiveContentType(doc)
+        val isPdf = effContentType.equals("application/pdf", ignoreCase = true)
+        val isImg = effContentType.startsWith("image/", ignoreCase = true)
         val isEncrypted = doc.added_encryption || doc.is_encrypted
         if (isEncrypted) {
             viewModel.onEvent(
@@ -105,21 +112,45 @@ fun RelationshipsScreen(
                     sharedDoc = (sharedTag == "withme")
                 ) { success, decryptedUrl ->
                     if (success && decryptedUrl != null) {
-                        displayDocument(context, doc, decryptedUrl)
+                        coroutineScope.launch {
+                            var finalUrl = decryptedUrl
+                            if (!isPdf && !isImg) {
+                                viewModel.onEvent(RelationshipsUiEvent.SetLoading(true))
+                                val converted = callDoc2PdfApi(decryptedUrl, context)
+                                viewModel.onEvent(RelationshipsUiEvent.SetLoading(false))
+                                if (converted != null) {
+                                    finalUrl = converted
+                                }
+                            }
+                            displayDocument(context, doc, finalUrl)
+                        }
                     }
                 }
             )
         } else {
+            val effectiveTag = if (!isPdf && !isImg) "byme" else sharedTag
+
             activeRelationModel?.let { model ->
                 viewModel.onEvent(
                     RelationshipsUiEvent.ViewDocument(
                         docId = doc.id ?: "",
-                        sharedTag = sharedTag,
+                        sharedTag = effectiveTag,
                         relId = model.id ?: "",
                         isCorporate = (currentRelType == "Corporate" || currentRelType == "Entity")
                     ) { success, viewUrl ->
                         if (success && viewUrl != null) {
-                            displayDocument(context, doc, viewUrl)
+                            coroutineScope.launch {
+                                var finalUrl = viewUrl
+                                if (!isPdf && !isImg) {
+                                    viewModel.onEvent(RelationshipsUiEvent.SetLoading(true))
+                                    val converted = callDoc2PdfApi(viewUrl, context)
+                                    viewModel.onEvent(RelationshipsUiEvent.SetLoading(false))
+                                    if (converted != null) {
+                                        finalUrl = converted
+                                    }
+                                }
+                                displayDocument(context, doc, finalUrl)
+                            }
                         }
                     }
                 )
@@ -296,14 +327,7 @@ fun RelationshipsScreen(
                     }
 
                     // Main Relationships directory list
-                    if (uiState.isLoading) {
-                        Box(
-                            modifier = Modifier.fillMaxSize(),
-                            contentAlignment = Alignment.Center
-                        ) {
-                            CircularProgressIndicator(color = Color(0xFF004D87))
-                        }
-                    } else if (uiState.relationshipsList.isEmpty()) {
+                    if (uiState.relationshipsList.isEmpty() && !uiState.isLoading) {
                         Box(
                             modifier = Modifier.fillMaxSize(),
                             contentAlignment = Alignment.Center
@@ -488,6 +512,7 @@ fun RelationshipsScreen(
                             model = model,
                             sharedDocs = uiState.sharedDocsList,
                             isLoading = uiState.isLoading,
+                            isCorporate = (currentRelType == "Corporate" || currentRelType == "Entity"),
                             onDismiss = { screenMode = ScreenMode.LIST },
                             onLoadProfile = { onResult ->
                                 viewModel.onEvent(
@@ -529,6 +554,32 @@ fun RelationshipsScreen(
                             onShareClick = { category ->
                                 shareCategory = category
                                 screenMode = ScreenMode.SHARE_DOCS
+                            },
+                            onSearchDocs = { payload, onResult ->
+                                viewModel.onEvent(
+                                    RelationshipsUiEvent.SearchDocuments(payload) { results ->
+                                        onResult(results)
+                                    }
+                                )
+                            },
+                            onShareDocs = { payload ->
+                                viewModel.onEvent(
+                                    RelationshipsUiEvent.ShareDocuments(
+                                        isCorporate = (currentRelType == "Corporate" || currentRelType == "Entity"),
+                                        relId = model.id ?: "",
+                                        payload = payload
+                                    ) { success, msg ->
+                                        validationAlertMessage = msg
+                                        // Refresh list
+                                        viewModel.onEvent(
+                                            RelationshipsUiEvent.LoadSharedDocuments(
+                                                id = model.id ?: "",
+                                                sharedTag = "byme",
+                                                isCorporate = (currentRelType == "Corporate" || currentRelType == "Entity")
+                                            )
+                                        )
+                                    }
+                                )
                             },
                             onViewDoc = { doc, sharedTag ->
                                 handleViewDoc(doc, sharedTag)
@@ -979,7 +1030,35 @@ fun RelationshipsScreen(
                 onDismiss = { validationAlertMessage = null }
             )
         }
+
+        // Circular Loading Overlay
+        if (uiState.isLoading) {
+            AppLoader()
+        }
     }
+}
+
+fun getEffectiveContentType(doc: SharedDocumentsDo): String {
+    val filename = doc.filename ?: ""
+    val name = doc.name ?: ""
+    val extension = if (filename.contains('.')) {
+        filename.substringAfterLast('.', "").lowercase(java.util.Locale.getDefault())
+    } else if (name.contains('.')) {
+        name.substringAfterLast('.', "").lowercase(java.util.Locale.getDefault())
+    } else {
+        ""
+    }
+    if (extension.isNotEmpty()) {
+        val imgExts = listOf("apng", "avif", "gif", "jpeg", "png", "svg", "webp", "jpg")
+        return if (imgExts.contains(extension)) {
+            "image/$extension"
+        } else if (extension == "pdf") {
+            "application/pdf"
+        } else {
+            "application/$extension"
+        }
+    }
+    return doc.content_type ?: ""
 }
 
 fun displayDocument(context: android.content.Context, doc: SharedDocumentsDo, url: String) {
@@ -1006,13 +1085,20 @@ fun displayDocument(context: android.content.Context, doc: SharedDocumentsDo, ur
         dialog.dismiss()
     }
     val lowerUrl = url.lowercase(java.util.Locale.getDefault())
-    val urlIsPDF = lowerUrl.contains("application/pdf") || lowerUrl.contains(".pdf")
-    val isImage = com.digicoffer.lauditor.CommonFiles.PdfUtils.File_Content_Type.isImage(doc.content_type)
+    val urlIsPDF = lowerUrl.contains("application/pdf") || lowerUrl.contains(".pdf") || url.startsWith("localfile://")
+    val effContentType = getEffectiveContentType(doc)
+    val isImage = effContentType.startsWith("image/", ignoreCase = true)
     if (urlIsPDF) {
         idPDFView.visibility = android.view.View.VISIBLE
         progressBar.visibility = android.view.View.VISIBLE
-        pdfTask[0] = com.digicoffer.lauditor.CommonFiles.PdfUtils.RetrievePDFfromUrl(idPDFView, progressBar)
-        pdfTask[0]?.execute(url)
+        if (url.startsWith("localfile://")) {
+            val localPath = url.replace("localfile://", "")
+            idPDFView.fromFile(java.io.File(localPath)).load()
+            progressBar.visibility = android.view.View.GONE
+        } else {
+            pdfTask[0] = com.digicoffer.lauditor.CommonFiles.PdfUtils.RetrievePDFfromUrl(idPDFView, progressBar)
+            pdfTask[0]?.execute(url)
+        }
     } else {
         if (isImage) {
             iv_image.visibility = android.view.View.VISIBLE
@@ -1034,3 +1120,57 @@ fun displayDocument(context: android.content.Context, doc: SharedDocumentsDo, ur
     dialog.setView(view)
     dialog.show()
 }
+
+suspend fun callDoc2PdfApi(fileUrl: String, context: android.content.Context): String? = kotlinx.coroutines.withContext(kotlinx.coroutines.Dispatchers.IO) {
+    try {
+        val apiUrl = java.net.URL(com.digicoffer.lauditor.CommonFiles.GlobalFiles.Constants.doctopdfUrl)
+        val conn = apiUrl.openConnection() as java.net.HttpURLConnection
+        conn.requestMethod = "POST"
+        conn.setRequestProperty("Content-Type", "application/json")
+        conn.setRequestProperty("Authorization", "Bearer " + com.digicoffer.lauditor.CommonFiles.GlobalFiles.Constants.TOKEN)
+        conn.doOutput = true
+        conn.connectTimeout = 15000
+        conn.readTimeout = 60000
+
+        val body = org.json.JSONObject()
+        body.put("url", fileUrl)
+        val input = body.toString().toByteArray(charset("utf-8"))
+        conn.outputStream.write(input, 0, input.size)
+        conn.connect()
+
+        val code = conn.responseCode
+        val ctHdr = conn.contentType
+        if (code == 200) {
+            if (ctHdr != null && ctHdr.contains("application/pdf")) {
+                val pdfFile = java.io.File.createTempFile("doc2pdf_" + System.currentTimeMillis(), ".pdf", context.cacheDir)
+                java.io.BufferedInputStream(conn.inputStream).use { `in` ->
+                    java.io.FileOutputStream(pdfFile).use { fo ->
+                        val buf = ByteArray(4096)
+                        var n: Int
+                        while (`in`.read(buf).also { n = it } != -1) {
+                            fo.write(buf, 0, n)
+                        }
+                    }
+                }
+                return@withContext "localfile://" + pdfFile.absolutePath
+            } else {
+                val reader = java.io.BufferedReader(java.io.InputStreamReader(conn.inputStream))
+                val sb = java.lang.StringBuilder()
+                var line: String?
+                while (reader.readLine().also { line = it } != null) {
+                    sb.append(line)
+                }
+                reader.close()
+                val resp = org.json.JSONObject(sb.toString())
+                if (!resp.optBoolean("error", true)) {
+                    val data = resp.optJSONObject("data")
+                    if (data != null) return@withContext data.optString("url")
+                }
+            }
+        }
+    } catch (e: Exception) {
+        android.util.Log.e("FetchUrl", "doc2pdf failed: " + e.message)
+    }
+    return@withContext null
+}
+

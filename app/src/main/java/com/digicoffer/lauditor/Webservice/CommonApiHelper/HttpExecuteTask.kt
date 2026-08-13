@@ -90,7 +90,7 @@ class HttpExecuteTask(
             } else if (restMethodType == WebServiceHelper.RestMethodType.GET && typeString == "Other Doc View") {
                 resolvedUrl = urlString
             } else {
-                resolvedUrl = Constants.base_URL + urlString
+                resolvedUrl = if (urlString.startsWith("http")) urlString else (Constants.base_URL + urlString)
             }
 
             Log.e("URL", ":$resolvedUrl")

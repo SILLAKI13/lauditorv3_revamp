@@ -81,4 +81,6 @@ sealed interface RelationshipsUiEvent {
         val payload: JSONObject,
         val onResult: (List<SharedDocumentsDo>) -> Unit
     ) : RelationshipsUiEvent
+
+    data class SetLoading(val isLoading: Boolean) : RelationshipsUiEvent
 }
