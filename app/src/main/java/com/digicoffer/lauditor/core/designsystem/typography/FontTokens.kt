@@ -1,12 +1,18 @@
 package com.digicoffer.lauditor.core.designsystem.typography
 
 import androidx.compose.ui.text.TextStyle
+import androidx.compose.ui.text.font.Font
 import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.sp
+import com.digicoffer.lauditor.R
 
 object FontTokens {
-    val DefaultFontFamily = FontFamily.Default
+    val DefaultFontFamily = FontFamily(
+        Font(R.font.gill_sans_regular, FontWeight.Normal),
+        Font(R.font.gill_sans_bold, FontWeight.Bold),
+        Font(R.font.gill_sans, FontWeight.Medium)
+    )
 }
 
 val TextStyles = LauditorTypography(

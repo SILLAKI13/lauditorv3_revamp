@@ -48,6 +48,11 @@ import com.digicoffer.lauditor.Webservice.CommonApiHelper.WebServiceHelper
 import com.digicoffer.lauditor.Webservice.HttpResultDo
 import com.google.android.material.imageview.ShapeableImageView
 import com.google.android.material.textfield.TextInputEditText
+import androidx.compose.ui.platform.ComposeView
+import androidx.compose.runtime.LaunchedEffect
+import androidx.lifecycle.ViewModelProvider
+import com.digicoffer.lauditor.feature.matter.presentation.screen.MatterEditScreen
+import com.digicoffer.lauditor.feature.matter.presentation.viewmodel.MatterEditViewModel
 import org.json.JSONArray
 import org.json.JSONException
 import org.json.JSONObject
@@ -199,11 +204,57 @@ class MatterInformation_En : Fragment(), View.OnClickListener, AsyncTaskComplete
     var tv_response_phone: TextView? = null
     private val finalMyCalendar = Calendar.getInstance()
     var viewMatterModel1: ViewMatterModel? = null
+    private var matterEditViewModel: MatterEditViewModel? = null
 
     companion object {
         private const val TAG = "MatterInformation"
     }
 
+    @SuppressLint("MissingInflatedId", "SetTextI18n", "ClickableViewAccessibility")
+    override fun onCreateView(
+        inflater: LayoutInflater,
+        container: ViewGroup?,
+        savedInstanceState: Bundle?
+    ): View? {
+        Constants.matterInformation_en = this
+        matter = parentFragment as? Matter
+        matterArraylist = matter?.matter_arraylist
+
+        return ComposeView(requireContext()).apply {
+            setContent {
+                val viewModel = ViewModelProvider(requireParentFragment()).get(MatterEditViewModel::class.java)
+                matterEditViewModel = viewModel
+
+                LaunchedEffect(Unit) {
+                    val mat = matter
+                    val list = mat?.matter_arraylist
+                    if (list != null && list.isNotEmpty()) {
+                        viewModel.initializeFromLegacy(list[0])
+                    } else {
+                        viewModel.initialize(viewMatterModel1)
+                    }
+                }
+
+                com.digicoffer.lauditor.core.designsystem.theme.LauditorTheme {
+                    MatterEditScreen(
+                        editModel = viewMatterModel1,
+                        onNavigateBack = {
+                            val parent = matter
+                            parent?.loadViewUI()
+                        },
+                        onNavigateNext = {
+                            val parent = parentFragment as? Matter
+                            parent?.loadGCT()
+                        },
+                        viewModel = viewModel
+                    )
+                }
+            }
+        }
+    }
+
+    /*
+    // Legacy onCreateView commented out for Compose migration compatibility
     @SuppressLint("MissingInflatedId", "SetTextI18n", "ClickableViewAccessibility")
     override fun onCreateView(
         inflater: LayoutInflater,
@@ -664,6 +715,7 @@ class MatterInformation_En : Fragment(), View.OnClickListener, AsyncTaskComplete
         }
         return view
     }
+    */
 
     private fun callEditMatterInfo() {
         try {
@@ -1233,25 +1285,7 @@ class MatterInformation_En : Fragment(), View.OnClickListener, AsyncTaskComplete
     }
 
     fun CheckUnique() {
-        progress_dialog = AndroidUtils.get_progress(activity)
-        try {
-            val postdata = JSONObject()
-            if (!Constants.Matter_id.isNullOrEmpty()) {
-                postdata.put("matter_id", Constants.Matter_id)
-            }
-            postdata.put("title", et_matter_title?.text.toString())
-            postdata.put("type", (Constants.MATTER_TYPE ?: "").lowercase(Locale.ROOT))
-            WebServiceHelper.callHttpWebService(
-                this,
-                requireContext(),
-                WebServiceHelper.RestMethodType.POST,
-                "matter/check/unique",
-                "Unique",
-                postdata.toString()
-            )
-        } catch (e: Exception) {
-            e.fillInStackTrace()
-        }
+        matterEditViewModel?.submitForm(isSaveLater = false, editModel = viewMatterModel1)
     }
 
     private fun initDatePickers() {
@@ -1430,6 +1464,7 @@ class MatterInformation_En : Fragment(), View.OnClickListener, AsyncTaskComplete
     }
 
     private fun loadEditMatterDetails() {
+        matterEditViewModel?.initialize(viewMatterModel1)
         isInitialLoad = true
         matter_date?.text = viewMatterModel1?.created ?: ""
         if (Constants.create_matter) {

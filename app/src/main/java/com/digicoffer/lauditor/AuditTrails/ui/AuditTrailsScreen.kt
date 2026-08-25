@@ -1,4 +1,5 @@
 package com.digicoffer.lauditor.AuditTrails.ui
+import com.digicoffer.lauditor.core.ui.common.navigation.ComposeHorizontalPagerRibbon
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
@@ -24,7 +25,11 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.digicoffer.lauditor.AuditTrails.Model.AuditTrailsUiState
 import com.digicoffer.lauditor.R
-import com.digicoffer.lauditor.core.designsystem.components.*
+import com.digicoffer.lauditor.core.ui.common.dropdowns.DropdownSelectorField
+import com.digicoffer.lauditor.core.ui.common.search.AuditSearchBar
+import com.digicoffer.lauditor.core.ui.common.datepickers.DateIntervalSelector
+import com.digicoffer.lauditor.core.ui.common.feedback.EmptyStateCard
+import com.digicoffer.lauditor.core.ui.common.cards.AuditTrailCard
 
 @Composable
 fun AuditTrailsScreen(

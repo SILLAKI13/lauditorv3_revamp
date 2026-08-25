@@ -37,7 +37,7 @@ import com.digicoffer.lauditor.R
 import com.digicoffer.lauditor.Relationships.Model.RelationshipsModel
 import com.digicoffer.lauditor.feature.groups.presentation.components.CustomTextField
 import com.digicoffer.lauditor.feature.members.presentation.components.MembersAlertDialog
-import com.digicoffer.lauditor.core.ui.feedback.AppLoader
+import com.digicoffer.lauditor.core.ui.common.feedback.AppLoader
 import com.digicoffer.lauditor.feature.notifications.presentation.components.NotificationsSearchBar
 import com.digicoffer.lauditor.feature.relationships.presentation.components.ExchangeInfoDialog
 import com.digicoffer.lauditor.feature.relationships.presentation.components.RelationshipCardItem

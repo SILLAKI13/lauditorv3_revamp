@@ -30,8 +30,10 @@ import android.widget.LinearLayout
 import android.widget.TextView
 import androidx.appcompat.widget.AppCompatButton
 import androidx.cardview.widget.CardView
+import androidx.compose.ui.platform.ComposeView
 import androidx.core.content.ContextCompat
 import androidx.fragment.app.Fragment
+import androidx.lifecycle.ViewModelProvider
 import androidx.recyclerview.widget.GridLayoutManager
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
@@ -50,6 +52,8 @@ import com.digicoffer.lauditor.R
 import com.digicoffer.lauditor.Webservice.AsyncTaskCompleteListener
 import com.digicoffer.lauditor.Webservice.CommonApiHelper.WebServiceHelper
 import com.digicoffer.lauditor.Webservice.HttpResultDo
+import com.digicoffer.lauditor.feature.matter.presentation.screen.MatterListingScreen
+import com.digicoffer.lauditor.feature.matter.presentation.viewmodel.MatterViewModel
 import com.google.android.material.textfield.TextInputEditText
 import org.json.JSONArray
 import org.json.JSONException
@@ -71,7 +75,7 @@ class ViewMatter : Fragment(), AsyncTaskCompleteListener, ViewMatterAdapter.Inte
     var linear_notes: LinearLayout? = null
     var ll_nav_buttons: LinearLayout? = null
     var tl_search_matter: CardView? = null
-    lateinit var rv_matter_list: RecyclerView
+    var rv_matter_list: RecyclerView? = null
     var cv_client_details: CardView? = null
     var acls = JSONArray()
     var btn_send_request: Button? = null
@@ -85,7 +89,7 @@ class ViewMatter : Fragment(), AsyncTaskCompleteListener, ViewMatterAdapter.Inte
     var OldGroupsList = ArrayList<ViewGroupModel>()
     var viewMatterModel1: ViewMatterModel? = null
     var rv_group_update: RecyclerView? = null
-    lateinit var et_search_matter: TextInputEditText
+    var et_search_matter: TextInputEditText? = null
     var groupid = ""
     var progressDialog: Dialog? = null
     var Prev_Cursor = ""
@@ -127,37 +131,52 @@ class ViewMatter : Fragment(), AsyncTaskCompleteListener, ViewMatterAdapter.Inte
         var FLAG = ""
     }
 
+    private lateinit var matterViewModel: MatterViewModel
+
+    private fun findParentScrollView(view: View?): android.widget.ScrollView? {
+        var current = view
+        while (current != null) {
+            if (current is android.widget.ScrollView) {
+                return current
+            }
+            current = current.parent as? View
+        }
+        return null
+    }
+
     override fun onCreateView(
         inflater: LayoutInflater,
         container: ViewGroup?,
         savedInstanceState: Bundle?
-    ): View? {
-        val view = inflater.inflate(R.layout.view_matter, container, false)
-        rv_matter_list = view.findViewById(R.id.rv_matter_list)
-        ll_nav_buttons = view.findViewById(R.id.ll_nav_buttons)
-        btn_prev = view.findViewById(R.id.btn_prev)
-        btn_prev?.setText(R.string.prev_)
-        btn_next = view.findViewById(R.id.btn_next)
-        btn_next?.setText(R.string.next_)
-        tl_search_matter = view.findViewById(R.id.tl_search_matter)
-        btn_search = tl_search_matter?.findViewById(R.id.btn_search)
-        et_search_matter = tl_search_matter?.findViewById(R.id.et_search_tm)!!
-        et_search_matter.hint = "Search Matter"
-        et_search_matter.setTextSize(TypedValue.COMPLEX_UNIT_SP, DynamicUtils.fifteen.toFloat())
-        et_search_matter.addTextChangedListener(Validation(et_search_matter))
-        cv_client_details = view.findViewById(R.id.cv_client_details)
-        con_id = view.findViewById(R.id.con_id)
-        rv_group_update = view.findViewById(R.id.rv_group_update)
+    ): View {
         matter = parentFragment as? Matter
-        btn_prev?.setOnClickListener {
-            callFilteredMatterListWebservice("before", Prev_Cursor)
-        }
-        btn_next?.setOnClickListener {
-            callFilteredMatterListWebservice("after", Next_Cursor)
-        }
-        callFilteredMatterListWebservice("", "")
+        matterViewModel = ViewModelProvider(this)[MatterViewModel::class.java]
 
-        return view
+        val composeView = ComposeView(requireContext()).apply {
+            setContent {
+                com.digicoffer.lauditor.core.designsystem.theme.LauditorTheme {
+                    MatterListingScreen(
+                        viewModel = matterViewModel,
+                        onEditMatterClick = { model ->
+                            com.digicoffer.lauditor.CommonFiles.GlobalFiles.Constants.Matter_CreateOrViewDetails = "View Timeline"
+                            com.digicoffer.lauditor.CommonFiles.GlobalFiles.Constants.matterDate = model.created
+                            View_Details(model, ArrayList(matterViewModel.uiState.value.matterList))
+                        },
+                        onViewTimelineClick = { model ->
+                            com.digicoffer.lauditor.CommonFiles.GlobalFiles.Constants.Matter_CreateOrViewDetails = "Edit Matter Info"
+                            com.digicoffer.lauditor.CommonFiles.GlobalFiles.Constants.matterDate = model.created
+                            Edit_Matter_Info(model)
+                        }
+                    )
+                }
+            }
+        }
+
+        composeView.post {
+            findParentScrollView(composeView)?.isFillViewport = true
+        }
+
+        return composeView
     }
 
     override fun onResume() {
@@ -197,8 +216,8 @@ class ViewMatter : Fragment(), AsyncTaskCompleteListener, ViewMatterAdapter.Inte
             var url = "v2/matter/$matterType?paginate=true"
             if (NavPosition.isNotEmpty()) {
                 url = "v2/matter/$matterType?$NavPosition=$id&paginate=true"
-            } else if (et_search_matter.text.toString().isNotEmpty()) {
-                url = "v2/matter/$matterType?$NavPosition=$id&paginate=true&search=" + et_search_matter.text.toString()
+            } else if (et_search_matter?.text?.toString()?.isNotEmpty() == true) {
+                url = "v2/matter/$matterType?$NavPosition=$id&paginate=true&search=" + et_search_matter?.text?.toString()
             } else {
                 url = "v2/matter/$matterType?paginate=true"
             }
@@ -400,7 +419,7 @@ class ViewMatter : Fragment(), AsyncTaskCompleteListener, ViewMatterAdapter.Inte
                         if (error) {
                             AndroidUtils.showAlert(msg, activity)
                         } else {
-                            rv_matter_list.removeAllViews()
+                            rv_matter_list?.removeAllViews()
                             callFilteredMatterListWebservice("", "")
                             AndroidUtils.showAlert(msg, activity, "Success")
                         }
@@ -409,7 +428,7 @@ class ViewMatter : Fragment(), AsyncTaskCompleteListener, ViewMatterAdapter.Inte
                         if (error) {
                             AndroidUtils.showAlert(msg, activity)
                         } else {
-                            rv_matter_list.removeAllViews()
+                            rv_matter_list?.removeAllViews()
                             callFilteredMatterListWebservice("", "")
                             AndroidUtils.showAlert(msg, activity, "Success")
                         }
@@ -1178,14 +1197,14 @@ class ViewMatter : Fragment(), AsyncTaskCompleteListener, ViewMatterAdapter.Inte
 
     private fun loadMatterRecyclerview() {
         try {
-            rv_matter_list.removeAllViews()
+            rv_matter_list?.removeAllViews()
             val viewMatterAdapter = ViewMatterAdapter(matterList, requireContext(), this)
-            rv_matter_list.adapter = viewMatterAdapter
-            AndroidUtils.LoadingRecyclerview(rv_matter_list, context)
-            AndroidUtils.setupBottomSpacerFooter(rv_matter_list, resources.getDimensionPixelSize(R.dimen.twentyeight_dp))
-            viewMatterAdapter.setRecyclerView(rv_matter_list)
-            viewMatterAdapter.filter.filter(et_search_matter.text.toString())
-            et_search_matter.addTextChangedListener(object : TextWatcher {
+            rv_matter_list?.adapter = viewMatterAdapter
+            rv_matter_list?.let { AndroidUtils.LoadingRecyclerview(it, context) }
+            rv_matter_list?.let { AndroidUtils.setupBottomSpacerFooter(it, resources.getDimensionPixelSize(R.dimen.twentyeight_dp)) }
+            rv_matter_list?.let { viewMatterAdapter.setRecyclerView(it) }
+            viewMatterAdapter.filter.filter(et_search_matter?.text?.toString() ?: "")
+            et_search_matter?.addTextChangedListener(object : TextWatcher {
                 override fun beforeTextChanged(s: CharSequence, start: Int, count: Int, after: Int) {}
                 override fun onTextChanged(s: CharSequence, start: Int, before: Int, count: Int) {
                     if (s.isEmpty()) {

@@ -42,7 +42,7 @@ import com.digicoffer.lauditor.Webservice.AsyncTaskCompleteListener
 import com.digicoffer.lauditor.Webservice.HttpResultDo
 import com.digicoffer.lauditor.Webservice.CommonApiHelper.WebServiceHelper
 import org.json.JSONObject
-import com.digicoffer.lauditor.core.ui.feedback.AppLoader
+import com.digicoffer.lauditor.core.ui.common.feedback.AppLoader
 
 private val GillSans = FontFamily(
     Font(R.font.gill_sans)

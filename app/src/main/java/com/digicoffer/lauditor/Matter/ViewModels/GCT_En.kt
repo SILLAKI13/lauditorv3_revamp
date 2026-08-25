@@ -38,6 +38,11 @@ import org.json.JSONException
 import org.json.JSONObject
 import java.text.SimpleDateFormat
 import java.util.*
+import androidx.compose.ui.platform.ComposeView
+import androidx.compose.runtime.LaunchedEffect
+import androidx.lifecycle.ViewModelProvider
+import com.digicoffer.lauditor.feature.matter.presentation.screen.GctScreen
+import com.digicoffer.lauditor.feature.matter.presentation.viewmodel.MatterEditViewModel
 
 class GCT_En : Fragment(), View.OnClickListener, AsyncTaskCompleteListener {
 
@@ -226,381 +231,41 @@ class GCT_En : Fragment(), View.OnClickListener, AsyncTaskCompleteListener {
         inflater: LayoutInflater, container: ViewGroup?,
         savedInstanceState: Bundle?
     ): View? {
-        val view = inflater.inflate(R.layout.gct_layout_en, container, false)
-        matter_date = view.findViewById(R.id.matter_date)
-        ll_matterDate = view.findViewById(R.id.ll_matterDate)
-        tv_add_clients = view.findViewById(R.id.tv_add_clients)
-        tv_add_clients?.setText(R.string.add_clients)
-        tv_warning_msg = view.findViewById(R.id.tv_warning_msg)
-        tv_warning_msg?.visibility = View.GONE
-        tv_warning_msg?.setTextColor(Color.RED)
-        tv_client_type = view.findViewById(R.id.tv_client_type)
-        tv_client_type?.setText(R.string.client_type)
-        ll_matterDate?.visibility = View.GONE
-        Constants.gct_en = this
-        at_add_groups = view.findViewById(R.id.at_add_groups)
-        iv_remove_matter = view.findViewById(R.id.iv_remove_matter)
-        iv_remove_matter?.visibility = View.VISIBLE
-        clients_list_layout = view.findViewById(R.id.clients_list_layout)
-        clients_list_layout?.visibility = View.GONE
-        temp_client_layout = view.findViewById(R.id.temp_client_layout)
-        temp_client_layout?.visibility = View.GONE
-        sp_corp_client = view.findViewById(R.id.sp_corp_client)
-        ac_search_entity = view.findViewById(R.id.ac_search_entity)
-        ac_search_entity?.setHint(R.string.search)
-        btn_search_entity = view.findViewById(R.id.btn_search_entity)
-        btn_search_entity?.setText(R.string.search)
-        tv_temp_fname = view.findViewById(R.id.tv_temp_fname)
-        tv_temp_fname?.setText(R.string.first_name)
-        ll_search_entity = view.findViewById(R.id.ll_search_entity)
-        tv_temp_lname = view.findViewById(R.id.tv_temp_lname)
-        tv_temp_lname?.setText(R.string.last_name)
-        tv_temp_email = view.findViewById(R.id.tv_temp_email)
-        tv_temp_email?.setText(R.string.email_add)
-        tv_temp_confirm_email = view.findViewById(R.id.tv_temp_confirm_email)
-        tv_temp_confirm_email?.setText(R.string.cofirm_email_add)
-        tv_temp_country = view.findViewById(R.id.tv_temp_country)
-        tv_temp_country?.setText(R.string.country)
-        sp_country = view.findViewById(R.id.sp_country)
-        sp_country?.visibility = View.GONE
-        ll_sp_country = view.findViewById(R.id.ll_sp_country)
-        img_country_clear = ll_sp_country?.findViewById(R.id.img_clear_icon)
-        img_country_dropdown = ll_sp_country?.findViewById(R.id.img_dropdown_icon)
-        et_temp_country = ll_sp_country?.findViewById(R.id.tv_spinner_view)
-        et_temp_country?.setHint(R.string.select_country)
-        response_email = view.findViewById(R.id.response_email)
-        response_email?.visibility = View.GONE
-        response_cemail = view.findViewById(R.id.response_cemail)
+        matter = parentFragment as? Matter
 
-        img_country_clear?.setOnClickListener {
-            AndroidUtils.DisplaySpinnerView(sp_country, et_temp_country, country_name, img_country_dropdown, img_country_clear, false, CountryAdapter, "Search Country")
-            AddTempClientStatus()
-            iscountry = true
-        }
-        ll_sp_country?.setOnClickListener {
-            AndroidUtils.display_listview(iscountry, sp_country)
-            val isVisible = sp_country?.visibility == View.VISIBLE
-            AndroidUtils.DisplaySpinnerView(sp_country, et_temp_country, country_name, img_country_dropdown, img_country_clear, !isVisible, CountryAdapter, "Search Country")
-            call_country_list()
-            iscountry = !iscountry
-        }
-        btn_search_entity?.setOnClickListener { searchEntity() }
-
-        tv_temp_phone = view.findViewById(R.id.tv_temp_phone)
-        tv_temp_phone?.setText(R.string.phone_no)
-        et_temp_fname = view.findViewById(R.id.et_temp_fname)
-        et_temp_fname?.setHint(R.string.first_name)
-        et_temp_fname?.addTextChangedListener(Validation(et_temp_fname))
-        et_temp_lname = view.findViewById(R.id.et_temp_lname)
-        et_temp_lname?.setHint(R.string.last_name)
-        et_temp_lname?.addTextChangedListener(Validation(et_temp_lname))
-        et_temp_email = view.findViewById(R.id.et_temp_email)
-        et_temp_email?.setHint(R.string.email_add)
-        et_temp_email?.addTextChangedListener(Validation(et_temp_email))
-        et_temp_confirm_email = view.findViewById(R.id.et_temp_confirm_email)
-        et_temp_confirm_email?.setHint(R.string.cofirm_email_add)
-        et_temp_confirm_email?.addTextChangedListener(Validation(et_temp_confirm_email))
-        et_temp_phone = view.findViewById(R.id.et_temp_phone)
-        et_temp_phone?.setHint(R.string.phone_no)
-        et_temp_phone?.addTextChangedListener(Validation(et_temp_phone))
-        et_temp_phone?.inputType = InputType.TYPE_CLASS_NUMBER
-        val filters = arrayOf<InputFilter>(InputFilter.LengthFilter(10))
-        et_temp_phone?.filters = filters
-        tv_temp_individual = view.findViewById(R.id.tv_temp_individual)
-        tv_temp_individual?.setText(R.string.individual)
-        tv_temp_individual?.setTextColor(resources.getColor(R.color.white))
-        tv_temp_entity = view.findViewById(R.id.tv_temp_entity)
-        tv_temp_entity?.background = context?.getDrawable(R.drawable.button_right_round_background)
-        tv_temp_entity?.setText(R.string.entity)
-        btn_add_temp_client = view.findViewById(R.id.btn_add_temp_client)
-        btn_add_temp_client?.setText(R.string.add_as_client)
-        AndroidUtils.ToggleButton(0, btn_add_temp_client)
-        btn_cancel_temp_client = view.findViewById(R.id.btn_cancel_temp_client)
-
-        val textWatcher = object : TextWatcher {
-            override fun beforeTextChanged(s: CharSequence, start: Int, count: Int, after: Int) {}
-            override fun onTextChanged(s: CharSequence, start: Int, before: Int, count: Int) {}
-            override fun afterTextChanged(s: Editable) {
-                CheckEmailAlert()
-                AddTempClientStatus()
-            }
-        }
-        et_temp_fname?.addTextChangedListener(textWatcher)
-        et_temp_lname?.addTextChangedListener(textWatcher)
-        et_temp_email?.addTextChangedListener(textWatcher)
-        et_temp_confirm_email?.addTextChangedListener(textWatcher)
-
-        btn_add_temp_client?.setOnClickListener { check_temp_values() }
-        btn_cancel_temp_client?.setOnClickListener {
-            et_temp_fname?.text = null
-            et_temp_lname?.text = null
-            et_temp_country?.text = null
-            et_temp_phone?.text = null
-            et_temp_email?.text = null
-            et_temp_confirm_email?.text = null
-            tv_warning_msg?.visibility = View.GONE
-            ac_search_entity?.setText("")
-            loadAddClient()
-        }
-        sp_country?.onItemClickListener = AdapterView.OnItemClickListener { _, _, position, _ ->
-            country_name = countriesList[position].name ?: ""
-            AndroidUtils.DisplaySpinnerView(sp_country, et_temp_country, country_name, img_country_dropdown, img_country_clear, false, CountryAdapter, "Search Country")
-            AddTempClientStatus()
-            iscountry = true
-        }
-
-        tv_temp_individual?.setOnClickListener {
-            if (!et_temp_fname?.text.toString().isEmpty() || !et_temp_lname?.text.toString().isEmpty() || !et_temp_email?.text.toString().isEmpty() || !et_temp_confirm_email?.text.toString().isEmpty() || !et_temp_country?.text.toString().isEmpty() || !et_temp_phone?.text.toString().isEmpty()) {
-                Alert(false)
-            } else {
-                tv_temp_individual?.setTextColor(resources.getColor(R.color.white))
-                tv_temp_entity?.setTextColor(resources.getColor(R.color.black))
-                client_type = "consumer"
-                tv_temp_individual?.background = context?.getDrawable(R.drawable.button_left_green_round_background)
-                tv_temp_entity?.background = context?.getDrawable(R.drawable.button_right_round_background)
-                tv_temp_lname?.setText(R.string.last_name)
-                et_temp_lname?.setHint(R.string.last_name)
-                tv_temp_fname?.setText(R.string.first_name)
-                et_temp_fname?.setHint(R.string.first_name)
-            }
-        }
-
-        tv_temp_entity?.setOnClickListener {
-            if (!et_temp_fname?.text.toString().isEmpty() || !et_temp_lname?.text.toString().isEmpty() || !et_temp_email?.text.toString().isEmpty() || !et_temp_confirm_email?.text.toString().isEmpty() || !et_temp_country?.text.toString().isEmpty() || !et_temp_phone?.text.toString().isEmpty()) {
-                Alert(true)
-            } else {
-                tv_temp_individual?.setTextColor(resources.getColor(R.color.black))
-                tv_temp_entity?.setTextColor(resources.getColor(R.color.white))
-                client_type = "entity"
-                tv_temp_individual?.background = context?.getDrawable(R.drawable.button_left_round_background)
-                tv_temp_entity?.background = context?.getDrawable(R.drawable.button_right_green_round_background)
-                tv_temp_lname?.setText(R.string.contact_person)
-                et_temp_lname?.setHint(R.string.contact_person)
-                tv_temp_fname?.setText(R.string.firm_name)
-                et_temp_fname?.setHint(R.string.firm_name)
-            }
-        }
-
-        tv_add_client = view.findViewById(R.id.tv_add_client)
-        tv_add_client?.setText(R.string.add_clients)
-        tv_add_client?.setTextColor(resources.getColor(R.color.white))
-
-        tv_temp_client = view.findViewById(R.id.tv_temp_client)
-        tv_temp_client?.setText(R.string.temp_clients)
-        tv_temp_client?.background = context?.getDrawable(R.drawable.radiobutton_centre_background)
-
-        tv_corp_client = view.findViewById(R.id.tv_corp_client)
-        tv_corp_client?.setText(R.string.corporate_clients)
-        tv_corp_client?.background = context?.getDrawable(R.drawable.button_right_round_background)
-
-        at_add_groups?.setHint(R.string.select_assign_groups)
-        tv_selected_clients = view.findViewById(R.id.tv_selected_clients)
-        tv_selected_clients?.setText(R.string.selected_clients)
-        selected_corp_clients = view.findViewById(R.id.selected_corp_clients)
-        selected_corp_clients?.visibility = View.GONE
-        tv_selected_corp_clients = view.findViewById(R.id.tv_selected_corp_clients)
-        tv_selected_corp_clients?.setText(R.string.selected_corporate_clients)
-        tv_selected_tm = view.findViewById(R.id.tv_selected_tm)
-        tv_selected_tm?.setText(R.string.assigned_team_members)
-        tv_name = view.findViewById(R.id.tv_name)
-        tv_name?.setText(R.string.selected_groups)
-        at_add_groups?.setOnClickListener(this)
-        add_groups = view.findViewById(R.id.add_groups)
-        btn_cancel_save = view.findViewById(R.id.btn_cancel_save)
-        cv_details = view.findViewById(R.id.cv_details)
-        ll_save_buttons = view.findViewById(R.id.ll_save_buttons)
-        ll_save_buttons?.visibility = View.VISIBLE
-        ll_add_clients = view.findViewById(R.id.ll_add_clients)
-        ll_add_clients?.visibility = View.GONE
-        rv_display_upload_groups_docs = view.findViewById(R.id.rv_display_upload_groups_docs)
-        rv_display_upload_groups_docs?.background = context?.getDrawable(R.drawable.rectangle_light_grey)
-        rv_display_upload_groups_docs?.visibility = View.GONE
-        rv_display_upload_client_docs = view.findViewById(R.id.rv_display_upload_client_docs)
-        rv_display_upload_client_docs?.background = context?.getDrawable(R.drawable.rectangle_light_grey)
-        rv_display_upload_client_docs?.visibility = View.GONE
-
-        rv_display_upload_corp_client_docs = view.findViewById(R.id.rv_display_upload_corp_client_docs)
-        rv_display_upload_corp_client_docs?.background = context?.getDrawable(R.drawable.rectangle_light_grey)
-        rv_display_upload_corp_client_docs?.visibility = View.GONE
-
-        rv_display_upload_tm_docs = view.findViewById(R.id.rv_display_upload_tm_docs)
-        rv_display_upload_tm_docs?.background = context?.getDrawable(R.drawable.rectangle_light_grey)
-        rv_display_upload_tm_docs?.visibility = View.GONE
-        ll_add_groups = view.findViewById(R.id.ll_add_groups)
-        ll_add_groups?.visibility = View.GONE
-        add_groups?.setText(R.string.assign_group)
-        add_clients = view.findViewById(R.id.add_clients)
-        add_clients?.setText(R.string.add_clients)
-        cv_client_details = view.findViewById(R.id.cv_client_details)
-        tv_assigned_team_members = view.findViewById(R.id.tv_assigned_team_members)
-        tv_assigned_team_members?.setText(R.string.assign_team_members)
-        at_add_clients = view.findViewById(R.id.at_add_clients)
-        at_add_clients?.setHint(R.string.select_clients)
-        at_add_corp_clients = view.findViewById(R.id.at_add_corp_clients)
-        at_add_corp_clients?.visibility = View.GONE
-        at_add_corp_clients?.setHint(R.string.select_corporate_client)
-        matter_title_tv = view.findViewById(R.id.matter_title)
-        matter_title_tv?.visibility = View.VISIBLE
-        at_add_clients?.setOnClickListener(this)
-        at_assigned_team_members = view.findViewById(R.id.at_assigned_team_members)
-        at_assigned_team_members?.setHint(R.string.select_assign_team_members)
-        btn_add_groups = view.findViewById(R.id.btn_add_groups)
-        btn_add_groups?.setText(R.string.add)
-        selected_groups = view.findViewById(R.id.selected_groups)
-        selected_clients = view.findViewById(R.id.selected_clients)
-        selected_clients?.visibility = View.GONE
-        selected_tm = view.findViewById(R.id.selected_tm)
-        selected_tm?.visibility = View.GONE
-        btn_add_corp_clients = view.findViewById(R.id.btn_add_corp_clients)
-        btn_add_corp_clients?.setText(R.string.add)
-        btn_add_clients = view.findViewById(R.id.btn_add_clients)
-        btn_add_clients?.setText(R.string.add)
-
-        ll_assign_team_members = view.findViewById(R.id.ll_assign_team_members)
-        if (Constants.CATEGORY != "solo") {
-            ll_assign_team_members?.visibility = View.VISIBLE
-        }
-
-        btn_create = view.findViewById(R.id.btn_create)
-        btn_create?.setText(R.string.save_next)
-        btn_create?.setOnClickListener(this)
-        btn_add_teammembers = view.findViewById(R.id.btn_assigned_team_members)
-        btn_add_teammembers?.setText(R.string.add)
-        AndroidUtils.ToggleButton(selected_groups_list.size, btn_add_groups)
-        AndroidUtils.ToggleButton(selected_clients_list.size, btn_add_clients)
-        AndroidUtils.ToggleButton(selected_tm_list.size, btn_add_teammembers)
-        ll_selected_groups = view.findViewById(R.id.ll_selected_groups)
-        ll_assigned_team_members = view.findViewById(R.id.ll_assigned_team_members)
-        ll_selected_clients = view.findViewById(R.id.ll_selected_clients)
-        ll_selected_temp_clients = view.findViewById(R.id.ll_selected_temp_clients)
-        selected_temp_clients = view.findViewById(R.id.selected_temp_clients)
-        tv_selected_temp_clients = view.findViewById(R.id.tv_selected_temp_clients)
-        tv_selected_temp_clients?.setText(R.string.selected_temp_clients)
-        ll_selected_corp_clients = view.findViewById(R.id.ll_selected_corp_clients)
-
-        tv_add_client?.setOnClickListener { loadAddClient() }
-        tv_temp_client?.setOnClickListener { AddTemp() }
-        tv_corp_client?.setOnClickListener { AddCorporate() }
-        at_add_groups?.setOnClickListener {
-            if (ischecked_group) {
-                GroupsPopup()
-                rv_display_upload_groups_docs?.visibility = View.VISIBLE
-            } else {
-                rv_display_upload_groups_docs?.visibility = View.GONE
-                loadGroupsText()
-            }
-            ischecked_group = !ischecked_group
-        }
-        at_add_corp_clients?.setOnClickListener {
-            if (ischecked_corp_client) {
-                sp_corp_client?.visibility = View.VISIBLE
-                call_corporate_clients()
-            } else {
-                sp_corp_client?.visibility = View.GONE
-            }
-            ischecked_corp_client = !ischecked_corp_client
-        }
-        at_add_clients?.setOnClickListener {
-            if (ischecked_client) {
-                if (clientsList.isEmpty()) {
-                    callClientsWebservice()
-                } else {
-                    rv_display_upload_client_docs?.visibility = View.VISIBLE
-                    ClientssPopUp()
-                }
-            } else {
-                rv_display_upload_client_docs?.visibility = View.GONE
-                loadClientsText()
-            }
-            ischecked_client = !ischecked_client
-        }
-        at_assigned_team_members?.setOnClickListener {
-            if (ischecked_tm) {
-                if (!Constants.create_matter) {
-                    rv_display_upload_tm_docs?.visibility = View.VISIBLE
-                    TeamPopUp()
-                } else {
-                    if (tmList.isNotEmpty()) {
-                        rv_display_upload_tm_docs?.visibility = View.VISIBLE
-                        TeamPopUp()
+        return ComposeView(requireContext()).apply {
+            setContent {
+                val viewModel = ViewModelProvider(requireParentFragment()).get(MatterEditViewModel::class.java)
+                
+                LaunchedEffect(Unit) {
+                    val mat = matter
+                    val list = mat?.matter_arraylist
+                    if (list != null && list.isNotEmpty()) {
+                        viewModel.initializeFromLegacy(list[0])
+                    } else {
+                        viewModel.initialize(null)
                     }
                 }
-            } else {
-                rv_display_upload_tm_docs?.visibility = View.GONE
-                loadTeamText()
-            }
-            ischecked_tm = !ischecked_tm
-        }
-        AndroidUtils.ToggleButton(temporary_corpclients_list.size, btn_add_corp_clients)
-        sp_corp_client?.onItemClickListener = AdapterView.OnItemClickListener { _, _, position, _ ->
-            temporary_corpclients_list.clear()
-            val clientsModel = corp_clients_list[position]
-            temporary_corpclients_list.add(clientsModel)
-            at_add_corp_clients?.text = clientsModel.client_name
-            AndroidUtils.ToggleButton(temporary_corpclients_list.size, btn_add_corp_clients)
-        }
-        val c = Calendar.getInstance().time
-        val df = SimpleDateFormat("dd-MM-yyyy", Locale.getDefault())
-        val formattedDate = df.format(c)
-        matter = parentFragment as Matter?
-        
-        iv_remove_matter?.setOnClickListener {
-            if (handleLeaveClick()) {
-                AndroidUtils.showConfirmation(
-                    requireActivity(),
-                    requireContext().getString(R.string.leavepage),
-                    requireContext().getString(R.string.changes_you_made_may_not_be_saved),
-                    requireContext().getString(R.string.leave),
-                    object : AndroidUtils.OnConfirmListener {
-                        override fun onSave() {
-                            matter?.loadViewUI()
-                        }
-                        override fun onCancel() {}
-                    }
-                )
-            } else {
-                matter?.loadViewUI()
-            }
-        }
-        
-        btn_cancel_save?.setText(R.string.save_later)
-        btn_cancel_save?.setOnClickListener {
-            try {
-                isCancelClicked = true
-                update_matter()
-            } catch (e: JSONException) {
-                throw RuntimeException(e)
-            }
-        }
-        
-        btn_create?.setOnClickListener {
-            cv_client_details?.visibility = View.VISIBLE
-            cv_details?.visibility = View.VISIBLE
-            try {
-                isCancelClicked = false
-                update_matter()
-            } catch (e: JSONException) {
-                throw RuntimeException(e)
-            }
-        }
-        
-        btn_add_clients?.setOnClickListener {
-            ischecked_client = true
-            rv_display_upload_client_docs?.visibility = View.GONE
-            selected_clients_list.clear()
-            selected_clients_list.addAll(temporary_clients_list)
-            documentsList.clear()
-            loadClients()
-            if (!Constants.create_matter) {
-                if (!isInitialLoad) {
-                    isChangesOccured = true
+
+                com.digicoffer.lauditor.core.designsystem.theme.LauditorTheme {
+                    val mat = matter
+                    val list = mat?.matter_arraylist
+                    val editModel = if (list != null && list.isNotEmpty()) list[0] as? ViewMatterModel else null
+                    GctScreen(
+                        editModel = editModel,
+                        onNavigateBack = {
+                            val parent = matter
+                            parent?.loadViewUI()
+                        },
+                        onNavigateNext = {
+                            val parent = parentFragment as? Matter
+                            parent?.loadDocuments()
+                        },
+                        viewModel = viewModel
+                    )
                 }
-                AndroidUtils.ToggleButton(temporary_clients_list.size, btn_create)
             }
         }
-        
-        ToggleClient()
-        return view
     }
     private fun handleLeaveClick(): Boolean {
         if (!Constants.create_matter) {
@@ -612,20 +277,6 @@ class GCT_En : Fragment(), View.OnClickListener, AsyncTaskCompleteListener {
 
     override fun onResume() {
         super.onResume()
-        try {
-            if (!Constants.create_matter) {
-                if (chosen_matter != Constants.Matter_id) {
-                    chosen_matter = Constants.Matter_id ?: ""
-                    load_existing_matter()
-                } else {
-                    display_existing_members(existing_members ?: JSONArray(), existing_clients ?: JSONArray(), existing_corp_clients ?: JSONArray())
-                }
-            } else {
-                callClientCheckRequests()
-            }
-        } catch (e: Exception) {
-            e.fillInStackTrace()
-        }
     }
 
     private fun callClientCheckRequests() {

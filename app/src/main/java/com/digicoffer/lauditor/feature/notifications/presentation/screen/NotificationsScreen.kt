@@ -40,10 +40,10 @@ import androidx.compose.ui.unit.sp
 import com.digicoffer.lauditor.Notifications.Models.Navigation
 import com.digicoffer.lauditor.Notifications.Models.NotificationsDo
 import com.digicoffer.lauditor.R
-import com.digicoffer.lauditor.core.designsystem.components.AppCircleCheckbox
-import com.digicoffer.lauditor.core.designsystem.components.AppPillBadge
+import com.digicoffer.lauditor.core.ui.common.inputs.AppCircleCheckbox
+import com.digicoffer.lauditor.core.ui.common.badges.AppPillBadge
 import com.digicoffer.lauditor.core.designsystem.theme.LauditorTheme
-import com.digicoffer.lauditor.core.ui.feedback.AppLoader
+import com.digicoffer.lauditor.core.ui.common.feedback.AppLoader
 import com.digicoffer.lauditor.feature.notifications.presentation.components.DateGroupCard
 import com.digicoffer.lauditor.feature.notifications.presentation.components.NotificationsSearchBar
 import com.digicoffer.lauditor.feature.notifications.presentation.state.NotificationsUiEvent

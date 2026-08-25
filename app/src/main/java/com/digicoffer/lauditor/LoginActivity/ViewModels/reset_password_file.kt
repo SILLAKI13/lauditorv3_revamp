@@ -46,9 +46,9 @@ class reset_password_file : AppCompatActivity(), AsyncTaskCompleteListener, View
                     val numSpecialRule = p1State.matches(Regex(".*[0-9].*")) && p1State.matches(Regex(".*[-!@#$%&*^+=_].*"))
 
                     val reqList = listOf(
-                        com.digicoffer.lauditor.core.ui.feedback.PasswordRequirementItem("Must be 8–15 characters long", lengthRule),
-                        com.digicoffer.lauditor.core.ui.feedback.PasswordRequirementItem("Must include uppercase and lowercase letters", casingRule),
-                        com.digicoffer.lauditor.core.ui.feedback.PasswordRequirementItem("Must include a number and a special character", numSpecialRule)
+                        com.digicoffer.lauditor.core.ui.common.feedback.PasswordRequirementItem("Must be 8–15 characters long", lengthRule),
+                        com.digicoffer.lauditor.core.ui.common.feedback.PasswordRequirementItem("Must include uppercase and lowercase letters", casingRule),
+                        com.digicoffer.lauditor.core.ui.common.feedback.PasswordRequirementItem("Must include a number and a special character", numSpecialRule)
                     )
 
                     val canSubmit = p1State.isNotEmpty() && p2State.isNotEmpty()

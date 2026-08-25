@@ -28,7 +28,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.digicoffer.lauditor.Notifications.Models.NotificationsDo
 import com.digicoffer.lauditor.R
-import com.digicoffer.lauditor.core.designsystem.components.AppCircleCheckbox
+import com.digicoffer.lauditor.core.ui.common.inputs.AppCircleCheckbox
 import com.digicoffer.lauditor.core.designsystem.theme.LauditorTheme
 import java.text.SimpleDateFormat
 import java.util.Locale

@@ -44,7 +44,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.digicoffer.lauditor.Appointments.Models.AppointmentModel
 import com.digicoffer.lauditor.R
-import com.digicoffer.lauditor.core.ui.feedback.AppLoader
+import com.digicoffer.lauditor.core.ui.common.feedback.AppLoader
 import com.digicoffer.lauditor.feature.appointments.presentation.components.AppointmentCardItem
 import com.digicoffer.lauditor.feature.appointments.presentation.components.HistoryOverlayScreen
 import com.digicoffer.lauditor.feature.appointments.presentation.state.AppointmentsUiEvent

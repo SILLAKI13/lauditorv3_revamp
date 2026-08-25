@@ -1,5 +1,13 @@
 package com.digicoffer.lauditor
 
+import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.getValue
+import androidx.compose.ui.platform.ComposeView
+import kotlinx.coroutines.flow.MutableStateFlow
+import com.digicoffer.lauditor.core.ui.common.navigation.SidebarMenu
+import com.digicoffer.lauditor.core.ui.common.navigation.SidebarUiState
+import com.digicoffer.lauditor.core.ui.common.navigation.SidebarItemState
+import com.digicoffer.lauditor.core.ui.common.navigation.SidebarSubItemState
 import android.animation.Animator
 import android.animation.AnimatorListenerAdapter
 import android.animation.ValueAnimator
@@ -182,6 +190,8 @@ class MainActivity : AppCompatActivity(), Dashboard.MenuHighlightListener, Month
 
     private var currentActiveSubItem: TextView? = null
 
+    private val sidebarUiState = MutableStateFlow(SidebarUiState())
+
     // Bottom FAB buttons
     lateinit var matters_bm: ImageView
     lateinit var timesheets_bm: ImageView
@@ -332,7 +342,30 @@ class MainActivity : AppCompatActivity(), Dashboard.MenuHighlightListener, Month
         sm_email = findViewById(R.id.sm_email)
         sm_audit = findViewById(R.id.sm_audit)
         sm_logout = findViewById(R.id.sm_logout)
-        
+
+        val composeView = findViewById<ComposeView>(R.id.sidebar_compose_view)
+        composeView.setContent {
+            val uiState by sidebarUiState.collectAsState()
+            SidebarMenu(
+                state = uiState,
+                onParentClick = { parentId ->
+                    val parentView = findViewById<View>(parentId)
+                    if (parentView != null) {
+                        val row = parentView.findViewById<View>(R.id.menu_row)
+                        if (row != null) row.performClick() else parentView.performClick()
+                    }
+                },
+                onSubItemClick = { parentId, subIndex ->
+                    val parentView = findViewById<View>(parentId)
+                    val container = parentView?.findViewById<LinearLayout>(R.id.submenu_container)
+                    if (container != null && subIndex >= 0 && subIndex < container.childCount) {
+                        val subItem = container.getChildAt(subIndex)
+                        subItem?.performClick()
+                    }
+                }
+            )
+        }
+
         val isSolo = "solo" == Constants.CATEGORY
         val isGHorTM = "GH" == Constants.ROLE || "TM" == Constants.ROLE
         
@@ -969,6 +1002,7 @@ class MainActivity : AppCompatActivity(), Dashboard.MenuHighlightListener, Month
     }
 
     private fun setExpandedStyle(parentView: View, expanded: Boolean) {
+        parentView.tag = expanded
         val row = parentView.findViewById<View>(R.id.menu_row)
         val title = parentView.findViewById<TextView>(R.id.title)
         val icon = parentView.findViewById<ImageView>(R.id.icon)
@@ -1013,6 +1047,7 @@ class MainActivity : AppCompatActivity(), Dashboard.MenuHighlightListener, Month
             val d = icon.drawable
             d?.setTint(COLOR_ACTIVE_ICON)
         }
+        updateSidebarUiState()
     }
 
     private fun setActiveSubItem(subItem: TextView) {
@@ -1020,6 +1055,7 @@ class MainActivity : AppCompatActivity(), Dashboard.MenuHighlightListener, Month
             removeSubItemHighlight(currentActiveSubItem)
         currentActiveSubItem = subItem
         applySubItemHighlight(subItem)
+        updateSidebarUiState()
     }
 
     private fun clearActiveSubItem() {
@@ -1027,6 +1063,7 @@ class MainActivity : AppCompatActivity(), Dashboard.MenuHighlightListener, Month
             removeSubItemHighlight(currentActiveSubItem)
             currentActiveSubItem = null
         }
+        updateSidebarUiState()
     }
 
     private fun clearAllParentStyles() {
@@ -1044,6 +1081,7 @@ class MainActivity : AppCompatActivity(), Dashboard.MenuHighlightListener, Month
             }
         }
         currentActiveParentView = null
+        updateSidebarUiState()
     }
 
     private fun allParents(): Array<View> {
@@ -1077,10 +1115,12 @@ class MainActivity : AppCompatActivity(), Dashboard.MenuHighlightListener, Month
                     container.visibility = View.GONE
                     container.layoutParams.height = ViewGroup.LayoutParams.WRAP_CONTENT
                     container.requestLayout()
+                    updateSidebarUiState()
                 }
             })
             anim.start()
             arrow?.animate()?.rotation(0f)?.setDuration(200)?.start()
+            updateSidebarUiState()
         } else {
             collapseAllSubMenusExcept(parentView)
             setExpandedStyle(parentView, true)
@@ -1105,10 +1145,12 @@ class MainActivity : AppCompatActivity(), Dashboard.MenuHighlightListener, Month
                     container.requestLayout()
                     if (currentActiveSubItem != null && container.indexOfChild(currentActiveSubItem) >= 0)
                         applySubItemHighlight(currentActiveSubItem)
+                    updateSidebarUiState()
                 }
             })
             anim.start()
             arrow?.animate()?.rotation(180f)?.setDuration(200)?.start()
+            updateSidebarUiState()
         }
     }
 
@@ -1221,6 +1263,7 @@ class MainActivity : AppCompatActivity(), Dashboard.MenuHighlightListener, Month
         clearAllParentStyles()
         if (!keepSubItem) clearActiveSubItem()
         if (sel != null) setActiveParent(sel)
+        updateSidebarUiState()
     }
 
     fun navigation_items(fragment: Fragment) {
@@ -1382,6 +1425,7 @@ class MainActivity : AppCompatActivity(), Dashboard.MenuHighlightListener, Month
                 sm_notification.visibility = View.VISIBLE
             }
         }
+        updateSidebarUiState()
     }
 
     private fun setMenuList() {
@@ -2555,9 +2599,11 @@ class MainActivity : AppCompatActivity(), Dashboard.MenuHighlightListener, Month
                         override fun onAnimationEnd(a: Animator) {
                             container.layoutParams.height = ViewGroup.LayoutParams.WRAP_CONTENT
                             container.requestLayout()
+                            updateSidebarUiState()
                         }
                     })
                     anim.start()
+                    updateSidebarUiState()
                 }
                 highlightCorrectSubItem(parentView, fragment)
             }
@@ -2628,6 +2674,7 @@ class MainActivity : AppCompatActivity(), Dashboard.MenuHighlightListener, Month
                 }
             }
         }
+        updateSidebarUiState()
     }
 
     private fun getDocumentTypeFromFragment(fragment: Fragment): String {
@@ -2636,5 +2683,77 @@ class MainActivity : AppCompatActivity(), Dashboard.MenuHighlightListener, Month
             if (args != null) return args.getString("document_type", "matter")
         }
         return "matter"
+    }
+
+    private fun updateSidebarUiState() {
+        if (!::sm_firmProfile.isInitialized) return
+
+        val parentViews = arrayOf(
+            sm_firmProfile, sm_appointments, sm_matter, sm_documents,
+            sm_docEditor, sm_relationships, sm_timesheet, sm_meetings,
+            sm_email, sm_messages, sm_notification, sm_audit,
+            sm_groups, sm_team_member, sm_invoice, sm_logout
+        )
+
+        val iconMap = mapOf(
+            R.id.sm_firmProfile to R.drawable.profile,
+            R.id.sm_appointments to R.drawable.appointments,
+            R.id.sm_matters to R.drawable.matters,
+            R.id.sm_documents to R.drawable.document_icon,
+            R.id.sm_docEditor to R.drawable.doceditor_icon,
+            R.id.sm_relationships to R.drawable.relationship,
+            R.id.sm_timesheet to R.drawable.timesheet,
+            R.id.sm_meetings to R.drawable.meetings,
+            R.id.sm_email to R.drawable.email,
+            R.id.sm_messages to R.drawable.messages,
+            R.id.sm_notification to R.drawable.notifications,
+            R.id.sm_audit to R.drawable.audit_trails,
+            R.id.sm_groups to R.drawable.groups,
+            R.id.sm_team_member to R.drawable.members,
+            R.id.sm_invoice to R.drawable.invoices,
+            R.id.sm_logout to R.drawable.logout
+        )
+
+        val items = parentViews.map { parentView ->
+            val id = parentView.id
+            val titleTv = parentView.findViewById<TextView>(R.id.title)
+            val title = titleTv?.text?.toString() ?: ""
+            val iconResId = iconMap[id] ?: 0
+            val isVisible = parentView.visibility == View.VISIBLE
+
+            val container = parentView.findViewById<LinearLayout>(R.id.submenu_container)
+            val hasSubMenu = parentView.findViewById<View>(R.id.iv_arrow)?.visibility == View.VISIBLE
+            val isExpanded = parentView.tag as? Boolean ?: (container?.visibility == View.VISIBLE)
+            val isHighlighted = parentView === currentActiveParentView
+
+            val subItems = mutableListOf<SidebarSubItemState>()
+            if (container != null) {
+                for (i in 0 until container.childCount) {
+                    val child = container.getChildAt(i)
+                    if (child is TextView) {
+                        subItems.add(
+                            SidebarSubItemState(
+                                index = i,
+                                label = child.text.toString(),
+                                isHighlighted = child === currentActiveSubItem
+                            )
+                        )
+                    }
+                }
+            }
+
+            SidebarItemState(
+                id = id,
+                title = title,
+                iconResId = iconResId,
+                isVisible = isVisible,
+                hasSubMenu = hasSubMenu,
+                isExpanded = isExpanded,
+                isHighlighted = isHighlighted,
+                subItems = subItems
+            )
+        }
+
+        sidebarUiState.value = SidebarUiState(items = items)
     }
 }

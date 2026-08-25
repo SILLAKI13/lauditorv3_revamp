@@ -88,6 +88,12 @@ import java.util.Calendar
 import java.util.HashSet
 import java.util.Iterator
 import java.util.Locale
+import androidx.compose.ui.platform.ComposeView
+import androidx.compose.ui.platform.ViewCompositionStrategy
+import androidx.compose.runtime.LaunchedEffect
+import androidx.lifecycle.ViewModelProvider
+import com.digicoffer.lauditor.feature.matter.presentation.screen.DocumentsScreen
+import com.digicoffer.lauditor.feature.matter.presentation.viewmodel.MatterEditViewModel
 import java.util.Objects
 
 class MatterDocuments_En : Fragment(), AsyncTaskCompleteListener, DocumentsListAdapter.EventListener, View.OnClickListener, BottomSheetUploadFile.OnPhotoSelectedListner, ViewMatterAdapter.InterfaceListener {
@@ -103,7 +109,7 @@ class MatterDocuments_En : Fragment(), AsyncTaskCompleteListener, DocumentsListA
     private var tv_enable_download: TextView? = null
     private var tv_disable_download: TextView? = null
     private var tv_multiple_doc: TextView? = null
-    private var tv_selected_file: TextView? = null
+    private var tv_selected_file: LinearLayout? = null
     private var llSelectedTags: LinearLayout? = null
     private var ll_added_tags: LinearLayout? = null
     private var ll_add_documents: LinearLayout? = null
@@ -231,487 +237,58 @@ class MatterDocuments_En : Fragment(), AsyncTaskCompleteListener, DocumentsListA
     private var existing_tags_list: JSONArray? = null
     
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View? {
-        val view = inflater.inflate(R.layout.documents_matter, container, false)
-        val myCalendar = Calendar.getInstance()
-        ll_matterDate = view.findViewById(R.id.ll_matterDate)
-        ll_matterDate?.visibility = View.GONE
-        ll_upload_type = view.findViewById(R.id.ll_upload_type)
-        ll_download = view.findViewById(R.id.ll_download)
-        ll_buttons = view.findViewById(R.id.ll_buttons)
-        tv_multiple_doc = view.findViewById(R.id.tv_multiple_doc)
-        tv_multiple_doc?.setText(R.string.upload_multiple_document_s)
-        tv_selected_document = view.findViewById(R.id.tv_selected_document)
-        iv_remove_matter = view.findViewById(R.id.iv_remove_matter)
-        iv_remove_matter?.visibility = View.VISIBLE
-        tv_selected_document?.setText(R.string.selected_documents)
-        rl_buttons = view.findViewById(R.id.rl_buttons)
-        rl_buttons?.visibility = View.GONE
-        tv_edit_meta = view.findViewById(R.id.tv_edit_meta)
-        tv_add_tag = view.findViewById(R.id.tv_add_tag)
-        tv_add_tag?.setText(R.string.add_tag)
-        tv_edit_meta?.setText(R.string.edit_meta)
-        btn_add_tags = view.findViewById(R.id.btn_add_tag)
-        btn_add_tags?.setText(R.string.add_tag)
-        btn_add_tags?.visibility = View.VISIBLE
-        tv_enable_download = view.findViewById(R.id.tv_enable_download)
-        tv_enable_download?.setText(R.string.enable_download)
-        tv_enable_download?.textSize = 13f
-        tv_disable_download = view.findViewById(R.id.tv_disable_download)
-        tv_disable_download?.setText(R.string.disable_download)
-        tv_disable_download?.textSize = 13f
-        tv_enable_encryption = view.findViewById(R.id.tv_enable_encryption)
-        tv_enable_encryption?.setText(R.string.enable_encryption)
-        tv_enable_encryption?.textSize = 13f
-        tv_disable_encryption = view.findViewById(R.id.tv_disable_encryption)
-        tv_disable_encryption?.setText(R.string.disable_encryption)
-        tv_disable_encryption?.textSize = 13f
-        tv_enable_download?.setPadding(20, 20, 20, 20)
-        tv_disable_download?.setPadding(20, 20, 20, 20)
-        tv_enable_encryption?.setPadding(20, 20, 20, 20)
-        tv_disable_encryption?.setPadding(20, 20, 20, 20)
-        matter_date = view.findViewById(R.id.matter_date)
-        chk_box_layout = view.findViewById(R.id.chk_box_layout)
-        chk_box_layout?.alpha = 0.5f
-        chk_select_all = view.findViewById(R.id.chk_select_all)
-        AndroidUtils.ToggleButton(0, chk_box_layout)
-        AndroidUtils.ToggleButton(0, chk_select_all)
-        AndroidUtils.ToggleButton(0, btn_add_tags)
-        cl_matter_document = view.findViewById(R.id.cl_matter_document)
-        tv_document_library = view.findViewById(R.id.tv_document_library)
-        tv_document_library?.setText(R.string.document_library)
-        tv_document_library?.setOnClickListener(this)
-        et_search_matter = view.findViewById(R.id.et_Search)
-        cv_client_details = view.findViewById(R.id.cv_client_details)
-        cv_add_opponent_advocate = view.findViewById(R.id.cv_add_opponent_advocate)
-        tv_device_drive = view.findViewById(R.id.tv_device_drive)
-        tv_device_drive?.setText(R.string.device_drive)
-        add_groups = view.findViewById(R.id.add_groups)
-        add_groups?.setText(R.string.add_documents)
-        select_all = view.findViewById(R.id.select_all)
-        select_all?.setText(R.string.select_document)
-        rv_matter_list = view.findViewById(R.id.rv_matter_list)
-        tv_device_drive?.setOnClickListener(this)
-        at_add_documents = view.findViewById(R.id.at_add_documents)
-        at_add_documents?.hint = getString(R.string.select_document)
-        at_add_documents?.setOnClickListener(this)
-        ll_add_documents = view.findViewById(R.id.ll_add_documents)
-        ll_selected_documents = view.findViewById(R.id.ll_selected_documents)
-        ll_uploaded_documents = view.findViewById(R.id.ll_uploaded_documents)
-        ll_select_doc = view.findViewById(R.id.ll_select_doc)
-        ll_select_doc?.visibility = View.GONE
-        ll_select_file = view.findViewById(R.id.ll_select_file)
-        tv_selected_file = ll_select_file?.findViewById(R.id.tv_selected_file)
-        btn_browse = ll_select_file?.findViewById(R.id.btn_browse)
-        btn_add_documents = view.findViewById(R.id.btn_add_documents)
-        btn_cancel_save = view.findViewById(R.id.btn_cancel_save)
-        btn_cancel_save?.setOnClickListener(this)
-        btn_create = view.findViewById(R.id.btn_submit)
-        btn_create?.setText(R.string.save)
-        matter_title_tv = view.findViewById(R.id.matter_title)
-        matter_title_tv?.textSize = DynamicUtils.twenty.toFloat()
-        rv_display_upload_doc = view.findViewById(R.id.rv_display_upload_doc)
-        rv_display_upload_doc?.background = context?.getDrawable(R.drawable.rectangle_light_grey)
-        btn_create?.setOnClickListener(this)
-        rv_display_upload_doc?.visibility = View.GONE
-        ll_select_file?.setOnClickListener { checkPermissionREAD_EXTERNAL_STORAGE(context) }
-        tv_selected_file?.setOnClickListener { checkPermissionREAD_EXTERNAL_STORAGE(context) }
-        btn_browse?.setOnClickListener { checkPermissionREAD_EXTERNAL_STORAGE(context) }
-        btn_create?.setOnClickListener {
-            if (Constants.create_matter) {
-                if (upload_documents_list.isNotEmpty()) {
-                    submitMatterInformation()
-                } else {
-                    try {
-                        update_document()
-                    } catch (e: JSONException) {
-                        throw RuntimeException(e)
-                    }
-                }
-            } else {
-                if (upload_documents_list.isNotEmpty()) {
-                    submitMatterInformation()
-                } else {
-                    try {
-                        update_document()
-                    } catch (e: JSONException) {
-                        throw RuntimeException(e)
-                    }
-                }
-            }
-        }
-        at_add_documents?.setOnClickListener {
-            try {
-                if (ischecked_doc) {
-                    if (documentsList.isEmpty()) {
-                        if (!Constants.create_matter) document_list() else DocumentsPopUp()
-                    } else {
-                        DocumentsPopUp()
-                    }
-                } else {
-                    rv_display_upload_doc?.visibility = View.GONE
-                }
-            } catch (e: JSONException) {
-                throw RuntimeException(e)
-            }
-            ischecked_doc = !ischecked_doc
-        }
-
-        loadDeviceDriveUI()
-
-        matter = parentFragment as Matter?
+        matter = parentFragment as? Matter
         matterArraylist = matter?.matter_arraylist
-        if (Constants.create_matter) {
-            if (Constants.upload_documents_list.isNotEmpty()) {
-                upload_documents_list.clear()
-                upload_documents_list = Constants.upload_documents_list
-                loadUploadedDocuments()
-                checkEnableDownloadStatus()
-                checkEnableEncryption()
-            }
-            if (!matterArraylist.isNullOrEmpty()) {
-                for (i in matterArraylist!!.indices) {
-                    matterModel = matterArraylist!![i]
-                    matter_title_tv?.text = ""
-                    matter_title_tv?.text = matterModel.matter_title
-                    if (matterModel.clients_list != null && matterModel.clients != null && matterModel.groups_list != null && matterModel.group_acls != null) {
-                        exisiting_group_acls = matterModel.group_acls
-                        existing_clients = matterModel.clients
-                        existing_corp_clients = matterModel.corp_clients_list
-                        existing_groups_list = matterModel.groups_list
-                        existing_clients_list = matterModel.clients_list
-                        existing_temp_clients = matterModel.temp_clients_list
-                        if (matterModel.documents != null) {
-                            existing_documents = matterModel.documents
-                        }
-                        if (matterModel.documents_list != null) {
-                            existing_documents_list = matterModel.documents_list
-                        }
-                        try {
-                            val groupAcls = exisiting_group_acls
-                            if (groupAcls != null) {
-                                for (g in 0 until groupAcls.length()) {
-                                    val groupsModel = GroupsModel()
-                                    val jsonObject = groupAcls.optJSONObject(g)
-                                    if (jsonObject != null) {
-                                        groupsModel.group_id = jsonObject.optString("id")
-                                        groupsModel.group_name = jsonObject.optString("name")
-                                        groupsModel.isChecked = jsonObject.optBoolean("isChecked")
-                                        selected_groups_list.add(groupsModel)
-                                    }
-                                }
-                            }
-                            val docs = existing_documents
-                            if (docs != null) {
-                                for (d in 0 until docs.length()) {
-                                    val documentsModel = DocumentsModel()
-                                    val jsonObject = docs.optJSONObject(d)
-                                    if (jsonObject != null) {
-                                        documentsModel.docid = jsonObject.optString("docid")
-                                        documentsModel.name = jsonObject.optString("name")
-                                        documentsModel.user_id = jsonObject.optString("user_id")
-                                        documentsModel.doctype = jsonObject.optString("doctype")
-                                        documentsModel.tags_list = jsonObject.optJSONObject("tags") ?: JSONObject()
-                                        documentsModel.contentType = jsonObject.optString("contentType")
-                                        documentsModel.viewUrl = jsonObject.optString("viewUrl")
-                                        documentsModel.isIs_encrypted = jsonObject.optBoolean("is_encrypted")
-                                        documentsModel.isIs_password = jsonObject.optBoolean("is_password")
-                                        documentsModel.isAdded_encryption = jsonObject.optBoolean("added_encryption")
-                                        selected_documents_list.add(documentsModel)
-                                        tempSelectedDocuments.add(documentsModel)
-                                    }
-                                }
-                            }
-                            val tempClients = existing_temp_clients
-                            if (tempClients != null && tempClients.length() > 0) {
-                                for (m in 0 until tempClients.length()) {
-                                    val clientsModel = ClientsModel()
-                                    val jsonObject = tempClients.optJSONObject(m)
-                                    if (jsonObject != null) {
-                                        clientsModel.client_id = jsonObject.optString("id")
-                                        clientsModel.client_name = jsonObject.optString("name")
-                                        clientsModel.rel_id = jsonObject.optString("rel_id")
-                                        clientsModel.client_type = jsonObject.optString("type")
-                                        selected_temp_clients_list.add(clientsModel)
-                                    }
-                                }
-                            }
-                            val corpClients = existing_corp_clients
-                            if (corpClients != null) {
-                                for (m in 0 until corpClients.length()) {
-                                    val clientsModel = ClientsModel()
-                                    val jsonObject = corpClients.optJSONObject(m)
-                                    if (jsonObject != null) {
-                                        clientsModel.client_id = jsonObject.optString("id")
-                                        clientsModel.client_name = jsonObject.optString("name")
-                                        clientsModel.client_type = jsonObject.optString("type")
-                                        selected_corp_clients_list.add(clientsModel)
-                                    }
-                                }
-                            }
-                            val docsList = existing_documents_list
-                            if (docsList != null) {
-                                documentsList.clear()
-                                for (ed in 0 until docsList.length()) {
-                                    val documentsModel = DocumentsModel()
-                                    val jsonObject = docsList.optJSONObject(ed)
-                                    if (jsonObject != null) {
-                                        documentsModel.docid = jsonObject.optString("docid")
-                                        documentsModel.name = jsonObject.optString("name")
-                                        documentsModel.user_id = jsonObject.optString("user_id")
-                                        documentsModel.doctype = jsonObject.optString("doctype")
-                                        documentsModel.tags_list = jsonObject.optJSONObject("tags") ?: JSONObject()
-                                        documentsModel.contentType = jsonObject.optString("contentType")
-                                        documentsModel.viewUrl = jsonObject.optString("viewUrl")
-                                        documentsModel.isIs_encrypted = jsonObject.optBoolean("is_encrypted")
-                                        documentsModel.isIs_password = jsonObject.optBoolean("is_password")
-                                        documentsModel.isAdded_encryption = jsonObject.optBoolean("added_encryption")
-                                        documentsList.add(documentsModel)
-                                    }
-                                }
-                                val groupsL = existing_groups_list
-                                if (groupsL != null) {
-                                    for (k in 0 until groupsL.length()) {
-                                        val groupsModel = GroupsModel()
-                                        val jsonObject = groupsL.optJSONObject(k)
-                                        if (jsonObject != null) {
-                                            groupsModel.group_id = jsonObject.optString("id")
-                                            groupsModel.group_name = jsonObject.optString("name")
-                                            groupsList.add(groupsModel)
-                                        }
-                                    }
-                                }
-                                val clientsL = existing_clients
-                                if (clientsL != null) {
-                                    for (m in 0 until clientsL.length()) {
-                                        val clientsModel = ClientsModel()
-                                        val jsonObject = clientsL.optJSONObject(m)
-                                        if (jsonObject != null) {
-                                            clientsModel.client_id = jsonObject.optString("id")
-                                            clientsModel.client_name = jsonObject.optString("name")
-                                            clientsModel.client_type = jsonObject.optString("type")
-                                            selected_clients_list.add(clientsModel)
-                                        }
-                                    }
-                                }
-                                val clientsListArr = existing_clients_list
-                                if (clientsListArr != null) {
-                                    for (c in 0 until clientsListArr.length()) {
-                                        val clientsModel = ClientsModel()
-                                        val jsonObject = clientsListArr.optJSONObject(c)
-                                        if (jsonObject != null) {
-                                            clientsModel.client_id = jsonObject.optString("id")
-                                            clientsModel.client_name = jsonObject.optString("name")
-                                            clientsModel.client_type = jsonObject.optString("type")
-                                            clientsList.add(clientsModel)
-                                        }
-                                    }
-                                }
-                            }
-                            if (matterModel.members != null) {
-                                existing_members = matterModel.members
-                                try {
-                                    val membersArr = existing_members
-                                    if (membersArr != null) {
-                                        for (t in 0 until membersArr.length()) {
-                                            val teamModel = TeamModel()
-                                            val jsonObject = membersArr.optJSONObject(t)
-                                            if (jsonObject != null) {
-                                                teamModel.tm_id = jsonObject.optString("id")
-                                                teamModel.tm_name = jsonObject.optString("name")
-                                                teamModel.user_id = jsonObject.optString("user_id")
-                                                selected_tm_list.add(teamModel)
-                                            }
-                                        }
-                                    }
-                                } catch (e: JSONException) {
-                                    e.fillInStackTrace()
-                                }
-                            }
-                            if (matterModel.members_list != null) {
-                                existing_tm_list = matterModel.members_list
-                                try {
-                                    val tmListArr = existing_tm_list
-                                    if (tmListArr != null) {
-                                        for (d in 0 until tmListArr.length()) {
-                                            val teamModel = TeamModel()
-                                            val jsonObject = tmListArr.optJSONObject(d)
-                                            if (jsonObject != null) {
-                                                teamModel.tm_id = jsonObject.optString("id")
-                                                teamModel.tm_name = jsonObject.optString("name")
-                                                teamModel.user_id = jsonObject.optString("user_id")
-                                                tmList.add(teamModel)
-                                            }
-                                        }
-                                    }
-                                } catch (e: JSONException) {
-                                    e.fillInStackTrace()
-                                }
-                            }
-                            val matList = matterArraylist
-                            if (matList != null && matList.size > i && matList[i].opponent_advocate != null) {
-                                existing_opponents = matList[i].opponent_advocate
-                                try {
-                                    val opps = existing_opponents
-                                    if (opps != null) {
-                                        for (j in 0 until opps.length()) {
-                                            try {
-                                                val jsonObject = opps.optJSONObject(j)
-                                                if (jsonObject != null) {
-                                                    val advocateModel = AdvocateModel()
-                                                    advocateModel.advocate_name = jsonObject.optString("name")
-                                                    advocateModel.number = jsonObject.optString("phone")
-                                                    advocateModel.email = jsonObject.optString("email")
-                                                    advocates_list.add(advocateModel)
-                                                }
-                                            } catch (e: JSONException) {
-                                                e.fillInStackTrace()
-                                            }
-                                        }
-                                    }
-                                } catch (e: Exception) {
-                                    e.fillInStackTrace()
-                                }
-                            }
-                            if (matterModel.tags_list != null) {
-                                existing_tags_list = matterModel.tags_list
-                            }
-                            tag_list.clear()
-                            val tagsL = existing_tags_list
-                            if (tagsL != null && tagsL.length() > 0) {
-                                for (j in 0 until tagsL.length()) {
-                                    try {
-                                        tag_list.add(tagsL.optString(j))
-                                    } catch (e: JSONException) {
-                                        throw RuntimeException(e)
-                                    }
-                                }
-                            }
-                            if (matterModel.matter_title != null) {
-                                matter_title = matterModel.matter_title as String
-                            }
-                            if (matterModel.case_number != null) {
-                                case_number = matterModel.case_number
-                            }
-                            if (matterModel.case_type != null) {
-                                case_type = matterModel.case_type
-                            }
-                            if (matterModel.description != null) {
-                                description = matterModel.description
-                            }
-                            if (matterModel.date_of_filing != null) {
-                                dof = matterModel.date_of_filing
-                            }
-                            if (matterModel.start_date != null) {
-                                start_date = matterModel.start_date
-                            }
-                            if (matterModel.end_date != null) {
-                                end_date = matterModel.end_date
-                            }
-                            if (matterModel.court != null) {
-                                court = matterModel.court
-                            }
-                            if (matterModel.judge != null) {
-                                judge = matterModel.judge
-                            }
-                            if (matterModel.case_priority != null) {
-                                case_priority = matterModel.case_priority
-                            }
-                            if (matterModel.status != null) {
-                                case_status = matterModel.status
-                            }
-                            if (selected_documents_list.isNotEmpty()) {
-                                DocumentsText()
-                                loadSelectedDocuments(Array(selected_documents_list.size) { "" })
-                            }
-                        } catch (e: JSONException) {
-                            e.fillInStackTrace()
-                        }
+        
+        return ComposeView(requireContext()).apply {
+            setViewCompositionStrategy(ViewCompositionStrategy.DisposeOnViewTreeLifecycleDestroyed)
+            setContent {
+                val viewModel = ViewModelProvider(requireParentFragment()).get(MatterEditViewModel::class.java)
+                
+                LaunchedEffect(Unit) {
+                    val mat = matter
+                    val list = mat?.matter_arraylist
+                    if (list != null && list.isNotEmpty()) {
+                        viewModel.initializeFromLegacy(list[0])
+                    } else {
+                        viewModel.initialize(null)
                     }
                 }
-            }
-            ll_matterDate?.visibility = View.GONE
-            ll_upload_type?.visibility = View.GONE
-            btn_create?.setText(R.string.save)
-        } else {
-            matter_title_tv?.text = ""
-            matter_title_tv?.text = Constants.GeneratedMatterTitle
-            ll_upload_type?.visibility = View.GONE
-            isChangesOccured = false
-            btn_create?.setText(R.string.save)
-            matter_date?.text = Constants.matterDate
-            existing_document()
-            loadDeviceDriveUI()
-        }
-
-        tv_enable_download?.setOnClickListener {
-            EnableDownloadBackground()
-            adapter?.EnableAllorDisableAll(true)
-        }
-        tv_disable_download?.setOnClickListener {
-            DisableDownloadBackground()
-            adapter?.EnableAllorDisableAll(false)
-        }
-        tv_enable_encryption?.setOnClickListener {
-            ENCRYPTION_TAG = true
-            if (ENCRYPTION_TAG) {
-                EnableEncryptionBackground()
-            }
-            ENCRYPTION_TAG = !ENCRYPTION_TAG
-        }
-        tv_disable_encryption?.setOnClickListener {
-            DECRYPTION_TAG = true
-            if (DECRYPTION_TAG) {
-                DisableEncryptionBackground()
-                adapter?.EncryptAllorDecryptAll(false)
-                val tag = "dis_encrption"
-                loadRecyclerview(tag, subtag)
-            }
-            DECRYPTION_TAG = !DECRYPTION_TAG
-        }
-        if (Constants.create_matter) {
-            callDocumentsWebService()
-        }
-        rv_display_upload_doc?.visibility = View.GONE
-        chk_select_all?.setOnClickListener {
-            chk_select_all?.isChecked = isselect_all_checked
-            isselect_all_checked = !isselect_all_checked
-            isAnyOneSelected(chk_select_all?.isChecked ?: false)
-            adapter?.selectOrDeselectAll(chk_select_all?.isChecked ?: false)
-        }
-        tv_add_tag?.setOnClickListener {
-            if (is_clicked_add) {
-                AddTag()
-            } else {
-                Hide_Add_EditMeta()
-            }
-            is_clicked_edit = true
-            is_clicked_add = !is_clicked_add
-        }
-        
-        btn_cancel_save?.setText(R.string.cancel)
-        iv_remove_matter?.setOnClickListener { handleLeaveClick() }
-        btn_cancel_save?.setOnClickListener { handleLeaveClick() }
-        tv_edit_meta?.setOnClickListener {
-            if (is_clicked_edit) {
-                EditMeta()
-            } else {
-                Hide_Add_EditMeta()
-            }
-            is_clicked_add = true
-            is_clicked_edit = !is_clicked_edit
-        }
-        btn_add_tags?.setOnClickListener {
-            selected_upload_documents_list.clear()
-            val list = adapter?.list_item ?: emptyList()
-            for (i in list.indices) {
-                val documentsModel = list[i]
-                if (documentsModel.isChecked) {
-                    selected_upload_documents_list.add(documentsModel)
+                
+                com.digicoffer.lauditor.core.designsystem.theme.LauditorTheme {
+                    DocumentsScreen(
+                        viewModel = viewModel,
+                        onBrowseClick = {
+                            showPhotoOptions()
+                        },
+                        onViewDocument = { doc ->
+                            val isEncrypted = doc.isAdded_encryption || doc.isIs_encrypted
+                            val matterDoc = com.digicoffer.lauditor.Matter.Models.DocumentsModel().apply {
+                                this.docid = doc.docid
+                                this.name = doc.name
+                                this.user_id = doc.user_id
+                                this.doctype = doc.doctype
+                                this.contentType = doc.contentType
+                                this.viewUrl = doc.viewUrl
+                                this.isIs_encrypted = doc.isIs_encrypted
+                                this.isIs_password = doc.isIs_password
+                                this.isAdded_encryption = doc.isAdded_encryption
+                            }
+                            if (isEncrypted) {
+                                callDecryptApi(matterDoc.docid)
+                            } else {
+                                val url = Constants.base_URL + "v3/document/" + matterDoc.docid + "/view"
+                                checkViewType(url, matterDoc)
+                            }
+                        },
+                        onCancel = {
+                            val parent = matter
+                            parent?.loadViewUI()
+                        }
+                    )
                 }
             }
-            open_add_tags_popup()
         }
-        return view
     }
 
     private fun handleLeaveClick() {
@@ -1115,9 +692,11 @@ class MatterDocuments_En : Fragment(), AsyncTaskCompleteListener, DocumentsListA
             mSelectedBitmap = null
             mSelectedUri = imagepath
             val uri = imagepath.toString()
-            val imageLoader = ImageLoader.getInstance()
-            imageLoader.init(ImageLoaderConfiguration.createDefault(requireActivity()))
-            imageLoader.displayImage(Uri.fromFile(File(uri)).toString(), imageView)
+            if (imageView != null) {
+                val imageLoader = ImageLoader.getInstance()
+                imageLoader.init(ImageLoaderConfiguration.createDefault(requireActivity()))
+                imageLoader.displayImage(Uri.fromFile(File(uri)).toString(), imageView)
+            }
             file = imagepath
             if (ImageURI != null) {
                 val c = requireContext().contentResolver.query(ImageURI, null, null, null, null)
@@ -1138,35 +717,8 @@ class MatterDocuments_En : Fragment(), AsyncTaskCompleteListener, DocumentsListA
     }
 
     private fun load_documents(file_name: String, file: File) {
-        var doc_type = ""
-        var docname = ""
-        val content_string = file_name.replace(".", "/")
-        val content_type = content_string.split("/".toRegex()).toTypedArray()
-        if (content_type.size >= 2) {
-            doc_type = content_type[1]
-            docname = content_type[0]
-        }
-        val documentsModel = com.digicoffer.lauditor.Documents.Models.DocumentsModel()
-        documentsModel.name = docname
-        documentsModel.filename = file_name
-        documentsModel.content_type = doc_type
-        documentsModel.description = docname
-        documentsModel.file = file
-        documentsModel.isIsenabled = false
-        documentsModel.isChecked = false
-        upload_documents_list.add(documentsModel)
-        Constants.upload_documents_list = upload_documents_list
-        if (upload_documents_list.isNotEmpty()) {
-            DisableDownloadBackground()
-            tv_enable_encryption?.background = requireContext().resources.getDrawable(R.drawable.button_left_background, null)
-            tv_enable_encryption?.setTextColor(requireContext().getColor(R.color.black))
-            tv_disable_encryption?.setTextColor(requireContext().getColor(R.color.white))
-            tv_disable_encryption?.background = requireContext().resources.getDrawable(R.drawable.button_right_green_background, null)
-        }
-        EditMeta()
-        is_clicked_edit = true
-        is_clicked_add = true
-        loadUploadedDocuments()
+        val viewModel = ViewModelProvider(requireParentFragment()).get(MatterEditViewModel::class.java)
+        viewModel.addUploadFile(file, file_name)
     }
 
     fun getFile(context: Context, uri: Uri): File {

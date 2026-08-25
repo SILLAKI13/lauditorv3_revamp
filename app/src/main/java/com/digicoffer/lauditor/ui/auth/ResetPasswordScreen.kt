@@ -43,10 +43,10 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.digicoffer.lauditor.R
-import com.digicoffer.lauditor.core.ui.feedback.AppLoader
-import com.digicoffer.lauditor.core.ui.feedback.AppPasswordRequirements
-import com.digicoffer.lauditor.core.ui.feedback.PasswordRequirementItem
-import com.digicoffer.lauditor.core.ui.foundation.AppSpacer
+import com.digicoffer.lauditor.core.ui.common.feedback.AppLoader
+import com.digicoffer.lauditor.core.ui.common.feedback.AppPasswordRequirements
+import com.digicoffer.lauditor.core.ui.common.feedback.PasswordRequirementItem
+import com.digicoffer.lauditor.core.ui.common.foundation.AppSpacer
 
 private val GillSans = FontFamily(Font(R.font.gill_sans))
 private val GillSansBold = FontFamily(Font(R.font.gill_sans_bold))

@@ -55,7 +55,7 @@ import com.digicoffer.lauditor.CommonFiles.GlobalFiles.NewModel
 import com.digicoffer.lauditor.Groups.Models.ViewGroupModel
 import com.digicoffer.lauditor.Members.MembersModel
 import com.digicoffer.lauditor.R
-import com.digicoffer.lauditor.core.ui.feedback.AppLoader
+import com.digicoffer.lauditor.core.ui.common.feedback.AppLoader
 import com.digicoffer.lauditor.feature.members.presentation.components.GroupAssignmentCard
 import com.digicoffer.lauditor.feature.members.presentation.components.MemberCardItem
 import com.digicoffer.lauditor.feature.members.presentation.components.MemberConfirmationDialog

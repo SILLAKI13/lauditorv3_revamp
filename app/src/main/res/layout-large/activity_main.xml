@@ -37,9 +37,17 @@
             android:background="@color/white"
             android:elevation="8dp">
 
-            <LinearLayout
+            <!-- Jetpack Compose Sidebar Menu -->
+            <androidx.compose.ui.platform.ComposeView
+                android:id="@+id/sidebar_compose_view"
                 android:layout_width="match_parent"
-                android:layout_height="match_parent"
+                android:layout_height="match_parent" />
+
+            <!-- Original XML hierarchy kept inflated but invisible so MainActivity.kt code runs without crashing -->
+            <LinearLayout
+                android:layout_width="0dp"
+                android:layout_height="0dp"
+                android:visibility="gone"
                 android:orientation="vertical">
 
                 <!-- ── Scrollable Menu Items (no header at all) ── -->

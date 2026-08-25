@@ -37,9 +37,9 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.digicoffer.lauditor.R
-import com.digicoffer.lauditor.core.ui.feedback.AppLoader
-import com.digicoffer.lauditor.core.ui.foundation.AppSpacer
-import com.digicoffer.lauditor.core.ui.inputs.AppDropdown
+import com.digicoffer.lauditor.core.ui.common.feedback.AppLoader
+import com.digicoffer.lauditor.core.ui.common.foundation.AppSpacer
+import com.digicoffer.lauditor.core.ui.common.dropdowns.AppDropdown
 
 private val GillSans = FontFamily(Font(R.font.gill_sans))
 private val GillSansBold = FontFamily(Font(R.font.gill_sans_bold))

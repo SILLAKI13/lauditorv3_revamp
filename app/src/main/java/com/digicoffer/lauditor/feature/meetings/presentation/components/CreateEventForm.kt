@@ -22,7 +22,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.draw.scale
 import com.digicoffer.lauditor.R
-import com.digicoffer.lauditor.core.ui.inputs.AppDropdown
+import com.digicoffer.lauditor.core.ui.common.dropdowns.AppDropdown
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
