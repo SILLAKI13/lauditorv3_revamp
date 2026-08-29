@@ -38,7 +38,7 @@
                     android:layout_height="@dimen/forty_dp"
                     android:contentDescription="Logo"
                     android:scaleType="fitCenter"
-                    android:src="@drawable/lawyer_logo_nw" />
+                    android:src="@drawable/lex_z_lawyer_vertical_tp" />
 
             </LinearLayout>
 

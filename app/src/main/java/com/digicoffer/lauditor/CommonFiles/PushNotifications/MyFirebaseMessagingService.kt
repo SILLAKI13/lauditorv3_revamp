@@ -99,7 +99,7 @@ class MyFirebaseMessagingService : FirebaseMessagingService(), AsyncTaskComplete
             CHANNEL_NAME,
             NotificationManager.IMPORTANCE_HIGH
         ).apply {
-            description = "Push notifications for LexiZLawyers App"
+            description = "Push notifications for Lex-Z Lawyers App"
             enableLights(true)
             lightColor = Color.GREEN
             enableVibration(true)

@@ -42,7 +42,7 @@ android {
             applicationId "com.digicoffer.lauditor"
             versionCode 31
             versionName "1.0.7"
-            resValue "string", "app_name", "LexiZ Lawyers"
+            resValue "string", "app_name", "Lex-Z Lawyers"
             buildConfigField "boolean", "IS_PRODUCTION", "true"
             buildConfigField "boolean", "IS_STAGING", "false"
         }
@@ -51,7 +51,7 @@ android {
             applicationId "com.digicoffer.lauditor.staging"
             versionCode 1
             versionName "1.0.7-staging"
-            resValue "string", "app_name", "Dev LexiZ Lawyers"
+            resValue "string", "app_name", "Dev Lex-Z Lawyer"
             buildConfigField "boolean", "IS_PRODUCTION", "false"
             buildConfigField "boolean", "IS_STAGING", "true"
         }
@@ -60,7 +60,7 @@ android {
             applicationId "com.digicoffer.lauditor.dev"
             versionCode 1
             versionName "1.0.7-dev"
-            resValue "string", "app_name", "Dev LexiZ Lawyers"
+            resValue "string", "app_name", "Dev Lex-Z Lawyer"
             buildConfigField "boolean", "IS_PRODUCTION", "false"
             buildConfigField "boolean", "IS_STAGING", "false"
         }

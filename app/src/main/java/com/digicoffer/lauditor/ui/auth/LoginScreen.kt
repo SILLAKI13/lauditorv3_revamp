@@ -117,8 +117,8 @@ fun LoginScreen(
                 ) {
                     // Logo Image matching logo_layout.xml
                     Image(
-                        painter = painterResource(id = R.drawable.logo_new),
-                        contentDescription = "Lauditor Logo",
+                        painter = painterResource(id = R.drawable.lex_z_lawyer_horizontal_tp),
+                        contentDescription = "Lex-Z Lawyers Logo",
                         modifier = Modifier
                             .padding(top = dimensionResource(id = R.dimen.ten_dp))
                             .width(dimensionResource(id = R.dimen.ThreeHundred_dp))

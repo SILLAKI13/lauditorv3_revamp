@@ -112,7 +112,7 @@ class biometric_page : AppCompatActivity() {
         })
 
         promptInfo = BiometricPrompt.PromptInfo.Builder()
-            .setTitle("Touch ID for \"LexiZ Lawyers\"")
+            .setTitle("Touch ID for \"Lex-Z Lawyers\"")
             .setSubtitle("Authenticate through Biometrics.")
             .setDeviceCredentialAllowed(true)
             .build()

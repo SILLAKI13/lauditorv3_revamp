@@ -43,7 +43,7 @@
                 android:id="@+id/iv_loading_logo"
                 android:layout_width="48dp"
                 android:layout_height="48dp"
-                android:src="@drawable/logo"
+                android:src="@drawable/lex_z_lawyer_vertical_tp"
                 android:scaleType="fitCenter"
                 android:contentDescription="Loading" />
 

@@ -25,7 +25,7 @@
             android:layout_gravity="center"
             android:layout_weight="0"
             android:contentDescription="Navigation header"
-            android:src="@drawable/single_logo" />
+            android:src="@drawable/lex_z_lawyer_vertical_tp" />
 
 
     </LinearLayout>

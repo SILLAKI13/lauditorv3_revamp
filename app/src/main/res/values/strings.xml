@@ -634,7 +634,7 @@
     <string name="edit_event">Edit Event</string>
     <string name="select_case_type">Select Case Type</string>
     <string name="not_available">Not Available</string>
-    <string name="login_to_lexiz_lawyers">Login To LexiZ Lawyers</string>
+    <string name="login_to_lexiz_lawyers">Login To Lex-Z Lawyers</string>
     <string name="login_with_biometric">Login With Biometric</string>
     <string name="login_with_otp">Login With OTP</string>
     <string name="appointments">Appointments</string>
@@ -695,7 +695,7 @@
     <string name="deleted_documents">Deleted Documents</string>
     <string name="documents_unshare">Documents Unshare</string>
     <string name="documents_share">Documents Share</string>
-    <string name="appname">LexiZ Lawyers</string>
+    <string name="appname">Lex-Z Lawyers</string>
     <string name="rotate_left">↺ Rotate left</string>
     <string name="rotate_right">↻ Rotate right</string>
     <string name="pinch_or_scroll_to_zoom_drag_to_reposition">Drag the image or use arrows to position. Pinch to zoom.</string>
