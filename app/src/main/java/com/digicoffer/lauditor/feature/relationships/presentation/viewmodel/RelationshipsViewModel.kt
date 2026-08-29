@@ -100,6 +100,10 @@ class RelationshipsViewModel(application: Application) : AndroidViewModel(applic
             is RelationshipsUiEvent.SetLoading -> {
                 _uiState.update { it.copy(isLoading = event.isLoading) }
             }
+            is RelationshipsUiEvent.ActivateRelationship -> activateRelationship(
+                event.id,
+                event.onResult
+            )
         }
     }
 
@@ -427,9 +431,13 @@ class RelationshipsViewModel(application: Application) : AndroidViewModel(applic
                     val data = result.getJSONArray("data")
                     for (i in 0 until data.length()) {
                         val jsonObject = data.getJSONObject(i)
+                        val name = jsonObject.optString("name")
+                        if (name.equals("AAM", ignoreCase = true) || name.equals("SuperUser", ignoreCase = true)) {
+                            continue
+                        }
                         val viewGroupModel = ViewGroupModel().apply {
                             id = jsonObject.optString("id")
-                            name = jsonObject.optString("name")
+                            this.name = name
                         }
                         parsedList.add(viewGroupModel)
                     }
@@ -627,6 +635,22 @@ class RelationshipsViewModel(application: Application) : AndroidViewModel(applic
                 }
             }
             onResult(parsedDocs)
+        }
+    }
+
+    private fun activateRelationship(id: String, onResult: (Boolean, String) -> Unit) {
+        viewModelScope.launch {
+            _uiState.update { it.copy(isLoading = true) }
+            val httpResult = repository.restoreRelationship(id)
+            _uiState.update { it.copy(isLoading = false) }
+            if (httpResult.result == WebServiceHelper.ServiceCallStatus.Success) {
+                val json = JSONObject(httpResult.responseContent ?: "{}")
+                val isError = json.optBoolean("error", false)
+                val msg = json.optString("msg", json.optString("message", "Relationship restored successfully"))
+                onResult(!isError, msg)
+            } else {
+                onResult(false, "Server call failed: ${httpResult.responseContent ?: "Unknown error"}")
+            }
         }
     }
 }

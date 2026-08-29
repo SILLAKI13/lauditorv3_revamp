@@ -79,7 +79,11 @@ fun CreateEventForm(
                     fontFamily = FontFamily(Font(R.font.gill_sans_regular))
                 )
                 AppDropdown(
-                    options = listOf("Legal Matter", "General Matter", "Overhead", "Others", "Reminders"),
+                    options = if (com.digicoffer.lauditor.CommonFiles.GlobalFiles.Constants.ROLE == "AAM") {
+                        listOf("Overhead", "Others", "Reminders")
+                    } else {
+                        listOf("Legal Matter", "General Matter", "Overhead", "Others", "Reminders")
+                    },
                     selectedOption = if (eventType.isEmpty()) null else eventType,
                     onOptionSelected = { eventType = it },
                     label = "Select Event Type",

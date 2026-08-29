@@ -19,6 +19,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.digicoffer.lauditor.R
 import com.digicoffer.lauditor.Relationships.Model.RelationshipsModel
+import com.digicoffer.lauditor.core.ui.common.badges.AppPillBadge
 
 import java.text.SimpleDateFormat
 import java.util.Locale
@@ -124,22 +125,14 @@ fun RelationshipCardItem(
                     }
 
                     val badgeShape = if (isPending) RoundedCornerShape(20.dp) else RoundedCornerShape(15.dp)
-                    Box(
-                        modifier = Modifier
-                            .clip(badgeShape)
-                            .background(bgColor)
-                            .padding(horizontal = 10.dp, vertical = 4.dp),
-                        contentAlignment = Alignment.Center
-                    ) {
-                        Text(
-                            text = label,
-                            color = textColor,
-                            fontFamily = GillSans,
-                            fontWeight = FontWeight.Normal,
-                            fontSize = 13.sp,
-                            textAlign = TextAlign.Center
-                        )
-                    }
+                    AppPillBadge(
+                        text = label,
+                        backgroundColor = bgColor,
+                        textColor = textColor,
+                        shape = badgeShape,
+                        paddingHorizontal = 10.dp,
+                        paddingVertical = 4.dp
+                    )
                 }
             }
 
@@ -160,73 +153,52 @@ fun RelationshipCardItem(
                     )
                 }
 
+                val isSolo = "solo" == com.digicoffer.lauditor.CommonFiles.GlobalFiles.Constants.CATEGORY
+                val isIndividual = model.clientType?.lowercase() == "consumer"
+                val isActive = model.isAccepted && model.status?.lowercase() != "inactive"
+
+                val actionsList = remember(model, isSolo, isIndividual, isActive) {
+                    val actions = mutableListOf<String>()
+                    if (isActive) {
+                        actions.add("Exchange Information")
+                        if ((com.digicoffer.lauditor.CommonFiles.GlobalFiles.Constants.ROLE == "GH" || com.digicoffer.lauditor.CommonFiles.GlobalFiles.Constants.ROLE == "TM") && !isSolo && !isIndividual) {
+                            actions.add("Manage Groups")
+                        }
+                        if (!isSolo) {
+                            actions.add("Manage Team Members")
+                        }
+                        actions.add("Delete Relationship")
+                    } else if (model.status?.lowercase() == "inactive") {
+                        actions.add("Activate Relationship")
+                        actions.add("Delete Relationship")
+                    } else {
+                        actions.add("Exchange Information")
+                        actions.add("Delete Relationship")
+                    }
+                    actions
+                }
+
                 DropdownMenu(
                     expanded = expanded,
                     onDismissRequest = { expanded = false },
                     modifier = Modifier.background(Color.White)
                 ) {
-                    DropdownMenuItem(
-                        text = {
-                            Text(
-                                text = "Exchange Information",
-                                color = Color.Black,
-                                fontFamily = GillSans
-                            )
-                        },
-                        onClick = {
-                            expanded = false
-                            onActionClick("Exchange Information", model)
-                        }
-                    )
-                    Divider(color = Color(0xFFDDDDDE))
-                    val isIndividual = model.clientType?.lowercase() == "consumer"
-                    if (!isIndividual) {
+                    actionsList.forEach { action ->
                         DropdownMenuItem(
                             text = {
                                 Text(
-                                    text = "Manage Groups",
+                                    text = action,
                                     color = Color.Black,
                                     fontFamily = GillSans
                                 )
                             },
                             onClick = {
                                 expanded = false
-                                onActionClick("Manage Groups", model)
+                                onActionClick(action, model)
                             }
                         )
-                        Divider(color = Color(0xFFDDDDDE))
+                        HorizontalDivider(color = Color(0xFFDDDDDE), thickness = 0.5.dp)
                     }
-                    val isActive = !isPending && !isInactive
-                    if (isActive) {
-                        DropdownMenuItem(
-                            text = {
-                                Text(
-                                    text = "Manage Team Members",
-                                    color = Color.Black,
-                                    fontFamily = GillSans
-                                )
-                            },
-                            onClick = {
-                                expanded = false
-                                onActionClick("Manage Team Members", model)
-                            }
-                        )
-                        Divider(color = Color(0xFFDDDDDE))
-                    }
-                    DropdownMenuItem(
-                        text = {
-                            Text(
-                                text = "Delete Relationship",
-                                color = Color.Black,
-                                fontFamily = GillSans
-                            )
-                        },
-                        onClick = {
-                            expanded = false
-                            onActionClick("Delete Relationship", model)
-                        }
-                    )
-                    Divider(color = Color(0xFFDDDDDE))
                 }
             }
         }

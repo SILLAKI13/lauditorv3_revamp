@@ -326,195 +326,197 @@ fun GctScreen(
                     }
                 }
 
-                Spacer(modifier = Modifier.height(15.dp))
+                if (Constants.CATEGORY != "solo") {
+                    Spacer(modifier = Modifier.height(15.dp))
 
-                // Section 2: Assign Team Member(s)
-                Text(
-                    text = "Assign Team Member(s)",
-                    fontFamily = GillSansBold,
-                    fontSize = 16.sp,
-                    color = ColorTokens.BluePrimary
-                )
+                    // Section 2: Assign Team Member(s)
+                    Text(
+                        text = "Assign Team Member(s)",
+                        fontFamily = GillSansBold,
+                        fontSize = 16.sp,
+                        color = ColorTokens.BluePrimary
+                    )
 
-                Spacer(modifier = Modifier.height(6.dp))
+                    Spacer(modifier = Modifier.height(6.dp))
 
-                val assignedNames = uiState.selectedTeamMembers.map { it.tm_name ?: "" }
-                val newlyCheckedNames = uiState.teamMembersList
-                    .filter { checkedDropdownMembers[it.tm_id] == true }
-                    .map { it.tm_name ?: "" }
-                val allNames = (assignedNames + newlyCheckedNames).distinct()
-                val dropdownHeaderText = if (allNames.isNotEmpty()) {
-                    allNames.joinToString(", ")
-                } else {
-                    "Select Assign Team Member(s)"
-                }
-
-                AppDropdown(
-                    options = filteredDropdownMembers,
-                    selectedOption = null,
-                    onOptionSelected = {},
-                    isInline = true,
-                    isExpanded = uiState.isTeamMembersDropdownExpanded,
-                    onExpandedChange = { viewModel.toggleTeamMembersDropdown() },
-                    customHeader = {
-                        Row(
-                            modifier = Modifier
-                                .fillMaxWidth()
-                                .height(42.dp)
-                                .border(1.dp, Color(0xFFDDDDDE), RoundedCornerShape(4.dp))
-                                .background(Color(0xFFFAFAFA))
-                                .clickable { viewModel.toggleTeamMembersDropdown() }
-                                .padding(horizontal = 10.dp),
-                            horizontalArrangement = Arrangement.SpaceBetween,
-                            verticalAlignment = Alignment.CenterVertically
-                        ) {
-                            Text(
-                                text = dropdownHeaderText,
-                                fontFamily = GillSans,
-                                fontSize = 15.sp,
-                                color = if (allNames.isNotEmpty()) Color.Black else Color.Gray
-                            )
-                            Icon(
-                                painter = painterResource(id = R.drawable.drop_down_blue),
-                                contentDescription = "Toggle Dropdown",
-                                tint = Color.Black,
-                                modifier = Modifier
-                                    .size(14.dp)
-                                    .rotate(if (uiState.isTeamMembersDropdownExpanded) 180f else 0f)
-                            )
-                        }
-                    },
-                    customContent = {
-                        Column(
-                            modifier = Modifier
-                                .fillMaxWidth()
-                                .padding(top = 4.dp)
-                                .border(1.dp, Color(0xFFDDDDDE), RoundedCornerShape(4.dp))
-                                .background(Color(0xFFFAFAFA))
-                                .padding(8.dp)
-                        ) {
-                            if (filteredDropdownMembers.isEmpty()) {
-                                Text(
-                                    text = "No team members available",
-                                    fontFamily = GillSans,
-                                    fontSize = 14.sp,
-                                    color = Color.Gray,
-                                    modifier = Modifier.padding(8.dp)
-                                )
-                            } else {
-                                filteredDropdownMembers.forEach { member ->
-                                    val isChecked = checkedDropdownMembers[member.tm_id] ?: false
-                                    Row(
-                                        modifier = Modifier
-                                            .fillMaxWidth()
-                                            .clickable {
-                                                checkedDropdownMembers[member.tm_id ?: ""] = !isChecked
-                                            }
-                                            .padding(horizontal = 8.dp, vertical = 6.dp),
-                                        verticalAlignment = Alignment.CenterVertically,
-                                        horizontalArrangement = Arrangement.SpaceBetween
-                                    ) {
-                                        Text(
-                                            text = member.tm_name ?: "",
-                                            fontFamily = GillSans,
-                                            fontSize = 15.sp,
-                                            color = Color.Black
-                                        )
-                                        Checkbox(
-                                            checked = isChecked,
-                                            onCheckedChange = { checkedDropdownMembers[member.tm_id ?: ""] = it },
-                                            colors = CheckboxDefaults.colors(checkedColor = ColorTokens.BluePrimary)
-                                        )
-                                    }
-                                }
-
-                                Spacer(modifier = Modifier.height(10.dp))
-
-                                // Dropdown Add Button
-                                Row(
-                                    modifier = Modifier.fillMaxWidth(),
-                                    horizontalArrangement = Arrangement.End
-                                ) {
-                                    Button(
-                                        onClick = {
-                                            filteredDropdownMembers.forEach { member ->
-                                                if (checkedDropdownMembers[member.tm_id] == true) {
-                                                    viewModel.addTeamMember(member)
-                                                }
-                                            }
-                                            checkedDropdownMembers.clear()
-                                            viewModel.toggleTeamMembersDropdown()
-                                        },
-                                        colors = ButtonDefaults.buttonColors(
-                                            containerColor = ColorTokens.BluePrimary,
-                                            disabledContainerColor = Color(0xFFBDC7D0)
-                                        ),
-                                        shape = RoundedCornerShape(4.dp),
-                                        contentPadding = PaddingValues(horizontal = 24.dp)
-                                    ) {
-                                        Text(
-                                            text = "Add",
-                                            fontFamily = GillSansBold,
-                                            fontSize = 14.sp,
-                                            color = Color.White
-                                        )
-                                    }
-                                }
-                            }
-                        }
+                    val assignedNames = uiState.selectedTeamMembers.map { it.tm_name ?: "" }
+                    val newlyCheckedNames = uiState.teamMembersList
+                        .filter { checkedDropdownMembers[it.tm_id] == true }
+                        .map { it.tm_name ?: "" }
+                    val allNames = (assignedNames + newlyCheckedNames).distinct()
+                    val dropdownHeaderText = if (allNames.isNotEmpty()) {
+                        allNames.joinToString(", ")
+                    } else {
+                        "Select Assign Team Member(s)"
                     }
-                )
 
-                // Selected Team Members Rows
-                if (uiState.selectedTeamMembers.isNotEmpty()) {
-                    Column(
-                        modifier = Modifier.fillMaxWidth().padding(top = 10.dp),
-                        verticalArrangement = Arrangement.spacedBy(6.dp)
-                    ) {
-                        Text(
-                            text = "Assigned Team Member(s)",
-                            fontFamily = GillSansBold,
-                            fontSize = 16.sp,
-                            color = ColorTokens.BluePrimary,
-                            modifier = Modifier.padding(top = 12.dp, bottom = 6.dp)
-                        )
-
-                        uiState.selectedTeamMembers.forEach { member ->
-                            val isRemovable = viewModel.isMemberRemovable(member)
+                    AppDropdown(
+                        options = filteredDropdownMembers,
+                        selectedOption = null,
+                        onOptionSelected = {},
+                        isInline = true,
+                        isExpanded = uiState.isTeamMembersDropdownExpanded,
+                        onExpandedChange = { viewModel.toggleTeamMembersDropdown() },
+                        customHeader = {
                             Row(
                                 modifier = Modifier
                                     .fillMaxWidth()
-                                    .border(1.dp, Color(0xFFE8E8E8), RoundedCornerShape(4.dp))
-                                    .background(Color.White)
-                                    .padding(horizontal = 12.dp, vertical = 10.dp),
+                                    .height(42.dp)
+                                    .border(1.dp, Color(0xFFDDDDDE), RoundedCornerShape(4.dp))
+                                    .background(Color(0xFFFAFAFA))
+                                    .clickable { viewModel.toggleTeamMembersDropdown() }
+                                    .padding(horizontal = 10.dp),
                                 horizontalArrangement = Arrangement.SpaceBetween,
                                 verticalAlignment = Alignment.CenterVertically
                             ) {
                                 Text(
-                                    text = member.tm_name ?: "",
+                                    text = dropdownHeaderText,
                                     fontFamily = GillSans,
                                     fontSize = 15.sp,
-                                    color = Color.Black
+                                    color = if (allNames.isNotEmpty()) Color.Black else Color.Gray
                                 )
-                                if (isRemovable) {
-                                    IconButton(
-                                        onClick = { viewModel.removeTeamMember(member) },
-                                        modifier = Modifier.size(24.dp)
+                                Icon(
+                                    painter = painterResource(id = R.drawable.drop_down_blue),
+                                    contentDescription = "Toggle Dropdown",
+                                    tint = Color.Black,
+                                    modifier = Modifier
+                                        .size(14.dp)
+                                        .rotate(if (uiState.isTeamMembersDropdownExpanded) 180f else 0f)
+                                )
+                            }
+                        },
+                        customContent = {
+                            Column(
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .padding(top = 4.dp)
+                                    .border(1.dp, Color(0xFFDDDDDE), RoundedCornerShape(4.dp))
+                                    .background(Color(0xFFFAFAFA))
+                                    .padding(8.dp)
+                            ) {
+                                if (filteredDropdownMembers.isEmpty()) {
+                                    Text(
+                                        text = "No team members available",
+                                        fontFamily = GillSans,
+                                        fontSize = 14.sp,
+                                        color = Color.Gray,
+                                        modifier = Modifier.padding(8.dp)
+                                    )
+                                } else {
+                                    filteredDropdownMembers.forEach { member ->
+                                        val isChecked = checkedDropdownMembers[member.tm_id] ?: false
+                                        Row(
+                                            modifier = Modifier
+                                                .fillMaxWidth()
+                                                .clickable {
+                                                    checkedDropdownMembers[member.tm_id ?: ""] = !isChecked
+                                                }
+                                                .padding(horizontal = 8.dp, vertical = 6.dp),
+                                            verticalAlignment = Alignment.CenterVertically,
+                                            horizontalArrangement = Arrangement.SpaceBetween
+                                        ) {
+                                            Text(
+                                                text = member.tm_name ?: "",
+                                                fontFamily = GillSans,
+                                                fontSize = 15.sp,
+                                                color = Color.Black
+                                            )
+                                            Checkbox(
+                                                checked = isChecked,
+                                                onCheckedChange = { checkedDropdownMembers[member.tm_id ?: ""] = it },
+                                                colors = CheckboxDefaults.colors(checkedColor = ColorTokens.BluePrimary)
+                                            )
+                                        }
+                                    }
+
+                                    Spacer(modifier = Modifier.height(10.dp))
+
+                                    // Dropdown Add Button
+                                    Row(
+                                        modifier = Modifier.fillMaxWidth(),
+                                        horizontalArrangement = Arrangement.End
                                     ) {
-                                        Icon(
-                                            painter = painterResource(id = R.drawable.cancel_icon),
-                                            contentDescription = "Remove Member",
-                                            tint = Color.Red,
-                                            modifier = Modifier.size(18.dp)
-                                        )
+                                        Button(
+                                            onClick = {
+                                                filteredDropdownMembers.forEach { member ->
+                                                    if (checkedDropdownMembers[member.tm_id] == true) {
+                                                        viewModel.addTeamMember(member)
+                                                    }
+                                                }
+                                                checkedDropdownMembers.clear()
+                                                viewModel.toggleTeamMembersDropdown()
+                                            },
+                                            colors = ButtonDefaults.buttonColors(
+                                                containerColor = ColorTokens.BluePrimary,
+                                                disabledContainerColor = Color(0xFFBDC7D0)
+                                            ),
+                                            shape = RoundedCornerShape(4.dp),
+                                            contentPadding = PaddingValues(horizontal = 24.dp)
+                                        ) {
+                                            Text(
+                                                text = "Add",
+                                                fontFamily = GillSansBold,
+                                                fontSize = 14.sp,
+                                                color = Color.White
+                                            )
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    )
+
+                    // Selected Team Members Rows
+                    if (uiState.selectedTeamMembers.isNotEmpty()) {
+                        Column(
+                            modifier = Modifier.fillMaxWidth().padding(top = 10.dp),
+                            verticalArrangement = Arrangement.spacedBy(6.dp)
+                        ) {
+                            Text(
+                                text = "Assigned Team Member(s)",
+                                fontFamily = GillSansBold,
+                                fontSize = 16.sp,
+                                color = ColorTokens.BluePrimary,
+                                modifier = Modifier.padding(top = 12.dp, bottom = 6.dp)
+                            )
+
+                            uiState.selectedTeamMembers.forEach { member ->
+                                val isRemovable = viewModel.isMemberRemovable(member)
+                                Row(
+                                    modifier = Modifier
+                                        .fillMaxWidth()
+                                        .border(1.dp, Color(0xFFE8E8E8), RoundedCornerShape(4.dp))
+                                        .background(Color.White)
+                                        .padding(horizontal = 12.dp, vertical = 10.dp),
+                                    horizontalArrangement = Arrangement.SpaceBetween,
+                                    verticalAlignment = Alignment.CenterVertically
+                                ) {
+                                    Text(
+                                        text = member.tm_name ?: "",
+                                        fontFamily = GillSans,
+                                        fontSize = 15.sp,
+                                        color = Color.Black
+                                    )
+                                    if (isRemovable) {
+                                        IconButton(
+                                            onClick = { viewModel.removeTeamMember(member) },
+                                            modifier = Modifier.size(24.dp)
+                                        ) {
+                                            Icon(
+                                                painter = painterResource(id = R.drawable.cancel_icon),
+                                                contentDescription = "Remove Member",
+                                                tint = Color.Red,
+                                                modifier = Modifier.size(18.dp)
+                                            )
+                                        }
                                     }
                                 }
                             }
                         }
                     }
-                }
 
-                Spacer(modifier = Modifier.height(10.dp))
+                    Spacer(modifier = Modifier.height(10.dp))
+                }
 
                 Row(
                     modifier = Modifier.fillMaxWidth(),

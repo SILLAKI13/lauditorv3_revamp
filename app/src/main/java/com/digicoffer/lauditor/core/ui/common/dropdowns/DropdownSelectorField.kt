@@ -35,7 +35,8 @@ fun <T> DropdownSelectorField(
     textColor: Color = Color.Black,
     textStyle: TextStyle = TextStyle.Default,
     onClearSelection: (() -> Unit)? = null,
-    enabled: Boolean = true
+    enabled: Boolean = true,
+    showSearch: Boolean = false
 ) {
     var expanded by remember { mutableStateOf(false) }
 
@@ -54,7 +55,7 @@ fun <T> DropdownSelectorField(
         Row(
             modifier = Modifier
                 .fillMaxWidth()
-                .height(32.dp) // Reduced height to 32dp to visually match the sleek legacy screenshot
+                .height(40.dp) // Set height to 40dp matching legacy spinner height
                 .clip(RoundedCornerShape(cornerRadius))
                 .background(if (enabled) backgroundColor else Color(0xFFFAFAFA))
                 .border(0.5.dp, if (enabled) borderColor else Color(0xFFE5E5E5), RoundedCornerShape(cornerRadius)) // @dimen/point_five (0.5dp)
@@ -76,13 +77,19 @@ fun <T> DropdownSelectorField(
 
             // Fixed-size container to prevent layout shifting and text movement when switching drawables
             Box(
-                modifier = Modifier
-                    .width(containerWidth) // Exact space: 12sp (icon) + 15sp (marginEnd)
-                    .fillMaxHeight()
-                    .clickable(enabled = selectedItem != null && onClearSelection != null) {
-                        onClearSelection?.invoke()
-                        expanded = false
-                    },
+                modifier = if (selectedItem != null && onClearSelection != null) {
+                    Modifier
+                        .width(containerWidth)
+                        .fillMaxHeight()
+                        .clickable {
+                            onClearSelection.invoke()
+                            expanded = false
+                        }
+                } else {
+                    Modifier
+                        .width(containerWidth)
+                        .fillMaxHeight()
+                },
                 contentAlignment = Alignment.CenterStart // Positions the icon at the start of the container, leaving 15sp margin at the end
             ) {
                 if (selectedItem != null && onClearSelection != null) {
@@ -106,48 +113,83 @@ fun <T> DropdownSelectorField(
         // Inline ListView (sp__category / spinner_list.xml style)
         if (expanded) {
             Spacer(modifier = Modifier.height(4.dp))
+            var searchQuery by remember { mutableStateOf("") }
+            val filteredItems = remember(items, searchQuery) {
+                if (searchQuery.isEmpty()) {
+                    items
+                } else {
+                    items.filter { itemToLabel(it).contains(searchQuery, ignoreCase = true) }
+                }
+            }
+
             Column(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .height(150.dp) // @dimen/one_fifty_dp height
+                    .height(if (showSearch) 200.dp else 150.dp) // height extension for search textfield
                     .clip(RoundedCornerShape(cornerRadius))
                     .background(backgroundColor)
                     .border(0.5.dp, borderColor, RoundedCornerShape(cornerRadius))
-                    .verticalScroll(rememberScrollState())
             ) {
-                items.forEach { item ->
-                    val isSelected = (item == selectedItem)
-                    val label = itemToLabel(item)
-
-                    Column(
+                if (showSearch) {
+                    OutlinedTextField(
+                        value = searchQuery,
+                        onValueChange = { searchQuery = it },
+                        placeholder = { Text("Search...", fontSize = 12.sp) },
                         modifier = Modifier
                             .fillMaxWidth()
-                            .clickable {
-                                onItemSelected(item)
-                                expanded = false
-                            }
-                            .background(if (isSelected) Color(0xFF00B3A7) else Color.Transparent) // green_count_color (#00B3A7)
-                    ) {
-                        Text(
-                            text = label,
-                            style = textStyle,
-                            color = if (isSelected) Color.White else textColor,
-                            modifier = Modifier
-                                .fillMaxWidth()
-                                .padding(
-                                    start = 6.dp,  // margin 4dp + paddingStart 2dp
-                                    top = 10.dp,   // margin 4dp + paddingTop 6dp
-                                    bottom = 10.dp // margin 4dp + paddingBottom 6dp
-                                )
+                            .padding(4.dp)
+                            .height(48.dp),
+                        singleLine = true,
+                        textStyle = textStyle.copy(fontSize = 13.sp),
+                        colors = OutlinedTextFieldDefaults.colors(
+                            focusedContainerColor = Color.White,
+                            unfocusedContainerColor = Color.White,
+                            focusedBorderColor = Color(0xFF004D87),
+                            unfocusedBorderColor = Color(0xFFCCCCCC)
                         )
+                    )
+                }
 
-                        // Divider line (dark_grey #DDDDDE, height 1dp)
-                        Box(
+                Column(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .weight(1f)
+                        .verticalScroll(rememberScrollState())
+                ) {
+                    filteredItems.forEach { item ->
+                        val isSelected = (item == selectedItem)
+                        val label = itemToLabel(item)
+
+                        Column(
                             modifier = Modifier
                                 .fillMaxWidth()
-                                .height(1.dp)
-                                .background(Color(0xFFDDDDDE))
-                        )
+                                .clickable {
+                                    onItemSelected(item)
+                                    expanded = false
+                                }
+                                .background(Color.Transparent)
+                        ) {
+                            Text(
+                                text = label,
+                                style = textStyle,
+                                color = textColor,
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .padding(
+                                        start = 6.dp,  // margin 4dp + paddingStart 2dp
+                                        top = 10.dp,   // margin 4dp + paddingTop 6dp
+                                        bottom = 10.dp // margin 4dp + paddingBottom 6dp
+                                    )
+                            )
+
+                            // Divider line (dark_grey #DDDDDE, height 1dp)
+                            Box(
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .height(1.dp)
+                                    .background(Color(0xFFDDDDDE))
+                            )
+                        }
                     }
                 }
             }

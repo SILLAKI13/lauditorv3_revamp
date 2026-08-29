@@ -47,6 +47,7 @@ import com.digicoffer.lauditor.Webservice.AsyncTaskCompleteListener
 import com.digicoffer.lauditor.Webservice.CommonApiHelper.WebServiceHelper
 import com.digicoffer.lauditor.Webservice.HttpResultDo
 import com.digicoffer.lauditor.core.designsystem.colors.ColorTokens
+import com.digicoffer.lauditor.core.ui.common.buttons.AppHeaderButton
 import com.digicoffer.lauditor.feature.matter.presentation.screen.DocumentsScreen
 import com.digicoffer.lauditor.feature.matter.presentation.screen.GctScreen
 import com.digicoffer.lauditor.feature.matter.presentation.screen.MatterEditScreen
@@ -143,45 +144,11 @@ class Matter : Fragment(), AsyncTaskCompleteListener, View.OnClickListener, Bott
         iconRes: Int,
         onClick: () -> Unit
     ) {
-        Card(
-            onClick = onClick,
-            colors = CardDefaults.cardColors(containerColor = ComposeColor.White),
-            elevation = CardDefaults.cardElevation(defaultElevation = 2.dp),
-            shape = RoundedCornerShape(10.dp), // 10.dp corner radius for rectangle shape
-            modifier = Modifier
-                .wrapContentSize()
-                .height(40.dp)
-        ) {
-            Row(
-                verticalAlignment = Alignment.CenterVertically,
-                modifier = Modifier
-                    .padding(start = 6.dp, end = 12.dp)
-                    .fillMaxHeight()
-            ) {
-                Box(
-                    modifier = Modifier
-                        .size(30.dp)
-                        .background(ColorTokens.BluePrimary, shape = CircleShape),
-                    contentAlignment = Alignment.Center
-                ) {
-                    Icon(
-                        painter = painterResource(id = iconRes),
-                        contentDescription = null,
-                        tint = ComposeColor.White,
-                        modifier = Modifier.size(14.dp)
-                    )
-                }
-                Spacer(modifier = Modifier.width(8.dp))
-                Text(
-                    text = text,
-                    color = ColorTokens.BluePrimary,
-                    fontFamily = GillSans,
-                    fontSize = 13.sp,
-                    fontWeight = FontWeight.Normal,
-                    maxLines = 1
-                )
-            }
-        }
+        AppHeaderButton(
+            text = text,
+            iconRes = iconRes,
+            onClick = onClick
+        )
     }
 
     @Composable

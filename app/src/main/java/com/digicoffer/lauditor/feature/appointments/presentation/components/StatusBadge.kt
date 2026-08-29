@@ -1,19 +1,16 @@
 package com.digicoffer.lauditor.feature.appointments.presentation.components
 
-import androidx.compose.foundation.background
-import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.text.font.Font
-import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.unit.sp
-import com.digicoffer.lauditor.R
+import com.digicoffer.lauditor.core.ui.common.badges.AppPillBadge
 import java.util.Locale
 
+/**
+ * Appointment status badge delegating directly to canonical [AppPillBadge].
+ */
 @Composable
 fun StatusBadge(
     status: String,
@@ -29,13 +26,13 @@ fun StatusBadge(
         else -> Triple(Color(0xFF9ECCF2), Color(0xFF004D87), "Scheduled")
     }
 
-    Text(
+    AppPillBadge(
         text = displayText,
-        color = textColor,
-        fontSize = 12.sp,
-        fontFamily = FontFamily(Font(R.font.gill_sans_regular)),
+        backgroundColor = backgroundColor,
+        textColor = textColor,
+        shape = RoundedCornerShape(15.dp),
+        paddingHorizontal = 10.dp,
+        paddingVertical = 5.dp,
         modifier = modifier
-            .background(backgroundColor, shape = RoundedCornerShape(15.dp)) // Corner radius matches R.dimen.Fifteen_dp from scheduled_badge.xml
-            .padding(horizontal = 10.dp, vertical = 5.dp) // padding matches 10dp and 5dp padding in XML
     )
 }

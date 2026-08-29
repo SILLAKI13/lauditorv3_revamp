@@ -44,6 +44,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.digicoffer.lauditor.Appointments.Models.AppointmentModel
 import com.digicoffer.lauditor.R
+import com.digicoffer.lauditor.core.ui.common.dialogs.AppDialog
 import com.digicoffer.lauditor.core.ui.common.feedback.AppLoader
 import com.digicoffer.lauditor.feature.appointments.presentation.components.AppointmentCardItem
 import com.digicoffer.lauditor.feature.appointments.presentation.components.HistoryOverlayScreen
@@ -328,112 +329,23 @@ private fun CustomConfirmationDialog(
     onConfirm: () -> Unit,
     onDismiss: () -> Unit
 ) {
-    Dialog(
-        onDismissRequest = onDismiss
-    ) {
-        Card(
-            shape = RoundedCornerShape(6.dp),
-            colors = CardDefaults.cardColors(containerColor = Color.White),
-            elevation = CardDefaults.cardElevation(defaultElevation = 10.dp),
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(4.dp)
-        ) {
-            Column(
-                horizontalAlignment = Alignment.CenterHorizontally,
+    AppDialog(
+        title = title,
+        confirmText = "Yes",
+        dismissText = "No",
+        onConfirm = onConfirm,
+        onDismiss = onDismiss,
+        content = {
+            Text(
+                text = message,
+                fontSize = 15.sp,
+                color = Color.Black,
+                fontFamily = FontFamily(Font(R.font.gill_sans)),
+                textAlign = TextAlign.Center,
                 modifier = Modifier
+                    .padding(horizontal = 10.dp)
                     .fillMaxWidth()
-                    .padding(4.dp)
-            ) {
-                // Close button at top right
-                Box(
-                    modifier = Modifier.fillMaxWidth()
-                ) {
-                    Image(
-                        painter = painterResource(id = R.drawable.simple_cancel),
-                        contentDescription = "Cancel",
-                        modifier = Modifier
-                            .align(Alignment.TopEnd)
-                            .size(30.dp)
-                            .clickable { onDismiss() }
-                    )
-                }
-
-                // Title
-                Text(
-                    text = title,
-                    fontSize = 20.sp,
-                    fontWeight = FontWeight.Bold,
-                    color = Color(0xFF004D87), // @color/blue
-                    fontFamily = FontFamily(Font(R.font.gill_sans_bold)),
-                    textAlign = TextAlign.Center,
-                    modifier = Modifier.padding(horizontal = 10.dp)
-                )
-
-                Spacer(modifier = Modifier.height(10.dp))
-
-                // Message text
-                Text(
-                    text = message,
-                    fontSize = 17.sp,
-                    color = Color.Black,
-                    fontFamily = FontFamily(Font(R.font.gill_sans)),
-                    textAlign = TextAlign.Center,
-                    modifier = Modifier
-                        .padding(horizontal = 10.dp)
-                        .fillMaxWidth()
-                )
-
-                Spacer(modifier = Modifier.height(15.dp))
-
-                // Buttons row (No on left, Yes on right)
-                Row(
-                    horizontalArrangement = Arrangement.Center,
-                    verticalAlignment = Alignment.CenterVertically,
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(bottom = 8.dp)
-                ) {
-                    // No Button
-                    Button(
-                        onClick = onDismiss,
-                        shape = RoundedCornerShape(8.dp),
-                        colors = ButtonDefaults.buttonColors(containerColor = Color(0xFFEEEEEE)), // @color/grey_text_color
-                        border = androidx.compose.foundation.BorderStroke(1.dp, Color(0xFFDDDDDE)), // @color/dark_grey
-                        modifier = Modifier
-                            .width(80.dp)
-                            .height(40.dp)
-                    ) {
-                        Text(
-                            text = "No",
-                            color = Color.Black,
-                            fontSize = 15.sp,
-                            fontWeight = FontWeight.Bold,
-                            fontFamily = FontFamily(Font(R.font.gill_sans_bold))
-                        )
-                    }
-
-                    Spacer(modifier = Modifier.width(30.dp))
-
-                    // Yes Button
-                    Button(
-                        onClick = onConfirm,
-                        shape = RoundedCornerShape(10.dp),
-                        colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF004D87)), // @color/blue
-                        modifier = Modifier
-                            .width(80.dp)
-                            .height(40.dp)
-                    ) {
-                        Text(
-                            text = "Yes",
-                            color = Color.White,
-                            fontSize = 15.sp,
-                            fontWeight = FontWeight.Bold,
-                            fontFamily = FontFamily(Font(R.font.gill_sans_bold))
-                        )
-                    }
-                }
-            }
+            )
         }
-    }
+    )
 }

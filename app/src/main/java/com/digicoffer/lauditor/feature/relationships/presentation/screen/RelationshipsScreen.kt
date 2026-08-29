@@ -37,7 +37,9 @@ import com.digicoffer.lauditor.R
 import com.digicoffer.lauditor.Relationships.Model.RelationshipsModel
 import com.digicoffer.lauditor.feature.groups.presentation.components.CustomTextField
 import com.digicoffer.lauditor.feature.members.presentation.components.MembersAlertDialog
+import com.digicoffer.lauditor.core.ui.common.buttons.AppHeaderButton
 import com.digicoffer.lauditor.core.ui.common.feedback.AppLoader
+import com.digicoffer.lauditor.core.ui.common.search.AppSearchField
 import com.digicoffer.lauditor.feature.notifications.presentation.components.NotificationsSearchBar
 import com.digicoffer.lauditor.feature.relationships.presentation.components.ExchangeInfoDialog
 import com.digicoffer.lauditor.feature.relationships.presentation.components.RelationshipCardItem
@@ -219,112 +221,22 @@ fun RelationshipsScreen(
                             lineHeight = 22.sp
                         )
 
-                        Surface(
-                            modifier = Modifier
-                                .height(40.dp)
-                                .clickable { screenMode = ScreenMode.CREATE },
-                            shape = RoundedCornerShape(10.dp),
-                            color = Color.White,
-                            shadowElevation = 2.dp
-                        ) {
-                            Row(
-                                modifier = Modifier.padding(start = 4.dp, end = 6.dp),
-                                verticalAlignment = Alignment.CenterVertically
-                            ) {
-                                Box(
-                                    modifier = Modifier
-                                        .size(30.dp)
-                                        .background(Color(0xFF004D87), shape = CircleShape),
-                                    contentAlignment = Alignment.Center
-                                ) {
-                                    Icon(
-                                        painter = painterResource(id = R.drawable.simple_plus_icon),
-                                        contentDescription = "Add",
-                                        tint = Color.White,
-                                        modifier = Modifier.size(14.dp)
-                                    )
-                                }
-                                Spacer(modifier = Modifier.width(4.dp))
-                                Text(
-                                    text = "Add Relationships",
-                                    color = Color(0xFF004D87),
-                                    fontFamily = GillSans,
-                                    fontSize = 13.sp,
-                                    fontWeight = FontWeight.Normal
-                                )
-                            }
-                        }
+                        AppHeaderButton(
+                            text = "Add Relationships",
+                            iconRes = R.drawable.simple_plus_icon,
+                            iconContentDescription = "Add",
+                            onClick = { screenMode = ScreenMode.CREATE }
+                        )
                     }
 
                     // Unified Search Bar layout matching screenshot
-                    Card(
-                        shape = RoundedCornerShape(30.dp),
-                        elevation = CardDefaults.cardElevation(defaultElevation = 4.dp),
-                        colors = CardDefaults.cardColors(containerColor = Color.White),
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .padding(horizontal = 10.dp, vertical = 10.dp)
-                            .height(40.dp)
-                    ) {
-                        Row(
-                            verticalAlignment = Alignment.CenterVertically,
-                            modifier = Modifier.fillMaxSize()
-                        ) {
-                            Spacer(modifier = Modifier.width(10.dp))
-                            Image(
-                                painter = painterResource(id = R.drawable.search_grey),
-                                contentDescription = "Search",
-                                modifier = Modifier
-                                    .size(20.dp)
-                                    .padding(end = 4.dp)
-                            )
-                            Box(
-                                contentAlignment = Alignment.CenterStart,
-                                modifier = Modifier.weight(1f)
-                            ) {
-                                if (directorySearchQuery.isEmpty()) {
-                                    Text(
-                                        text = "Search Relationship",
-                                        color = Color(0xFF999999),
-                                        fontFamily = GillSans,
-                                        fontSize = 15.sp
-                                    )
-                                }
-                                BasicTextField(
-                                    value = directorySearchQuery,
-                                    onValueChange = { directorySearchQuery = it },
-                                    singleLine = true,
-                                    cursorBrush = SolidColor(Color.Black),
-                                    textStyle = TextStyle(
-                                        color = Color.Black,
-                                        fontFamily = GillSans,
-                                        fontSize = 15.sp
-                                    ),
-                                    modifier = Modifier.fillMaxWidth()
-                                )
-                            }
-                            Button(
-                                onClick = { /* search query matches fetch */ },
-                                colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF004D87)),
-                                shape = RoundedCornerShape(
-                                    topStart = 0.dp,
-                                    bottomStart = 0.dp,
-                                    topEnd = 30.dp,
-                                    bottomEnd = 30.dp
-                                ),
-                                contentPadding = PaddingValues(horizontal = 24.dp),
-                                modifier = Modifier.fillMaxHeight()
-                            ) {
-                                Text(
-                                    text = "Search",
-                                    color = Color.White,
-                                    fontFamily = GillSans,
-                                    fontWeight = FontWeight.Bold,
-                                    fontSize = 15.sp
-                                )
-                            }
-                        }
-                    }
+                    AppSearchField(
+                        value = directorySearchQuery,
+                        onValueChange = { directorySearchQuery = it },
+                        onSearchClick = { /* search query matches fetch */ },
+                        placeholder = "Search Relationship",
+                        modifier = Modifier.padding(horizontal = 10.dp, vertical = 10.dp)
+                    )
 
                     // Main Relationships directory list
                     if (uiState.relationshipsList.isEmpty() && !uiState.isLoading) {
@@ -398,6 +310,14 @@ fun RelationshipsScreen(
                                                 screenMode = ScreenMode.MEMBER_ASSIGNMENT
                                             }
                                             "Delete Relationship" -> screenMode = ScreenMode.DELETE
+                                            "Activate Relationship" -> {
+                                                viewModel.onEvent(RelationshipsUiEvent.ActivateRelationship(targetModel.id ?: "") { success, msg ->
+                                                    validationAlertMessage = msg
+                                                    if (success) {
+                                                        viewModel.onEvent(RelationshipsUiEvent.FetchRelationships(currentRelType, "", "", ""))
+                                                    }
+                                                })
+                                            }
                                         }
                                     },
                                     onCardClick = { targetModel ->

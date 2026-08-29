@@ -55,6 +55,7 @@ import com.digicoffer.lauditor.CommonFiles.GlobalFiles.NewModel
 import com.digicoffer.lauditor.Groups.Models.ViewGroupModel
 import com.digicoffer.lauditor.Members.MembersModel
 import com.digicoffer.lauditor.R
+import com.digicoffer.lauditor.core.ui.common.buttons.AppHeaderButton
 import com.digicoffer.lauditor.core.ui.common.feedback.AppLoader
 import com.digicoffer.lauditor.feature.members.presentation.components.GroupAssignmentCard
 import com.digicoffer.lauditor.feature.members.presentation.components.MemberCardItem
@@ -78,52 +79,12 @@ fun HeaderActionButton(
     onClick: () -> Unit,
     modifier: Modifier = Modifier
 ) {
-    val activeBlue = Color(0xFF004D87)
-    Card(
-        shape = RoundedCornerShape(10.dp),
-        colors = CardDefaults.cardColors(containerColor = Color.White),
-        elevation = CardDefaults.cardElevation(defaultElevation = 2.dp),
-        border = BorderStroke(0.5.dp, Color(0xFFCCCCCC)),
-        modifier = modifier.clickable { onClick() }
-    ) {
-        Row(
-            modifier = Modifier.padding(start = 4.dp, end = 10.dp, top = 4.dp, bottom = 4.dp),
-            verticalAlignment = Alignment.CenterVertically
-        ) {
-            Box(
-                modifier = Modifier
-                    .size(30.dp)
-                    .background(activeBlue, shape = androidx.compose.foundation.shape.CircleShape),
-                contentAlignment = Alignment.Center
-            ) {
-                if (iconResId == 0) {
-                    Text(
-                        text = "+",
-                        color = Color.White,
-                        fontSize = 18.sp,
-                        fontWeight = FontWeight.Bold,
-                        textAlign = androidx.compose.ui.text.style.TextAlign.Center,
-                        modifier = Modifier.padding(bottom = 2.dp)
-                    )
-                } else {
-                    Image(
-                        painter = painterResource(id = iconResId),
-                        contentDescription = text,
-                        modifier = Modifier.size(14.dp),
-                        colorFilter = androidx.compose.ui.graphics.ColorFilter.tint(Color.White)
-                    )
-                }
-            }
-            Spacer(modifier = Modifier.width(8.dp))
-            Text(
-                text = text,
-                color = activeBlue,
-                fontSize = 13.sp,
-                fontWeight = FontWeight.SemiBold,
-                fontFamily = FontFamily(Font(R.font.gill_sans_regular))
-            )
-        }
-    }
+    AppHeaderButton(
+        text = text,
+        iconRes = iconResId,
+        onClick = onClick,
+        modifier = modifier
+    )
 }
 
 @Composable

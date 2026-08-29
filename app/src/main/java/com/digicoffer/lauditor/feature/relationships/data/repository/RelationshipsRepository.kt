@@ -363,4 +363,21 @@ class RelationshipsRepository(private val context: Context) {
             json.toString()
         )
     }
+
+    suspend fun restoreRelationship(id: String): HttpResultDo = suspendCancellableCoroutine { continuation ->
+        val json = JSONObject()
+        WebServiceHelper.callHttpWebService(
+            object : AsyncTaskCompleteListener {
+                override fun onAsyncTaskComplete(httpResult: HttpResultDo) {
+                    continuation.resume(httpResult)
+                }
+                override fun onClick(view: View) {}
+            },
+            context,
+            WebServiceHelper.RestMethodType.POST,
+            "v2/relationship/$id/terminate/restore",
+            "Archive Relationship",
+            json.toString()
+        )
+    }
 }

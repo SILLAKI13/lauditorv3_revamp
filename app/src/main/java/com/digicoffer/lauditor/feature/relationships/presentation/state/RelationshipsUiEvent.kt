@@ -83,4 +83,8 @@ sealed interface RelationshipsUiEvent {
     ) : RelationshipsUiEvent
 
     data class SetLoading(val isLoading: Boolean) : RelationshipsUiEvent
+    data class ActivateRelationship(
+        val id: String,
+        val onResult: (Boolean, String) -> Unit
+    ) : RelationshipsUiEvent
 }

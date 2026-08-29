@@ -21,6 +21,7 @@ import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.DropdownMenu
 import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.Text
+import com.digicoffer.lauditor.core.ui.common.badges.AppPillBadge
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -323,19 +324,15 @@ fun MatterListingCard(
                     else -> Pair(Color(0xFFFFE0B2), Color(0xFFF57C00))
                 }
 
-                Box(
-                    modifier = Modifier
-                        .padding(bottom = 4.dp, end = 4.dp)
-                        .background(badgeBg, shape = RoundedCornerShape(50.dp))
-                        .padding(horizontal = 10.dp, vertical = 4.dp)
-                ) {
-                    Text(
-                        text = statusText,
-                        fontFamily = GillSans,
-                        fontSize = 12.sp,
-                        color = badgeText
-                    )
-                }
+                AppPillBadge(
+                    text = statusText,
+                    backgroundColor = badgeBg,
+                    textColor = badgeText,
+                    shape = RoundedCornerShape(50.dp),
+                    paddingHorizontal = 10.dp,
+                    paddingVertical = 4.dp,
+                    modifier = Modifier.padding(bottom = 4.dp, end = 4.dp)
+                )
             }
         }
     }

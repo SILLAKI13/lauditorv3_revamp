@@ -28,8 +28,8 @@ import com.digicoffer.lauditor.R
 import com.digicoffer.lauditor.feature.groups.presentation.components.*
 import com.digicoffer.lauditor.feature.groups.presentation.state.GroupsUiEvent
 import com.digicoffer.lauditor.feature.groups.presentation.viewmodel.GroupsViewModel
+import com.digicoffer.lauditor.core.ui.common.buttons.AppHeaderButton
 import com.digicoffer.lauditor.feature.members.presentation.components.MembersAlertDialog
-import com.digicoffer.lauditor.feature.members.presentation.screen.HeaderActionButton
 import com.digicoffer.lauditor.feature.notifications.presentation.components.NotificationsSearchBar
 import org.json.JSONObject
 
@@ -125,18 +125,18 @@ fun GroupsScreen(
 
                 // Sub-header Action Button
                 if (screenMode == ScreenMode.LIST) {
-                    HeaderActionButton(
+                    AppHeaderButton(
                         text = "Create Group",
-                        iconResId = 0, // draws '+'
+                        iconRes = null, // draws '+'
                         onClick = {
                             isAddTeamMemberTab = true
                             screenMode = ScreenMode.CREATE
                         }
                     )
                 } else {
-                    HeaderActionButton(
+                    AppHeaderButton(
                         text = "View Groups",
-                        iconResId = R.drawable.eye_icon, // Eye icon drawable (View)
+                        iconRes = R.drawable.eye_icon, // Eye icon drawable (View)
                         onClick = {
                             screenMode = ScreenMode.LIST
                         }
