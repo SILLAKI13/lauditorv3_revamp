@@ -94,6 +94,12 @@ class HttpExecuteTask(
             }
 
             Log.e("URL", ":$resolvedUrl")
+            ApiMonitorLogger.logSending(
+                requestType = typeString,
+                url = resolvedUrl,
+                method = restMethodType.name,
+                params = lastBody
+            )
 
             val headers = HashMap<String, String>()
             headers["Accept"] = "application/json"
@@ -231,6 +237,15 @@ class HttpExecuteTask(
 
             val typeString = requestType ?: ""
             val urlString = URL ?: ""
+            val resolvedUrl = if (urlString.startsWith("http")) urlString else (Constants.base_URL + urlString)
+
+            ApiMonitorLogger.logResponse(
+                requestType = typeString,
+                url = resolvedUrl,
+                params = lastBody,
+                httpResult = result
+            )
+
             val skipRefresh = (typeString == "LOGIN_OTP"
                     || typeString == "LOGIN_PASSWORD"
                     || typeString == "REGISTER_OTP"

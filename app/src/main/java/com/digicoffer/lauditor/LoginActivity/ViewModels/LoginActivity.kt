@@ -187,8 +187,8 @@ class LoginActivity : AppCompatActivity(), AsyncTaskCompleteListener, View.OnCli
         initViews()
         setupListeners()
 
-        Constants.ISPRODUCTION = true
-        Constants.IS_STAGING = false
+        Constants.ISPRODUCTION = false
+        Constants.IS_STAGING = true
         FirebaseInitHelper.initializeFirebase(this)
         DynamicUtils.loadRefreshDynamicSizes(applicationContext)
 

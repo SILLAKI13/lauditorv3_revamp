@@ -52,11 +52,18 @@ class MultiPartHttpExecute(
                 Constants.base_URL + URL
             }
 
+            val bodyParam = if (params.isNotEmpty() && params[0] != null) params[0]!! else ""
+
+            ApiMonitorLogger.logSending(
+                requestType = requestType,
+                url = fullUrl,
+                method = restMethodType.name,
+                params = bodyParam
+            )
+
             val headers = HashMap<String, String>()
             headers["Accept"] = "application/json"
             headers["Authorization"] = "Bearer ${Constants.TOKEN}"
-
-            val bodyParam = if (params.isNotEmpty() && params[0] != null) params[0]!! else ""
 
             var requestBody: RequestBody? = null
             if (URL == "v3/decrypt") {
@@ -125,6 +132,19 @@ class MultiPartHttpExecute(
 
         try {
             Log.e("Response_Msg", result.responseContent)
+            val fullUrl = if (requestType == "Label" || requestType == "auth" || requestType == "messages_rows" || URL.contains(Constants.EMAIL_UPLOAD_URL)) {
+                URL
+            } else {
+                Constants.base_URL + URL
+            }
+
+            ApiMonitorLogger.logResponse(
+                requestType = requestType,
+                url = fullUrl,
+                params = null,
+                httpResult = result
+            )
+
             val statusCode = result.status_code
 
             if (statusCode == 401 && requestType != "Label" && requestType != "auth" &&

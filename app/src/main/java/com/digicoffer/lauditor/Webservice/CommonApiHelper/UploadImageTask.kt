@@ -42,6 +42,13 @@ class UploadImageTask(
             val builder = MultipartBody.Builder().setType(MultipartBody.FORM)
 
             val paramsJson = if (params.isNotEmpty() && params[0] != null) params[0] else "{}"
+            ApiMonitorLogger.logSending(
+                requestType = requestType,
+                url = url,
+                method = "POST (Multipart)",
+                params = "File: ${uploadFile.name} | Params: $paramsJson"
+            )
+
             val json = JSONObject(paramsJson)
             val keys = json.keys()
             while (keys.hasNext()) {
@@ -94,6 +101,17 @@ class UploadImageTask(
         result.requestType = requestType
         super.onPostExecute(result)
         try {
+            val url = if (requestType == "Upload DocEditor File") {
+                baseURL
+            } else {
+                Constants.base_URL + baseURL
+            }
+            ApiMonitorLogger.logResponse(
+                requestType = requestType,
+                url = url,
+                params = "File: ${uploadFile.name}",
+                httpResult = result
+            )
             callback.onAsyncTaskComplete(result)
         } catch (e: Exception) {
             e.printStackTrace()
