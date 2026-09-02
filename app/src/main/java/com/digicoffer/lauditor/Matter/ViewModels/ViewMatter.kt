@@ -158,14 +158,14 @@ class ViewMatter : Fragment(), AsyncTaskCompleteListener, ViewMatterAdapter.Inte
                     MatterListingScreen(
                         viewModel = matterViewModel,
                         onEditMatterClick = { model ->
-                            com.digicoffer.lauditor.CommonFiles.GlobalFiles.Constants.Matter_CreateOrViewDetails = "View Timeline"
-                            com.digicoffer.lauditor.CommonFiles.GlobalFiles.Constants.matterDate = model.created
-                            View_Details(model, ArrayList(matterViewModel.uiState.value.matterList))
-                        },
-                        onViewTimelineClick = { model ->
                             com.digicoffer.lauditor.CommonFiles.GlobalFiles.Constants.Matter_CreateOrViewDetails = "Edit Matter Info"
                             com.digicoffer.lauditor.CommonFiles.GlobalFiles.Constants.matterDate = model.created
                             Edit_Matter_Info(model)
+                        },
+                        onViewTimelineClick = { model ->
+                            com.digicoffer.lauditor.CommonFiles.GlobalFiles.Constants.Matter_CreateOrViewDetails = "View Timeline"
+                            com.digicoffer.lauditor.CommonFiles.GlobalFiles.Constants.matterDate = model.created
+                            View_Details(model, ArrayList(matterViewModel.uiState.value.matterList))
                         }
                     )
                 }
@@ -181,6 +181,9 @@ class ViewMatter : Fragment(), AsyncTaskCompleteListener, ViewMatterAdapter.Inte
 
     override fun onResume() {
         super.onResume()
+        if (::matterViewModel.isInitialized) {
+            matterViewModel.fetchMatters()
+        }
         requireActivity().window.setSoftInputMode(WindowManager.LayoutParams.SOFT_INPUT_ADJUST_NOTHING)
     }
 

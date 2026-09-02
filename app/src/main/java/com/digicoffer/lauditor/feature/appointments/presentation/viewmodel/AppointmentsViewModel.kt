@@ -110,13 +110,34 @@ class AppointmentsViewModel(
                 val draftMap = _uiState.value.noteEditingMap.toMutableMap().apply {
                     put(event.noteId, event.initialText)
                 }
-                _uiState.update { it.copy(noteEditingState = editingStates, noteEditingMap = draftMap) }
+                val expandedMap = _uiState.value.noteExpandedState.toMutableMap().apply {
+                    put(event.appointmentId, true)
+                }
+                _uiState.update {
+                    it.copy(
+                        noteEditingState = editingStates,
+                        noteEditingMap = draftMap,
+                        noteExpandedState = expandedMap
+                    )
+                }
             }
             is AppointmentsUiEvent.CancelEditingNote -> {
                 val editingStates = _uiState.value.noteEditingState.toMutableMap().apply {
                     put(event.noteId, false)
                 }
-                _uiState.update { it.copy(noteEditingState = editingStates) }
+                val draftMap = _uiState.value.noteEditingMap.toMutableMap().apply {
+                    remove(event.noteId)
+                }
+                val expandedMap = _uiState.value.noteExpandedState.toMutableMap().apply {
+                    put(event.appointmentId, false)
+                }
+                _uiState.update {
+                    it.copy(
+                        noteEditingState = editingStates,
+                        noteEditingMap = draftMap,
+                        noteExpandedState = expandedMap
+                    )
+                }
             }
             is AppointmentsUiEvent.SaveEditedNote -> saveEditedNote(event.appointmentId, event.noteId)
             is AppointmentsUiEvent.DeleteNote -> deleteNote(event.appointmentId, event.noteId)
@@ -135,27 +156,29 @@ class AppointmentsViewModel(
             if (result.result == WebServiceHelper.ServiceCallStatus.Success) {
                 try {
                     val rootJson = JSONObject(result.responseContent ?: "")
-                    if (!rootJson.getBoolean("error")) {
+                    if (!rootJson.optBoolean("error", false)) {
                         val appointmentsArray = rootJson.optJSONArray("appointments") ?: JSONArray()
                         val list = parseAppointments(appointmentsArray)
                         _uiState.update { it.copy(appointmentList = list) }
                         applyFilterAndSorting()
                     } else {
+                        val errorMsg = rootJson.optString("msg").ifEmpty { "Failed to fetch appointments" }
                         _uiState.update {
                             it.copy(
-                                alertTitle = "Alert",
-                                alertMessage = rootJson.optString("msg", "Failed to fetch appointments")
+                                alertTitle = "Error",
+                                alertMessage = errorMsg
                             )
                         }
                     }
                 } catch (e: Exception) {
-                    _uiState.update { it.copy(alertTitle = "Exception", alertMessage = e.message ?: "Failed parsing response") }
+                    _uiState.update { it.copy(alertTitle = "Error", alertMessage = e.message ?: "Failed parsing response") }
                 }
             } else {
+                val cleanMsg = extractErrorMessage(result.responseContent)
                 _uiState.update {
                     it.copy(
                         alertTitle = "Error",
-                        alertMessage = result.responseContent ?: "Failed to connect to web service"
+                        alertMessage = cleanMsg.ifEmpty { "Failed to connect to web service" }
                     )
                 }
             }
@@ -219,30 +242,14 @@ class AppointmentsViewModel(
             }
         }
 
-        // Sort items using legacy algorithm rules
         val sorted = filtered.sortedWith { o1, o2 ->
-            try {
-                val status1 = o1.appointment_status.lowercase(Locale.ROOT)
-                val status2 = o2.appointment_status.lowercase(Locale.ROOT)
-
-                val isPriority1 = status1 == "upcoming" || status1 == "ongoing"
-                val isPriority2 = status2 == "upcoming" || status2 == "ongoing"
-
-                if (isPriority1 && isPriority2) {
-                    val d1 = dateFormat.parse(o1.appointment_from)
-                    val d2 = dateFormat.parse(o2.appointment_from)
-                    if (d1 == null || d2 == null) 0 else d1.compareTo(d2)
-                } else if (isPriority1) {
-                    -1
-                } else if (isPriority2) {
-                    1
-                } else {
-                    val d1 = dateFormat.parse(o1.appointment_from)
-                    val d2 = dateFormat.parse(o2.appointment_from)
-                    if (d1 == null || d2 == null) 0 else d2.compareTo(d1)
-                }
-            } catch (e: Exception) {
-                0
+            val date1 = parseApiDate(o1.appointment_from)
+            val date2 = parseApiDate(o2.appointment_from)
+            when {
+                date1 == null && date2 == null -> 0
+                date1 == null -> 1
+                date2 == null -> -1
+                else -> date2.compareTo(date1)
             }
         }
 
@@ -257,6 +264,12 @@ class AppointmentsViewModel(
             )
         }
         renderCurrentPage()
+    }
+
+    private fun parseApiDate(dateStr: String) = try {
+        dateFormat.parse(dateStr)
+    } catch (e: Exception) {
+        null
     }
 
     private fun renderCurrentPage() {
@@ -280,15 +293,25 @@ class AppointmentsViewModel(
             _uiState.update { it.copy(isLoading = false) }
 
             if (result.result == WebServiceHelper.ServiceCallStatus.Success) {
-                val rootJson = JSONObject(result.responseContent ?: "")
-                val msg = rootJson.optString("msg", "Success")
-                _uiState.update { it.copy(toastMessage = msg) }
-                loadAppointments()
+                try {
+                    val rootJson = JSONObject(result.responseContent ?: "")
+                    val msg = rootJson.optString("msg").ifEmpty { "Appointment cancelled successfully" }
+                    val error = rootJson.optBoolean("error", false)
+                    if (error) {
+                        _uiState.update { it.copy(alertTitle = "Error", alertMessage = msg) }
+                    } else {
+                        _uiState.update { it.copy(alertTitle = "Success", alertMessage = msg) }
+                        loadAppointments()
+                    }
+                } catch (e: Exception) {
+                    _uiState.update { it.copy(alertTitle = "Error", alertMessage = e.message ?: "Failed parsing response") }
+                }
             } else {
+                val cleanMsg = extractErrorMessage(result.responseContent)
                 _uiState.update {
                     it.copy(
                         alertTitle = "Error",
-                        alertMessage = result.responseContent ?: "Failed to cancel appointment"
+                        alertMessage = cleanMsg.ifEmpty { "Failed to cancel appointment" }
                     )
                 }
             }
@@ -302,15 +325,25 @@ class AppointmentsViewModel(
             _uiState.update { it.copy(isLoading = false) }
 
             if (result.result == WebServiceHelper.ServiceCallStatus.Success) {
-                val rootJson = JSONObject(result.responseContent ?: "")
-                val msg = rootJson.optString("msg", "Success")
-                _uiState.update { it.copy(toastMessage = msg) }
-                loadAppointments()
+                try {
+                    val rootJson = JSONObject(result.responseContent ?: "")
+                    val msg = rootJson.optString("msg").ifEmpty { "Appointment deleted successfully" }
+                    val error = rootJson.optBoolean("error", false)
+                    if (error) {
+                        _uiState.update { it.copy(alertTitle = "Error", alertMessage = msg) }
+                    } else {
+                        _uiState.update { it.copy(alertTitle = "Success", alertMessage = msg) }
+                        loadAppointments()
+                    }
+                } catch (e: Exception) {
+                    _uiState.update { it.copy(alertTitle = "Error", alertMessage = e.message ?: "Failed parsing response") }
+                }
             } else {
+                val cleanMsg = extractErrorMessage(result.responseContent)
                 _uiState.update {
                     it.copy(
                         alertTitle = "Error",
-                        alertMessage = result.responseContent ?: "Failed to delete appointment"
+                        alertMessage = cleanMsg.ifEmpty { "Failed to delete appointment" }
                     )
                 }
             }
@@ -326,26 +359,28 @@ class AppointmentsViewModel(
             if (result.result == WebServiceHelper.ServiceCallStatus.Success) {
                 try {
                     val rootJson = JSONObject(result.responseContent ?: "")
-                    if (!rootJson.getBoolean("error")) {
+                    if (!rootJson.optBoolean("error", false)) {
                         val historyArray = rootJson.optJSONArray("appointments") ?: JSONArray()
                         val list = parseAppointments(historyArray)
                         _uiState.update { it.copy(historyList = list) }
                     } else {
+                        val errorMsg = rootJson.optString("msg").ifEmpty { "Failed to fetch appointment history" }
                         _uiState.update {
                             it.copy(
-                                alertTitle = "Alert",
-                                alertMessage = rootJson.optString("msg", "Failed to fetch appointment history")
+                                alertTitle = "Error",
+                                alertMessage = errorMsg
                             )
                         }
                     }
                 } catch (e: Exception) {
-                    _uiState.update { it.copy(alertTitle = "Exception", alertMessage = e.message ?: "Failed parsing response") }
+                    _uiState.update { it.copy(alertTitle = "Error", alertMessage = e.message ?: "Failed parsing response") }
                 }
             } else {
+                val cleanMsg = extractErrorMessage(result.responseContent)
                 _uiState.update {
                     it.copy(
                         alertTitle = "Error",
-                        alertMessage = result.responseContent ?: "Failed to connect to history service"
+                        alertMessage = cleanMsg.ifEmpty { "Failed to connect to history service" }
                     )
                 }
             }
@@ -362,18 +397,29 @@ class AppointmentsViewModel(
             _uiState.update { it.copy(isLoading = false) }
 
             if (result.result == WebServiceHelper.ServiceCallStatus.Success) {
-                val rootJson = JSONObject(result.responseContent ?: "")
-                val msg = rootJson.optString("msg", "Success")
-                _uiState.update {
-                    val clearedAddingMap = it.noteAddingMap.toMutableMap().apply { remove(appointmentId) }
-                    it.copy(toastMessage = msg, noteAddingMap = clearedAddingMap)
+                try {
+                    val rootJson = JSONObject(result.responseContent ?: "")
+                    val msg = rootJson.optString("msg").ifEmpty { "Note added successfully" }
+                    val error = rootJson.optBoolean("error", false)
+                    if (error) {
+                        _uiState.update { it.copy(alertTitle = "Error", alertMessage = msg) }
+                    } else {
+                        _uiState.update {
+                            val clearedAddingMap = it.noteAddingMap.toMutableMap().apply { remove(appointmentId) }
+                            val clearedExpanded = it.noteExpandedState.toMutableMap().apply { put(appointmentId, false) }
+                            it.copy(alertTitle = "Success", alertMessage = msg, noteAddingMap = clearedAddingMap, noteExpandedState = clearedExpanded)
+                        }
+                        loadHistory(_uiState.value.historyClientId)
+                    }
+                } catch (e: Exception) {
+                    _uiState.update { it.copy(alertTitle = "Error", alertMessage = e.message ?: "Failed parsing response") }
                 }
-                loadHistory(_uiState.value.historyClientId)
             } else {
+                val cleanMsg = extractErrorMessage(result.responseContent)
                 _uiState.update {
                     it.copy(
                         alertTitle = "Error",
-                        alertMessage = result.responseContent ?: "Failed to save note"
+                        alertMessage = cleanMsg.ifEmpty { "Failed to save note" }
                     )
                 }
             }
@@ -390,19 +436,30 @@ class AppointmentsViewModel(
             _uiState.update { it.copy(isLoading = false) }
 
             if (result.result == WebServiceHelper.ServiceCallStatus.Success) {
-                val rootJson = JSONObject(result.responseContent ?: "")
-                val msg = rootJson.optString("msg", "Success")
-                _uiState.update {
-                    val clearedStates = it.noteEditingState.toMutableMap().apply { put(noteId, false) }
-                    val clearedEditingMap = it.noteEditingMap.toMutableMap().apply { remove(noteId) }
-                    it.copy(toastMessage = msg, noteEditingState = clearedStates, noteEditingMap = clearedEditingMap)
+                try {
+                    val rootJson = JSONObject(result.responseContent ?: "")
+                    val msg = rootJson.optString("msg").ifEmpty { "Note updated successfully" }
+                    val error = rootJson.optBoolean("error", false)
+                    if (error) {
+                        _uiState.update { it.copy(alertTitle = "Error", alertMessage = msg) }
+                    } else {
+                        _uiState.update {
+                            val clearedStates = it.noteEditingState.toMutableMap().apply { put(noteId, false) }
+                            val clearedEditingMap = it.noteEditingMap.toMutableMap().apply { remove(noteId) }
+                            val clearedExpanded = it.noteExpandedState.toMutableMap().apply { put(appointmentId, false) }
+                            it.copy(alertTitle = "Success", alertMessage = msg, noteEditingState = clearedStates, noteEditingMap = clearedEditingMap, noteExpandedState = clearedExpanded)
+                        }
+                        loadHistory(_uiState.value.historyClientId)
+                    }
+                } catch (e: Exception) {
+                    _uiState.update { it.copy(alertTitle = "Error", alertMessage = e.message ?: "Failed parsing response") }
                 }
-                loadHistory(_uiState.value.historyClientId)
             } else {
+                val cleanMsg = extractErrorMessage(result.responseContent)
                 _uiState.update {
                     it.copy(
                         alertTitle = "Error",
-                        alertMessage = result.responseContent ?: "Failed to update note"
+                        alertMessage = cleanMsg.ifEmpty { "Failed to update note" }
                     )
                 }
             }
@@ -416,18 +473,38 @@ class AppointmentsViewModel(
             _uiState.update { it.copy(isLoading = false) }
 
             if (result.result == WebServiceHelper.ServiceCallStatus.Success) {
-                val rootJson = JSONObject(result.responseContent ?: "")
-                val msg = rootJson.optString("msg", "Success")
-                _uiState.update { it.copy(toastMessage = msg) }
-                loadHistory(_uiState.value.historyClientId)
+                try {
+                    val rootJson = JSONObject(result.responseContent ?: "")
+                    val msg = rootJson.optString("msg").ifEmpty { "Note deleted successfully" }
+                    val error = rootJson.optBoolean("error", false)
+                    if (error) {
+                        _uiState.update { it.copy(alertTitle = "Error", alertMessage = msg) }
+                    } else {
+                        _uiState.update { it.copy(alertTitle = "Success", alertMessage = msg) }
+                        loadHistory(_uiState.value.historyClientId)
+                    }
+                } catch (e: Exception) {
+                    _uiState.update { it.copy(alertTitle = "Error", alertMessage = e.message ?: "Failed parsing response") }
+                }
             } else {
+                val cleanMsg = extractErrorMessage(result.responseContent)
                 _uiState.update {
                     it.copy(
                         alertTitle = "Error",
-                        alertMessage = result.responseContent ?: "Failed to delete note"
+                        alertMessage = cleanMsg.ifEmpty { "Failed to delete note" }
                     )
                 }
             }
+        }
+    }
+
+    private fun extractErrorMessage(responseContent: String?): String {
+        if (responseContent.isNullOrBlank()) return ""
+        return try {
+            val json = JSONObject(responseContent)
+            json.optString("msg", "")
+        } catch (e: Exception) {
+            responseContent
         }
     }
 }

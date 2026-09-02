@@ -27,7 +27,7 @@ import com.digicoffer.lauditor.core.ui.common.feedback.AppEmptyState
 import com.digicoffer.lauditor.core.ui.common.foundation.AppDivider
 import com.digicoffer.lauditor.core.ui.common.foundation.AppSpacer
 import com.digicoffer.lauditor.core.ui.common.foundation.AppText
-import com.digicoffer.lauditor.feature.notifications.presentation.components.NotificationsSearchBar
+import com.digicoffer.lauditor.core.ui.common.search.AppSearchField
 import com.digicoffer.lauditor.feature.timesheets.presentation.state.TimesheetsUiEvent
 import com.digicoffer.lauditor.feature.timesheets.presentation.state.TimesheetsUiState
 
@@ -108,9 +108,9 @@ fun ProjectsScreen(
                         AppSpacer(height = 12.dp)
 
                         // Search field (magnifying glass) inside the Card
-                        NotificationsSearchBar(
-                            query = uiState.searchQuery,
-                            onQueryChange = { onEvent(TimesheetsUiEvent.SearchQueryChanged(it)) },
+                        AppSearchField(
+                            value = uiState.searchQuery,
+                            onValueChange = { onEvent(TimesheetsUiEvent.SearchQueryChanged(it)) },
                             placeholder = "Search",
                             modifier = Modifier.fillMaxWidth()
                         )

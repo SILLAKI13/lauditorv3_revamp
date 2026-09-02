@@ -34,6 +34,8 @@ import java.text.SimpleDateFormat
 import java.util.ArrayList
 import java.util.Locale
 
+private val GillSans = FontFamily(androidx.compose.ui.text.font.Font(R.font.gill_sans))
+
 class TimeLine() : Fragment() {
     var historyList = ArrayList<HistoryModel>()
     var viewMatter = ViewMatter()
@@ -318,7 +320,7 @@ class TimeLine() : Fragment() {
                                 if (history.from_ts != history.to_ts) {
                                     Spacer(modifier = Modifier.height(6.dp))
                                     Icon(
-                                        painter = painterResource(id = R.drawable.edit__icon),
+                                        painter = painterResource(id = R.drawable.simple_plus),
                                         contentDescription = "Add Note",
                                         tint = Color.Unspecified,
                                         modifier = Modifier
@@ -334,13 +336,34 @@ class TimeLine() : Fragment() {
                             if (showAddArea) {
                                 OutlinedTextField(
                                     value = noteInputText,
-                                    onValueChange = { noteInputText = it },
-                                    modifier = Modifier.fillMaxWidth(),
-                                    placeholder = { Text(text = "Notes") },
+                                    onValueChange = { if (it.length <= 150) noteInputText = it },
+                                    modifier = Modifier
+                                        .fillMaxWidth()
+                                        .heightIn(min = 90.dp),
+                                    minLines = 3,
+                                    maxLines = 5,
+                                    placeholder = { Text(text = "Notes", color = Color.Gray, fontFamily = GillSans) },
+                                    textStyle = androidx.compose.ui.text.TextStyle(
+                                        fontFamily = GillSans,
+                                        fontSize = 15.sp,
+                                        color = Color.Black
+                                    ),
                                     colors = OutlinedTextFieldDefaults.colors(
                                         focusedBorderColor = ColorTokens.BluePrimary,
-                                        unfocusedBorderColor = Color.LightGray
-                                    )
+                                        unfocusedBorderColor = Color(0xFFDDDDDE),
+                                        focusedContainerColor = Color(0xFFEEEEEE),
+                                        unfocusedContainerColor = Color(0xFFEEEEEE)
+                                    ),
+                                    shape = RoundedCornerShape(4.dp)
+                                )
+                                Text(
+                                    text = "${noteInputText.length}/150",
+                                    fontFamily = GillSans,
+                                    fontSize = 12.sp,
+                                    color = Color.Gray,
+                                    modifier = Modifier
+                                        .align(Alignment.End)
+                                        .padding(top = 2.dp, bottom = 4.dp)
                                 )
                                 Spacer(modifier = Modifier.height(8.dp))
                                 Row(

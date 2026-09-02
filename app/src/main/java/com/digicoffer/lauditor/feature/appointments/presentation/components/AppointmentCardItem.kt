@@ -31,9 +31,11 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.digicoffer.lauditor.Appointments.Models.AppointmentModel
 import java.text.SimpleDateFormat
+import java.util.Locale
 import com.digicoffer.lauditor.CommonFiles.GlobalFiles.AndroidUtils
 import com.digicoffer.lauditor.R
-import java.util.Locale
+import com.digicoffer.lauditor.core.ui.common.badges.AppStatusBadge
+import com.digicoffer.lauditor.core.ui.common.badges.AppStatusStyle
 
 @Composable
 fun AppointmentCardItem(
@@ -66,7 +68,9 @@ fun AppointmentCardItem(
             shape = RoundedCornerShape(12.dp),
             colors = CardDefaults.cardColors(containerColor = Color.White),
             elevation = CardDefaults.cardElevation(defaultElevation = 4.dp),
-            modifier = Modifier.fillMaxWidth()
+            modifier = Modifier
+                .fillMaxWidth()
+                .clickable { onHistoryClick() }
         ) {
             Column(
                 modifier = Modifier
@@ -78,26 +82,12 @@ fun AppointmentCardItem(
                     verticalAlignment = Alignment.CenterVertically,
                     modifier = Modifier.fillMaxWidth()
                 ) {
-                    // Profile Avatar Initials fallback
-                    Box(
-                        contentAlignment = Alignment.Center,
-                        modifier = Modifier
-                            .size(30.dp)
-                            .background(Color(0xFF004D87), shape = CircleShape)
-                    ) {
-                        val initials = if (appointment.client_name.isNotEmpty()) {
-                            appointment.client_name.take(1).uppercase(Locale.ROOT)
-                        } else {
-                            "P"
-                        }
-                        Text(
-                            text = initials,
-                            color = Color.White,
-                            fontSize = 12.sp,
-                            fontWeight = FontWeight.Bold,
-                            fontFamily = FontFamily(Font(R.font.gill_sans_regular))
-                        )
-                    }
+                    // Profile Avatar with image loading & fallback
+                    com.digicoffer.lauditor.core.ui.common.foundation.AppProfileAvatar(
+                        imageUrl = appointment.client_profile_pic,
+                        name = appointment.client_name,
+                        size = 30.dp
+                    )
 
                     Spacer(modifier = Modifier.width(6.dp))
 
@@ -173,7 +163,20 @@ fun AppointmentCardItem(
                     verticalAlignment = Alignment.CenterVertically,
                     modifier = Modifier.fillMaxWidth()
                 ) {
-                    StatusBadge(status = appointment.appointment_status)
+                    val cleanStatus = appointment.appointment_status.lowercase(Locale.ROOT).trim()
+                    val (displayStatus, statusStyle) = when (cleanStatus) {
+                        "completed" -> Pair("Completed", AppStatusStyle.SUCCESS)
+                        "cancelled", "canceled" -> Pair("Cancelled", AppStatusStyle.ERROR)
+                        "upcoming" -> Pair("Upcoming", AppStatusStyle.INFO)
+                        "ongoing" -> Pair("Ongoing", AppStatusStyle.INFO)
+                        "payment_pending", "pending" -> Pair("Payment Pending", AppStatusStyle.WARNING)
+                        else -> Pair(if (cleanStatus.isNotEmpty()) appointment.appointment_status.replaceFirstChar { it.uppercase() } else "Scheduled", AppStatusStyle.NEUTRAL)
+                    }
+
+                    AppStatusBadge(
+                        text = displayStatus,
+                        style = statusStyle
+                    )
 
                     Spacer(modifier = Modifier.weight(1f))
 

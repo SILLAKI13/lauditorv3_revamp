@@ -44,8 +44,8 @@ import com.digicoffer.lauditor.core.ui.common.inputs.AppCircleCheckbox
 import com.digicoffer.lauditor.core.ui.common.badges.AppPillBadge
 import com.digicoffer.lauditor.core.designsystem.theme.LauditorTheme
 import com.digicoffer.lauditor.core.ui.common.feedback.AppLoader
+import com.digicoffer.lauditor.core.ui.common.search.AppSearchField
 import com.digicoffer.lauditor.feature.notifications.presentation.components.DateGroupCard
-import com.digicoffer.lauditor.feature.notifications.presentation.components.NotificationsSearchBar
 import com.digicoffer.lauditor.feature.notifications.presentation.state.NotificationsUiEvent
 import com.digicoffer.lauditor.feature.notifications.presentation.state.NotificationsUiState
 import com.digicoffer.lauditor.feature.notifications.presentation.viewmodel.NotificationsViewModel
@@ -152,9 +152,11 @@ fun NotificationsScreen(
             }
             
             // Search Bar Component
-            NotificationsSearchBar(
-                query = uiState.searchQuery,
-                onQueryChange = { onEvent(NotificationsUiEvent.SearchQueryChanged(it)) }
+            AppSearchField(
+                value = uiState.searchQuery,
+                onValueChange = { onEvent(NotificationsUiEvent.SearchQueryChanged(it)) },
+                placeholder = "Search notifications...",
+                modifier = Modifier.padding(10.dp)
             )
             
             // Select All Row

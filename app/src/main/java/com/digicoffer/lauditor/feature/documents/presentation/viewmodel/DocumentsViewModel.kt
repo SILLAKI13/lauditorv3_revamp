@@ -500,19 +500,14 @@ class DocumentsViewModel(
     }
 
     private fun addStagedFile(file: File, name: String) {
-        val contentString = file.name.replace(".", "/")
-        val parts = contentString.split("/".toRegex()).toTypedArray()
-        var docType = "pdf"
-        var docname = file.name
-        if (parts.size >= 2) {
-            docType = parts[1]
-            docname = parts[0]
-        }
+        val baseName = name.substringBeforeLast('.', missingDelimiterValue = name)
+        val ext = file.extension
+        val docType = if (ext.isNotEmpty()) ext.lowercase(Locale.ROOT) else "pdf"
         val model = com.digicoffer.lauditor.Documents.Models.DocumentsModel().apply {
-            this.name = docname
+            this.name = baseName
             this.filename = name
             this.content_type = docType
-            this.description = docname
+            this.description = baseName
             this.file = file
             this.isIsenabled = false
             this.isencrypted = false
@@ -681,60 +676,88 @@ class DocumentsViewModel(
                 viewModelScope.launch {
                     _uiState.update { it.copy(isLoading = true) }
                     val isEncrypted = doc.is_encrypted == true || doc.added_encryption == true
-                    val res = if (isEncrypted) {
-                        repository.decryptDocument(doc.id ?: "", false)
-                    } else {
-                        repository.viewDocumentInfo(doc.id ?: "")
-                    }
-                    if (res.result == WebServiceHelper.ServiceCallStatus.Success) {
-                        val json = JSONObject(res.responseContent ?: "{}")
+                    val viewRes = repository.viewDocumentInfo(doc.id ?: "")
+                    if (viewRes.result == WebServiceHelper.ServiceCallStatus.Success) {
+                        val json = JSONObject(viewRes.responseContent ?: "{}")
+                        val isError = json.optBoolean("error", false)
+                        if (isError) {
+                            _uiState.update { it.copy(isLoading = false, alertMessage = json.optString("msg", "Unable to view document")) }
+                            return@launch
+                        }
+
                         val dataObj = json.optJSONObject("data")
-                        val url = dataObj?.optString("url") ?: json.optString("url")
-                        if (!url.isNullOrEmpty()) {
-                            val contentType = doc.content_type ?: ""
-                            val isImage = contentType.startsWith("image/", ignoreCase = true)
-                            val isPdf = contentType.contains("pdf", ignoreCase = true) || (doc.name ?: "").endsWith(".pdf", ignoreCase = true)
-                            
-                            val finalUrl: String?
-                            val finalDoc: ViewDocumentsModel
-                            if (!isImage && !isPdf) {
-                                val converted = convertDocToPdfUrl(url)
-                                if (converted != null) {
-                                    finalUrl = converted
-                                    finalDoc = ViewDocumentsModel().apply {
-                                        this.created = doc.created
-                                        this.description = doc.description
-                                        this.added_encryption = doc.added_encryption
-                                        this.expiration_date = doc.expiration_date
-                                        this.filename = doc.filename
-                                        this.content_type = "application/pdf"
-                                        this.id = doc.id
-                                        this.isdisabled = doc.isdisabled
-                                        this.is_disabled = doc.is_disabled
-                                        this.is_encrypted = doc.is_encrypted
-                                        this.is_password = doc.is_password
-                                        this.name = doc.name
-                                        this.origin = doc.origin
-                                        this.uploaded_by = doc.uploaded_by
-                                        this.doc_type = doc.doc_type
-                                        this.deletedBy = doc.deletedBy
-                                        this.deletedOn = doc.deletedOn
-                                        this.category = doc.category
-                                        this.tag = doc.tag
-                                        this.tagslist = doc.tagslist
-                                        this.isChecked = doc.isChecked
+                        val rawUrl = dataObj?.optString("url") ?: json.optString("url")
+                        val rawContentType = dataObj?.optString("content_type")?.ifEmpty { doc.content_type } ?: doc.content_type ?: ""
+                        val rawFilename = dataObj?.optString("filename")?.ifEmpty { doc.name } ?: doc.name ?: ""
+
+                        if (isEncrypted) {
+                            val decRes = repository.decryptDocument(doc.id ?: "", false)
+                            if (decRes.result == WebServiceHelper.ServiceCallStatus.Success) {
+                                val decJson = JSONObject(decRes.responseContent ?: "{}")
+                                val isDecError = decJson.optBoolean("error", false)
+                                if (!isDecError) {
+                                    val decData = decJson.optJSONObject("data")
+                                    val decryptedUrl = decData?.optString("url") ?: decJson.optString("url")
+                                    val decryptedFilename = decData?.optString("filename") ?: rawFilename
+
+                                    if (!decryptedUrl.isNullOrEmpty()) {
+                                        val finalDoc = ViewDocumentsModel().apply {
+                                            this.created = doc.created
+                                            this.description = doc.description
+                                            this.added_encryption = doc.added_encryption
+                                            this.expiration_date = doc.expiration_date
+                                            this.filename = decryptedFilename
+                                            this.content_type = "application/pdf"
+                                            this.id = doc.id
+                                            this.name = doc.name
+                                        }
+                                        _uiState.update { it.copy(isLoading = false, previewDocUrl = decryptedUrl, previewDocModel = finalDoc) }
+                                    } else {
+                                        _uiState.update { it.copy(isLoading = false, alertMessage = decJson.optString("msg", "Unable to fetch decrypted preview link.")) }
                                     }
                                 } else {
-                                    finalUrl = url
-                                    finalDoc = doc
+                                    _uiState.update { it.copy(isLoading = false, alertMessage = decJson.optString("msg", "Failed to decrypt document.")) }
                                 }
                             } else {
-                                finalUrl = url
-                                finalDoc = doc
+                                _uiState.update { it.copy(isLoading = false, alertMessage = "Failed to decrypt document. Please try again.") }
                             }
-                            _uiState.update { it.copy(isLoading = false, previewDocUrl = finalUrl, previewDocModel = finalDoc) }
                         } else {
-                            _uiState.update { it.copy(isLoading = false, alertMessage = json.optString("msg", "Unable to fetch document preview link.")) }
+                            if (!rawUrl.isNullOrEmpty()) {
+                                val lowerUrl = rawUrl.lowercase(Locale.ROOT)
+                                val lowerExt = rawFilename.substringAfterLast('.', "").lowercase(Locale.ROOT)
+                                val isImage = rawContentType.startsWith("image/", ignoreCase = true) ||
+                                        lowerUrl.contains(".jpg") || lowerUrl.contains(".jpeg") ||
+                                        lowerUrl.contains(".png") || lowerUrl.contains(".gif") ||
+                                        lowerUrl.contains(".webp") || listOf("jpg", "jpeg", "png", "gif", "webp", "svg", "avif", "apng").contains(lowerExt)
+                                val isPdf = rawContentType == "application/pdf" || rawContentType.contains("pdf", ignoreCase = true) ||
+                                        lowerUrl.contains("application/pdf") || lowerUrl.contains(".pdf") || lowerExt == "pdf"
+
+                                var finalUrl = rawUrl
+                                var finalContentType = rawContentType
+                                var conversionCalled = false
+                                if (!isImage && !isPdf) {
+                                    conversionCalled = true
+                                    val converted = convertDocToPdfUrl(rawUrl)
+                                    if (!converted.isNullOrEmpty()) {
+                                        finalUrl = converted
+                                        finalContentType = "application/pdf"
+                                    }
+                                }
+
+                                val finalDoc = ViewDocumentsModel().apply {
+                                    this.created = doc.created
+                                    this.description = doc.description
+                                    this.added_encryption = doc.added_encryption
+                                    this.expiration_date = doc.expiration_date
+                                    this.filename = rawFilename
+                                    this.content_type = finalContentType
+                                    this.id = doc.id
+                                    this.name = doc.name
+                                }
+                                _uiState.update { it.copy(isLoading = false, previewDocUrl = finalUrl, previewDocModel = finalDoc) }
+                            } else {
+                                _uiState.update { it.copy(isLoading = false, alertMessage = json.optString("msg", "Unable to fetch document preview link.")) }
+                            }
                         }
                     } else {
                         _uiState.update { it.copy(isLoading = false, alertMessage = "API call failed. Please try again.") }

@@ -26,7 +26,7 @@ import androidx.compose.ui.unit.sp
 import com.digicoffer.lauditor.AuditTrails.Model.AuditTrailsUiState
 import com.digicoffer.lauditor.R
 import com.digicoffer.lauditor.core.ui.common.dropdowns.DropdownSelectorField
-import com.digicoffer.lauditor.core.ui.common.search.AuditSearchBar
+import com.digicoffer.lauditor.core.ui.common.search.AppSearchField
 import com.digicoffer.lauditor.core.ui.common.datepickers.DateIntervalSelector
 import com.digicoffer.lauditor.core.ui.common.feedback.EmptyStateCard
 import com.digicoffer.lauditor.core.ui.common.cards.AuditTrailCard
@@ -113,12 +113,11 @@ fun AuditTrailsScreen(
                 )
 
                 // Search Bar
-                AuditSearchBar(
-                    query = state.searchQuery,
-                    onQueryChange = onQueryChanged,
+                AppSearchField(
+                    value = state.searchQuery,
+                    onValueChange = onQueryChanged,
                     placeholder = "Search",
                     textStyle = baseTextStyle,
-                    borderColor = Color.Transparent,
                     backgroundColor = Color.White
                 )
 

@@ -1,27 +1,29 @@
 package com.digicoffer.lauditor.ui.auth
 
+import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
-import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.imePadding
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.statusBarsPadding
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.foundation.text.BasicTextField
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.Checkbox
 import androidx.compose.material3.CheckboxDefaults
+import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -29,13 +31,13 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.shadow
+import androidx.compose.ui.graphics.ColorFilter
+import androidx.compose.ui.platform.LocalFocusManager
+import androidx.compose.ui.platform.LocalSoftwareKeyboardController
 import androidx.compose.ui.res.colorResource
 import androidx.compose.ui.res.dimensionResource
 import androidx.compose.ui.res.painterResource
-import androidx.compose.ui.text.SpanStyle
 import androidx.compose.ui.text.TextStyle
-import androidx.compose.ui.text.buildAnnotatedString
 import androidx.compose.ui.text.font.Font
 import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.input.KeyboardType
@@ -43,14 +45,15 @@ import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.text.input.VisualTransformation
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextDecoration
-import androidx.compose.ui.text.withStyle
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.digicoffer.lauditor.R
+import com.digicoffer.lauditor.core.ui.common.buttons.AppButton
+import com.digicoffer.lauditor.core.ui.common.dropdowns.AppDropdown
 import com.digicoffer.lauditor.core.ui.common.feedback.AppLoader
 import com.digicoffer.lauditor.core.ui.common.foundation.AppSpacer
-import com.digicoffer.lauditor.core.ui.common.dropdowns.AppDropdown
+import com.digicoffer.lauditor.core.ui.common.inputs.AppTextField
 
 private val GillSans = FontFamily(Font(R.font.gill_sans))
 private val GillSansBold = FontFamily(Font(R.font.gill_sans_bold))
@@ -88,6 +91,19 @@ fun LoginScreen(
     modifier: Modifier = Modifier
 ) {
     var isPasswordVisible by remember { mutableStateOf(false) }
+    val focusManager = LocalFocusManager.current
+    val keyboardController = LocalSoftwareKeyboardController.current
+
+    val inputShape = RoundedCornerShape(6.dp)
+    val inputBorder = BorderStroke(0.5.dp, colorResource(id = R.color.silver))
+    val inputBg = colorResource(id = R.color.text_field_color)
+    val inputHeight = 42.dp
+    val inputPadding = PaddingValues(horizontal = 12.dp, vertical = 2.dp)
+    val inputTextStyle = TextStyle(
+        fontFamily = GillSans,
+        fontSize = 14.sp,
+        color = colorResource(id = R.color.black)
+    )
 
     Box(
         modifier = modifier
@@ -98,6 +114,7 @@ fun LoginScreen(
             modifier = Modifier
                 .fillMaxSize()
                 .statusBarsPadding()
+                .imePadding()
                 .verticalScroll(rememberScrollState()),
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
@@ -131,7 +148,7 @@ fun LoginScreen(
                         isPasswordMode -> "Log in with Password"
                         else -> "Login With OTP"
                     }
-                    androidx.compose.material3.Text(
+                    Text(
                         text = titleText,
                         style = TextStyle(
                             fontFamily = GillSansBold,
@@ -140,106 +157,96 @@ fun LoginScreen(
                         ),
                         modifier = Modifier.padding(
                             top = dimensionResource(id = R.dimen.twenty_dp),
-                            bottom = dimensionResource(id = R.dimen.twenty_dp),
+                            bottom = dimensionResource(id = R.dimen.ten_dp),
                             start = dimensionResource(id = R.dimen.twenty_dp),
                             end = dimensionResource(id = R.dimen.twenty_dp)
                         )
                     )
 
                     if (isLoginMode) {
-                        // Email / Mobile Input Container matching login.xml line 48
-                        val inputShape = RoundedCornerShape(dimensionResource(id = R.dimen.six_dp))
-                        Box(
+                        // Email / Mobile Input using common AppTextField
+                        AppTextField(
+                            value = emailOrMobile,
+                            onValueChange = onEmailOrMobileChange,
+                            placeholder = "Email or Mobile Number",
+                            shape = inputShape,
+                            border = inputBorder,
+                            backgroundColor = inputBg,
+                            height = inputHeight,
+                            contentPadding = inputPadding,
+                            textStyle = inputTextStyle,
+                            keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Email),
+                            singleLine = true,
                             modifier = Modifier
                                 .fillMaxWidth()
-                                .padding(dimensionResource(id = R.dimen.ten_dp))
-                                .shadow(elevation = dimensionResource(id = R.dimen.four_dp), shape = inputShape)
-                                .background(color = colorResource(id = R.color.text_field_color), shape = inputShape)
-                                .border(width = 0.5.dp, color = colorResource(id = R.color.silver), shape = inputShape)
-                                .padding(horizontal = dimensionResource(id = R.dimen.Fifteen_dp), vertical = 4.dp)
-                        ) {
-                            XmlBasicInput(
-                                value = emailOrMobile,
-                                onValueChange = onEmailOrMobileChange,
-                                hint = "Email or Mobile Number",
-                                keyboardType = KeyboardType.Email
-                            )
-                        }
+                                .padding(vertical = 4.dp, horizontal = 4.dp)
+                        )
 
                         // Multi-Firm Warning Prompt
                         if (firmList.isNotEmpty()) {
-                            androidx.compose.material3.Text(
+                            AppSpacer(height = 6.dp)
+                            Text(
                                 text = "This email is associated with multiple firms. Please select a firm to continue.",
                                 style = TextStyle(
                                     fontFamily = GillSans,
                                     fontSize = 13.sp,
                                     color = colorResource(id = R.color.Red)
                                 ),
-                                modifier = Modifier.padding(
-                                    start = dimensionResource(id = R.dimen.ten_dp),
-                                    end = dimensionResource(id = R.dimen.ten_dp),
-                                    bottom = 8.dp
-                                )
+                                modifier = Modifier.padding(horizontal = 4.dp, vertical = 2.dp)
                             )
                             AppDropdown(
                                 options = firmList,
                                 selectedOption = selectedFirm,
                                 onOptionSelected = onFirmSelected,
                                 label = "Select Firm",
-                                modifier = Modifier.padding(horizontal = dimensionResource(id = R.dimen.ten_dp))
+                                modifier = Modifier.padding(horizontal = 4.dp)
                             )
                             AppSpacer(height = dimensionResource(id = R.dimen.ten_dp))
                         }
 
                         // Password Section (Password Mode)
                         if (isPasswordMode) {
-                            Box(
-                                modifier = Modifier
-                                    .fillMaxWidth()
-                                    .padding(dimensionResource(id = R.dimen.ten_dp))
-                                    .shadow(elevation = dimensionResource(id = R.dimen.four_dp), shape = inputShape)
-                                    .background(color = colorResource(id = R.color.text_field_color), shape = inputShape)
-                                    .border(width = 0.5.dp, color = colorResource(id = R.color.silver), shape = inputShape)
-                                    .padding(horizontal = dimensionResource(id = R.dimen.Fifteen_dp), vertical = 4.dp)
-                            ) {
-                                Row(
-                                    verticalAlignment = Alignment.CenterVertically,
-                                    modifier = Modifier.fillMaxWidth()
-                                ) {
-                                    Box(modifier = Modifier.weight(1f)) {
-                                        XmlBasicInput(
-                                            value = passwordValue,
-                                            onValueChange = onPasswordChange,
-                                            hint = "Password",
-                                            keyboardType = KeyboardType.Password,
-                                            visualTransformation = if (isPasswordVisible) VisualTransformation.None else PasswordVisualTransformation()
-                                        )
-                                    }
+                            AppSpacer(height = 4.dp)
+                            AppTextField(
+                                value = passwordValue,
+                                onValueChange = onPasswordChange,
+                                placeholder = "Password",
+                                shape = inputShape,
+                                border = inputBorder,
+                                backgroundColor = inputBg,
+                                height = inputHeight,
+                                contentPadding = inputPadding,
+                                textStyle = inputTextStyle,
+                                keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Password),
+                                visualTransformation = if (isPasswordVisible) VisualTransformation.None else PasswordVisualTransformation(),
+                                singleLine = true,
+                                trailingIcon = {
                                     Image(
                                         painter = painterResource(
                                             id = if (isPasswordVisible) R.drawable.eye_open else R.drawable.eye_close
                                         ),
                                         contentDescription = "Toggle Password",
-                                        colorFilter = androidx.compose.ui.graphics.ColorFilter.tint(colorResource(id = R.color.blue)),
+                                        colorFilter = ColorFilter.tint(colorResource(id = R.color.blue)),
                                         modifier = Modifier
-                                            .padding(end = dimensionResource(id = R.dimen.five_dp))
-                                            .height(dimensionResource(id = R.dimen.twenty_five))
+                                            .padding(end = 8.dp)
+                                            .height(20.dp)
                                             .clickable { isPasswordVisible = !isPasswordVisible }
                                     )
-                                }
-                            }
+                                },
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .padding(vertical = 4.dp, horizontal = 4.dp)
+                            )
 
-                            // Links: Left "Forgot Password ?", Right "Use OTP Instead" (Underlined per XML)
+                            AppSpacer(height = 4.dp)
+
+                            // Links: Left "Forgot Password ?", Right "Use OTP Instead"
                             Row(
                                 modifier = Modifier
                                     .fillMaxWidth()
-                                    .padding(
-                                        start = dimensionResource(id = R.dimen.ten_dp),
-                                        end = dimensionResource(id = R.dimen.ten_dp),
-                                        bottom = 4.dp
-                                    )
+                                    .padding(horizontal = 4.dp, vertical = 4.dp)
                             ) {
-                                androidx.compose.material3.Text(
+                                Text(
                                     text = "Forgot Password ?",
                                     style = TextStyle(
                                         fontFamily = GillSans,
@@ -249,9 +256,13 @@ fun LoginScreen(
                                     ),
                                     modifier = Modifier
                                         .weight(1f)
-                                        .clickable { onForgotPasswordClick() }
+                                        .clickable {
+                                            focusManager.clearFocus(force = true)
+                                            keyboardController?.hide()
+                                            onForgotPasswordClick()
+                                        }
                                 )
-                                androidx.compose.material3.Text(
+                                Text(
                                     text = "Use OTP Instead",
                                     style = TextStyle(
                                         fontFamily = GillSans,
@@ -260,21 +271,22 @@ fun LoginScreen(
                                         textDecoration = TextDecoration.Underline
                                     ),
                                     textAlign = TextAlign.End,
-                                    modifier = Modifier.clickable { onTogglePasswordModeClick() }
+                                    modifier = Modifier.clickable {
+                                        focusManager.clearFocus(force = true)
+                                        keyboardController?.hide()
+                                        onTogglePasswordModeClick()
+                                    }
                                 )
                             }
                         } else {
-                            // OTP Mode Link: Right "Use Password Instead" (Underlined per XML)
+                            // OTP Mode Link: Right "Use Password Instead"
                             Box(
                                 modifier = Modifier
                                     .fillMaxWidth()
-                                    .padding(
-                                        end = dimensionResource(id = R.dimen.ten_dp),
-                                        bottom = 4.dp
-                                    ),
+                                    .padding(horizontal = 4.dp, vertical = 4.dp),
                                 contentAlignment = Alignment.CenterEnd
                             ) {
-                                androidx.compose.material3.Text(
+                                Text(
                                     text = "Use Password Instead",
                                     style = TextStyle(
                                         fontFamily = GillSans,
@@ -282,7 +294,11 @@ fun LoginScreen(
                                         color = colorResource(id = R.color.Primary_new),
                                         textDecoration = TextDecoration.Underline
                                     ),
-                                    modifier = Modifier.clickable { onTogglePasswordModeClick() }
+                                    modifier = Modifier.clickable {
+                                        focusManager.clearFocus(force = true)
+                                        keyboardController?.hide()
+                                        onTogglePasswordModeClick()
+                                    }
                                 )
                             }
                         }
@@ -293,7 +309,7 @@ fun LoginScreen(
                                 verticalAlignment = Alignment.CenterVertically,
                                 modifier = Modifier
                                     .fillMaxWidth()
-                                    .padding(dimensionResource(id = R.dimen.ten_dp))
+                                    .padding(horizontal = 4.dp, vertical = 6.dp)
                             ) {
                                 val bioCardShape = RoundedCornerShape(dimensionResource(id = R.dimen.eight_dp))
                                 Card(
@@ -301,8 +317,8 @@ fun LoginScreen(
                                     colors = CardDefaults.cardColors(containerColor = colorResource(id = R.color.white)),
                                     elevation = CardDefaults.cardElevation(defaultElevation = dimensionResource(id = R.dimen.four_dp)),
                                     modifier = Modifier
-                                        .width(25.dp)
-                                        .height(25.dp)
+                                        .width(24.dp)
+                                        .height(24.dp)
                                 ) {
                                     Box(
                                         contentAlignment = Alignment.Center,
@@ -319,221 +335,161 @@ fun LoginScreen(
                                     }
                                 }
 
-                                androidx.compose.material3.Text(
+                                Text(
                                     text = "Enable Biometric Authentication",
                                     style = TextStyle(
                                         fontFamily = GillSans,
                                         fontSize = 12.sp,
                                         color = colorResource(id = R.color.black)
                                     ),
-                                    modifier = Modifier.padding(start = dimensionResource(id = R.dimen.ten_dp))
+                                    modifier = Modifier.padding(start = 8.dp)
                                 )
                             }
                         }
                     } else {
-                        // Register Mode Section
-                        val inputShape = RoundedCornerShape(dimensionResource(id = R.dimen.six_dp))
-                        Box(
+                        // Register Mode Section using common AppTextField
+                        AppTextField(
+                            value = fullNameValue,
+                            onValueChange = onFullNameChange,
+                            placeholder = "Full Name",
+                            shape = inputShape,
+                            border = inputBorder,
+                            backgroundColor = inputBg,
+                            height = inputHeight,
+                            contentPadding = inputPadding,
+                            textStyle = inputTextStyle,
+                            singleLine = true,
                             modifier = Modifier
                                 .fillMaxWidth()
-                                .padding(dimensionResource(id = R.dimen.ten_dp))
-                                .shadow(elevation = dimensionResource(id = R.dimen.four_dp), shape = inputShape)
-                                .background(color = colorResource(id = R.color.text_field_color), shape = inputShape)
-                                .border(width = 0.5.dp, color = colorResource(id = R.color.silver), shape = inputShape)
-                                .padding(horizontal = dimensionResource(id = R.dimen.Fifteen_dp), vertical = 4.dp)
-                        ) {
-                            XmlBasicInput(
-                                value = fullNameValue,
-                                onValueChange = onFullNameChange,
-                                hint = "Full Name"
-                            )
-                        }
+                                .padding(vertical = 4.dp, horizontal = 4.dp)
+                        )
 
-                        Box(
+                        AppSpacer(height = 4.dp)
+
+                        AppTextField(
+                            value = registerEmailValue,
+                            onValueChange = onRegisterEmailChange,
+                            placeholder = "Enter the Email",
+                            shape = inputShape,
+                            border = inputBorder,
+                            backgroundColor = inputBg,
+                            height = inputHeight,
+                            contentPadding = inputPadding,
+                            textStyle = inputTextStyle,
+                            keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Email),
+                            singleLine = true,
                             modifier = Modifier
                                 .fillMaxWidth()
-                                .padding(dimensionResource(id = R.dimen.ten_dp))
-                                .shadow(elevation = dimensionResource(id = R.dimen.four_dp), shape = inputShape)
-                                .background(color = colorResource(id = R.color.text_field_color), shape = inputShape)
-                                .border(width = 0.5.dp, color = colorResource(id = R.color.silver), shape = inputShape)
-                                .padding(horizontal = dimensionResource(id = R.dimen.Fifteen_dp), vertical = 4.dp)
-                        ) {
-                            XmlBasicInput(
-                                value = registerEmailValue,
-                                onValueChange = onRegisterEmailChange,
-                                hint = "Enter the Email",
-                                keyboardType = KeyboardType.Email
-                            )
-                        }
+                                .padding(vertical = 4.dp, horizontal = 4.dp)
+                        )
 
-                        Box(
+                        AppSpacer(height = 4.dp)
+
+                        AppTextField(
+                            value = registerPhoneValue,
+                            onValueChange = onRegisterPhoneChange,
+                            placeholder = "Enter the Mobile Number",
+                            shape = inputShape,
+                            border = inputBorder,
+                            backgroundColor = inputBg,
+                            height = inputHeight,
+                            contentPadding = inputPadding,
+                            textStyle = inputTextStyle,
+                            keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Phone),
+                            singleLine = true,
                             modifier = Modifier
                                 .fillMaxWidth()
-                                .padding(dimensionResource(id = R.dimen.ten_dp))
-                                .shadow(elevation = dimensionResource(id = R.dimen.four_dp), shape = inputShape)
-                                .background(color = colorResource(id = R.color.text_field_color), shape = inputShape)
-                                .border(width = 0.5.dp, color = colorResource(id = R.color.silver), shape = inputShape)
-                                .padding(horizontal = dimensionResource(id = R.dimen.Fifteen_dp), vertical = 4.dp)
-                        ) {
-                            XmlBasicInput(
-                                value = registerPhoneValue,
-                                onValueChange = onRegisterPhoneChange,
-                                hint = "Enter the Mobile Number",
-                                keyboardType = KeyboardType.Phone
-                            )
-                        }
-                    }
-
-                    AppSpacer(height = dimensionResource(id = R.dimen.ten_dp))
-
-                    // Terms & Conditions with underlined T&Cs and Privacy Policy spans
-                    Row(
-                        verticalAlignment = Alignment.CenterVertically,
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .padding(
-                                start = dimensionResource(id = R.dimen.ten_dp),
-                                end = dimensionResource(id = R.dimen.ten_dp),
-                                bottom = dimensionResource(id = R.dimen.ten_dp)
-                            )
-                            .padding(4.dp)
-                    ) {
-                        if (!isLoginMode) {
-                            Checkbox(
-                                checked = termsAccepted,
-                                onCheckedChange = onTermsAcceptedChange,
-                                colors = CheckboxDefaults.colors(
-                                    checkedColor = colorResource(id = R.color.blue),
-                                    uncheckedColor = colorResource(id = R.color.silver)
-                                ),
-                                modifier = Modifier.padding(end = dimensionResource(id = R.dimen.ten_dp))
-                            )
-                        }
-                        val prefixText = if (isLoginMode) "By signing-in, you agree to our " else "By signing-up, you agree to our "
-                        val annotatedTerms = buildAnnotatedString {
-                            append(prefixText)
-                            pushStringAnnotation(tag = "Terms", annotation = "terms")
-                            withStyle(
-                                style = SpanStyle(
-                                    color = colorResource(id = R.color.Primary_new),
-                                    textDecoration = TextDecoration.Underline
-                                )
-                            ) {
-                                append("T&Cs")
-                            }
-                            pop()
-                            append(" and ")
-                            pushStringAnnotation(tag = "Privacy", annotation = "privacy")
-                            withStyle(
-                                style = SpanStyle(
-                                    color = colorResource(id = R.color.Primary_new),
-                                    textDecoration = TextDecoration.Underline
-                                )
-                            ) {
-                                append("Privacy Policy")
-                            }
-                            pop()
-                        }
-                        androidx.compose.foundation.text.ClickableText(
-                            text = annotatedTerms,
-                            style = TextStyle(
-                                fontFamily = GillSans,
-                                fontSize = 13.sp,
-                                color = colorResource(id = R.color.black)
-                            ),
-                            onClick = { offset ->
-                                annotatedTerms.getStringAnnotations(tag = "Terms", start = offset, end = offset)
-                                    .firstOrNull()?.let {
-                                        onTermsClick()
-                                    }
-                                annotatedTerms.getStringAnnotations(tag = "Privacy", start = offset, end = offset)
-                                    .firstOrNull()?.let {
-                                        onPrivacyClick()
-                                    }
-                            }
+                                .padding(vertical = 4.dp, horizontal = 4.dp)
                         )
                     }
 
-                    AppSpacer(height = dimensionResource(id = R.dimen.twenty_dp))
+                    AppSpacer(height = 14.dp)
 
-                    // Centered Action Button matching submit_button.xml
+                    // Action Button using common AppButton with exact XML sizing
                     val btnText = when {
                         !isLoginMode -> "Register"
                         isPasswordMode -> "Login"
                         else -> "Send OTP"
                     }
-                    val btnShape = RoundedCornerShape(dimensionResource(id = R.dimen.eight_dp))
-                    Box(
+                    AppButton(
+                        text = btnText,
+                        onClick = {
+                            focusManager.clearFocus(force = true)
+                            keyboardController?.hide()
+                            onSubmitClick()
+                        },
                         modifier = Modifier
-                            .width(dimensionResource(id = R.dimen.module_btn_size) * 1.6f)
-                            .height(dimensionResource(id = R.dimen.forty_dp))
-                            .padding(top = dimensionResource(id = R.dimen.four_dp))
-                            .shadow(elevation = dimensionResource(id = R.dimen.four_dp), shape = btnShape)
-                            .background(color = colorResource(id = R.color.blue), shape = btnShape)
-                            .clickable { onSubmitClick() },
-                        contentAlignment = Alignment.Center
-                    ) {
-                        androidx.compose.material3.Text(
-                            text = btnText,
-                            style = TextStyle(
-                                fontFamily = GillSansBold,
-                                fontSize = 15.sp,
-                                color = colorResource(id = R.color.white)
-                            )
+                            .width(dimensionResource(id = R.dimen.module_btn_size))
+                            .height(dimensionResource(id = R.dimen.forty_dp)),
+                        shape = RoundedCornerShape(dimensionResource(id = R.dimen.eight_dp)),
+                        containerColor = colorResource(id = R.color.blue),
+                        contentColor = colorResource(id = R.color.white),
+                        textStyle = TextStyle(
+                            fontFamily = GillSansBold,
+                            fontSize = 13.sp,
+                            color = colorResource(id = R.color.white)
                         )
-                    }
+                    )
 
-                    AppSpacer(height = dimensionResource(id = R.dimen.twenty_dp))
+                    AppSpacer(height = 14.dp)
 
-                    // Account Toggle Link (Underlined per XML)
+                    // Account Toggle Link
                     Row(
                         verticalAlignment = Alignment.CenterVertically
                     ) {
-                        androidx.compose.material3.Text(
+                        Text(
                             text = if (isLoginMode) "Don't have an account? " else "Already have an account? ",
                             style = TextStyle(
                                 fontFamily = GillSans,
-                                fontSize = 15.sp,
+                                fontSize = 14.sp,
                                 color = colorResource(id = R.color.black)
                             )
                         )
-                        androidx.compose.material3.Text(
+                        Text(
                             text = if (isLoginMode) "Register Here" else "Log In",
                             style = TextStyle(
                                 fontFamily = GillSans,
-                                fontSize = 15.sp,
+                                fontSize = 14.sp,
                                 color = colorResource(id = R.color.Primary_new),
                                 textDecoration = TextDecoration.Underline
                             ),
-                            modifier = Modifier.clickable { onToggleModeClick() }
+                            modifier = Modifier.clickable {
+                                focusManager.clearFocus(force = true)
+                                keyboardController?.hide()
+                                onToggleModeClick()
+                            }
                         )
                     }
 
-                    // Support Information Link (Login Mode Only, Underlined per XML)
+                    // Support Information Link (Login Mode Only)
                     if (isLoginMode) {
-                        AppSpacer(height = dimensionResource(id = R.dimen.ten_dp))
+                        AppSpacer(height = 8.dp)
                         Row(
                             verticalAlignment = Alignment.CenterVertically
                         ) {
-                            androidx.compose.material3.Text(
+                            Text(
                                 text = "For more information ",
                                 style = TextStyle(
                                     fontFamily = GillSans,
-                                    fontSize = 15.sp,
+                                    fontSize = 14.sp,
                                     color = colorResource(id = R.color.black)
                                 )
                             )
-                            androidx.compose.material3.Text(
+                            Text(
                                 text = "Contact Support",
                                 style = TextStyle(
                                     fontFamily = GillSans,
-                                    fontSize = 15.sp,
+                                    fontSize = 14.sp,
                                     color = colorResource(id = R.color.Primary_new),
                                     textDecoration = TextDecoration.Underline
                                 ),
                                 modifier = Modifier
-                                    .padding(start = dimensionResource(id = R.dimen.four_dp))
-                                    .clickable { onContactSupportClick() }
+                                    .padding(start = 4.dp)
+                                    .clickable {
+                                        focusManager.clearFocus(force = true)
+                                        keyboardController?.hide()
+                                        onContactSupportClick()
+                                    }
                             )
                         }
                     }
@@ -544,46 +500,6 @@ fun LoginScreen(
         if (isLoading) {
             AppLoader()
         }
-    }
-}
-
-@Composable
-private fun XmlBasicInput(
-    value: String,
-    onValueChange: (String) -> Unit,
-    hint: String,
-    keyboardType: KeyboardType = KeyboardType.Text,
-    visualTransformation: VisualTransformation = VisualTransformation.None
-) {
-    Box(
-        contentAlignment = Alignment.CenterStart,
-        modifier = Modifier
-            .fillMaxWidth()
-            .height(48.dp)
-    ) {
-        if (value.isEmpty()) {
-            androidx.compose.material3.Text(
-                text = hint,
-                style = TextStyle(
-                    fontFamily = GillSans,
-                    fontSize = 15.sp,
-                    color = colorResource(id = R.color.grey_color_dark)
-                )
-            )
-        }
-        BasicTextField(
-            value = value,
-            onValueChange = onValueChange,
-            textStyle = TextStyle(
-                fontFamily = GillSans,
-                fontSize = 15.sp,
-                color = colorResource(id = R.color.black)
-            ),
-            keyboardOptions = KeyboardOptions(keyboardType = keyboardType),
-            visualTransformation = visualTransformation,
-            singleLine = true,
-            modifier = Modifier.fillMaxWidth()
-        )
     }
 }
 

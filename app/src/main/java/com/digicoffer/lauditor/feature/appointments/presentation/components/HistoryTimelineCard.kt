@@ -35,6 +35,8 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.digicoffer.lauditor.Appointments.Models.AppointmentModel
 import com.digicoffer.lauditor.R
+import com.digicoffer.lauditor.core.ui.common.badges.AppStatusBadge
+import com.digicoffer.lauditor.core.ui.common.badges.AppStatusStyle
 import org.json.JSONArray
 import java.text.SimpleDateFormat
 import java.util.Locale
@@ -66,12 +68,14 @@ fun HistoryTimelineCard(
     val showNotesContainer = !isEditorExpanded && notesLength > 0
 
     val cleanStatus = (appointment.appointment_status ?: "").lowercase(Locale.ROOT).trim()
-    val dotColor = when (cleanStatus) {
-        "completed" -> Color(0xFF2E7D32)
-        "cancelled", "canceled" -> Color(0xFFC62828)
-        "upcoming", "ongoing" -> Color(0xFF004D87)
-        "payment_pending", "pending" -> Color(0xFFF57C00)
-        else -> Color(0xFF004D87)
+    val dotBrush = when (cleanStatus) {
+        "completed" -> androidx.compose.ui.graphics.Brush.verticalGradient(
+            listOf(Color(0xFF007705), Color(0xFF3FAF3F), Color(0xFF007705))
+        )
+        "cancelled", "canceled" -> androidx.compose.ui.graphics.SolidColor(Color(0xFFE53E3E))
+        "upcoming", "ongoing" -> androidx.compose.ui.graphics.SolidColor(Color(0xFF004D87))
+        "payment_pending", "pending" -> androidx.compose.ui.graphics.SolidColor(Color(0xFFF57C00))
+        else -> androidx.compose.ui.graphics.SolidColor(Color(0xFF004D87))
     }
 
     Row(
@@ -89,7 +93,7 @@ fun HistoryTimelineCard(
                 modifier = Modifier
                     .padding(top = 10.dp)
                     .size(15.dp)
-                    .background(dotColor, shape = CircleShape)
+                    .background(dotBrush, shape = CircleShape)
             )
 
             Box(
@@ -156,8 +160,9 @@ fun HistoryTimelineCard(
             // Payment info
             val symbol = appointment.payment?.symbol ?: ""
             val amount = appointment.payment?.amount_paid ?: "0"
+            val paymentLabel = appointment.payment?.label?.takeIf { it.isNotBlank() } ?: "$symbol$amount"
             Text(
-                text = "Payment: $symbol$amount",
+                text = "Payment: $paymentLabel",
                 fontSize = 15.sp,
                 color = Color(0xFF546E7A),
                 fontFamily = FontFamily(Font(R.font.gill_sans_regular)),
@@ -165,8 +170,18 @@ fun HistoryTimelineCard(
             )
 
             // Status Badge
-            StatusBadge(
-                status = appointment.appointment_status,
+            val cleanHistoryStatus = appointment.appointment_status.lowercase(Locale.ROOT).trim()
+            val (displayHistoryStatus, historyStatusStyle) = when (cleanHistoryStatus) {
+                "completed" -> Pair("Completed", AppStatusStyle.SUCCESS)
+                "cancelled", "canceled" -> Pair("Cancelled", AppStatusStyle.ERROR)
+                "upcoming" -> Pair("Upcoming", AppStatusStyle.INFO)
+                "ongoing" -> Pair("Ongoing", AppStatusStyle.INFO)
+                "payment_pending", "pending" -> Pair("Payment Pending", AppStatusStyle.WARNING)
+                else -> Pair(if (cleanHistoryStatus.isNotEmpty()) appointment.appointment_status.replaceFirstChar { it.uppercase() } else "Scheduled", AppStatusStyle.NEUTRAL)
+            }
+            AppStatusBadge(
+                text = displayHistoryStatus,
+                style = historyStatusStyle,
                 modifier = Modifier.padding(top = 10.dp)
             )
 
@@ -311,12 +326,11 @@ private fun getEditingNoteId(notes: JSONArray, states: Map<String, Boolean>): St
 private fun formatHistoryDateTime(from: String, to: String): String {
     return try {
         val parser = SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss", Locale.ENGLISH)
-        val formatter = SimpleDateFormat("MMM dd, yyyy | HH:mm - HH:mm", Locale.ENGLISH)
         val dateFrom = parser.parse(from)
         val dateTo = parser.parse(to)
         if (dateFrom != null && dateTo != null) {
-            val fromTime = SimpleDateFormat("HH:mm", Locale.ENGLISH).format(dateFrom)
-            val toTime = SimpleDateFormat("HH:mm", Locale.ENGLISH).format(dateTo)
+            val fromTime = SimpleDateFormat("hh:mm a", Locale.ENGLISH).format(dateFrom)
+            val toTime = SimpleDateFormat("hh:mm a", Locale.ENGLISH).format(dateTo)
             val day = SimpleDateFormat("MMM dd, yyyy", Locale.ENGLISH).format(dateFrom)
             "$day | $fromTime - $toTime"
         } else {

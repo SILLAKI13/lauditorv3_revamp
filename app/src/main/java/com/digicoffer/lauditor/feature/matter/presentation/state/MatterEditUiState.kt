@@ -33,12 +33,19 @@ data class MatterEditUiState(
     val advocateName: String = "",
     val advocateEmail: String = "",
     val advocatePhone: String = "",
+    val advocateEmailError: String? = null,
+    val advocatePhoneError: String? = null,
 
     // UI Loading & Validation Status
     val isLoading: Boolean = false,
     val errorMessage: String? = null,
+    val alertTitle: String? = null,
+    val alertMessage: String? = null,
+    val toastMessage: String? = null,
     val navigateToNext: Boolean = false,
     val navigateToView: Boolean = false,
+    val createdMatterId: String? = null,
+    val isMatterCreated: Boolean = false,
 
     // Step 2 Fields (Client(s) & Team Member(s))
     val searchQuery: String = "",
@@ -56,5 +63,7 @@ data class MatterEditUiState(
     val showSuccessDialog: Boolean = false,
     val successMessage: String = "",
     val showBrowseDialog: Boolean = false,
-    val editMetadataFileIndex: Int? = null
+    val editMetadataFileIndex: Int? = null,
+    val previewDocUrl: String? = null,
+    val previewDocModel: com.digicoffer.lauditor.Documents.Models.ViewDocumentsModel? = null
 )

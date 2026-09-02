@@ -46,7 +46,7 @@ import androidx.compose.runtime.setValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 
-class OtpVerificationActivity : AppCompatActivity(), AsyncTaskCompleteListener {
+class OtpVerificationActivity : AppCompatActivity(), AsyncTaskCompleteListener, View.OnClickListener {
 
     var otp = ""
     private var otpBox1: EditText? = null
@@ -69,9 +69,9 @@ class OtpVerificationActivity : AppCompatActivity(), AsyncTaskCompleteListener {
     private var canResend = false
     private var isProgrammaticChange = false
 
-    private var composeOtpValue: String = ""
-    private var composeTimerText: String = "Resend OTP in 60s"
-    private var composeCanResendState: Boolean = false
+    private var composeOtpValue by mutableStateOf("")
+    private var composeTimerText by mutableStateOf("Resend OTP in 60s")
+    private var composeCanResendState by mutableStateOf(false)
 
     var dashboardModels = ArrayList<Dashboard_Model>()
     private var mConnection: ChatConnection? = null
@@ -86,25 +86,16 @@ class OtpVerificationActivity : AppCompatActivity(), AsyncTaskCompleteListener {
         val composeView = androidx.compose.ui.platform.ComposeView(this).apply {
             setContent {
                 com.digicoffer.lauditor.core.designsystem.theme.LauditorTheme {
-                    var otpState by remember { mutableStateOf(composeOtpValue) }
-                    var timerTextState by remember { mutableStateOf(composeTimerText) }
-                    var canResendState by remember { mutableStateOf(composeCanResendState) }
-
-                    // Sync timer state periodically
-                    timerTextState = composeTimerText
-                    canResendState = composeCanResendState
-
                     com.digicoffer.lauditor.ui.auth.OtpVerificationScreen(
-                        otpValue = otpState,
+                        otpValue = composeOtpValue,
                         onOtpChange = {
-                            otpState = it
                             composeOtpValue = it
                             otp = it
                         },
-                        timerText = timerTextState,
-                        canResend = canResendState,
+                        timerText = composeTimerText,
+                        canResend = composeCanResendState,
                         onResendClick = {
-                            if (canResend) {
+                            if (composeCanResendState) {
                                 resendOtp()
                             }
                         },
@@ -181,6 +172,7 @@ class OtpVerificationActivity : AppCompatActivity(), AsyncTaskCompleteListener {
     private fun startResendTimer() {
         canResend = false
         composeCanResendState = false
+        composeTimerText = "Resend OTP in 60s"
         tvResendOtp?.isEnabled = false
         tvResendOtp?.setTextColor(ContextCompat.getColor(this, R.color.grey))
 
@@ -188,7 +180,7 @@ class OtpVerificationActivity : AppCompatActivity(), AsyncTaskCompleteListener {
 
         resendTimer = object : CountDownTimer(RESEND_TIMER_DURATION, 1000) {
             override fun onTick(millisUntilFinished: Long) {
-                val secondsRemaining = millisUntilFinished / 1000
+                val secondsRemaining = Math.ceil(millisUntilFinished / 1000.0).toInt().coerceAtLeast(1)
                 composeTimerText = "Resend OTP in ${secondsRemaining}s"
                 tvResendOtp?.text = composeTimerText
             }
@@ -205,24 +197,16 @@ class OtpVerificationActivity : AppCompatActivity(), AsyncTaskCompleteListener {
     }
 
     private fun verifyOtp() {
-        if (composeOtpValue.isNotEmpty()) {
-            otp = composeOtpValue.trim()
-        } else if (otpBoxes != null && otpBoxes.isNotEmpty()) {
-            otp = (otpBoxes[0].text.toString().trim() +
-                    otpBoxes[1].text.toString().trim() +
-                    otpBoxes[2].text.toString().trim() +
-                    otpBoxes[3].text.toString().trim() +
-                    otpBoxes[4].text.toString().trim() +
-                    otpBoxes[5].text.toString().trim())
-        }
+        val currentOtp = composeOtpValue.ifEmpty { otp }.trim()
+        otp = currentOtp
 
-        if (otp.isEmpty()) {
-            Toast.makeText(this, "OTP is required", Toast.LENGTH_SHORT).show()
+        if (currentOtp.isEmpty()) {
+            AndroidUtils.showAlert("Please enter the 6-digit OTP.", this)
             return
         }
 
-        if (otp.length != 6) {
-            Toast.makeText(this, "OTP must be 6 digits", Toast.LENGTH_SHORT).show()
+        if (currentOtp.length < 6) {
+            AndroidUtils.showAlert("Please enter the complete 6-digit OTP.", this)
             return
         }
 
@@ -232,7 +216,7 @@ class OtpVerificationActivity : AppCompatActivity(), AsyncTaskCompleteListener {
             Constants.base_URL = Constants.PROF_URL
 
             val postData = JSONObject()
-            postData.put("otp", otp)
+            postData.put("otp", currentOtp)
             postData.put("plan", "lauditor")
 
             if (emailOrMobile != null && emailOrMobile!!.contains("@")) {
@@ -256,7 +240,7 @@ class OtpVerificationActivity : AppCompatActivity(), AsyncTaskCompleteListener {
 
         } catch (e: Exception) {
             dismissDialog()
-            Toast.makeText(this, "Request error", Toast.LENGTH_SHORT).show()
+            AndroidUtils.showAlert("Request error. Please try again.", this)
             Log.e(TAG, e.message, e)
         }
     }
@@ -334,12 +318,8 @@ class OtpVerificationActivity : AppCompatActivity(), AsyncTaskCompleteListener {
                 verifyOtp()
             }
         } else {
-            try {
-                val result = JSONObject(httpResult.responseContent ?: "")
-                AndroidUtils.showErrorAlert(result.optString("msg", "An error occurred"), this)
-            } catch (e: Exception) {
-                AndroidUtils.showErrorAlert(httpResult.responseContent, this)
-            }
+            val cleanMsg = AndroidUtils.extractCleanErrorMessage(httpResult.responseContent)
+            AndroidUtils.showErrorAlert(cleanMsg, this)
         }
     }
 
@@ -616,16 +596,19 @@ class OtpVerificationActivity : AppCompatActivity(), AsyncTaskCompleteListener {
 
     private fun handleResendOtpResponse(result: JSONObject) {
         try {
-            if (!result.getBoolean("error")) {
-                Toast.makeText(this, "OTP resent successfully", Toast.LENGTH_SHORT).show()
+            val isError = result.optBoolean("error", false)
+            if (!isError) {
+                val message = result.optString("msg", "OTP has been resent successfully.")
+                AndroidUtils.showAlert(message, this)
                 clearOtpBoxes()
                 startResendTimer()
             } else {
-                val errorMsg = result.optString("msg", "Failed to resend OTP")
-                Toast.makeText(this, errorMsg, Toast.LENGTH_SHORT).show()
+                val errorMsg = result.optString("msg").ifEmpty { AndroidUtils.extractCleanErrorMessage(result.toString()) }
+                AndroidUtils.showAlert(errorMsg, this)
             }
         } catch (e: Exception) {
             e.printStackTrace()
+            AndroidUtils.showAlert("Failed to resend OTP. Please try again.", this)
         }
     }
 
@@ -718,12 +701,18 @@ class OtpVerificationActivity : AppCompatActivity(), AsyncTaskCompleteListener {
     }
 
     private fun clearOtpBoxes() {
-        isProgrammaticChange = true
-        for (box in otpBoxes) {
-            box.setText("")
+        composeOtpValue = ""
+        otp = ""
+        if (::otpBoxes.isInitialized) {
+            isProgrammaticChange = true
+            for (box in otpBoxes) {
+                box.setText("")
+            }
+            isProgrammaticChange = false
+            if (otpBoxes.isNotEmpty()) {
+                otpBoxes[0].requestFocus()
+            }
         }
-        isProgrammaticChange = false
-        otpBoxes[0].requestFocus()
     }
 
     private fun dismissDialog() {

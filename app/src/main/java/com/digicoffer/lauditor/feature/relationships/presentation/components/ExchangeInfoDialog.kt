@@ -24,7 +24,6 @@ import androidx.compose.ui.window.DialogProperties
 import com.digicoffer.lauditor.R
 import com.digicoffer.lauditor.Relationships.Model.RelationshipsModel
 import com.digicoffer.lauditor.Relationships.Model.SharedDocumentsDo
-import com.digicoffer.lauditor.feature.notifications.presentation.components.NotificationsSearchBar
 import androidx.compose.ui.text.font.Font
 import androidx.compose.ui.text.font.FontFamily
 import org.json.JSONArray

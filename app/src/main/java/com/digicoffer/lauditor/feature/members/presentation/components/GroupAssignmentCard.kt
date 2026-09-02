@@ -46,7 +46,7 @@ import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import com.digicoffer.lauditor.feature.notifications.presentation.components.NotificationsSearchBar
+import com.digicoffer.lauditor.core.ui.common.search.AppSearchField
 import com.digicoffer.lauditor.Groups.Models.ViewGroupModel
 import com.digicoffer.lauditor.R
 
@@ -100,9 +100,9 @@ fun GroupAssignmentCard(
 
             Spacer(modifier = Modifier.height(16.dp))
 
-            NotificationsSearchBar(
-                query = searchQuery,
-                onQueryChange = { searchQuery = it },
+            AppSearchField(
+                value = searchQuery,
+                onValueChange = { searchQuery = it },
                 placeholder = "Search Groups",
                 modifier = Modifier.fillMaxWidth().padding(horizontal = 0.dp)
             )

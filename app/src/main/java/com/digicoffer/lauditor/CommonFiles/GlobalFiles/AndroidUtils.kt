@@ -992,8 +992,16 @@ class AndroidUtils {
 
         @JvmStatic
         fun showToast(message: String?, context: Context?) {
+            if (context == null || message.isNullOrBlank()) return
+            val appContext = context.applicationContext ?: context
+            Log.d("TOAST_DEBUG", "showToast called: msg='$message', context=$appContext, mainThread=${Looper.myLooper() == Looper.getMainLooper()}")
             Handler(Looper.getMainLooper()).post {
-                Toast.makeText(context, message, Toast.LENGTH_SHORT).show()
+                try {
+                    Toast.makeText(appContext, message, Toast.LENGTH_LONG).show()
+                    Log.d("TOAST_DEBUG", "Toast.show() executed successfully on main looper")
+                } catch (e: Throwable) {
+                    Log.e("TOAST_DEBUG", "Error displaying toast: ${e.message}", e)
+                }
             }
         }
 
@@ -1325,6 +1333,79 @@ class AndroidUtils {
             dialog.setCanceledOnTouchOutside(false)
             displayDialog = dialog
             return dialog
+        }
+
+        @JvmStatic
+        fun extractCleanErrorMessage(responseContent: String?): String {
+            if (responseContent.isNullOrBlank()) {
+                return "An error occurred. Please try again."
+            }
+            val trimmed = responseContent.trim()
+            if (trimmed.startsWith("{") && trimmed.endsWith("}")) {
+                try {
+                    val json = JSONObject(trimmed)
+                    if (json.has("msg") && !json.isNull("msg")) {
+                        val msgStr = json.optString("msg", "").trim()
+                        if (msgStr.isNotEmpty() && !msgStr.startsWith("{")) {
+                            return msgStr
+                        }
+                    }
+                    if (json.has("message") && !json.isNull("message")) {
+                        val msgStr = json.optString("message", "").trim()
+                        if (msgStr.isNotEmpty() && !msgStr.startsWith("{")) {
+                            return msgStr
+                        }
+                    }
+                    if (json.has("detail") && !json.isNull("detail")) {
+                        val detailStr = json.optString("detail", "").trim()
+                        if (detailStr.isNotEmpty() && !detailStr.startsWith("{")) {
+                            return detailStr
+                        }
+                    }
+                    if (json.has("error_description") && !json.isNull("error_description")) {
+                        val descStr = json.optString("error_description", "").trim()
+                        if (descStr.isNotEmpty() && !descStr.startsWith("{")) {
+                            return descStr
+                        }
+                    }
+                    if (json.has("error") && !json.isNull("error")) {
+                        val errVal = json.get("error")
+                        if (errVal is String && errVal.isNotEmpty() && !errVal.startsWith("{")) {
+                            return errVal
+                        }
+                    }
+                    if (json.has("errors") && !json.isNull("errors")) {
+                        val errorsObj = json.optJSONObject("errors")
+                        if (errorsObj != null) {
+                            val keys = errorsObj.keys()
+                            val errorList = mutableListOf<String>()
+                            while (keys.hasNext()) {
+                                val key = keys.next()
+                                val fieldErr = errorsObj.opt(key)
+                                if (fieldErr is JSONArray && fieldErr.length() > 0) {
+                                    errorList.add(fieldErr.optString(0))
+                                } else if (fieldErr is String && fieldErr.isNotEmpty()) {
+                                    errorList.add(fieldErr)
+                                }
+                            }
+                            if (errorList.isNotEmpty()) {
+                                return errorList.joinToString(", ")
+                            }
+                        }
+                    }
+                } catch (e: Exception) {
+                    e.printStackTrace()
+                }
+            } else if (trimmed.startsWith("<") || trimmed.contains("<!DOCTYPE", ignoreCase = true) || trimmed.contains("<html", ignoreCase = true)) {
+                return "Server error. Please try again later."
+            } else if (trimmed.contains("502 Bad Gateway", ignoreCase = true)) {
+                return "Server is currently unavailable (502 Bad Gateway). Please try again later."
+            }
+            // Strip raw braces/quotes if any remain
+            if (trimmed.startsWith("{") || trimmed.startsWith("[")) {
+                return "An error occurred. Please try again."
+            }
+            return trimmed
         }
 
         @JvmStatic
@@ -3312,6 +3393,7 @@ class AndroidUtils {
 
             btnCancel.setOnClickListener {
                 textView.text = ""
+                onDateSet?.run()
                 dialog.dismiss()
             }
 

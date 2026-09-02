@@ -35,6 +35,7 @@ import java.util.Locale
 @Composable
 fun HistoryOverlayScreen(
     clientName: String,
+    clientProfilePic: String = "",
     historyList: List<AppointmentModel>,
     noteAddingMap: Map<String, String>,
     noteEditingMap: Map<String, String>,
@@ -75,35 +76,21 @@ fun HistoryOverlayScreen(
             Spacer(modifier = Modifier.width(6.dp))
 
             Text(
-                text = "Appointment History",
+                text = "Appointments History - ",
                 fontSize = 18.sp,
                 fontWeight = FontWeight.Bold,
                 color = Color(0xFF004D87),
                 fontFamily = FontFamily(Font(R.font.gill_sans_regular))
             )
 
-            Spacer(modifier = Modifier.width(10.dp))
+            Spacer(modifier = Modifier.width(6.dp))
 
-            // Client initials profile avatar
-            Box(
-                contentAlignment = Alignment.Center,
-                modifier = Modifier
-                    .size(30.dp)
-                    .background(Color(0xFF004D87), shape = CircleShape)
-            ) {
-                val initials = if (clientName.isNotEmpty()) {
-                    clientName.take(1).uppercase(Locale.ROOT)
-                } else {
-                    "C"
-                }
-                Text(
-                    text = initials,
-                    color = Color.White,
-                    fontSize = 12.sp,
-                    fontWeight = FontWeight.Bold,
-                    fontFamily = FontFamily(Font(R.font.gill_sans_regular))
-                )
-            }
+            // Client profile avatar with image loading & fallback
+            com.digicoffer.lauditor.core.ui.common.foundation.AppProfileAvatar(
+                imageUrl = clientProfilePic,
+                name = clientName,
+                size = 30.dp
+            )
 
             Spacer(modifier = Modifier.width(6.dp))
 

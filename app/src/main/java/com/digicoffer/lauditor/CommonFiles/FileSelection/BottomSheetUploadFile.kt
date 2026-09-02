@@ -50,16 +50,18 @@ class BottomSheetUploadFile : DialogFragment, View.OnClickListener {
         private const val PICK_FILE_REQUEST_CODE = 1888
 
         @JvmStatic
-        fun uriToFile(context: Context, uri: Uri?): File? {
+        @JvmOverloads
+        fun uriToFile(context: Context, uri: Uri?, fileName: String? = null): File? {
             if (uri == null) return null
             var inputStream: InputStream? = null
             var outputStream: FileOutputStream? = null
             try {
                 inputStream = context.contentResolver.openInputStream(uri)
                 if (inputStream == null) return null
-                val file = File.createTempFile("upload_", ".jpg", context.cacheDir)
+                val name = fileName ?: "upload_${System.currentTimeMillis()}"
+                val file = File(context.cacheDir, name)
                 outputStream = FileOutputStream(file)
-                val buffer = ByteArray(1024)
+                val buffer = ByteArray(4096)
                 var length = inputStream.read(buffer)
                 while (length > 0) {
                     outputStream.write(buffer, 0, length)
@@ -226,11 +228,13 @@ class BottomSheetUploadFile : DialogFragment, View.OnClickListener {
                         AndroidUtils.showToast("File type not allowed: $fileName", context)
                         continue
                     }
-                    val file = File(uri.path ?: "")
-                    try {
-                        onPhotoSelectedListner?.getImagepath(file, uri)
-                    } catch (e: IOException) {
-                        e.printStackTrace()
+                    val file = uriToFile(requireContext(), uri, fileName)
+                    if (file != null) {
+                        try {
+                            onPhotoSelectedListner?.getImagepath(file, uri)
+                        } catch (e: IOException) {
+                            e.printStackTrace()
+                        }
                     }
                 }
                 dialog?.dismiss()
@@ -261,11 +265,13 @@ class BottomSheetUploadFile : DialogFragment, View.OnClickListener {
             AndroidUtils.showToast("File type not allowed: $fileName", context)
             return
         }
-        val file = uriToFile(requireContext(), uri)
-        try {
-            onPhotoSelectedListner?.getImagepath(file, uri)
-        } catch (e: IOException) {
-            e.printStackTrace()
+        val file = uriToFile(requireContext(), uri, fileName)
+        if (file != null) {
+            try {
+                onPhotoSelectedListner?.getImagepath(file, uri)
+            } catch (e: IOException) {
+                e.printStackTrace()
+            }
         }
     }
 
@@ -277,11 +283,13 @@ class BottomSheetUploadFile : DialogFragment, View.OnClickListener {
                     AndroidUtils.showToast("File type not allowed: $fileName", context)
                     return@registerForActivityResult
                 }
-                val file = File(uri.path ?: "")
-                try {
-                    onPhotoSelectedListner?.getImagepath(file, uri)
-                } catch (e: IOException) {
-                    e.printStackTrace()
+                val file = uriToFile(requireContext(), uri, fileName)
+                if (file != null) {
+                    try {
+                        onPhotoSelectedListner?.getImagepath(file, uri)
+                    } catch (e: IOException) {
+                        e.printStackTrace()
+                    }
                 }
                 dialog?.dismiss()
             }

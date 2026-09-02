@@ -20,7 +20,7 @@ import androidx.compose.ui.unit.sp
 import com.digicoffer.lauditor.Groups.Models.GroupModel
 import com.digicoffer.lauditor.Groups.Models.ViewGroupModel
 import com.digicoffer.lauditor.R
-import com.digicoffer.lauditor.feature.notifications.presentation.components.NotificationsSearchBar
+import com.digicoffer.lauditor.core.ui.common.search.AppSearchField
 
 @Composable
 fun ChooseGroupHeadCard(
@@ -65,9 +65,9 @@ fun ChooseGroupHeadCard(
                 )
 
                 // Search Bar INSIDE the Card
-                NotificationsSearchBar(
-                    query = searchQuery,
-                    onQueryChange = { searchQuery = it },
+                AppSearchField(
+                    value = searchQuery,
+                    onValueChange = { searchQuery = it },
                     placeholder = "Search Team Members",
                     modifier = Modifier.fillMaxWidth()
                 )

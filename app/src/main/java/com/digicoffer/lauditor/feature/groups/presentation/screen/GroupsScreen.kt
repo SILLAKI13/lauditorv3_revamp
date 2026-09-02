@@ -29,8 +29,8 @@ import com.digicoffer.lauditor.feature.groups.presentation.components.*
 import com.digicoffer.lauditor.feature.groups.presentation.state.GroupsUiEvent
 import com.digicoffer.lauditor.feature.groups.presentation.viewmodel.GroupsViewModel
 import com.digicoffer.lauditor.core.ui.common.buttons.AppHeaderButton
+import com.digicoffer.lauditor.core.ui.common.search.AppSearchField
 import com.digicoffer.lauditor.feature.members.presentation.components.MembersAlertDialog
-import com.digicoffer.lauditor.feature.notifications.presentation.components.NotificationsSearchBar
 import org.json.JSONObject
 
 enum class ScreenMode {
@@ -154,9 +154,9 @@ fun GroupsScreen(
                     ScreenMode.LIST -> {
                         Column(modifier = Modifier.fillMaxSize()) {
                             // Search bar
-                            NotificationsSearchBar(
-                                query = searchQuery,
-                                onQueryChange = { searchQuery = it },
+                            AppSearchField(
+                                value = searchQuery,
+                                onValueChange = { searchQuery = it },
                                 placeholder = "Search Groups",
                                 modifier = Modifier
                                     .fillMaxWidth()
@@ -398,9 +398,9 @@ fun GroupsScreen(
                                         Spacer(modifier = Modifier.height(12.dp))
 
                                         // Search Team Members Bar INSIDE the Card Container
-                                        NotificationsSearchBar(
-                                            query = memSearchQuery,
-                                            onQueryChange = { memSearchQuery = it },
+                                        AppSearchField(
+                                            value = memSearchQuery,
+                                            onValueChange = { memSearchQuery = it },
                                             placeholder = "Search Team Members",
                                             modifier = Modifier.fillMaxWidth()
                                         )

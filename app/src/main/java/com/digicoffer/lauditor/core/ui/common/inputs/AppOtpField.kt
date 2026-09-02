@@ -26,6 +26,10 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.digicoffer.lauditor.R
 
+import androidx.compose.foundation.layout.widthIn
+import androidx.compose.ui.draw.alpha
+import androidx.compose.ui.graphics.Color
+
 private val GillSansBold = FontFamily(Font(R.font.gill_sans_bold))
 
 @Composable
@@ -45,42 +49,57 @@ fun AppOtpField(
             }
         },
         enabled = enabled,
+        textStyle = TextStyle(color = Color.Transparent),
         keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.NumberPassword),
-        decorationBox = {
-            Row(
-                horizontalArrangement = Arrangement.spacedBy(
-                    dimensionResource(id = R.dimen.four_dp),
-                    Alignment.CenterHorizontally
-                ),
-                modifier = Modifier.fillMaxWidth()
+        decorationBox = { innerTextField ->
+            Box(
+                modifier = Modifier.fillMaxWidth(),
+                contentAlignment = Alignment.Center
             ) {
-                val boxShape = RoundedCornerShape(dimensionResource(id = R.dimen.eight_dp))
-                for (i in 0 until length) {
-                    val char = otpValue.getOrNull(i)?.toString() ?: ""
-                    val isFocused = otpValue.length == i || (otpValue.length == length && i == length - 1)
+                Row(
+                    horizontalArrangement = Arrangement.spacedBy(
+                        dimensionResource(id = R.dimen.four_dp),
+                        Alignment.CenterHorizontally
+                    ),
+                    modifier = Modifier.fillMaxWidth()
+                ) {
+                    val boxShape = RoundedCornerShape(dimensionResource(id = R.dimen.eight_dp))
+                    for (i in 0 until length) {
+                        val char = otpValue.getOrNull(i)?.toString() ?: ""
+                        val isFocused = otpValue.length == i || (otpValue.length == length && i == length - 1)
 
-                    Box(
-                        modifier = Modifier
-                            .width(44.dp)
-                            .height(dimensionResource(id = R.dimen.Fifty_dp))
-                            .background(color = colorResource(id = R.color.white), shape = boxShape)
-                            .border(
-                                width = if (isFocused) dimensionResource(id = R.dimen.two_dp) else dimensionResource(id = R.dimen.one_dp),
-                                color = if (isFocused) colorResource(id = R.color.Primary_new) else colorResource(id = R.color.silver),
-                                shape = boxShape
-                            ),
-                        contentAlignment = Alignment.Center
-                    ) {
-                        androidx.compose.material3.Text(
-                            text = char,
-                            style = TextStyle(
-                                fontFamily = GillSansBold,
-                                fontSize = 20.sp,
-                                color = colorResource(id = R.color.black),
-                                textAlign = TextAlign.Center
+                        Box(
+                            modifier = Modifier
+                                .weight(1f)
+                                .widthIn(max = 44.dp)
+                                .height(dimensionResource(id = R.dimen.Fifty_dp))
+                                .background(color = colorResource(id = R.color.white), shape = boxShape)
+                                .border(
+                                    width = if (isFocused) dimensionResource(id = R.dimen.two_dp) else dimensionResource(id = R.dimen.one_dp),
+                                    color = if (isFocused) colorResource(id = R.color.Primary_new) else colorResource(id = R.color.silver),
+                                    shape = boxShape
+                                ),
+                            contentAlignment = Alignment.Center
+                        ) {
+                            androidx.compose.material3.Text(
+                                text = char,
+                                style = TextStyle(
+                                    fontFamily = GillSansBold,
+                                    fontSize = 20.sp,
+                                    color = colorResource(id = R.color.black),
+                                    textAlign = TextAlign.Center
+                                )
                             )
-                        )
+                        }
                     }
+                }
+                Box(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .height(dimensionResource(id = R.dimen.Fifty_dp))
+                        .alpha(0f)
+                ) {
+                    innerTextField()
                 }
             }
         },

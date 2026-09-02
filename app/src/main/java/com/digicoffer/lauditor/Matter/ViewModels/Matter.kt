@@ -9,6 +9,7 @@ import android.provider.OpenableColumns
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import androidx.activity.compose.BackHandler
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
@@ -94,6 +95,7 @@ class Matter : Fragment(), AsyncTaskCompleteListener, View.OnClickListener, Bott
     val activeScreenState = mutableStateOf(MatterScreen.LISTING)
     val isCreateModeState = mutableStateOf(false)
     val matterTypeState = mutableStateOf(Constants.MATTER_TYPE ?: "Legal")
+    private lateinit var matterViewModel: MatterViewModel
 
     // Font families
     private val GillSans = FontFamily(Font(R.font.gill_sans))
@@ -108,7 +110,7 @@ class Matter : Fragment(), AsyncTaskCompleteListener, View.OnClickListener, Bott
         mViewModel?.setData("Matter")
 
         editViewModel = ViewModelProvider(this)[MatterEditViewModel::class.java]
-        val matterViewModel = ViewModelProvider(this)[MatterViewModel::class.java]
+        matterViewModel = ViewModelProvider(this)[MatterViewModel::class.java]
 
         Constants.is_CreateMatter = Constants.isCreate
 
@@ -139,19 +141,6 @@ class Matter : Fragment(), AsyncTaskCompleteListener, View.OnClickListener, Bott
     }
 
     @Composable
-    fun ModuleIconButton(
-        text: String,
-        iconRes: Int,
-        onClick: () -> Unit
-    ) {
-        AppHeaderButton(
-            text = text,
-            iconRes = iconRes,
-            onClick = onClick
-        )
-    }
-
-    @Composable
     fun MatterScreenContainer(
         editViewModel: MatterEditViewModel,
         matterViewModel: MatterViewModel
@@ -160,14 +149,18 @@ class Matter : Fragment(), AsyncTaskCompleteListener, View.OnClickListener, Bott
         val isCreateMode by isCreateModeState
         val matterType by matterTypeState
 
+        BackHandler(enabled = activeScreen != MatterScreen.LISTING) {
+            editViewModel.resetEditSession()
+            loadViewUI()
+        }
+
         Column(
             modifier = Modifier
                 .fillMaxSize()
-                .background(ColorTokens.LightBlueBg) // Removed F7F7F7 and use LightBlueBg to avoid white/grey header background
+                .background(ColorTokens.LightBlueBg)
         ) {
-            // Header controls
+            // Header Row
             if (activeScreen == MatterScreen.LISTING) {
-                // Listing Header with title and borderless "Create Matter" button on the right
                 Row(
                     modifier = Modifier
                         .fillMaxWidth()
@@ -183,7 +176,7 @@ class Matter : Fragment(), AsyncTaskCompleteListener, View.OnClickListener, Bott
                         color = ColorTokens.BluePrimary
                     )
 
-                    ModuleIconButton(
+                    AppHeaderButton(
                         text = "Create Matter",
                         iconRes = R.drawable.simple_plus_icon,
                         onClick = {
@@ -200,8 +193,8 @@ class Matter : Fragment(), AsyncTaskCompleteListener, View.OnClickListener, Bott
                         }
                     )
                 }
-            } else if (isCreateMode || Constants.Matter_CreateOrViewDetails == "Edit Matter Info") {
-                // Header row containing only the "View Matter" button with eye icon aligned to the right (No title and no close icon)
+            } else if (isCreateMode && activeScreen != MatterScreen.TIMELINE) {
+                // Header row containing the "View Matter" button with eye icon aligned to the right only in Create mode
                 Row(
                     modifier = Modifier
                         .fillMaxWidth()
@@ -209,7 +202,7 @@ class Matter : Fragment(), AsyncTaskCompleteListener, View.OnClickListener, Bott
                     horizontalArrangement = Arrangement.End,
                     verticalAlignment = Alignment.CenterVertically
                 ) {
-                    ModuleIconButton(
+                    AppHeaderButton(
                         text = "View Matter",
                         iconRes = R.drawable.eye_icon,
                         onClick = { loadViewUI() }
@@ -311,6 +304,9 @@ class Matter : Fragment(), AsyncTaskCompleteListener, View.OnClickListener, Bott
                                     corp_client_id = model.corporate.optJSONObject(0)?.optString("id") ?: ""
                                 }
                                 matter_arraylist.add(matterModel)
+                                editViewModel.resetEditSession()
+                                Constants.create_matter = false
+                                viewMatterModel = model
                                 Constants.Matter_id = model.id ?: ""
                                 editViewModel.initialize(model)
                                 loadMatterInformation()
@@ -358,7 +354,7 @@ class Matter : Fragment(), AsyncTaskCompleteListener, View.OnClickListener, Bott
                         DocumentsScreen(
                             viewModel = editViewModel,
                             onBrowseClick = { showPhotoOptions() },
-                            onViewDocument = {},
+                            onViewDocument = { doc -> editViewModel.viewDocument(doc) },
                             onCancel = { loadViewUI() }
                         )
                     }
@@ -380,7 +376,7 @@ class Matter : Fragment(), AsyncTaskCompleteListener, View.OnClickListener, Bott
             MatterScreen.LISTING -> 0
         }
 
-        val isTimelineMode = activeScreen == MatterScreen.TIMELINE || (!isCreateModeState.value && activeScreen != MatterScreen.STEP_INFO)
+        val isTimelineMode = Constants.Matter_CreateOrViewDetails == "View Timeline" || activeScreen == MatterScreen.TIMELINE
 
         val step1Text = if (isTimelineMode) "Timeline" else "Matter Information"
         val step2Text = if ("solo" == Constants.CATEGORY) "Client(s)" else "Client (s) & Team Member(S)"
@@ -439,14 +435,16 @@ class Matter : Fragment(), AsyncTaskCompleteListener, View.OnClickListener, Bott
                         iconRes = R.drawable.gct_new,
                         isActive = activeScreen == MatterScreen.STEP_GCT,
                         onClick = {
-                            if (!isCreateModeState.value) {
+                            if (isTimelineMode) {
                                 Matter_Gct()
-                            } else if (matter_arraylist.isEmpty() || (matter_arraylist[0].matter_title ?: "").isEmpty()) {
-                                AndroidUtils.showAlert("Please check the Matter Information section", activity, "Info")
+                            } else if (!isCreateModeState.value) {
+                                loadGCT()
                             } else {
-                                val matterId = Constants.Matter_id
-                                if (!matterId.isNullOrEmpty()) {
+                                val matterId = (Constants.Matter_id ?: "").ifEmpty { editViewModel.uiState.value.createdMatterId ?: "" }
+                                if (matterId.isNotEmpty() || editViewModel.uiState.value.isMatterCreated) {
                                     loadGCT()
+                                } else {
+                                    AndroidUtils.showAlert("Please check the Matter Information section", activity, "Info")
                                 }
                             }
                         }
@@ -465,14 +463,18 @@ class Matter : Fragment(), AsyncTaskCompleteListener, View.OnClickListener, Bott
                         iconRes = R.drawable.documents_new,
                         isActive = activeScreen == MatterScreen.STEP_DOCUMENTS,
                         onClick = {
-                            if (!isCreateModeState.value) {
+                            if (isTimelineMode) {
                                 Matter_Doc()
-                            } else if (matter_arraylist.isEmpty() || (matter_arraylist[0].matter_title ?: "").isEmpty()) {
-                                AndroidUtils.showAlert("Please check the Matter Information section", activity, "Info")
+                            } else if (!isCreateModeState.value) {
+                                editViewModel.consumeUpdateSuccess()
+                                loadDocuments()
                             } else {
-                                val matterId = Constants.Matter_id
-                                if (!matterId.isNullOrEmpty()) {
+                                val matterId = (Constants.Matter_id ?: "").ifEmpty { editViewModel.uiState.value.createdMatterId ?: "" }
+                                if (matterId.isNotEmpty() || editViewModel.uiState.value.isMatterCreated) {
+                                    editViewModel.consumeUpdateSuccess()
                                     loadDocuments()
+                                } else {
+                                    AndroidUtils.showAlert("Please check the Matter Information section", activity, "Info")
                                 }
                             }
                         }
@@ -638,7 +640,7 @@ class Matter : Fragment(), AsyncTaskCompleteListener, View.OnClickListener, Bott
                         modifier = Modifier.size(24.dp)
                     ) {
                         Icon(
-                            painter = painterResource(id = R.drawable.edit__icon),
+                            painter = painterResource(id = R.drawable.simple_plus),
                             contentDescription = "Add Notes",
                             tint = ComposeColor.Unspecified,
                             modifier = Modifier.size(20.dp)
@@ -670,12 +672,40 @@ class Matter : Fragment(), AsyncTaskCompleteListener, View.OnClickListener, Bott
                     OutlinedTextField(
                         value = noteInputText,
                         onValueChange = { if (it.length <= 150) noteInputText = it },
-                        modifier = Modifier.fillMaxWidth(),
-                        textStyle = androidx.compose.ui.text.TextStyle(fontFamily = GillSans),
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .heightIn(min = 90.dp),
+                        minLines = 3,
+                        maxLines = 5,
+                        placeholder = {
+                            Text(
+                                text = "Notes",
+                                fontFamily = GillSans,
+                                fontSize = 15.sp,
+                                color = ComposeColor.Gray
+                            )
+                        },
+                        textStyle = androidx.compose.ui.text.TextStyle(
+                            fontFamily = GillSans,
+                            fontSize = 15.sp,
+                            color = ComposeColor.Black
+                        ),
                         colors = OutlinedTextFieldDefaults.colors(
                             focusedBorderColor = ColorTokens.BluePrimary,
-                            unfocusedBorderColor = ComposeColor.LightGray
-                        )
+                            unfocusedBorderColor = ComposeColor(0xFFDDDDDE),
+                            focusedContainerColor = ComposeColor(0xFFEEEEEE),
+                            unfocusedContainerColor = ComposeColor(0xFFEEEEEE)
+                        ),
+                        shape = RoundedCornerShape(4.dp)
+                    )
+                    Text(
+                        text = "${noteInputText.length}/150",
+                        fontFamily = GillSans,
+                        fontSize = 12.sp,
+                        color = ComposeColor.Gray,
+                        modifier = Modifier
+                            .align(Alignment.End)
+                            .padding(top = 2.dp, bottom = 4.dp)
                     )
                     Spacer(modifier = Modifier.height(8.dp))
                     Row(
@@ -1004,6 +1034,7 @@ class Matter : Fragment(), AsyncTaskCompleteListener, View.OnClickListener, Bott
     }
 
     fun loadViewUI() {
+        editViewModel.resetEditSession()
         Constants.GeneratedMatterId = ""
         Constants.Matter_id = ""
         Constants.allClientGroups.clear()
@@ -1014,7 +1045,7 @@ class Matter : Fragment(), AsyncTaskCompleteListener, View.OnClickListener, Bott
         isCreateModeState.value = false
         activeScreenState.value = MatterScreen.LISTING
 
-        callGroupsWebservice()
+        matterViewModel.fetchMatters()
 
         if (matterTypeState.value == "Legal") {
             mViewModel?.setData("View Legal Matter")
@@ -1024,6 +1055,7 @@ class Matter : Fragment(), AsyncTaskCompleteListener, View.OnClickListener, Bott
     }
 
     fun loadCreateUI() {
+        editViewModel.resetEditSession()
         Constants.GeneratedMatterId = ""
         Constants.selected_temp_clients_list.clear()
         Constants.is_CreateMatter = true
@@ -1031,6 +1063,7 @@ class Matter : Fragment(), AsyncTaskCompleteListener, View.OnClickListener, Bott
 
         isCreateModeState.value = true
         activeScreenState.value = MatterScreen.STEP_INFO
+        editViewModel.resetForm()
 
         if (Constants.MATTER_TYPE == "Legal") {
             mViewModel?.setData("Create Legal Matter")
@@ -1283,7 +1316,7 @@ class Matter : Fragment(), AsyncTaskCompleteListener, View.OnClickListener, Bott
     }
 
     override fun getImagepath(imagepath: File?, ImageURI: Uri?) {
-        if (imagepath != null) {
+        if (imagepath != null && imagepath.exists()) {
             val name = imagepath.name
             editViewModel.addUploadFile(imagepath, name)
         } else if (ImageURI != null) {
@@ -1296,31 +1329,29 @@ class Matter : Fragment(), AsyncTaskCompleteListener, View.OnClickListener, Bott
     override fun getImageBitmap(bitmap: android.graphics.Bitmap?) {}
 
     fun getFile(context: Context, uri: Uri): File {
-        val destinationFilename = File(context.filesDir.path + File.separatorChar + queryName(context, uri))
+        val fileName = queryName(context, uri)
+        val destinationFilename = File(context.cacheDir, fileName)
         try {
-            context.contentResolver.openInputStream(uri).use { ins ->
-                if (ins != null) {
-                    createFileFromStream(ins, destinationFilename)
+            context.contentResolver.openInputStream(uri)?.use { ins ->
+                java.io.FileOutputStream(destinationFilename).use { os ->
+                    ins.copyTo(os)
                 }
             }
         } catch (ex: Exception) {
-            ex.fillInStackTrace()
+            ex.printStackTrace()
         }
         return destinationFilename
     }
 
-    fun createFileFromStream(ins: InputStream, destination: File?) {
+    fun createFileFromStream(ins: java.io.InputStream, destination: File?) {
         try {
-            java.nio.file.Files.newOutputStream(destination!!.toPath()).use { os ->
-                val buffer = ByteArray(4096)
-                var length: Int
-                while (ins.read(buffer).also { length = it } > 0) {
-                    os.write(buffer, 0, length)
+            if (destination != null) {
+                java.io.FileOutputStream(destination).use { os ->
+                    ins.copyTo(os)
                 }
-                os.flush()
             }
         } catch (ex: Exception) {
-            ex.fillInStackTrace()
+            ex.printStackTrace()
         }
     }
 

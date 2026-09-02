@@ -1,14 +1,18 @@
 package com.digicoffer.lauditor.ui.auth
 
+import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.imePadding
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.statusBarsPadding
 import androidx.compose.foundation.layout.width
@@ -17,21 +21,25 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
+import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.shadow
+import androidx.compose.ui.platform.LocalFocusManager
+import androidx.compose.ui.platform.LocalSoftwareKeyboardController
 import androidx.compose.ui.res.colorResource
 import androidx.compose.ui.res.dimensionResource
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.Font
 import androidx.compose.ui.text.font.FontFamily
-import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextDecoration
 import androidx.compose.ui.tooling.preview.Preview
+import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.digicoffer.lauditor.R
+import com.digicoffer.lauditor.core.ui.common.buttons.AppButton
+import com.digicoffer.lauditor.core.ui.common.buttons.ButtonVariant
 import com.digicoffer.lauditor.core.ui.common.feedback.AppLoader
 import com.digicoffer.lauditor.core.ui.common.foundation.AppSpacer
 import com.digicoffer.lauditor.core.ui.common.inputs.AppOtpField
@@ -53,6 +61,9 @@ fun OtpVerificationScreen(
     otpSentMessage: String? = null,
     modifier: Modifier = Modifier
 ) {
+    val focusManager = LocalFocusManager.current
+    val keyboardController = LocalSoftwareKeyboardController.current
+
     Box(
         modifier = modifier
             .fillMaxSize()
@@ -62,6 +73,7 @@ fun OtpVerificationScreen(
             modifier = Modifier
                 .fillMaxSize()
                 .statusBarsPadding()
+                .imePadding()
                 .verticalScroll(rememberScrollState()),
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
@@ -71,12 +83,12 @@ fun OtpVerificationScreen(
                 elevation = CardDefaults.cardElevation(defaultElevation = dimensionResource(id = R.dimen.twenty_dp)),
                 modifier = Modifier
                     .fillMaxWidth()
-                    .padding(dimensionResource(id = R.dimen.twenty_dp))
+                    .padding(horizontal = dimensionResource(id = R.dimen.Fifteen_dp), vertical = dimensionResource(id = R.dimen.twenty_dp))
             ) {
                 Column(
                     modifier = Modifier
                         .fillMaxWidth()
-                        .padding(dimensionResource(id = R.dimen.thirty_dp)),
+                        .padding(horizontal = dimensionResource(id = R.dimen.Fifteen_dp), vertical = dimensionResource(id = R.dimen.twenty_dp)),
                     horizontalAlignment = Alignment.CenterHorizontally
                 ) {
                     // Logo Image matching logo_layout.xml
@@ -91,11 +103,11 @@ fun OtpVerificationScreen(
 
                     // Success Confirmation Message matching otpverification.xml line 38
                     if (!otpSentMessage.isNullOrEmpty()) {
-                        androidx.compose.material3.Text(
+                        Text(
                             text = otpSentMessage,
                             style = TextStyle(
                                 fontFamily = GillSansBold,
-                                fontSize = 15.sp,
+                                fontSize = 14.sp,
                                 color = colorResource(id = R.color.Red)
                             ),
                             modifier = Modifier.padding(top = dimensionResource(id = R.dimen.ten_dp))
@@ -103,7 +115,7 @@ fun OtpVerificationScreen(
                     }
 
                     // Title Header matching otpverification.xml line 49
-                    androidx.compose.material3.Text(
+                    Text(
                         text = "Verify OTP",
                         style = TextStyle(
                             fontFamily = GillSansBold,
@@ -114,11 +126,11 @@ fun OtpVerificationScreen(
                     )
 
                     // Subtitle Label matching otpverification.xml line 60
-                    androidx.compose.material3.Text(
+                    Text(
                         text = "Enter 6-digit OTP",
                         style = TextStyle(
                             fontFamily = GillSans,
-                            fontSize = 15.sp,
+                            fontSize = 14.sp,
                             color = colorResource(id = R.color.black)
                         ),
                         modifier = Modifier
@@ -146,71 +158,80 @@ fun OtpVerificationScreen(
                             ),
                         contentAlignment = Alignment.CenterEnd
                     ) {
-                        androidx.compose.material3.Text(
+                        Text(
                             text = timerText,
                             style = TextStyle(
                                 fontFamily = GillSansBold,
-                                fontSize = 15.sp,
+                                fontSize = 14.sp,
                                 color = if (canResend) colorResource(id = R.color.Primary_new) else colorResource(id = R.color.grey),
                                 textDecoration = if (canResend) TextDecoration.Underline else TextDecoration.None
                             ),
-                            modifier = Modifier.clickable(enabled = canResend) { onResendClick() }
+                            modifier = Modifier.clickable(enabled = canResend) {
+                                focusManager.clearFocus(force = true)
+                                keyboardController?.hide()
+                                onResendClick()
+                            }
                         )
                     }
 
-                    // Action Buttons matching layout_button.xml line 30
+                    AppSpacer(height = 14.dp)
+
+                    // Action Buttons using common AppButton with responsive layout
                     Row(
                         modifier = Modifier
                             .fillMaxWidth()
-                            .padding(
-                                top = dimensionResource(id = R.dimen.twenty_dp),
-                                start = dimensionResource(id = R.dimen.ten_dp),
-                                end = dimensionResource(id = R.dimen.ten_dp)
-                            )
+                            .padding(horizontal = 8.dp),
+                        horizontalArrangement = Arrangement.spacedBy(10.dp),
+                        verticalAlignment = Alignment.CenterVertically
                     ) {
-                        val cancelShape = RoundedCornerShape(dimensionResource(id = R.dimen.eight_dp))
-                        Box(
+                        AppButton(
+                            text = "Cancel",
+                            onClick = {
+                                focusManager.clearFocus(force = true)
+                                keyboardController?.hide()
+                                onCancelClick()
+                            },
                             modifier = Modifier
                                 .weight(1f)
-                                .height(dimensionResource(id = R.dimen.forty_dp))
-                                .shadow(elevation = dimensionResource(id = R.dimen.four_dp), shape = cancelShape)
-                                .background(color = colorResource(id = R.color.dark_grey), shape = cancelShape)
-                                .clickable { onCancelClick() },
-                            contentAlignment = Alignment.Center
-                        ) {
-                            androidx.compose.material3.Text(
-                                text = "Cancel",
-                                style = TextStyle(
-                                    fontFamily = GillSans,
-                                    fontWeight = FontWeight.W600,
-                                    fontSize = 15.sp,
-                                    color = colorResource(id = R.color.black)
-                                )
+                                .height(dimensionResource(id = R.dimen.forty_dp)),
+                            shape = RoundedCornerShape(dimensionResource(id = R.dimen.eight_dp)),
+                            containerColor = colorResource(id = R.color.dark_grey),
+                            contentColor = colorResource(id = R.color.black),
+                            contentPadding = PaddingValues(horizontal = 4.dp, vertical = 6.dp),
+                            maxLines = 1,
+                            softWrap = false,
+                            textStyle = TextStyle(
+                                fontFamily = GillSansBold,
+                                fontSize = 13.sp,
+                                color = colorResource(id = R.color.black)
                             )
-                        }
+                        )
 
-                        AppSpacer(width = dimensionResource(id = R.dimen.ten_dp))
-
-                        val submitShape = RoundedCornerShape(dimensionResource(id = R.dimen.eight_dp))
-                        Box(
+                        AppButton(
+                            text = "Verify OTP",
+                            onClick = {
+                                focusManager.clearFocus(force = true)
+                                keyboardController?.hide()
+                                onVerifyClick()
+                            },
                             modifier = Modifier
                                 .weight(1f)
-                                .height(dimensionResource(id = R.dimen.forty_dp))
-                                .shadow(elevation = dimensionResource(id = R.dimen.four_dp), shape = submitShape)
-                                .background(color = colorResource(id = R.color.blue), shape = submitShape)
-                                .clickable { onVerifyClick() },
-                            contentAlignment = Alignment.Center
-                        ) {
-                            androidx.compose.material3.Text(
-                                text = "Verify OTP",
-                                style = TextStyle(
-                                    fontFamily = GillSansBold,
-                                    fontSize = 15.sp,
-                                    color = colorResource(id = R.color.white)
-                                )
+                                .height(dimensionResource(id = R.dimen.forty_dp)),
+                            shape = RoundedCornerShape(dimensionResource(id = R.dimen.eight_dp)),
+                            containerColor = colorResource(id = R.color.blue),
+                            contentColor = colorResource(id = R.color.white),
+                            contentPadding = PaddingValues(horizontal = 4.dp, vertical = 6.dp),
+                            maxLines = 1,
+                            softWrap = false,
+                            textStyle = TextStyle(
+                                fontFamily = GillSansBold,
+                                fontSize = 13.sp,
+                                color = colorResource(id = R.color.white)
                             )
-                        }
+                        )
                     }
+
+                    AppSpacer(height = dimensionResource(id = R.dimen.twenty_dp))
                 }
             }
         }
@@ -221,13 +242,13 @@ fun OtpVerificationScreen(
     }
 }
 
-@Preview(showBackground = true, name = "OTP Verification Preview")
+@Preview(showBackground = true)
 @Composable
 fun OtpVerificationScreenPreview() {
     OtpVerificationScreen(
         otpValue = "123456",
         onOtpChange = {},
-        timerText = "Resend OTP in 30s",
+        timerText = "Resend OTP in 60s",
         canResend = false,
         onResendClick = {},
         onVerifyClick = {},

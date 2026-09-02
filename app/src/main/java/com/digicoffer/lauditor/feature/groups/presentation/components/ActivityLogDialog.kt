@@ -29,7 +29,7 @@ import com.digicoffer.lauditor.Groups.Models.GroupModel
 import com.digicoffer.lauditor.Groups.Models.SearchDo
 import com.digicoffer.lauditor.Groups.Models.ViewGroupModel
 import com.digicoffer.lauditor.R
-import com.digicoffer.lauditor.feature.notifications.presentation.components.NotificationsSearchBar
+import com.digicoffer.lauditor.core.ui.common.search.AppSearchField
 import java.text.SimpleDateFormat
 import java.util.*
 
@@ -340,9 +340,9 @@ fun ActivityLogDialog(
                 Spacer(modifier = Modifier.height(18.dp))
 
                 // Search filter bar
-                NotificationsSearchBar(
-                    query = logSearchQuery,
-                    onQueryChange = { logSearchQuery = it },
+                AppSearchField(
+                    value = logSearchQuery,
+                    onValueChange = { logSearchQuery = it },
                     placeholder = "Search",
                     modifier = Modifier.fillMaxWidth()
                 )

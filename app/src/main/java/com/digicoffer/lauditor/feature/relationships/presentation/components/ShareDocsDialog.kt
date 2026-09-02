@@ -26,7 +26,7 @@ import androidx.compose.ui.text.font.FontFamily
 import com.digicoffer.lauditor.R
 import com.digicoffer.lauditor.Relationships.Model.RelationshipsModel
 import com.digicoffer.lauditor.Relationships.Model.SharedDocumentsDo
-import com.digicoffer.lauditor.feature.notifications.presentation.components.NotificationsSearchBar
+import com.digicoffer.lauditor.core.ui.common.search.AppSearchField
 import org.json.JSONArray
 import org.json.JSONObject
 
@@ -182,9 +182,9 @@ fun ShareDocsDialog(
 
                     if (docsList.isNotEmpty() && !isLoading) {
                         // Search Bar
-                        NotificationsSearchBar(
-                            query = searchQuery,
-                            onQueryChange = { searchQuery = it },
+                        AppSearchField(
+                            value = searchQuery,
+                            onValueChange = { searchQuery = it },
                             placeholder = "Search Documents"
                         )
 

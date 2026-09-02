@@ -40,7 +40,6 @@ import com.digicoffer.lauditor.feature.members.presentation.components.MembersAl
 import com.digicoffer.lauditor.core.ui.common.buttons.AppHeaderButton
 import com.digicoffer.lauditor.core.ui.common.feedback.AppLoader
 import com.digicoffer.lauditor.core.ui.common.search.AppSearchField
-import com.digicoffer.lauditor.feature.notifications.presentation.components.NotificationsSearchBar
 import com.digicoffer.lauditor.feature.relationships.presentation.components.ExchangeInfoDialog
 import com.digicoffer.lauditor.feature.relationships.presentation.components.RelationshipCardItem
 import com.digicoffer.lauditor.feature.relationships.presentation.components.RelationshipFormCard

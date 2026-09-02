@@ -29,22 +29,47 @@ class MatterViewModel(application: Application) : AndroidViewModel(application) 
     private val _uiState = MutableStateFlow(MatterUiState())
     val uiState: StateFlow<MatterUiState> = _uiState.asStateFlow()
 
+    private var allMattersList: List<ViewMatterModel> = emptyList()
+    private val pageSize = 10
+
     init {
         fetchMatters()
     }
 
     fun onSearchQueryChanged(query: String) {
         _uiState.update { it.copy(searchQuery = query) }
+        fetchMatters(searchQuery = query)
     }
 
     fun clearToastMessage() {
         _uiState.update { it.copy(toastMessage = null) }
     }
 
-    fun fetchMatters(navPosition: String = "", cursor: String = "") {
-        viewModelScope.launch {
+    fun dismissAlert() {
+        _uiState.update { it.copy(alertTitle = null, alertMessage = null) }
+    }
+
+    fun onPreviousPage() {
+        val prev = _uiState.value.prevCursor
+        if (!prev.isNullOrEmpty() && prev != "null") {
+            fetchMatters(navPosition = "before", cursor = prev, searchQuery = _uiState.value.searchQuery)
+        }
+    }
+
+    fun onNextPage() {
+        val next = _uiState.value.nextCursor
+        if (!next.isNullOrEmpty() && next != "null") {
+            fetchMatters(navPosition = "after", cursor = next, searchQuery = _uiState.value.searchQuery)
+        }
+    }
+
+    private var fetchJob: kotlinx.coroutines.Job? = null
+
+    fun fetchMatters(navPosition: String = "", cursor: String = "", searchQuery: String = _uiState.value.searchQuery) {
+        fetchJob?.cancel()
+        fetchJob = viewModelScope.launch {
             _uiState.update { it.copy(isLoading = true) }
-            val httpResult = getMatters(navPosition, cursor, _uiState.value.searchQuery)
+            val httpResult = getMatters(navPosition, cursor, searchQuery)
             _uiState.update { it.copy(isLoading = false) }
             android.util.Log.d("MatterViewModel", "Response content: " + httpResult.responseContent)
             if (httpResult.result == WebServiceHelper.ServiceCallStatus.Success) {
@@ -53,7 +78,7 @@ class MatterViewModel(application: Application) : AndroidViewModel(application) 
                     val isError = result.optBoolean("error", false)
                     if (isError) {
                         val msg = result.optString("msg")
-                        _uiState.update { it.copy(toastMessage = msg) }
+                        _uiState.update { it.copy(alertTitle = "Error", alertMessage = msg) }
                     } else {
                         val prevCursor = result.optString("prev_cursor")
                         val nextCursor = result.optString("next_cursor")
@@ -215,18 +240,24 @@ class MatterViewModel(application: Application) : AndroidViewModel(application) 
                             e.printStackTrace()
                         }
                         
+                        val hasPrev = !prevCursor.isNullOrEmpty() && prevCursor != "null"
+                        val hasNext = !nextCursor.isNullOrEmpty() && nextCursor != "null"
                         _uiState.update { it.copy(
                             matterList = parsedList,
+                            filteredMatters = parsedList,
+                            currentPageList = parsedList,
                             prevCursor = prevCursor,
-                            nextCursor = nextCursor
+                            nextCursor = nextCursor,
+                            hasPrev = hasPrev,
+                            hasNext = hasNext
                         ) }
                     }
                 } catch (e: Exception) {
                     android.util.Log.e("MatterViewModel", "Exception in parsing:", e)
-                    _uiState.update { it.copy(toastMessage = e.message) }
+                    _uiState.update { it.copy(alertTitle = "Error", alertMessage = e.message) }
                 }
             } else {
-                _uiState.update { it.copy(toastMessage = "Request Failed, Try Again") }
+                _uiState.update { it.copy(alertTitle = "Error", alertMessage = "Request Failed, Try Again") }
             }
         }
     }
@@ -267,15 +298,22 @@ class MatterViewModel(application: Application) : AndroidViewModel(application) 
                     val isError = result.optBoolean("error", false)
                     val msg = result.optString("msg")
                     if (!isError) {
+                        if (msg.isNotEmpty()) {
+                            AndroidUtils.showToast(msg, getApplication())
+                        }
+                        _uiState.update { it.copy(alertTitle = "Success", alertMessage = if (msg.isNotEmpty()) msg else "Matter updated successfully") }
                         onResult(true, msg)
                         fetchMatters()
                     } else {
+                        _uiState.update { it.copy(alertTitle = "Error", alertMessage = if (msg.isNotEmpty()) msg else "Operation failed") }
                         onResult(false, msg)
                     }
                 } catch (e: Exception) {
+                    _uiState.update { it.copy(alertTitle = "Error", alertMessage = e.message) }
                     onResult(false, e.message)
                 }
             } else {
+                _uiState.update { it.copy(alertTitle = "Error", alertMessage = "Request Failed, Try Again") }
                 onResult(false, "Request Failed, Try Again")
             }
         }

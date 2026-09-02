@@ -160,38 +160,39 @@ class reset_password_file : AppCompatActivity(), AsyncTaskCompleteListener, View
             try {
                 val result = JSONObject(httpResult.responseContent ?: "")
                 if (httpResult.requestType == "UPDATE") {
-                    if (!result.getBoolean("error")) {
-                        Log.d("RESET_PASSWORD", "Success Exit Point: Password updated successfully! Clearing session & navigating.")
-                        AndroidUtils.showToast(result.getString("msg"), this)
+                    if (!result.optBoolean("error", true)) {
+                        val message = result.optString("msg").ifEmpty { "Password set successfully." }
 
-                        val prefs = getSharedPreferences("MyPrefs", Context.MODE_PRIVATE)
-                        prefs.edit()
-                            .remove("pk")
-                            .remove("user_id")
-                            .remove("old_password")
-                            .apply()
+                        AndroidUtils.showAlert(message, this, "Success") {
+                            val prefs = getSharedPreferences("MyPrefs", Context.MODE_PRIVATE)
+                            prefs.edit()
+                                .remove("pk")
+                                .remove("user_id")
+                                .remove("old_password")
+                                .apply()
 
-                        val intent = Intent(this, LoginActivity::class.java).apply {
-                            putExtra("password_reset_success", true)
-                            flags = Intent.FLAG_ACTIVITY_CLEAR_TOP or Intent.FLAG_ACTIVITY_SINGLE_TOP
+                            val intent = Intent(this@reset_password_file, LoginActivity::class.java).apply {
+                                putExtra("password_reset_success", true)
+                                flags = Intent.FLAG_ACTIVITY_CLEAR_TOP or Intent.FLAG_ACTIVITY_SINGLE_TOP
+                            }
+                            startActivity(intent)
+                            finish()
                         }
-                        startActivity(intent)
-                        finish()
                     } else {
-                        Log.d("RESET_PASSWORD", "Failure Exit Point: API returned error=true, msg='${result.optString("msg")}'")
-                        AndroidUtils.showToast(
-                            "Password reset failed: ${result.optString("msg")}",
-                            this
-                        )
+                        val errorMsg = result.optString("msg").ifEmpty { AndroidUtils.extractCleanErrorMessage(result.toString()) }
+                        Log.d("RESET_PASSWORD", "Failure Exit Point: API returned error=true, msg='$errorMsg'")
+                        AndroidUtils.showAlert(errorMsg, this, "Error")
                     }
                 }
             } catch (e: Exception) {
                 Log.d("RESET_PASSWORD", "Failure Exit Point: JSON Parse Error: ${e.message}")
-                AndroidUtils.showToast(e.message, this)
+                val cleanMsg = AndroidUtils.extractCleanErrorMessage(httpResult.responseContent)
+                AndroidUtils.showAlert(cleanMsg, this, "Error")
             }
         } else {
             Log.d("RESET_PASSWORD", "Failure Exit Point: API Network Call Failed with content='${httpResult.responseContent}'")
-            AndroidUtils.showToast(httpResult.responseContent, this)
+            val cleanMsg = AndroidUtils.extractCleanErrorMessage(httpResult.responseContent)
+            AndroidUtils.showAlert(cleanMsg, this, "Error")
         }
     }
 

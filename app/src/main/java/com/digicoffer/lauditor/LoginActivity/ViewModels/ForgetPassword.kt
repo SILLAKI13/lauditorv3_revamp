@@ -166,20 +166,17 @@ class ForgetPassword : AppCompatActivity(), AsyncTaskCompleteListener, View.OnCl
                 val result = JSONObject(httpResult.responseContent ?: "")
 
                 if (httpResult.requestType == "FORGET_PASSWORD") {
-                    if (!result.getBoolean("error")) {
+                    if (!result.optBoolean("error", true)) {
                         Log.d("FORGOT_PASSWORD", "API Success")
-                        val message = result.getString("msg")
-                        AndroidUtils.showToast(message, this)
+                        val message = result.optString("msg").ifEmpty { "Please check your email for temporary password." }
                         Constants.forgot_pwd_request = true
                         Constants.Email = emailState.trim()
-                        navigateToLoginActivity()
+                        AndroidUtils.showAlert(message, this, "Success") {
+                            navigateToLoginActivity()
+                        }
                     } else {
                         Log.d("FORGOT_PASSWORD", "API Failure: ${result.optString("msg")}")
                         Constants.forgot_pwd_request = false
-
-                        if (result.has("msg")) {
-                            AndroidUtils.showToast(result.getString("msg"), this)
-                        }
 
                         if (result.has("firms")) {
                             val firms = result.getJSONObject("firms")
@@ -191,20 +188,26 @@ class ForgetPassword : AppCompatActivity(), AsyncTaskCompleteListener, View.OnCl
                             } else {
                                 awaitingFirmSelectionState = false
                                 AndroidUtils.showAlert(
-                                    "No firms found for this email. Please contact support.",
-                                    this
+                                    result.optString("msg").ifEmpty { "No firms found for this email. Please contact support." },
+                                    this,
+                                    "Error"
                                 )
                             }
+                        } else {
+                            val errorMsg = result.optString("msg").ifEmpty { AndroidUtils.extractCleanErrorMessage(result.toString()) }
+                            AndroidUtils.showAlert(errorMsg, this, "Error")
                         }
                     }
                 }
             } catch (e: Exception) {
                 e.printStackTrace()
-                AndroidUtils.showToast(e.message, this)
+                val cleanMsg = AndroidUtils.extractCleanErrorMessage(httpResult.responseContent)
+                AndroidUtils.showAlert(cleanMsg, this, "Error")
             }
         } else {
             Log.d("FORGOT_PASSWORD", "API Network Error")
-            AndroidUtils.showToast(httpResult.responseContent, this)
+            val cleanMsg = AndroidUtils.extractCleanErrorMessage(httpResult.responseContent)
+            AndroidUtils.showAlert(cleanMsg, this, "Error")
         }
     }
 

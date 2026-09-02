@@ -10,6 +10,7 @@ import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.text.BasicTextField
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.foundation.verticalScroll
@@ -34,6 +35,7 @@ import androidx.compose.ui.text.style.TextDecoration
 import androidx.compose.ui.text.withStyle
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.digicoffer.lauditor.core.ui.common.badges.AppPillBadge
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.digicoffer.lauditor.CommonFiles.GlobalFiles.AndroidUtils
 import com.digicoffer.lauditor.Matter.Models.AdvocateModel
@@ -65,8 +67,10 @@ fun MatterEditScreen(
     // Handle navigation events
     LaunchedEffect(uiState.navigateToNext, uiState.navigateToView) {
         if (uiState.navigateToNext) {
+            viewModel.consumeNavigationEvents()
             onNavigateNext()
         } else if (uiState.navigateToView) {
+            viewModel.consumeNavigationEvents()
             onNavigateBack()
         }
     }
@@ -94,14 +98,14 @@ fun MatterEditScreen(
 
     Box(
         modifier = modifier
-            .fillMaxWidth()
-            .wrapContentHeight()
+            .fillMaxSize()
             .background(ColorTokens.LightBlueBg)
             .padding(10.dp)
     ) {
         Card(
             modifier = Modifier
-                .fillMaxWidth(),
+                .fillMaxWidth()
+                .verticalScroll(rememberScrollState()),
             shape = RoundedCornerShape(8.dp),
             colors = CardDefaults.cardColors(containerColor = Color.White),
             elevation = CardDefaults.cardElevation(defaultElevation = 4.dp)
@@ -114,22 +118,31 @@ fun MatterEditScreen(
                 val isLegal = uiState.matterType == "Legal"
 
                 // 1. Case Title
-                FormLabel(text = if (isLegal) "Case Title" else "Matter Title", isMandatory = true)
+                FormLabel(text = "Case Title", isMandatory = true)
                 FormTextField(
                     value = uiState.title,
                     onValueChange = { viewModel.onTitleChanged(it) },
-                    placeholder = if (isLegal) "Case Title" else "Matter Title"
+                    placeholder = "Case Title"
                 )
 
                 Spacer(modifier = Modifier.height(10.dp))
 
-                // 2. Case Number
-                FormLabel(text = if (isLegal) "Case Number" else "Matter Number", isMandatory = false)
-                FormTextField(
-                    value = uiState.caseNumber,
-                    onValueChange = { viewModel.onCaseNumberChanged(it) },
-                    placeholder = if (isLegal) "Case Number" else "Matter Number"
-                )
+                // 2. Case Number (Legal) or Matter Type (General)
+                if (isLegal) {
+                    FormLabel(text = "Case Number", isMandatory = false)
+                    FormTextField(
+                        value = uiState.caseNumber,
+                        onValueChange = { viewModel.onCaseNumberChanged(it) },
+                        placeholder = "Case Number"
+                    )
+                } else {
+                    FormLabel(text = "Matter Type", isMandatory = false)
+                    FormTextField(
+                        value = uiState.selectedCaseType,
+                        onValueChange = { viewModel.onCaseTypeChanged(it) },
+                        placeholder = "Matter Type"
+                    )
+                }
 
                 Spacer(modifier = Modifier.height(10.dp))
 
@@ -181,14 +194,17 @@ fun MatterEditScreen(
                     Column(modifier = Modifier.fillMaxWidth()) {
                         Spacer(modifier = Modifier.height(10.dp))
 
-                        // Case Type Spinner
-                        FormLabel(text = if (isLegal) "Case Type" else "Matter Type", isMandatory = false)
-                        FormDropdownSelector(
-                            options = uiState.caseTypeList,
-                            selectedOption = uiState.selectedCaseType,
-                            onOptionSelected = { viewModel.onCaseTypeSelected(it) },
-                            placeholder = if (isLegal) "Select Case Type" else "Select Matter Type"
-                        )
+                        // Case Type Spinner (Legal only)
+                        if (isLegal) {
+                            FormLabel(text = "Case Type", isMandatory = false)
+                            FormDropdownSelector(
+                                options = uiState.caseTypeList,
+                                selectedOption = uiState.selectedCaseType,
+                                onOptionSelected = { viewModel.onCaseTypeSelected(it) },
+                                placeholder = "Select Case Type"
+                            )
+                            Spacer(modifier = Modifier.height(10.dp))
+                        }
 
                         Spacer(modifier = Modifier.height(10.dp))
 
@@ -303,11 +319,46 @@ fun MatterEditScreen(
                             Spacer(modifier = Modifier.height(6.dp))
                             FlowRow(
                                 modifier = Modifier.fillMaxWidth(),
-                                mainAxisSpacing = 6.dp,
-                                crossAxisSpacing = 6.dp
+                                mainAxisSpacing = 8.dp,
+                                crossAxisSpacing = 8.dp
                             ) {
                                 uiState.tagsList.forEachIndexed { index, tag ->
-                                    TagBadge(text = tag, onRemove = { viewModel.onRemoveTagClicked(index) })
+                                    Row(
+                                        modifier = Modifier
+                                            .background(Color(0xFFEEEEEE), RoundedCornerShape(8.dp))
+                                            .border(1.dp, Color(0xFFDDDDDE), RoundedCornerShape(8.dp))
+                                            .padding(horizontal = 12.dp, vertical = 8.dp),
+                                        verticalAlignment = Alignment.CenterVertically
+                                    ) {
+                                        Text(
+                                            text = tag,
+                                            fontFamily = GillSans,
+                                            fontSize = 14.sp,
+                                            color = Color.Black
+                                        )
+                                        Spacer(modifier = Modifier.width(10.dp))
+                                        Icon(
+                                            painter = painterResource(id = R.drawable.edit__icon),
+                                            contentDescription = "Edit Tag",
+                                            tint = Color.Unspecified,
+                                            modifier = Modifier
+                                                .size(18.dp)
+                                                .clickable {
+                                                    viewModel.onEditTagClicked(index)
+                                                }
+                                        )
+                                        Spacer(modifier = Modifier.width(10.dp))
+                                        Icon(
+                                            painter = painterResource(id = R.drawable.cancel_red_icon),
+                                            contentDescription = "Remove Tag",
+                                            tint = Color.Unspecified,
+                                            modifier = Modifier
+                                                .size(18.dp)
+                                                .clickable {
+                                                    viewModel.onRemoveTagClicked(index)
+                                                }
+                                        )
+                                    }
                                 }
                             }
                         }
@@ -453,17 +504,17 @@ fun MatterEditScreen(
                                                 color = Color.Black
                                             )
                                             Image(
-                                                painter = painterResource(id = R.drawable.simple_cancel),
+                                                painter = painterResource(id = R.drawable.cancel_red_icon),
                                                 contentDescription = "Cancel",
                                                 modifier = Modifier
-                                                    .size(24.dp)
+                                                    .size(22.dp)
                                                     .clickable { viewModel.onCancelAdvocateClicked() }
                                             )
                                         }
 
                                         Spacer(modifier = Modifier.height(8.dp))
 
-                                        FormLabel(text = "Name", isMandatory = true)
+                                        FormLabel(text = "Name", isMandatory = false)
                                         FormTextField(
                                             value = uiState.advocateName,
                                             onValueChange = { viewModel.onAdvocateFormChanged(it, uiState.advocateEmail, uiState.advocatePhone) },
@@ -478,41 +529,51 @@ fun MatterEditScreen(
                                             onValueChange = { viewModel.onAdvocateFormChanged(uiState.advocateName, it, uiState.advocatePhone) },
                                             placeholder = "Email ID"
                                         )
+                                        uiState.advocateEmailError?.let { errorText ->
+                                            Text(
+                                                text = errorText,
+                                                color = Color.Red,
+                                                fontSize = 12.sp,
+                                                fontFamily = GillSans,
+                                                modifier = Modifier.padding(start = 2.dp, top = 2.dp)
+                                            )
+                                        }
 
                                         Spacer(modifier = Modifier.height(8.dp))
 
                                         FormLabel(text = "Phone Number", isMandatory = false)
                                         FormTextField(
                                             value = uiState.advocatePhone,
-                                            onValueChange = { viewModel.onAdvocateFormChanged(uiState.advocateName, uiState.advocateEmail, it) },
+                                            onValueChange = {
+                                                if (it.length <= 10 && it.all { c -> c.isDigit() }) {
+                                                    viewModel.onAdvocateFormChanged(uiState.advocateName, uiState.advocateEmail, it)
+                                                }
+                                            },
                                             placeholder = "Phone Number",
                                             keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number)
                                         )
+                                        uiState.advocatePhoneError?.let { errorText ->
+                                            Text(
+                                                text = errorText,
+                                                color = Color.Red,
+                                                fontSize = 12.sp,
+                                                fontFamily = GillSans,
+                                                modifier = Modifier.padding(start = 2.dp, top = 2.dp)
+                                            )
+                                        }
 
                                         Spacer(modifier = Modifier.height(12.dp))
 
                                         Row(
                                             modifier = Modifier.fillMaxWidth(),
-                                            horizontalArrangement = Arrangement.End
+                                            horizontalArrangement = Arrangement.Center
                                         ) {
-                                            Button(
-                                                onClick = { viewModel.onCancelAdvocateClicked() },
-                                                colors = ButtonDefaults.buttonColors(containerColor = Color(0xFFEEEEEE)),
-                                                border = BorderStroke(1.dp, Color.LightGray),
-                                                shape = RoundedCornerShape(4.dp),
-                                                modifier = Modifier
-                                                    .width(80.dp)
-                                                    .height(36.dp)
-                                            ) {
-                                                Text(text = "Cancel", fontFamily = GillSans, fontSize = 13.sp, color = Color.Black)
-                                            }
-                                            Spacer(modifier = Modifier.width(10.dp))
                                             Button(
                                                 onClick = { viewModel.onSaveAdvocateClicked() },
                                                 colors = ButtonDefaults.buttonColors(containerColor = ColorTokens.BluePrimary),
                                                 shape = RoundedCornerShape(4.dp),
                                                 modifier = Modifier
-                                                    .width(80.dp)
+                                                    .width(100.dp)
                                                     .height(36.dp)
                                             ) {
                                                 Text(text = "Save", fontFamily = GillSansBold, fontSize = 13.sp, color = Color.White)
@@ -522,37 +583,46 @@ fun MatterEditScreen(
                                 }
                             }
 
-                            // Listed Advocates
+                            // Listed Advocates (Card with name only, edit pencil, and red close icon)
                             if (uiState.advocatesList.isNotEmpty()) {
-                                Column(modifier = Modifier.fillMaxWidth()) {
+                                Column(
+                                    modifier = Modifier.fillMaxWidth(),
+                                    verticalArrangement = Arrangement.spacedBy(6.dp)
+                                ) {
                                     uiState.advocatesList.forEachIndexed { index, adv ->
                                         Row(
                                             modifier = Modifier
                                                 .fillMaxWidth()
-                                                .padding(vertical = 4.dp)
-                                                .background(Color(0xFFF7F7F7), RoundedCornerShape(4.dp))
-                                                .border(0.5.dp, Color.LightGray, RoundedCornerShape(4.dp))
-                                                .padding(8.dp),
-                                            verticalAlignment = Alignment.CenterVertically
+                                                .background(Color(0xFFEEEEEE), RoundedCornerShape(8.dp))
+                                                .border(1.dp, Color(0xFFDDDDDE), RoundedCornerShape(8.dp))
+                                                .padding(horizontal = 12.dp, vertical = 10.dp),
+                                            verticalAlignment = Alignment.CenterVertically,
+                                            horizontalArrangement = Arrangement.SpaceBetween
                                         ) {
-                                            Column(modifier = Modifier.weight(1f)) {
-                                                val advName = adv.advocate_name ?: ""
-                                                val advEmail = adv.email ?: ""
-                                                val advPhone = adv.number ?: ""
-                                                Text(text = advName, fontFamily = GillSansBold, fontSize = 14.sp, color = Color.Black)
-                                                if (advEmail.isNotEmpty()) {
-                                                    Text(text = advEmail, fontFamily = GillSans, fontSize = 12.sp, color = Color.DarkGray)
-                                                }
-                                                if (advPhone.isNotEmpty()) {
-                                                    Text(text = advPhone, fontFamily = GillSans, fontSize = 12.sp, color = Color.DarkGray)
-                                                }
-                                            }
-                                            IconButton(onClick = { viewModel.onRemoveAdvocateClicked(index) }) {
+                                            Text(
+                                                text = adv.advocate_name ?: "",
+                                                fontFamily = GillSans,
+                                                fontSize = 14.sp,
+                                                color = Color.Black,
+                                                modifier = Modifier.weight(1f)
+                                            )
+                                            Row(verticalAlignment = Alignment.CenterVertically) {
                                                 Icon(
-                                                    painter = painterResource(id = R.drawable.delete_de),
-                                                    contentDescription = "Delete",
-                                                    tint = Color.Red,
-                                                    modifier = Modifier.size(20.dp)
+                                                    painter = painterResource(id = R.drawable.edit__icon),
+                                                    contentDescription = "Edit Advocate",
+                                                    tint = Color.Unspecified,
+                                                    modifier = Modifier
+                                                        .size(18.dp)
+                                                        .clickable { viewModel.onEditAdvocateClicked(index) }
+                                                )
+                                                Spacer(modifier = Modifier.width(12.dp))
+                                                Icon(
+                                                    painter = painterResource(id = R.drawable.cancel_red_icon),
+                                                    contentDescription = "Remove Advocate",
+                                                    tint = Color.Unspecified,
+                                                    modifier = Modifier
+                                                        .size(18.dp)
+                                                        .clickable { viewModel.onRemoveAdvocateClicked(index) }
                                                 )
                                             }
                                         }
@@ -620,6 +690,12 @@ fun MatterEditScreen(
         if (uiState.isLoading) {
             AppLoader()
         }
+
+        // In-App Toast with App Logo
+        com.digicoffer.lauditor.core.ui.common.feedback.AppToast(
+            message = uiState.toastMessage,
+            onDismiss = { viewModel.clearToastMessage() }
+        )
     }
 }
 
@@ -820,47 +896,64 @@ fun FormDropdownSelector(
             Card(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .height(150.dp)
+                    .heightIn(max = 200.dp)
+                    .wrapContentHeight()
                     .border(1.dp, Color(0xFFDDDDDE), RoundedCornerShape(4.dp)),
                 colors = CardDefaults.cardColors(containerColor = Color.White),
                 shape = RoundedCornerShape(4.dp)
             ) {
-                val localView = androidx.compose.ui.platform.LocalView.current
-                Column(
-                    modifier = Modifier
-                        .fillMaxSize()
-                        .verticalScroll(rememberScrollState())
-                        .pointerInput(Unit) {
-                            awaitPointerEventScope {
-                                while (true) {
-                                    awaitPointerEvent(androidx.compose.ui.input.pointer.PointerEventPass.Initial)
-                                    var p = localView.parent
-                                    while (p != null) {
-                                        p.requestDisallowInterceptTouchEvent(true)
-                                        p = p.parent
+                if (options.isEmpty()) {
+                    Box(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(16.dp),
+                        contentAlignment = Alignment.Center
+                    ) {
+                        Text(
+                            text = "No options available",
+                            fontFamily = GillSans,
+                            fontSize = 14.sp,
+                            color = Color.Gray
+                        )
+                    }
+                } else {
+                    val localView = androidx.compose.ui.platform.LocalView.current
+                    Column(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .verticalScroll(rememberScrollState())
+                            .pointerInput(Unit) {
+                                awaitPointerEventScope {
+                                    while (true) {
+                                        awaitPointerEvent(androidx.compose.ui.input.pointer.PointerEventPass.Initial)
+                                        var p = localView.parent
+                                        while (p != null) {
+                                            p.requestDisallowInterceptTouchEvent(true)
+                                            p = p.parent
+                                        }
                                     }
                                 }
                             }
-                        }
-                ) {
-                    options.forEach { option ->
-                        Box(
-                            modifier = Modifier
-                                .fillMaxWidth()
-                                .clickable {
-                                    onOptionSelected(option)
-                                    expanded = false
-                                }
-                                .border(0.5.dp, Color(0xFFF2F2F2))
-                                .padding(horizontal = 12.dp, vertical = 10.dp),
-                            contentAlignment = Alignment.CenterStart
-                        ) {
-                            Text(
-                                text = option,
-                                fontFamily = GillSans,
-                                fontSize = 15.sp,
-                                color = Color.Black
-                            )
+                    ) {
+                        options.forEach { option ->
+                            Box(
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .clickable {
+                                        onOptionSelected(option)
+                                        expanded = false
+                                    }
+                                    .border(0.5.dp, Color(0xFFF2F2F2))
+                                    .padding(horizontal = 12.dp, vertical = 10.dp),
+                                contentAlignment = Alignment.CenterStart
+                            ) {
+                                Text(
+                                    text = option,
+                                    fontFamily = GillSans,
+                                    fontSize = 15.sp,
+                                    color = Color.Black
+                                )
+                            }
                         }
                     }
                 }
@@ -877,27 +970,27 @@ fun SegmentedPrioritySelector(
     Row(
         modifier = Modifier
             .wrapContentWidth()
-            .height(38.dp)
-            .border(1.dp, Color(0xFFDDDDDE), RoundedCornerShape(20.dp))
+            .height(32.dp)
+            .border(1.dp, Color(0xFFDDDDDE), RoundedCornerShape(16.dp))
     ) {
         val priorities = listOf("High", "Medium", "Low")
         priorities.forEachIndexed { index, priority ->
-            val isSelected = selectedPriority == priority
+            val isSelected = selectedPriority.equals(priority, ignoreCase = true)
             val isFirst = index == 0
             val isLast = index == priorities.lastIndex
 
             val shape = when {
-                isFirst -> RoundedCornerShape(topStart = 20.dp, bottomStart = 20.dp)
-                isLast -> RoundedCornerShape(topEnd = 20.dp, bottomEnd = 20.dp)
+                isFirst -> RoundedCornerShape(topStart = 16.dp, bottomStart = 16.dp)
+                isLast -> RoundedCornerShape(topEnd = 16.dp, bottomEnd = 16.dp)
                 else -> RoundedCornerShape(0.dp)
             }
 
             Box(
                 modifier = Modifier
-                    .width(80.dp)
+                    .width(60.dp)
                     .fillMaxHeight()
                     .background(
-                        if (isSelected) ColorTokens.BluePrimary else Color.Transparent,
+                        if (isSelected) ColorTokens.BluePrimary else Color(0xFFEEEEEE),
                         shape = shape
                     )
                     .clickable { onPrioritySelected(priority) },
@@ -906,7 +999,7 @@ fun SegmentedPrioritySelector(
                 Text(
                     text = priority,
                     fontFamily = if (isSelected) GillSansBold else GillSans,
-                    fontSize = 14.sp,
+                    fontSize = 13.sp,
                     color = if (isSelected) Color.White else Color.Black
                 )
             }
@@ -931,27 +1024,27 @@ fun SegmentedStatusSelector(
     Row(
         modifier = Modifier
             .wrapContentWidth()
-            .height(38.dp)
-            .border(1.dp, Color(0xFFDDDDDE), RoundedCornerShape(20.dp))
+            .height(32.dp)
+            .border(1.dp, Color(0xFFDDDDDE), RoundedCornerShape(16.dp))
     ) {
         val statuses = listOf("Active", "Pending")
         statuses.forEachIndexed { index, status ->
-            val isSelected = selectedStatus == status
+            val isSelected = selectedStatus.equals(status, ignoreCase = true)
             val isFirst = index == 0
             val isLast = index == statuses.lastIndex
 
             val shape = when {
-                isFirst -> RoundedCornerShape(topStart = 20.dp, bottomStart = 20.dp)
-                isLast -> RoundedCornerShape(topEnd = 20.dp, bottomEnd = 20.dp)
+                isFirst -> RoundedCornerShape(topStart = 16.dp, bottomStart = 16.dp)
+                isLast -> RoundedCornerShape(topEnd = 16.dp, bottomEnd = 16.dp)
                 else -> RoundedCornerShape(0.dp)
             }
 
             Box(
                 modifier = Modifier
-                    .width(90.dp)
+                    .width(70.dp)
                     .fillMaxHeight()
                     .background(
-                        if (isSelected) ColorTokens.BluePrimary else Color.Transparent,
+                        if (isSelected) ColorTokens.BluePrimary else Color(0xFFEEEEEE),
                         shape = shape
                     )
                     .clickable { onStatusSelected(status) },
@@ -960,7 +1053,7 @@ fun SegmentedStatusSelector(
                 Text(
                     text = status,
                     fontFamily = if (isSelected) GillSansBold else GillSans,
-                    fontSize = 14.sp,
+                    fontSize = 13.sp,
                     color = if (isSelected) Color.White else Color.Black
                 )
             }
@@ -974,36 +1067,6 @@ fun SegmentedStatusSelector(
                 )
             }
         }
-    }
-}
-
-@Composable
-fun TagBadge(
-    text: String,
-    onRemove: () -> Unit
-) {
-    Row(
-        modifier = Modifier
-            .background(Color(0xFFE8F6FF), RoundedCornerShape(16.dp))
-            .border(0.5.dp, Color(0xFF85B2E0), RoundedCornerShape(16.dp))
-            .padding(horizontal = 10.dp, vertical = 4.dp),
-        verticalAlignment = Alignment.CenterVertically
-    ) {
-        Text(
-            text = text,
-            fontFamily = GillSans,
-            fontSize = 13.sp,
-            color = ColorTokens.BluePrimary
-        )
-        Spacer(modifier = Modifier.width(4.dp))
-        Icon(
-            painter = painterResource(id = R.drawable.simple_cancel),
-            contentDescription = "Remove Tag",
-            tint = ColorTokens.BluePrimary,
-            modifier = Modifier
-                .size(14.dp)
-                .clickable { onRemove() }
-        )
     }
 }
 

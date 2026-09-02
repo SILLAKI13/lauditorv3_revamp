@@ -19,7 +19,8 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.digicoffer.lauditor.R
 import com.digicoffer.lauditor.Relationships.Model.RelationshipsModel
-import com.digicoffer.lauditor.core.ui.common.badges.AppPillBadge
+import com.digicoffer.lauditor.core.ui.common.badges.AppStatusBadge
+import com.digicoffer.lauditor.core.ui.common.badges.AppStatusStyle
 
 import java.text.SimpleDateFormat
 import java.util.Locale
@@ -118,17 +119,16 @@ fun RelationshipCardItem(
                         fontSize = 15.sp
                     )
 
-                    val (textColor, bgColor, label) = when {
-                        isInactive -> Triple(Color(0xFFC62828), Color(0xFFFFCDD2), "Inactive")
-                        isPending -> Triple(Color(0xFFF57C00), Color(0xFFFFE0B2), "Pending")
-                        else -> Triple(Color(0xFF2E7D32), Color(0xFFC8E6C9), "Active")
+                    val (label, statusStyle) = when {
+                        isInactive -> Pair("Inactive", AppStatusStyle.ERROR)
+                        isPending -> Pair("Pending", AppStatusStyle.WARNING)
+                        else -> Pair("Active", AppStatusStyle.SUCCESS)
                     }
 
                     val badgeShape = if (isPending) RoundedCornerShape(20.dp) else RoundedCornerShape(15.dp)
-                    AppPillBadge(
+                    AppStatusBadge(
                         text = label,
-                        backgroundColor = bgColor,
-                        textColor = textColor,
+                        style = statusStyle,
                         shape = badgeShape,
                         paddingHorizontal = 10.dp,
                         paddingVertical = 4.dp

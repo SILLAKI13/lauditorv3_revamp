@@ -1,7 +1,9 @@
 package com.digicoffer.lauditor.feature.appointments.presentation.components
 
+import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
+import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -18,6 +20,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.ColorFilter
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.Font
 import androidx.compose.ui.text.font.FontFamily
@@ -39,8 +42,9 @@ fun HistoryNoteItem(
     Column(
         modifier = modifier
             .fillMaxWidth()
-            .padding(10.dp)
-            .background(Color(0xFFECEFF1), shape = RoundedCornerShape(4.dp))
+            .padding(vertical = 6.dp)
+            .background(Color.White, shape = RoundedCornerShape(6.dp))
+            .border(BorderStroke(0.5.dp, Color(0xFFC0C0C0)), shape = RoundedCornerShape(6.dp))
             .padding(10.dp)
     ) {
         Row(
@@ -62,6 +66,7 @@ fun HistoryNoteItem(
             Image(
                 painter = painterResource(id = R.drawable.edit__icon),
                 contentDescription = "Edit Note",
+                colorFilter = ColorFilter.tint(Color.Black),
                 modifier = Modifier
                     .size(20.dp)
                     .clickable { onEditClick() }
@@ -69,10 +74,11 @@ fun HistoryNoteItem(
 
             Spacer(modifier = Modifier.width(10.dp))
 
-            // Delete Icon
+            // Delete Icon (RED)
             Image(
                 painter = painterResource(id = R.drawable.delete_de),
                 contentDescription = "Delete Note",
+                colorFilter = ColorFilter.tint(Color(0xFFE53E3E)),
                 modifier = Modifier
                     .size(17.dp, 15.dp)
                     .clickable { onDeleteClick() }
@@ -80,8 +86,8 @@ fun HistoryNoteItem(
         }
 
         HorizontalDivider(
-            thickness = 1.dp,
-            color = Color(0xFFB0BEC5),
+            thickness = 0.5.dp,
+            color = Color(0xFFE0E0E0),
             modifier = Modifier.padding(top = 10.dp, bottom = 5.dp)
         )
 
@@ -96,9 +102,8 @@ fun HistoryNoteItem(
 
 private fun formatNoteDate(dateStr: String): String {
     return try {
-        // Format date string from yyyy-MM-dd'T'HH:mm:ss to localized format
         val parser = SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss", Locale.ENGLISH)
-        val formatter = SimpleDateFormat("MMM dd, yyyy h:mm a", Locale.ENGLISH)
+        val formatter = SimpleDateFormat("MMM dd, yyyy hh:mm a", Locale.ENGLISH)
         val date = parser.parse(dateStr)
         if (date != null) formatter.format(date) else dateStr
     } catch (e: Exception) {

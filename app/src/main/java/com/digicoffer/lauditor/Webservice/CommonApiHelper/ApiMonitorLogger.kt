@@ -2,6 +2,8 @@ package com.digicoffer.lauditor.Webservice.CommonApiHelper
 
 import android.util.Log
 import com.digicoffer.lauditor.Webservice.HttpResultDo
+import org.json.JSONArray
+import org.json.JSONObject
 
 /**
  * Centralized API / APP Monitoring logger.
@@ -13,6 +15,80 @@ object ApiMonitorLogger {
     const val TAG_APP = "APP_MONITOR"
     private const val DIVIDER = "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
 
+    private val SENSITIVE_KEYS = setOf(
+        "password",
+        "otp",
+        "token",
+        "access_token",
+        "refresh_token",
+        "authorization",
+        "secret",
+        "api_key",
+        "apikey",
+        "client_secret",
+        "credentials"
+    )
+
+    private fun maskSensitiveData(input: String?): String {
+        if (input.isNullOrBlank() || input == "none" || input == "null") return input ?: "none"
+        val trimmed = input.trim()
+        return try {
+            when {
+                trimmed.startsWith("{") -> {
+                    val jsonObject = JSONObject(trimmed)
+                    maskJsonObject(jsonObject)
+                    jsonObject.toString()
+                }
+                trimmed.startsWith("[") -> {
+                    val jsonArray = JSONArray(trimmed)
+                    maskJsonArray(jsonArray)
+                    jsonArray.toString()
+                }
+                else -> maskRegex(trimmed)
+            }
+        } catch (e: Exception) {
+            maskRegex(trimmed)
+        }
+    }
+
+    private fun maskJsonObject(obj: JSONObject) {
+        val keys = obj.keys()
+        while (keys.hasNext()) {
+            val key = keys.next()
+            val lowerKey = key.lowercase(java.util.Locale.ROOT)
+            val isSensitive = SENSITIVE_KEYS.any { lowerKey.contains(it) }
+
+            val value = obj.opt(key)
+            if (isSensitive && value is String && value.isNotEmpty()) {
+                obj.put(key, "***")
+            } else if (value is JSONObject) {
+                maskJsonObject(value)
+            } else if (value is JSONArray) {
+                maskJsonArray(value)
+            }
+        }
+    }
+
+    private fun maskJsonArray(arr: JSONArray) {
+        for (i in 0 until arr.length()) {
+            val item = arr.opt(i)
+            if (item is JSONObject) {
+                maskJsonObject(item)
+            } else if (item is JSONArray) {
+                maskJsonArray(item)
+            }
+        }
+    }
+
+    private fun maskRegex(text: String): String {
+        var result = text
+        for (k in SENSITIVE_KEYS) {
+            result = result.replace(Regex("(?i)(\"${k}\"\\s*:\\s*\")[^\"]*(\")"), "$1***$2")
+            result = result.replace(Regex("(?i)(${k}=)[^&\\s,]*"), "$1***")
+        }
+        return result
+    }
+
     @JvmStatic
     fun logSending(
         requestType: String,
@@ -21,7 +97,7 @@ object ApiMonitorLogger {
         params: String? = null
     ) {
         try {
-            val formattedParams = if (!params.isNullOrEmpty() && params != "null") params else "none"
+            val formattedParams = if (!params.isNullOrEmpty() && params != "null") maskSensitiveData(params) else "none"
             val logMessage = buildString {
                 appendLine(DIVIDER)
                 appendLine("🔄  REQUEST  : $requestType")
@@ -52,8 +128,8 @@ object ApiMonitorLogger {
                 else -> "❌"
             }
 
-            val formattedParams = if (!params.isNullOrEmpty() && params != "null") params else "none"
-            val responseContent = httpResult.responseContent ?: "none"
+            val formattedParams = if (!params.isNullOrEmpty() && params != "null") maskSensitiveData(params) else "none"
+            val responseContent = if (!httpResult.responseContent.isNullOrEmpty()) maskSensitiveData(httpResult.responseContent) else "none"
 
             val logMessage = buildString {
                 appendLine(DIVIDER)

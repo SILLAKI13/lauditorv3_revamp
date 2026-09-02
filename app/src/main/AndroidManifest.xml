@@ -61,12 +61,14 @@
         <activity
             android:name=".LoginActivity.ViewModels.ForgetPassword"
             android:exported="true"
-            android:screenOrientation="portrait" />
+            android:screenOrientation="portrait"
+            android:windowSoftInputMode="adjustResize" />
 
         <activity
             android:name=".LoginActivity.ViewModels.reset_password_file"
             android:exported="true"
-            android:screenOrientation="portrait" />
+            android:screenOrientation="portrait"
+            android:windowSoftInputMode="adjustResize" />
         <activity
             android:name=".Relationships.ExchangeInformationActivity"
             android:exported="true"
@@ -86,7 +88,8 @@
         <activity
             android:name=".LoginActivity.ViewModels.OtpVerificationActivity"
             android:exported="true"
-            android:screenOrientation="portrait" />
+            android:screenOrientation="portrait"
+            android:windowSoftInputMode="adjustResize" />
 
         <activity
             android:name=".MainActivity"
@@ -104,7 +107,8 @@
         <activity
             android:name=".LoginActivity.ViewModels.LoginActivity"
             android:exported="true"
-            android:screenOrientation="portrait">
+            android:screenOrientation="portrait"
+            android:windowSoftInputMode="adjustResize">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
                 <category android:name="android.intent.category.LAUNCHER" />

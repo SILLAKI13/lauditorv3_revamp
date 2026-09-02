@@ -1,18 +1,22 @@
 package com.digicoffer.lauditor.feature.documents.presentation.screen
 
+import com.digicoffer.lauditor.CommonFiles.GlobalFiles.AndroidUtils
 import android.widget.TextView
+import androidx.compose.animation.core.animateDpAsState
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
@@ -40,6 +44,10 @@ private val GillSans = FontFamily(
     Font(R.font.gill_sans)
 )
 
+private val GillSansBold = FontFamily(
+    Font(R.font.gill_sans, FontWeight.Bold)
+)
+
 @Composable
 fun EditMetadataDialog(
     doc: ViewDocumentsModel,
@@ -49,18 +57,39 @@ fun EditMetadataDialog(
     onSave: (String, String, String, Boolean, Boolean, JSONObject?) -> Unit,
     onDismiss: () -> Unit
 ) {
-    var name by remember { mutableStateOf(doc.name ?: "") }
-    var description by remember { mutableStateOf(doc.description ?: "") }
-    var expirationDate by remember { mutableStateOf(doc.expiration_date ?: "") }
-    
-    // Switch states
-    var enableDownload by remember { mutableStateOf(!initialDownloadDisabled) }
-    var enableEncryption by remember { mutableStateOf(initialEncrypted) }
+    val defaultBaseName = remember(doc) {
+        val raw = doc.name ?: ""
+        raw.substringBeforeLast('.', missingDelimiterValue = raw)
+    }
+    var name by remember(doc) {
+        mutableStateOf(
+            if (!doc.name.isNullOrEmpty()) {
+                doc.name?.substringBeforeLast('.', missingDelimiterValue = doc.name ?: "") ?: ""
+            } else ""
+        )
+    }
+    var description by remember(doc) {
+        mutableStateOf(
+            if (!doc.description.isNullOrEmpty()) {
+                doc.description?.substringBeforeLast('.', missingDelimiterValue = doc.description ?: "") ?: ""
+            } else {
+                defaultBaseName
+            }
+        )
+    }
+    var expirationDate by remember(doc) { mutableStateOf(doc.expiration_date ?: "") }
+
+    // Switch states: New document defaults to OFF for both switches; existing document uses saved backend values
+    var enableDownload by remember(doc) {
+        mutableStateOf(if (isStaged) false else !initialDownloadDisabled)
+    }
+    var enableEncryption by remember(doc) {
+        mutableStateOf(if (isStaged) false else initialEncrypted)
+    }
 
     // Tags list mapping
-    val tagsMap = remember {
+    val tagsMap = remember(doc) {
         mutableStateMapOf<String, String>().apply {
-            // First load from tagslist
             val list = doc.tagslist
             if (list != null) {
                 for (i in 0 until list.length()) {
@@ -74,7 +103,6 @@ fun EditMetadataDialog(
                     }
                 }
             }
-            // Fallback to tags JSONObject if empty
             if (isEmpty()) {
                 val tagObj = doc.tag
                 if (tagObj != null) {
@@ -107,13 +135,13 @@ fun EditMetadataDialog(
     ) {
         Surface(
             modifier = Modifier
-                .fillMaxWidth()
-                .fillMaxHeight(0.9f)
-                .padding(horizontal = 16.dp, vertical = 24.dp),
+                .fillMaxWidth(0.92f)
+                .wrapContentHeight()
+                .padding(vertical = 24.dp),
             shape = RoundedCornerShape(8.dp),
             color = Color.White
         ) {
-            Column(modifier = Modifier.fillMaxSize()) {
+            Column(modifier = Modifier.fillMaxWidth()) {
                 // Header (Edit Metadata)
                 Row(
                     modifier = Modifier
@@ -126,15 +154,18 @@ fun EditMetadataDialog(
                     Text(
                         text = "Edit Metadata",
                         color = Color.White,
-                        fontWeight = FontWeight.Bold,
+                        fontFamily = GillSansBold,
                         fontSize = 16.sp
                     )
-                    IconButton(onClick = onDismiss) {
+                    IconButton(
+                        onClick = onDismiss,
+                        modifier = Modifier.size(24.dp)
+                    ) {
                         Icon(
                             painter = painterResource(id = R.drawable.cancel_white_icon),
                             contentDescription = "Close Dialog",
                             tint = Color.Unspecified,
-                            modifier = Modifier.size(24.dp)
+                            modifier = Modifier.size(22.dp)
                         )
                     }
                 }
@@ -143,7 +174,6 @@ fun EditMetadataDialog(
                 Column(
                     modifier = Modifier
                         .fillMaxWidth()
-                        .weight(1f)
                         .padding(16.dp)
                         .verticalScroll(rememberScrollState()),
                     verticalArrangement = Arrangement.spacedBy(10.dp)
@@ -151,10 +181,10 @@ fun EditMetadataDialog(
                     // Document Name *
                     Text(
                         text = buildAnnotatedString {
-                            withStyle(SpanStyle(color = Color(0xFF004D87), fontWeight = FontWeight.Bold)) {
+                            withStyle(SpanStyle(color = Color(0xFF004D87), fontWeight = FontWeight.Bold, fontFamily = GillSansBold)) {
                                 append("Document Name")
                             }
-                            withStyle(SpanStyle(color = Color.Red, fontWeight = FontWeight.Bold)) {
+                            withStyle(SpanStyle(color = Color.Red, fontWeight = FontWeight.Bold, fontFamily = GillSansBold)) {
                                 append(" *")
                             }
                         },
@@ -163,7 +193,7 @@ fun EditMetadataDialog(
                     OutlinedTextField(
                         value = name,
                         onValueChange = { if (it.length <= 50) name = it },
-                        placeholder = { Text("Enter document name", fontSize = 14.sp) },
+                        placeholder = { Text("Enter document name", fontSize = 14.sp, fontFamily = GillSans) },
                         modifier = Modifier.fillMaxWidth(),
                         singleLine = true,
                         colors = OutlinedTextFieldDefaults.colors(
@@ -175,16 +205,17 @@ fun EditMetadataDialog(
                         text = "${name.length}/50",
                         color = Color.Gray,
                         fontSize = 11.sp,
+                        fontFamily = GillSans,
                         modifier = Modifier.align(Alignment.End)
                     )
 
                     // Description *
                     Text(
                         text = buildAnnotatedString {
-                            withStyle(SpanStyle(color = Color(0xFF004D87), fontWeight = FontWeight.Bold)) {
+                            withStyle(SpanStyle(color = Color(0xFF004D87), fontWeight = FontWeight.Bold, fontFamily = GillSansBold)) {
                                 append("Description")
                             }
-                            withStyle(SpanStyle(color = Color.Red, fontWeight = FontWeight.Bold)) {
+                            withStyle(SpanStyle(color = Color.Red, fontWeight = FontWeight.Bold, fontFamily = GillSansBold)) {
                                 append(" *")
                             }
                         },
@@ -193,7 +224,7 @@ fun EditMetadataDialog(
                     OutlinedTextField(
                         value = description,
                         onValueChange = { if (it.length <= 300) description = it },
-                        placeholder = { Text("Enter description", fontSize = 14.sp) },
+                        placeholder = { Text("Enter description", fontSize = 14.sp, fontFamily = GillSans) },
                         modifier = Modifier
                             .fillMaxWidth()
                             .height(100.dp),
@@ -207,13 +238,14 @@ fun EditMetadataDialog(
                         text = "${description.length}/300",
                         color = Color.Gray,
                         fontSize = 11.sp,
+                        fontFamily = GillSans,
                         modifier = Modifier.align(Alignment.End)
                     )
 
                     // Expiration Date
                     Text(
                         text = buildAnnotatedString {
-                            withStyle(SpanStyle(color = Color(0xFF004D87), fontWeight = FontWeight.Bold)) {
+                            withStyle(SpanStyle(color = Color(0xFF004D87), fontWeight = FontWeight.Bold, fontFamily = GillSansBold)) {
                                 append("Expiration Date")
                             }
                         },
@@ -225,15 +257,15 @@ fun EditMetadataDialog(
                         OutlinedTextField(
                             value = expirationDate,
                             onValueChange = {},
-                            placeholder = { Text("Expiration Date", fontSize = 14.sp) },
+                            placeholder = { Text("Expiration Date", fontSize = 14.sp, fontFamily = GillSans) },
                             modifier = Modifier.fillMaxWidth(),
                             enabled = false,
                             trailingIcon = {
                                 Icon(
-                                    painter = painterResource(id = R.drawable.ic_calendar_blue),
+                                    painter = painterResource(id = R.drawable.calendar_icon_xsmall),
                                     contentDescription = "Pick Date",
-                                    tint = Color.Unspecified,
-                                    modifier = Modifier.size(24.dp)
+                                    tint = Color.Black,
+                                    modifier = Modifier.size(20.dp)
                                 )
                             },
                             colors = OutlinedTextFieldDefaults.colors(
@@ -242,48 +274,22 @@ fun EditMetadataDialog(
                                 disabledPlaceholderColor = Color.Gray
                             )
                         )
-                        // Invisible overlay Box to capture clicks and launch custom DatePicker restricted spinner dialog
+                        // Invisible overlay Box to capture clicks and launch app's custom date picker
                         Box(
                             modifier = Modifier
                                 .matchParentSize()
                                 .background(Color.Transparent)
                                 .clickable {
-                                    val textView = TextView(context).apply {
-                                        text = expirationDate
-                                    }
-                                    // Limit dates: allowPastDates = false, allowCurrentDate = true, allowFutureDates = true
-                                    com.digicoffer.lauditor.CommonFiles.GlobalFiles.AndroidUtils.showDatePicker(
-                                        textView,
-                                        false,
-                                        true,
-                                        true
-                                    ) {
-                                        val raw = textView.text.toString()
-                                        val formatted = com.digicoffer.lauditor.CommonFiles.GlobalFiles.AndroidUtils.convertAnyDateToDDMMYYYY(raw)
-                                        try {
-                                            val sdf = SimpleDateFormat("dd-MM-yyyy", Locale.US)
-                                            val selectedDate = sdf.parse(formatted)
-                                            val today = Calendar.getInstance().apply {
-                                                set(Calendar.HOUR_OF_DAY, 0)
-                                                set(Calendar.MINUTE, 0)
-                                                set(Calendar.SECOND, 0)
-                                                set(Calendar.MILLISECOND, 0)
-                                            }.time
-                                            if (selectedDate != null && selectedDate.before(today)) {
-                                                datePickerError = "Please select today or a future date"
-                                                textView.text = ""
-                                            } else {
-                                                expirationDate = formatted
-                                            }
-                                        } catch (e: Exception) {
-                                            expirationDate = formatted
-                                        }
+                                    val dummy = TextView(context).apply { text = expirationDate }
+                                    AndroidUtils.showDatePicker(dummy, false, false, true) {
+                                        expirationDate = dummy.text.toString()
+                                        datePickerError = null
                                     }
                                 }
                         )
                     }
 
-                    Spacer(modifier = Modifier.height(6.dp))
+                    Spacer(modifier = Modifier.height(4.dp))
 
                     // Enable Download Switch
                     Row(
@@ -294,16 +300,12 @@ fun EditMetadataDialog(
                         Text(
                             text = "Enable Download",
                             color = Color(0xFF004D87),
-                            fontWeight = FontWeight.Bold,
+                            fontFamily = GillSansBold,
                             fontSize = 14.sp
                         )
-                        Switch(
+                        CompactCustomSwitch(
                             checked = enableDownload,
-                            onCheckedChange = { enableDownload = it },
-                            colors = SwitchDefaults.colors(
-                                checkedThumbColor = Color.White,
-                                checkedTrackColor = Color(0xFF004D87)
-                            )
+                            onCheckedChange = { enableDownload = it }
                         )
                     }
 
@@ -316,18 +318,16 @@ fun EditMetadataDialog(
                         Text(
                             text = "Enable Encryption",
                             color = Color(0xFF004D87),
-                            fontWeight = FontWeight.Bold,
+                            fontFamily = GillSansBold,
                             fontSize = 14.sp
                         )
-                        Switch(
+                        CompactCustomSwitch(
                             checked = enableEncryption,
-                            onCheckedChange = { enableEncryption = it },
-                            colors = SwitchDefaults.colors(
-                                checkedThumbColor = Color.White,
-                                checkedTrackColor = Color(0xFF004D87)
-                            )
+                            onCheckedChange = { enableEncryption = it }
                         )
                     }
+
+                    Spacer(modifier = Modifier.height(4.dp))
 
                     // Tags row
                     Row(
@@ -338,7 +338,7 @@ fun EditMetadataDialog(
                         Text(
                             text = "Tags",
                             color = Color(0xFF004D87),
-                            fontWeight = FontWeight.Bold,
+                            fontFamily = GillSansBold,
                             fontSize = 14.sp
                         )
                         Button(
@@ -349,13 +349,14 @@ fun EditMetadataDialog(
                             },
                             colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF004D87)),
                             shape = RoundedCornerShape(4.dp),
-                            contentPadding = PaddingValues(horizontal = 12.dp, vertical = 6.dp)
+                            contentPadding = PaddingValues(horizontal = 14.dp, vertical = 6.dp),
+                            modifier = Modifier.height(34.dp)
                         ) {
-                            Text("Add Tag", color = Color.White, fontSize = 12.sp)
+                            Text("Add Tag", color = Color.White, fontFamily = GillSansBold, fontSize = 13.sp)
                         }
                     }
 
-                    // Chips layout showing added tags
+                    // Tags list layout showing added tags as grey rounded rectangular cards (Image 1 style)
                     if (tagsMap.isNotEmpty()) {
                         FlowRow(
                             mainAxisSpacing = 8.dp,
@@ -365,11 +366,11 @@ fun EditMetadataDialog(
                             tagsMap.entries.forEach { entry ->
                                 Row(
                                     modifier = Modifier
-                                        .background(Color(0xFFE4F2FF), shape = RoundedCornerShape(16.dp))
-                                        .border(BorderStroke(1.dp, Color(0xFF0073C6)), shape = RoundedCornerShape(16.dp))
-                                        .padding(horizontal = 10.dp, vertical = 6.dp),
+                                        .background(Color(0xFFEEEEEE), shape = RoundedCornerShape(6.dp))
+                                        .border(BorderStroke(1.dp, Color(0xFFDDDDDE)), shape = RoundedCornerShape(6.dp))
+                                        .padding(horizontal = 10.dp, vertical = 8.dp),
                                     verticalAlignment = Alignment.CenterVertically,
-                                    horizontalArrangement = Arrangement.spacedBy(6.dp)
+                                    horizontalArrangement = Arrangement.spacedBy(8.dp)
                                 ) {
                                     Text(
                                         text = "${entry.key} : ${entry.value}",
@@ -378,9 +379,9 @@ fun EditMetadataDialog(
                                         fontSize = 13.sp
                                     )
                                     Icon(
-                                        painter = painterResource(id = R.drawable.edit_new_icon_),
+                                        painter = painterResource(id = R.drawable.edit__icon),
                                         contentDescription = "Edit Tag",
-                                        tint = Color(0xFF0073C6),
+                                        tint = Color.Unspecified,
                                         modifier = Modifier
                                             .size(16.dp)
                                             .clickable {
@@ -403,66 +404,86 @@ fun EditMetadataDialog(
                             }
                         }
                     }
-                }
 
-                // Footer (Action Buttons)
-                Row(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(16.dp),
-                    horizontalArrangement = Arrangement.spacedBy(10.dp)
-                ) {
-                    Button(
-                        onClick = onDismiss,
-                        colors = ButtonDefaults.buttonColors(containerColor = Color(0xFFEFEFEF)),
-                        shape = RoundedCornerShape(8.dp),
-                        modifier = Modifier.weight(1f)
+                    Spacer(modifier = Modifier.height(10.dp))
+
+                    // Footer (Action Buttons)
+                    Row(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(top = 8.dp),
+                        horizontalArrangement = Arrangement.spacedBy(12.dp)
                     ) {
-                        Text("Cancel", color = Color.Black, fontWeight = FontWeight.Bold)
-                    }
-                    Button(
-                        onClick = {
-                            if (name.isNotEmpty() && description.isNotEmpty()) {
-                                val tagsJson = if (tagsMap.isNotEmpty()) {
-                                    JSONObject().apply {
-                                        tagsMap.forEach { (k, v) -> put(k, v) }
+                        Button(
+                            onClick = onDismiss,
+                            colors = ButtonDefaults.buttonColors(containerColor = Color(0xFFEEEEEE)),
+                            shape = RoundedCornerShape(6.dp),
+                            modifier = Modifier
+                                .weight(1f)
+                                .height(40.dp)
+                        ) {
+                            Text("Cancel", color = Color.Black, fontFamily = GillSansBold, fontSize = 14.sp)
+                        }
+                        Button(
+                            onClick = {
+                                if (name.isNotEmpty() && description.isNotEmpty()) {
+                                    val tagsJson = if (tagsMap.isNotEmpty()) {
+                                        JSONObject().apply {
+                                            tagsMap.forEach { (k, v) -> put(k, v) }
+                                        }
+                                    } else {
+                                        null
                                     }
-                                } else {
-                                    null
+                                    onSave(name, description, expirationDate, !enableDownload, enableEncryption, tagsJson)
                                 }
-                                onSave(name, description, expirationDate, !enableDownload, enableEncryption, tagsJson)
-                            }
-                        },
-                        colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF004D87)),
-                        shape = RoundedCornerShape(8.dp),
-                        modifier = Modifier.weight(1f),
-                        enabled = name.isNotEmpty() && description.isNotEmpty()
-                    ) {
-                        Text("Save", color = Color.White, fontWeight = FontWeight.Bold)
+                            },
+                            colors = ButtonDefaults.buttonColors(
+                                containerColor = Color(0xFF004D87),
+                                disabledContainerColor = Color(0xFFD0D0D0)
+                            ),
+                            shape = RoundedCornerShape(6.dp),
+                            modifier = Modifier
+                                .weight(1f)
+                                .height(40.dp),
+                            enabled = name.isNotEmpty() && description.isNotEmpty()
+                        ) {
+                            Text("Save", color = Color.White, fontFamily = GillSansBold, fontSize = 14.sp)
+                        }
                     }
                 }
             }
         }
     }
 
-    // Add/Edit Tag overlay sub-dialog
+    // Add/Edit Tag overlay sub-dialog (Images 2 & 3 style)
     if (showAddTagDialog) {
+        val draftTags = remember(showAddTagDialog) {
+            mutableStateListOf<Pair<String, String>>().apply {
+                addAll(tagsMap.entries.map { it.key to it.value })
+            }
+        }
+        var keyText by remember(showAddTagDialog) { mutableStateOf(tagToEditKey ?: "") }
+        var valText by remember(showAddTagDialog) { mutableStateOf(tagToEditVal ?: "") }
+        var editingIndex by remember(showAddTagDialog) {
+            mutableStateOf(if (tagToEditKey != null) draftTags.indexOfFirst { it.first == tagToEditKey }.takeIf { it != -1 } else null)
+        }
+
         Dialog(
-            onDismissRequest = { showAddTagDialog = false },
+            onDismissRequest = {
+                showAddTagDialog = false
+                tagToEditKey = null
+                tagToEditVal = null
+            },
             properties = DialogProperties(usePlatformDefaultWidth = false)
         ) {
             Surface(
                 modifier = Modifier
-                    .fillMaxWidth(0.9f)
+                    .fillMaxWidth(0.92f)
                     .wrapContentHeight()
-                    .padding(horizontal = 16.dp, vertical = 24.dp),
+                    .padding(vertical = 24.dp),
                 shape = RoundedCornerShape(8.dp),
-                color = Color.White,
-                border = BorderStroke(1.dp, Color.Black)
+                color = Color.White
             ) {
-                var keyText by remember { mutableStateOf(tagToEditKey ?: "") }
-                var valText by remember { mutableStateOf(tagToEditVal ?: "") }
-                
                 Column(modifier = Modifier.fillMaxWidth()) {
                     // Sub-dialog Header
                     Row(
@@ -474,17 +495,24 @@ fun EditMetadataDialog(
                         verticalAlignment = Alignment.CenterVertically
                     ) {
                         Text(
-                            text = if (tagToEditKey == null) "Add Tag" else "Edit Tag",
+                            text = "Add Tag",
                             color = Color.White,
-                            fontWeight = FontWeight.Bold,
+                            fontFamily = GillSansBold,
                             fontSize = 16.sp
                         )
-                        IconButton(onClick = { showAddTagDialog = false }) {
+                        IconButton(
+                            onClick = {
+                                showAddTagDialog = false
+                                tagToEditKey = null
+                                tagToEditVal = null
+                            },
+                            modifier = Modifier.size(24.dp)
+                        ) {
                             Icon(
                                 painter = painterResource(id = R.drawable.cancel_white_icon),
                                 contentDescription = "Close",
                                 tint = Color.Unspecified,
-                                modifier = Modifier.size(24.dp)
+                                modifier = Modifier.size(22.dp)
                             )
                         }
                     }
@@ -498,10 +526,10 @@ fun EditMetadataDialog(
                         // Tag Type *
                         Text(
                             text = buildAnnotatedString {
-                                withStyle(SpanStyle(color = Color(0xFF004D87), fontWeight = FontWeight.Bold)) {
+                                withStyle(SpanStyle(color = Color(0xFF004D87), fontWeight = FontWeight.Bold, fontFamily = GillSansBold)) {
                                     append("Tag Type")
                                 }
-                                withStyle(SpanStyle(color = Color.Red, fontWeight = FontWeight.Bold)) {
+                                withStyle(SpanStyle(color = Color.Red, fontWeight = FontWeight.Bold, fontFamily = GillSansBold)) {
                                     append(" *")
                                 }
                             },
@@ -510,10 +538,9 @@ fun EditMetadataDialog(
                         OutlinedTextField(
                             value = keyText,
                             onValueChange = { if (it.length <= 30) keyText = it },
-                            placeholder = { Text("Tag Type", fontSize = 14.sp) },
+                            placeholder = { Text("Tag Type", fontSize = 14.sp, fontFamily = GillSans) },
                             modifier = Modifier.fillMaxWidth(),
                             singleLine = true,
-                            enabled = tagToEditKey == null, // Type is unique tag identifier, cannot modify it if editing
                             colors = OutlinedTextFieldDefaults.colors(
                                 focusedBorderColor = Color(0xFF004D87),
                                 unfocusedBorderColor = Color(0xFFCCCCCC)
@@ -523,16 +550,17 @@ fun EditMetadataDialog(
                             text = "${keyText.length}/30",
                             color = Color.Gray,
                             fontSize = 11.sp,
+                            fontFamily = GillSans,
                             modifier = Modifier.align(Alignment.End)
                         )
 
                         // Tag *
                         Text(
                             text = buildAnnotatedString {
-                                withStyle(SpanStyle(color = Color(0xFF004D87), fontWeight = FontWeight.Bold)) {
+                                withStyle(SpanStyle(color = Color(0xFF004D87), fontWeight = FontWeight.Bold, fontFamily = GillSansBold)) {
                                     append("Tag")
                                 }
-                                withStyle(SpanStyle(color = Color.Red, fontWeight = FontWeight.Bold)) {
+                                withStyle(SpanStyle(color = Color.Red, fontWeight = FontWeight.Bold, fontFamily = GillSansBold)) {
                                     append(" *")
                                 }
                             },
@@ -541,7 +569,7 @@ fun EditMetadataDialog(
                         OutlinedTextField(
                             value = valText,
                             onValueChange = { if (it.length <= 100) valText = it },
-                            placeholder = { Text("Tag", fontSize = 14.sp) },
+                            placeholder = { Text("Tag", fontSize = 14.sp, fontFamily = GillSans) },
                             modifier = Modifier.fillMaxWidth(),
                             singleLine = true,
                             colors = OutlinedTextFieldDefaults.colors(
@@ -553,63 +581,178 @@ fun EditMetadataDialog(
                             text = "${valText.length}/100",
                             color = Color.Gray,
                             fontSize = 11.sp,
+                            fontFamily = GillSans,
                             modifier = Modifier.align(Alignment.End)
                         )
 
-                        // Add/Update Button (saves local modification to tagsMap)
+                        // Add / Update Button
                         Box(
                             modifier = Modifier.fillMaxWidth(),
                             contentAlignment = Alignment.CenterEnd
                         ) {
                             Button(
                                 onClick = {
-                                    if (keyText.trim().isNotEmpty() && valText.trim().isNotEmpty()) {
-                                        tagsMap[keyText.trim()] = valText.trim()
+                                    val trimmedKey = keyText.trim()
+                                    val trimmedVal = valText.trim()
+                                    if (trimmedKey.isNotEmpty() && trimmedVal.isNotEmpty()) {
+                                        val idx = editingIndex
+                                        if (idx != null && idx in draftTags.indices) {
+                                            draftTags[idx] = trimmedKey to trimmedVal
+                                        } else {
+                                            val existingIdx = draftTags.indexOfFirst { it.first == trimmedKey }
+                                            if (existingIdx != -1) {
+                                                draftTags[existingIdx] = trimmedKey to trimmedVal
+                                            } else {
+                                                draftTags.add(trimmedKey to trimmedVal)
+                                            }
+                                        }
                                         keyText = ""
                                         valText = ""
-                                        showAddTagDialog = false
+                                        editingIndex = null
                                     }
                                 },
-                                colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF004D87)),
+                                colors = ButtonDefaults.buttonColors(
+                                    containerColor = Color(0xFF004D87),
+                                    disabledContainerColor = Color(0xFFD0D0D0)
+                                ),
                                 shape = RoundedCornerShape(4.dp),
+                                modifier = Modifier
+                                    .width(90.dp)
+                                    .height(34.dp),
                                 enabled = keyText.trim().isNotEmpty() && valText.trim().isNotEmpty()
                             ) {
                                 Text(
-                                    text = if (tagToEditKey == null) "Add" else "Update",
+                                    text = if (editingIndex == null) "Add" else "Update",
                                     color = Color.White,
-                                    fontSize = 12.sp
+                                    fontFamily = GillSansBold,
+                                    fontSize = 13.sp
                                 )
+                            }
+                        }
+
+                        // Added Tags Section (Image 2 style)
+                        if (draftTags.isNotEmpty()) {
+                            Spacer(modifier = Modifier.height(4.dp))
+                            Text(
+                                text = "Added Tags",
+                                color = Color(0xFF004D87),
+                                fontFamily = GillSansBold,
+                                fontSize = 14.sp
+                            )
+
+                            Column(
+                                modifier = Modifier.fillMaxWidth(),
+                                verticalArrangement = Arrangement.spacedBy(6.dp)
+                            ) {
+                                draftTags.forEachIndexed { index, pair ->
+                                    Row(
+                                        modifier = Modifier
+                                            .fillMaxWidth()
+                                            .background(Color(0xFFEEEEEE), RoundedCornerShape(6.dp))
+                                            .border(BorderStroke(1.dp, Color(0xFFDDDDDE)), RoundedCornerShape(6.dp))
+                                            .padding(horizontal = 12.dp, vertical = 10.dp),
+                                        verticalAlignment = Alignment.CenterVertically,
+                                        horizontalArrangement = Arrangement.SpaceBetween
+                                    ) {
+                                        Text(
+                                            text = "${pair.first} - ${pair.second}",
+                                            color = Color.Black,
+                                            fontFamily = GillSans,
+                                            fontSize = 13.sp,
+                                            modifier = Modifier.weight(1f)
+                                        )
+                                        Row(
+                                            verticalAlignment = Alignment.CenterVertically,
+                                            horizontalArrangement = Arrangement.spacedBy(10.dp)
+                                        ) {
+                                            Icon(
+                                                painter = painterResource(id = R.drawable.edit__icon),
+                                                contentDescription = "Edit Tag",
+                                                tint = Color.Unspecified,
+                                                modifier = Modifier
+                                                    .size(18.dp)
+                                                    .clickable {
+                                                        keyText = pair.first
+                                                        valText = pair.second
+                                                        editingIndex = index
+                                                    }
+                                            )
+                                            Icon(
+                                                painter = painterResource(id = R.drawable.cancel_red_icon),
+                                                contentDescription = "Remove Tag",
+                                                tint = Color.Unspecified,
+                                                modifier = Modifier
+                                                    .size(18.dp)
+                                                    .clickable {
+                                                        draftTags.removeAt(index)
+                                                        if (editingIndex == index) {
+                                                            editingIndex = null
+                                                            keyText = ""
+                                                            valText = ""
+                                                        }
+                                                    }
+                                            )
+                                        }
+                                    }
+                                }
                             }
                         }
 
                         Spacer(modifier = Modifier.height(10.dp))
 
-                        // Dialog Confirm buttons
+                        // Dialog Action buttons: Cancel & Save
                         Row(
                             modifier = Modifier.fillMaxWidth(),
-                            horizontalArrangement = Arrangement.spacedBy(10.dp)
+                            horizontalArrangement = Arrangement.spacedBy(12.dp)
                         ) {
                             Button(
-                                onClick = { showAddTagDialog = false },
-                                colors = ButtonDefaults.buttonColors(containerColor = Color(0xFFEFEFEF)),
-                                shape = RoundedCornerShape(8.dp),
-                                modifier = Modifier.weight(1f)
+                                onClick = {
+                                    showAddTagDialog = false
+                                    tagToEditKey = null
+                                    tagToEditVal = null
+                                },
+                                colors = ButtonDefaults.buttonColors(containerColor = Color(0xFFEEEEEE)),
+                                shape = RoundedCornerShape(6.dp),
+                                modifier = Modifier
+                                    .weight(1f)
+                                    .height(40.dp)
                             ) {
-                                Text("Cancel", color = Color.Black, fontWeight = FontWeight.Bold)
+                                Text("Cancel", color = Color.Black, fontFamily = GillSansBold, fontSize = 14.sp)
                             }
                             Button(
                                 onClick = {
-                                    if (keyText.trim().isNotEmpty() && valText.trim().isNotEmpty()) {
-                                        tagsMap[keyText.trim()] = valText.trim()
+                                    val trimmedKey = keyText.trim()
+                                    val trimmedVal = valText.trim()
+                                    if (trimmedKey.isNotEmpty() && trimmedVal.isNotEmpty()) {
+                                        val idx = editingIndex
+                                        if (idx != null && idx in draftTags.indices) {
+                                            draftTags[idx] = trimmedKey to trimmedVal
+                                        } else {
+                                            val existingIdx = draftTags.indexOfFirst { it.first == trimmedKey }
+                                            if (existingIdx != -1) {
+                                                draftTags[existingIdx] = trimmedKey to trimmedVal
+                                            } else {
+                                                draftTags.add(trimmedKey to trimmedVal)
+                                            }
+                                        }
                                     }
+                                    // Commit draftTags to tagsMap
+                                    tagsMap.clear()
+                                    draftTags.forEach { (k, v) -> tagsMap[k] = v }
                                     showAddTagDialog = false
+                                    tagToEditKey = null
+                                    tagToEditVal = null
                                 },
-                                colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF004D87)),
-                                shape = RoundedCornerShape(8.dp),
-                                modifier = Modifier.weight(1f),
-                                enabled = tagsMap.isNotEmpty() || (keyText.trim().isNotEmpty() && valText.trim().isNotEmpty())
+                                colors = ButtonDefaults.buttonColors(
+                                    containerColor = Color(0xFF004D87),
+                                    disabledContainerColor = Color(0xFFD0D0D0)
+                                ),
+                                shape = RoundedCornerShape(6.dp),
+                                modifier = Modifier
+                                    .weight(1f)
+                                    .height(40.dp)
                             ) {
-                                Text("Save", color = Color.White, fontWeight = FontWeight.Bold)
+                                Text("Save", color = Color.White, fontFamily = GillSansBold, fontSize = 14.sp)
                             }
                         }
                     }
@@ -635,6 +778,47 @@ fun EditMetadataDialog(
                     textAlign = TextAlign.Center
                 )
             }
+        )
+    }
+}
+
+@Composable
+fun CompactCustomSwitch(
+    checked: Boolean,
+    onCheckedChange: (Boolean) -> Unit,
+    modifier: Modifier = Modifier
+) {
+    // Java/XML SwitchMaterial track colors: dullBlueColor (#85B2E0) when checked, grey_color_dark (#A0A0A0) when unchecked
+    val trackColor = if (checked) Color(0xFF85B2E0) else Color(0xFFA0A0A0)
+    val thumbOffset by animateDpAsState(
+        targetValue = if (checked) 20.dp else 0.dp,
+        animationSpec = androidx.compose.animation.core.tween(durationMillis = 150),
+        label = "thumbOffset"
+    )
+    Box(
+        modifier = modifier
+            .size(width = 42.dp, height = 28.dp)
+            .clickable(
+                interactionSource = remember { androidx.compose.foundation.interaction.MutableInteractionSource() },
+                indication = null
+            ) { onCheckedChange(!checked) },
+        contentAlignment = Alignment.CenterStart
+    ) {
+        // Track: 36x14dp pill vertically centered
+        Box(
+            modifier = Modifier
+                .align(Alignment.Center)
+                .size(width = 36.dp, height = 14.dp)
+                .background(trackColor, RoundedCornerShape(7.dp))
+        )
+        // Thumb: 22dp diameter circle extending 4dp above and below the 14dp track, with subtle elevation shadow
+        Box(
+            modifier = Modifier
+                .offset(x = thumbOffset)
+                .size(22.dp)
+                .shadow(elevation = 2.dp, shape = CircleShape)
+                .background(Color.White, CircleShape)
+                .border(0.5.dp, Color(0x22000000), CircleShape)
         )
     }
 }

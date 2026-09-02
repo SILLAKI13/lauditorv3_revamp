@@ -1,5 +1,6 @@
 package com.digicoffer.lauditor.feature.appointments.presentation.screen
 
+import com.digicoffer.lauditor.core.ui.common.animation.fallDownItem
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
@@ -14,6 +15,7 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.layout.wrapContentHeight
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -51,7 +53,7 @@ import com.digicoffer.lauditor.feature.appointments.presentation.components.Hist
 import com.digicoffer.lauditor.feature.appointments.presentation.state.AppointmentsUiEvent
 import com.digicoffer.lauditor.feature.appointments.presentation.state.AppointmentsUiState
 import com.digicoffer.lauditor.feature.appointments.presentation.viewmodel.AppointmentsViewModel
-import com.digicoffer.lauditor.feature.notifications.presentation.components.NotificationsSearchBar
+import com.digicoffer.lauditor.core.ui.common.search.AppSearchField
 
 @Composable
 fun AppointmentsRoute(
@@ -93,6 +95,7 @@ fun AppointmentsScreen(
         if (uiState.historyClientId.isNotEmpty()) {
             HistoryOverlayScreen(
                 clientName = uiState.historyClientName,
+                clientProfilePic = uiState.historyClientProfilePic,
                 historyList = uiState.historyList,
                 noteAddingMap = uiState.noteAddingMap,
                 noteEditingMap = uiState.noteEditingMap,
@@ -104,7 +107,22 @@ fun AppointmentsScreen(
                     onEvent(AppointmentsUiEvent.ToggleNotesExpanded(aptId))
                 },
                 onCancelNoteClick = { aptId ->
-                    onEvent(AppointmentsUiEvent.ToggleNotesExpanded(aptId))
+                    val apt = uiState.historyList.firstOrNull { it.id == aptId }
+                    var editingNoteId: String? = null
+                    if (apt != null) {
+                        for (i in 0 until apt.notes.length()) {
+                            val nId = apt.notes.optJSONObject(i)?.optString("id") ?: ""
+                            if (uiState.noteEditingState[nId] == true) {
+                                editingNoteId = nId
+                                break
+                            }
+                        }
+                    }
+                    if (editingNoteId != null) {
+                        onEvent(AppointmentsUiEvent.CancelEditingNote(aptId, editingNoteId))
+                    } else {
+                        onEvent(AppointmentsUiEvent.ToggleNotesExpanded(aptId))
+                    }
                 },
                 onSaveNewNote = { aptId ->
                     onEvent(AppointmentsUiEvent.SaveNewNote(aptId))
@@ -113,16 +131,15 @@ fun AppointmentsScreen(
                     onEvent(AppointmentsUiEvent.SaveEditedNote(aptId, noteId))
                 },
                 onEditNoteClick = { noteId, noteText ->
-                    // Set note editing draft, editing mode, and expand textfield notes editor
-                    onEvent(AppointmentsUiEvent.StartEditingNote(noteId, noteText))
-                    // Loop through list to find which appointment note belongs to and expand it
                     val appointment = uiState.historyList.firstOrNull { apt ->
                         for (i in 0 until apt.notes.length()) {
                             if (apt.notes.optJSONObject(i)?.optString("id") == noteId) return@firstOrNull true
                         }
                         false
                     }
-                    appointment?.let { onEvent(AppointmentsUiEvent.ToggleNotesExpanded(it.id)) }
+                    appointment?.let {
+                        onEvent(AppointmentsUiEvent.StartEditingNote(it.id, noteId, noteText))
+                    }
                 },
                 onDeleteNoteClick = { aptId, noteId ->
                     pendingDeleteNote = Pair(aptId, noteId)
@@ -141,9 +158,9 @@ fun AppointmentsScreen(
                     .padding(10.dp)
             ) {
                 // Search Bar
-                NotificationsSearchBar(
-                    query = uiState.searchQuery,
-                    onQueryChange = { onEvent(AppointmentsUiEvent.SearchQueryChanged(it)) },
+                AppSearchField(
+                    value = uiState.searchQuery,
+                    onValueChange = { onEvent(AppointmentsUiEvent.SearchQueryChanged(it)) },
                     placeholder = stringResource(id = R.string.search_appointments),
                     modifier = Modifier
                         .fillMaxWidth()
@@ -209,7 +226,8 @@ fun AppointmentsScreen(
                                 onCancelClick = { pendingCancelAppointment = item },
                                 onDeleteClick = { pendingDeleteAppointment = item },
                                 onVideoCallClick = { onVideoCallClick(item) },
-                                onChatClick = { onChatClick(item) }
+                                onChatClick = { onChatClick(item) },
+                                modifier = Modifier.fallDownItem(index = index, triggerKey = uiState.currentPage)
                             )
                         }
                     }
@@ -319,6 +337,28 @@ fun AppointmentsScreen(
                 onDismiss = { pendingDeleteNote = null }
             )
         }
+
+        // 4. API Feedback Alert Dialog (Success / Error)
+        if (!uiState.alertMessage.isNullOrBlank()) {
+            AppDialog(
+                title = uiState.alertTitle ?: "Alert",
+                confirmText = "OK",
+                onConfirm = { onEvent(AppointmentsUiEvent.DismissDialogs) },
+                onDismiss = { onEvent(AppointmentsUiEvent.DismissDialogs) },
+                content = {
+                    Text(
+                        text = uiState.alertMessage,
+                        fontSize = 15.sp,
+                        color = Color.Black,
+                        fontFamily = FontFamily(Font(R.font.gill_sans)),
+                        textAlign = TextAlign.Center,
+                        modifier = Modifier
+                            .padding(horizontal = 10.dp)
+                            .fillMaxWidth()
+                    )
+                }
+            )
+        }
     }
 }
 
@@ -329,23 +369,112 @@ private fun CustomConfirmationDialog(
     onConfirm: () -> Unit,
     onDismiss: () -> Unit
 ) {
-    AppDialog(
-        title = title,
-        confirmText = "Yes",
-        dismissText = "No",
-        onConfirm = onConfirm,
-        onDismiss = onDismiss,
-        content = {
-            Text(
-                text = message,
-                fontSize = 15.sp,
-                color = Color.Black,
-                fontFamily = FontFamily(Font(R.font.gill_sans)),
-                textAlign = TextAlign.Center,
+    androidx.compose.ui.window.Dialog(
+        onDismissRequest = onDismiss,
+        properties = androidx.compose.ui.window.DialogProperties(usePlatformDefaultWidth = false)
+    ) {
+        androidx.compose.material3.Surface(
+            modifier = Modifier
+                .fillMaxWidth(0.88f)
+                .wrapContentHeight(),
+            shape = RoundedCornerShape(12.dp),
+            color = Color.White,
+            shadowElevation = 8.dp
+        ) {
+            Column(
+                horizontalAlignment = Alignment.CenterHorizontally,
                 modifier = Modifier
-                    .padding(horizontal = 10.dp)
                     .fillMaxWidth()
-            )
+                    .padding(16.dp)
+            ) {
+                // Top close button
+                Row(
+                    horizontalArrangement = Arrangement.End,
+                    modifier = Modifier.fillMaxWidth()
+                ) {
+                    Image(
+                        painter = painterResource(id = R.drawable.simple_cancel),
+                        contentDescription = "Close",
+                        modifier = Modifier
+                            .size(24.dp)
+                            .clickable { onDismiss() }
+                    )
+                }
+
+                // Dialog Title in Primary Blue
+                Text(
+                    text = title,
+                    fontSize = 18.sp,
+                    fontWeight = FontWeight.Bold,
+                    color = Color(0xFF004D87),
+                    fontFamily = FontFamily(Font(R.font.gill_sans_regular)),
+                    textAlign = TextAlign.Center,
+                    modifier = Modifier.padding(top = 4.dp, bottom = 12.dp)
+                )
+
+                // Message Body
+                Text(
+                    text = message,
+                    fontSize = 15.sp,
+                    color = Color.Black,
+                    fontFamily = FontFamily(Font(R.font.gill_sans_regular)),
+                    textAlign = TextAlign.Center,
+                    modifier = Modifier
+                        .padding(horizontal = 8.dp, vertical = 8.dp)
+                        .fillMaxWidth()
+                )
+
+                Spacer(modifier = Modifier.height(16.dp))
+
+                // Bottom Buttons: No (Grey) and Yes (Blue)
+                Row(
+                    horizontalArrangement = Arrangement.Center,
+                    verticalAlignment = Alignment.CenterVertically,
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(bottom = 8.dp)
+                ) {
+                    Button(
+                        onClick = onDismiss,
+                        shape = RoundedCornerShape(8.dp),
+                        colors = ButtonDefaults.buttonColors(
+                            containerColor = Color(0xFFECEFF1)
+                        ),
+                        modifier = Modifier
+                            .height(40.dp)
+                            .width(100.dp)
+                    ) {
+                        Text(
+                            text = stringResource(id = R.string.no),
+                            color = Color.Black,
+                            fontSize = 15.sp,
+                            fontWeight = FontWeight.Bold,
+                            fontFamily = FontFamily(Font(R.font.gill_sans_regular))
+                        )
+                    }
+
+                    Spacer(modifier = Modifier.width(20.dp))
+
+                    Button(
+                        onClick = onConfirm,
+                        shape = RoundedCornerShape(8.dp),
+                        colors = ButtonDefaults.buttonColors(
+                            containerColor = Color(0xFF004D87)
+                        ),
+                        modifier = Modifier
+                            .height(40.dp)
+                            .width(100.dp)
+                    ) {
+                        Text(
+                            text = stringResource(id = R.string.yes),
+                            color = Color.White,
+                            fontSize = 15.sp,
+                            fontWeight = FontWeight.Bold,
+                            fontFamily = FontFamily(Font(R.font.gill_sans_regular))
+                        )
+                    }
+                }
+            }
         }
-    )
+    }
 }

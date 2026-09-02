@@ -25,8 +25,8 @@ sealed interface AppointmentsUiEvent {
     data class NoteAddingDraftChanged(val appointmentId: String, val noteText: String) : AppointmentsUiEvent
     data class NoteEditingDraftChanged(val noteId: String, val noteText: String) : AppointmentsUiEvent
     data class SaveNewNote(val appointmentId: String) : AppointmentsUiEvent
-    data class StartEditingNote(val noteId: String, val initialText: String) : AppointmentsUiEvent
-    data class CancelEditingNote(val noteId: String) : AppointmentsUiEvent
+    data class StartEditingNote(val appointmentId: String, val noteId: String, val initialText: String) : AppointmentsUiEvent
+    data class CancelEditingNote(val appointmentId: String, val noteId: String) : AppointmentsUiEvent
     data class SaveEditedNote(val appointmentId: String, val noteId: String) : AppointmentsUiEvent
     data class DeleteNote(val appointmentId: String, val noteId: String) : AppointmentsUiEvent
 

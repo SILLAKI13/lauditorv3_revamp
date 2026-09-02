@@ -26,6 +26,7 @@ import androidx.compose.ui.unit.sp
 import androidx.compose.ui.viewinterop.AndroidView
 import androidx.compose.ui.draw.scale
 import com.digicoffer.lauditor.R
+import com.digicoffer.lauditor.core.ui.common.buttons.AppHeaderButton
 import com.digicoffer.lauditor.feature.meetings.presentation.components.CreateEventForm
 import com.digicoffer.lauditor.feature.meetings.presentation.components.EventCardItem
 import com.digicoffer.lauditor.feature.meetings.presentation.components.RecurrenceChoiceDialog
@@ -85,25 +86,11 @@ fun MeetingsScreen(
                         fontWeight = FontWeight.Bold,
                         fontFamily = FontFamily(Font(R.font.gill_sans_regular))
                     )
-                    Button(
-                        onClick = { isCreateMode = false },
-                        colors = ButtonDefaults.buttonColors(containerColor = activeBlue),
-                        shape = RoundedCornerShape(4.dp)
-                    ) {
-                        Image(
-                            painter = painterResource(id = R.drawable.eye_open),
-                            contentDescription = "View Events",
-                            modifier = Modifier.size(16.dp),
-                            colorFilter = ColorFilter.tint(Color.White)
-                        )
-                        Spacer(modifier = Modifier.width(6.dp))
-                        Text(
-                            text = "View Event",
-                            color = Color.White,
-                            fontSize = 12.sp,
-                            fontFamily = FontFamily(Font(R.font.gill_sans_regular))
-                        )
-                    }
+                    AppHeaderButton(
+                        text = "View Event",
+                        iconRes = R.drawable.eye_icon,
+                        onClick = { isCreateMode = false }
+                    )
                 }
 
                 CreateEventForm(
@@ -172,20 +159,11 @@ fun MeetingsScreen(
                     }
 
                     // Create Event button
-                    Button(
-                        onClick = { isCreateMode = true },
-                        colors = ButtonDefaults.buttonColors(containerColor = activeBlue),
-                        shape = RoundedCornerShape(20.dp),
-                        contentPadding = PaddingValues(horizontal = 16.dp, vertical = 8.dp)
-                    ) {
-                        Text(
-                            text = "+ Create Event",
-                            color = Color.White,
-                            fontSize = 14.sp,
-                            fontWeight = FontWeight.Bold,
-                            fontFamily = FontFamily(Font(R.font.gill_sans_regular))
-                        )
-                    }
+                    AppHeaderButton(
+                        text = "Create Event",
+                        iconRes = null,
+                        onClick = { isCreateMode = true }
+                    )
                 }
 
                 // Dropdown Filter Selection Card

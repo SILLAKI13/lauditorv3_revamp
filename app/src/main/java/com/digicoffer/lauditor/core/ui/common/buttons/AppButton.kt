@@ -46,6 +46,8 @@ fun AppButton(
     fontSize: TextUnit = TextUnit.Unspecified,
     fontWeight: FontWeight? = null,
     textStyle: TextStyle? = null,
+    maxLines: Int = Int.MAX_VALUE,
+    softWrap: Boolean = true,
     icon: @Composable (() -> Unit)? = null
 ) {
     val baseContainerColor = containerColor ?: when (variant) {
@@ -97,7 +99,9 @@ fun AppButton(
                         fontFamily = fontFamily,
                         fontSize = fontSize,
                         fontWeight = fontWeight,
-                        style = textStyle ?: TextStyle.Default
+                        style = textStyle ?: TextStyle.Default,
+                        maxLines = maxLines,
+                        softWrap = softWrap
                     )
                 }
             }
@@ -129,7 +133,9 @@ fun AppButton(
                         fontFamily = fontFamily,
                         fontSize = fontSize,
                         fontWeight = fontWeight,
-                        style = textStyle ?: TextStyle.Default
+                        style = textStyle ?: TextStyle.Default,
+                        maxLines = maxLines,
+                        softWrap = softWrap
                     )
                 }
             }

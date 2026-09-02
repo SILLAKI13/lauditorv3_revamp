@@ -6,6 +6,7 @@ import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
+import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
@@ -44,6 +45,8 @@ fun AppTextField(
     keyboardOptions: KeyboardOptions = KeyboardOptions.Default,
     keyboardActions: KeyboardActions = KeyboardActions.Default,
     visualTransformation: VisualTransformation = VisualTransformation.None,
+    placeholderColor: Color? = null,
+    placeholderStyle: TextStyle? = null,
     // Flexible style overrides:
     shape: Shape? = null,
     border: BorderStroke? = null,
@@ -72,30 +75,44 @@ fun AppTextField(
                 baseModifier = baseModifier.padding(contentPadding)
             }
 
+            val defaultPlaceholderColor = androidx.compose.ui.res.colorResource(id = com.digicoffer.lauditor.R.color.grey_color_dark)
+            val effectivePlaceholderStyle = placeholderStyle
+                ?: (textStyle?.copy(color = placeholderColor ?: defaultPlaceholderColor)
+                    ?: TextStyle(color = placeholderColor ?: defaultPlaceholderColor))
+
             Box(
                 modifier = baseModifier,
                 contentAlignment = Alignment.CenterStart
             ) {
-                BasicTextField(
-                    value = value,
-                    onValueChange = onValueChange,
-                    enabled = enabled,
-                    singleLine = singleLine,
-                    keyboardOptions = keyboardOptions,
-                    keyboardActions = keyboardActions,
-                    visualTransformation = visualTransformation,
-                    textStyle = textStyle ?: TextStyle.Default,
-                    modifier = Modifier.fillMaxWidth(),
-                    decorationBox = customDecorationBox ?: { innerTextField ->
-                        if (value.isEmpty() && placeholder != null) {
-                            Text(
-                                text = placeholder,
-                                style = textStyle ?: TextStyle.Default
-                            )
-                        }
-                        innerTextField()
+                Row(
+                    verticalAlignment = Alignment.CenterVertically,
+                    modifier = Modifier.fillMaxWidth()
+                ) {
+                    leadingIcon?.invoke()
+                    Box(modifier = Modifier.weight(1f)) {
+                        BasicTextField(
+                            value = value,
+                            onValueChange = onValueChange,
+                            enabled = enabled,
+                            singleLine = singleLine,
+                            keyboardOptions = keyboardOptions,
+                            keyboardActions = keyboardActions,
+                            visualTransformation = visualTransformation,
+                            textStyle = textStyle ?: TextStyle.Default,
+                            modifier = Modifier.fillMaxWidth(),
+                            decorationBox = customDecorationBox ?: { innerTextField ->
+                                if (value.isEmpty() && placeholder != null) {
+                                    Text(
+                                        text = placeholder,
+                                        style = effectivePlaceholderStyle
+                                    )
+                                }
+                                innerTextField()
+                            }
+                        )
                     }
-                )
+                    trailingIcon?.invoke()
+                }
             }
         } else {
             OutlinedTextField(

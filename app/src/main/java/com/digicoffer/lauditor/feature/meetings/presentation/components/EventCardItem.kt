@@ -22,7 +22,9 @@ import androidx.compose.ui.unit.sp
 import com.digicoffer.lauditor.Appointments.Models.AppointmentModel
 import com.digicoffer.lauditor.Meetings.Models.Event_Details_DO
 import com.digicoffer.lauditor.R
-import com.digicoffer.lauditor.feature.appointments.presentation.components.StatusBadge
+import com.digicoffer.lauditor.core.ui.common.badges.AppStatusBadge
+import com.digicoffer.lauditor.core.ui.common.badges.AppStatusStyle
+import java.util.Locale
 import org.json.JSONArray
 
 private fun getEventUserRsvp(event: Event_Details_DO?): String {
@@ -412,7 +414,19 @@ fun EventCardItem(
 
                     if (isAppointment && appointment != null) {
                         Row(verticalAlignment = Alignment.CenterVertically) {
-                            StatusBadge(status = statusText)
+                            val cleanStatus = statusText.lowercase(Locale.ROOT).trim()
+                            val (displayStatus, statusStyle) = when (cleanStatus) {
+                                "completed" -> Pair("Completed", AppStatusStyle.SUCCESS)
+                                "cancelled", "canceled" -> Pair("Cancelled", AppStatusStyle.ERROR)
+                                "upcoming" -> Pair("Upcoming", AppStatusStyle.INFO)
+                                "ongoing" -> Pair("Ongoing", AppStatusStyle.INFO)
+                                "payment_pending", "pending" -> Pair("Payment Pending", AppStatusStyle.WARNING)
+                                else -> Pair(if (cleanStatus.isNotEmpty()) statusText.replaceFirstChar { it.uppercase() } else "Scheduled", AppStatusStyle.NEUTRAL)
+                            }
+                            AppStatusBadge(
+                                text = displayStatus,
+                                style = statusStyle
+                            )
 
                             Spacer(modifier = Modifier.width(8.dp))
 

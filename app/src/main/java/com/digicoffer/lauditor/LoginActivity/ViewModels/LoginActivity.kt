@@ -532,6 +532,14 @@ class LoginActivity : AppCompatActivity(), AsyncTaskCompleteListener, View.OnCli
             AndroidUtils.showAlert("Please enter your email or mobile number", this)
             return
         }
+        if (input.contains("@") && !isValidEmail(input)) {
+            AndroidUtils.showAlert("Please enter a valid email address", this)
+            return
+        }
+        if (!input.contains("@") && !isValidPhoneNumber(input)) {
+            AndroidUtils.showAlert("Please enter a valid 10-digit mobile number", this)
+            return
+        }
 
         try {
             Constants.check_url()
@@ -574,6 +582,10 @@ class LoginActivity : AppCompatActivity(), AsyncTaskCompleteListener, View.OnCli
 
         if (email.isEmpty()) {
             AndroidUtils.showAlert("Please enter your email address", this)
+            return
+        }
+        if (!isValidEmail(email)) {
+            AndroidUtils.showAlert("Please enter a valid email address", this)
             return
         }
         if (password.isEmpty()) {
@@ -625,12 +637,16 @@ class LoginActivity : AppCompatActivity(), AsyncTaskCompleteListener, View.OnCli
             AndroidUtils.showAlert("Please enter your email address", this)
             return
         }
+        if (!isValidEmail(email)) {
+            AndroidUtils.showAlert("Please enter a valid email address", this)
+            return
+        }
         if (phone.isEmpty()) {
             AndroidUtils.showAlert("Please enter your mobile number", this)
             return
         }
-        if (!composeTermsAcceptedState) {
-            AndroidUtils.showAlert("Please accept the Terms & Conditions and Privacy Policy to register.", this)
+        if (!isValidPhoneNumber(phone)) {
+            AndroidUtils.showAlert("Please enter a valid 10-digit mobile number", this)
             return
         }
 
@@ -689,35 +705,53 @@ class LoginActivity : AppCompatActivity(), AsyncTaskCompleteListener, View.OnCli
 
             } catch (e: Exception) {
                 e.printStackTrace()
-                AndroidUtils.showAlert("Error parsing server response", this)
+                val cleanMsg = AndroidUtils.extractCleanErrorMessage(httpResult.responseContent)
+                AndroidUtils.showAlert(cleanMsg, this)
             }
         } else {
-            try {
-                val result = JSONObject(httpResult.responseContent ?: "")
-                val errorMsg = result.optString("msg", "An error occurred")
-                AndroidUtils.showAlert(errorMsg, this)
-            } catch (e: Exception) {
-                AndroidUtils.showAlert(httpResult.responseContent, this)
+            if (requestType == "REGISTER_OTP" && !httpResult.responseContent.isNullOrBlank()) {
+                try {
+                    val result = JSONObject(httpResult.responseContent)
+                    handleRegisterOtpResponse(result)
+                    return
+                } catch (e: Exception) {
+                    // Fall through
+                }
             }
+            val cleanMsg = AndroidUtils.extractCleanErrorMessage(httpResult.responseContent)
+            AndroidUtils.showAlert(cleanMsg, this)
         }
     }
 
     private fun handleLoginOtpResponse(result: JSONObject) {
         try {
-            if (!result.getBoolean("error")) {
+            if (!result.optBoolean("error", false)) {
                 val email = composeEmailValue.ifEmpty { et_login_email?.text?.toString() ?: "" }.trim()
                 Constants.Email = email
+                val message = result.optString("msg", "OTP sent to your mobile")
 
-                val intent = Intent(this, OtpVerificationActivity::class.java).apply {
-                    putExtra("email", email)
-                    putExtra("Check_box", composeBiometricCheckedState)
-                    putExtra("is_register", false)
+                if (isLoginMode) {
+                    AndroidUtils.showAlert(message, this, "Success", Runnable {
+                        val intent = Intent(this, OtpVerificationActivity::class.java).apply {
+                            putExtra("email", email)
+                            putExtra("Check_box", composeBiometricCheckedState)
+                            putExtra("is_register", false)
+                        }
+                        startActivity(intent)
+                    })
+                } else {
+                    val intent = Intent(this, OtpVerificationActivity::class.java).apply {
+                        putExtra("email", email)
+                        putExtra("Check_box", composeBiometricCheckedState)
+                        putExtra("is_register", false)
+                    }
+                    startActivity(intent)
                 }
-                startActivity(intent)
-            } else if (result.getBoolean("error") && result.has("firms")) {
+            } else if (result.has("firms")) {
                 handleFirmsResponse(result)
             } else {
-                AndroidUtils.showAlert(result.optString("msg", "Login failed"), this)
+                val errorMsg = result.optString("msg").ifEmpty { AndroidUtils.extractCleanErrorMessage(result.toString()) }
+                AndroidUtils.showAlert(errorMsg, this)
             }
         } catch (e: Exception) {
             e.printStackTrace()
@@ -816,34 +850,9 @@ class LoginActivity : AppCompatActivity(), AsyncTaskCompleteListener, View.OnCli
                     return
                 }
 
-                if ("reset" == Constants.PASSWORD_MODE) {
-                    Constants.PK = probizData.getString("pk")
-                    Constants.USER_ID = probizData.getString("user_id")
-                    Constants.OLD_PASSWORD = password
-
-                    val prefs1 = getSharedPreferences("MyPrefs", Context.MODE_PRIVATE)
-                    prefs1.edit()
-                        .putString("pk", Constants.PK)
-                        .putString("user_id", Constants.USER_ID)
-                        .putString("Token", Constants.TOKEN)
-                        .putString("refresh_token", Constants.Refresh_token)
-                        .putString("password", password)
-                        .apply()
-
-                    Log.d("LOGIN_AUDIT", "Force Reset Flow -> password length=${password.length}")
-
-                    val resetIntent = Intent(this@LoginActivity, reset_password_file::class.java).apply {
-                        putExtra("reset_mode", true)
-                        putExtra("pk", Constants.PK)
-                        putExtra("user_id", Constants.USER_ID)
-                    }
-                    startActivity(resetIntent)
-                    finish()
-                } else {
-                    registerFCMTokenWithServer()
-                    Bio_metric_access()
-                    Dashboard()
-                }
+                registerFCMTokenWithServer()
+                Bio_metric_access()
+                Dashboard()
 
             } else if (result.getBoolean("error") && result.has("firms")) {
                 handleFirmsResponse(result)
@@ -858,49 +867,54 @@ class LoginActivity : AppCompatActivity(), AsyncTaskCompleteListener, View.OnCli
     private fun handleRegisterOtpResponse(result: JSONObject) {
         try {
             val email = composeRegisterEmailValue.ifEmpty { et_register_email?.text?.toString() ?: "" }.trim()
+            val phone = composeRegisterPhoneValue.ifEmpty { et_register_phone?.text?.toString() ?: "" }.trim()
             Constants.Email = email
+            Constants.Mobile = phone
 
-            if (!result.getBoolean("error")) {
-                val intent = Intent(this, OtpVerificationActivity::class.java).apply {
-                    putExtra("email", email)
-                    putExtra("Check_box", false)
-                    putExtra("is_register", true)
-                }
-                startActivity(intent)
-            } else {
-                val errorMsg = result.optString("msg", "Registration failed")
-                if (errorMsg == "User Already Exists") {
-                    val redirectTo = result.optString("redirect_to", "")
-                    if (redirectTo == "password") {
-                        AndroidUtils.showAlert("Password has been setup. Please login using your password.", this, "Success", Runnable {
-                            composeEmailValue = email
-                            isLoginMode = true
-                            isPasswordMode = true
-                            fullText = "By signing-in, you agree to our T&Cs and Privacy Policy"
-                        })
-                    } else if (redirectTo == "email") {
-                        AndroidUtils.showAlert("Email is already registered. Please log in using the OTP sent to your inbox.", this, "Success", Runnable {
-                            composeEmailValue = email
-                            isLoginMode = true
-                            isPasswordMode = false
-                            fullText = "By signing-in, you agree to our T&Cs and Privacy Policy"
-                            handleLoginOTP()
-                        })
-                    } else {
-                        AndroidUtils.showAlert("Account already exists. Please login via OTP sent to your inbox.", this, "Success", Runnable {
-                            composeEmailValue = email
-                            isLoginMode = true
-                            isPasswordMode = false
-                            fullText = "By signing-in, you agree to our T&Cs and Privacy Policy"
-                            handleLoginOTP()
-                        })
+            if (!result.optBoolean("error", true)) {
+                val message = result.optString("msg", "Registration successful! OTP sent to your email.")
+                AndroidUtils.showAlert(message, this, "Success", Runnable {
+                    val intent = Intent(this, OtpVerificationActivity::class.java).apply {
+                        putExtra("email", email)
+                        putExtra("Check_box", false)
+                        putExtra("is_register", true)
                     }
+                    startActivity(intent)
+                })
+            } else {
+                val rawMsg = result.optString("msg").ifEmpty { AndroidUtils.extractCleanErrorMessage(result.toString()) }
+                val lowerMsg = rawMsg.lowercase()
+                val redirectTo = result.optString("redirect_to", "").trim()
+
+                if (redirectTo == "email" || lowerMsg.contains("email is already in use") || lowerMsg.contains("email is already registered") || lowerMsg.contains("email already exists")) {
+                    AndroidUtils.showAlert(rawMsg, this, "Success", Runnable {
+                        composeEmailValue = email.ifEmpty { Constants.Email ?: "" }
+                        isLoginMode = false
+                        isPasswordMode = false
+                        handleLoginOTP()
+                    })
+                } else if (redirectTo == "mobile" || lowerMsg.contains("mobile is already in use") || lowerMsg.contains("mobile number is already registered") || lowerMsg.contains("phone number is already registered")) {
+                    AndroidUtils.showAlert(rawMsg, this, "Success", Runnable {
+                        composeEmailValue = phone.ifEmpty { Constants.Mobile ?: "" }
+                        isLoginMode = false
+                        isPasswordMode = false
+                        handleLoginOTP()
+                    })
+                } else if (result.has("redirect_to")) {
+                    AndroidUtils.showAlert(rawMsg, this, "Success", Runnable {
+                        composeEmailValue = email.ifEmpty { Constants.Email ?: "" }
+                        isLoginMode = false
+                        isPasswordMode = false
+                        handleLoginOTP()
+                    })
                 } else {
-                    AndroidUtils.showAlert(errorMsg, this)
+                    AndroidUtils.showAlert(rawMsg, this)
                 }
             }
         } catch (e: Exception) {
             e.printStackTrace()
+            val cleanMsg = result.optString("msg").ifEmpty { AndroidUtils.extractCleanErrorMessage(result.toString()) }
+            AndroidUtils.showAlert(cleanMsg, this)
         }
     }
 
@@ -971,6 +985,10 @@ class LoginActivity : AppCompatActivity(), AsyncTaskCompleteListener, View.OnCli
                     .apply()
 
                 Log.d("LOGIN_AUDIT", "Force Reset Flow -> password length=${password.length}")
+
+                val imm = getSystemService(Context.INPUT_METHOD_SERVICE) as? android.view.inputmethod.InputMethodManager
+                imm?.hideSoftInputFromWindow(window.decorView.windowToken, 0)
+                currentFocus?.clearFocus()
 
                 val resetIntent = Intent(this@LoginActivity, reset_password_file::class.java).apply {
                     putExtra("reset_mode", true)
@@ -1047,6 +1065,14 @@ class LoginActivity : AppCompatActivity(), AsyncTaskCompleteListener, View.OnCli
 
     override fun onClick(v: View) {
         // Not used
+    }
+
+    private fun isValidEmail(email: String?): Boolean {
+        return email != null && email.matches(Regex("[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\\.[A-Za-z]{2,}"))
+    }
+
+    private fun isValidPhoneNumber(phone: String?): Boolean {
+        return phone != null && phone.filter { it.isDigit() }.length == 10
     }
 
     companion object {

@@ -1,29 +1,32 @@
 package com.digicoffer.lauditor.ui.auth
 
+import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
-import androidx.compose.foundation.border
-import androidx.compose.foundation.clickable
+import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.imePadding
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.layout.statusBarsPadding
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.foundation.text.BasicTextField
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
+import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.shadow
+import androidx.compose.ui.platform.LocalFocusManager
+import androidx.compose.ui.platform.LocalSoftwareKeyboardController
 import androidx.compose.ui.res.colorResource
 import androidx.compose.ui.res.dimensionResource
 import androidx.compose.ui.res.painterResource
@@ -31,15 +34,17 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.Font
 import androidx.compose.ui.text.font.FontFamily
-import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.digicoffer.lauditor.R
+import com.digicoffer.lauditor.core.ui.common.buttons.AppButton
+import com.digicoffer.lauditor.core.ui.common.buttons.ButtonVariant
+import com.digicoffer.lauditor.core.ui.common.dropdowns.AppDropdown
 import com.digicoffer.lauditor.core.ui.common.feedback.AppLoader
 import com.digicoffer.lauditor.core.ui.common.foundation.AppSpacer
-import com.digicoffer.lauditor.core.ui.common.dropdowns.AppDropdown
+import com.digicoffer.lauditor.core.ui.common.inputs.AppTextField
 
 private val GillSans = FontFamily(Font(R.font.gill_sans))
 private val GillSansBold = FontFamily(Font(R.font.gill_sans_bold))
@@ -57,8 +62,19 @@ fun ForgotPasswordScreen(
     onCancelClick: () -> Unit,
     modifier: Modifier = Modifier
 ) {
-    val cleanEmail = emailValue.trim()
-    val isSubmitEnabled = cleanEmail.isNotEmpty()
+    val focusManager = LocalFocusManager.current
+    val keyboardController = LocalSoftwareKeyboardController.current
+
+    val inputShape = RoundedCornerShape(6.dp)
+    val inputBorder = BorderStroke(0.5.dp, colorResource(id = R.color.silver))
+    val inputBg = colorResource(id = R.color.text_field_color)
+    val inputHeight = 42.dp
+    val inputPadding = PaddingValues(horizontal = 12.dp, vertical = 2.dp)
+    val inputTextStyle = TextStyle(
+        fontFamily = GillSans,
+        fontSize = 14.sp,
+        color = colorResource(id = R.color.black)
+    )
 
     Box(
         modifier = modifier
@@ -69,6 +85,7 @@ fun ForgotPasswordScreen(
             modifier = Modifier
                 .fillMaxSize()
                 .statusBarsPadding()
+                .imePadding()
                 .padding(dimensionResource(id = R.dimen.Fifteen_dp))
                 .verticalScroll(rememberScrollState()),
             horizontalAlignment = Alignment.CenterHorizontally
@@ -79,7 +96,6 @@ fun ForgotPasswordScreen(
                 elevation = CardDefaults.cardElevation(defaultElevation = dimensionResource(id = R.dimen.twenty_dp)),
                 modifier = Modifier
                     .fillMaxWidth()
-                    .height(dimensionResource(id = R.dimen.FiveHundred_dp))
                     .padding(dimensionResource(id = R.dimen.twenty_dp))
             ) {
                 Column(
@@ -98,8 +114,8 @@ fun ForgotPasswordScreen(
                             .height(dimensionResource(id = R.dimen.Eighty_dp))
                     )
 
-                    // Subtitle Content Text matching grey_normal_txt.xml & Screenshot 4
-                    androidx.compose.material3.Text(
+                    // Subtitle Content Text
+                    Text(
                         text = if (awaitingFirmSelection) {
                             "Multiple firms found. Please select the firm you want to reset the password for."
                         } else {
@@ -107,18 +123,18 @@ fun ForgotPasswordScreen(
                         },
                         style = TextStyle(
                             fontFamily = GillSans,
-                            fontSize = 15.sp,
+                            fontSize = 14.sp,
                             color = colorResource(id = R.color.grey_color_dark)
                         ),
                         modifier = Modifier.padding(
-                            start = dimensionResource(id = R.dimen.Fifteen_dp) + dimensionResource(id = R.dimen.ten_dp),
-                            end = dimensionResource(id = R.dimen.ten_dp),
+                            start = 12.dp,
+                            end = 12.dp,
                             top = dimensionResource(id = R.dimen.ten_dp)
                         )
                     )
 
-                    // Title Header matching login_title_layout.xml
-                    androidx.compose.material3.Text(
+                    // Title Header
+                    Text(
                         text = stringResource(id = R.string.forgot_password),
                         style = TextStyle(
                             fontFamily = GillSansBold,
@@ -127,118 +143,95 @@ fun ForgotPasswordScreen(
                         ),
                         modifier = Modifier.padding(
                             top = dimensionResource(id = R.dimen.ten_dp),
-                            bottom = dimensionResource(id = R.dimen.twenty_dp)
+                            bottom = 12.dp
                         )
                     )
 
-                    // Email Input Box matching activity_forgetpassword.xml line 58
-                    val inputShape = RoundedCornerShape(dimensionResource(id = R.dimen.six_dp))
-                    Box(
+                    // Email Input Box using common AppTextField
+                    AppTextField(
+                        value = emailValue,
+                        onValueChange = onEmailChange,
+                        placeholder = stringResource(id = R.string.email),
+                        shape = inputShape,
+                        border = inputBorder,
+                        backgroundColor = inputBg,
+                        height = inputHeight,
+                        contentPadding = inputPadding,
+                        textStyle = inputTextStyle,
+                        keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Email),
+                        singleLine = true,
                         modifier = Modifier
                             .fillMaxWidth()
-                            .padding(dimensionResource(id = R.dimen.ten_dp))
-                            .shadow(elevation = dimensionResource(id = R.dimen.four_dp), shape = inputShape)
-                            .background(color = colorResource(id = R.color.text_field_color), shape = inputShape)
-                            .border(width = 0.5.dp, color = colorResource(id = R.color.silver), shape = inputShape)
-                            .padding(horizontal = dimensionResource(id = R.dimen.Fifteen_dp), vertical = 4.dp)
-                    ) {
-                        Box(
-                            contentAlignment = Alignment.CenterStart,
-                            modifier = Modifier
-                                .fillMaxWidth()
-                                .height(48.dp)
-                        ) {
-                            if (emailValue.isEmpty()) {
-                                androidx.compose.material3.Text(
-                                    text = stringResource(id = R.string.email),
-                                    style = TextStyle(
-                                        fontFamily = GillSans,
-                                        fontSize = 15.sp,
-                                        color = colorResource(id = R.color.grey_color_dark)
-                                    )
-                                )
-                            }
-                            BasicTextField(
-                                value = emailValue,
-                                onValueChange = onEmailChange,
-                                textStyle = TextStyle(
-                                    fontFamily = GillSans,
-                                    fontSize = 15.sp,
-                                    color = colorResource(id = R.color.black)
-                                ),
-                                keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Email),
-                                singleLine = true,
-                                modifier = Modifier.fillMaxWidth()
-                            )
-                        }
-                    }
+                            .padding(horizontal = 4.dp, vertical = 4.dp)
+                    )
 
-                    // Multi-Firm Dropdown Layout
-                    if (firmList.isNotEmpty()) {
+                    // Firm selection dropdown if multiple firms
+                    if (awaitingFirmSelection && firmList.isNotEmpty()) {
+                        AppSpacer(height = 6.dp)
                         AppDropdown(
                             options = firmList,
                             selectedOption = selectedFirm,
                             onOptionSelected = onFirmSelected,
                             label = "Select Firm",
-                            modifier = Modifier.padding(horizontal = dimensionResource(id = R.dimen.ten_dp))
+                            modifier = Modifier.padding(horizontal = 4.dp)
                         )
-                        AppSpacer(height = dimensionResource(id = R.dimen.ten_dp))
+                        AppSpacer(height = 6.dp)
                     }
 
-                    // Action Buttons matching layout_button.xml line 30
+                    AppSpacer(height = 14.dp)
+
+                    // Action Buttons using common AppButton
                     Row(
                         modifier = Modifier
                             .fillMaxWidth()
-                            .padding(
-                                top = dimensionResource(id = R.dimen.Fifteen_dp),
-                                start = dimensionResource(id = R.dimen.ten_dp),
-                                end = dimensionResource(id = R.dimen.ten_dp)
-                            )
+                            .padding(horizontal = 4.dp),
+                        horizontalArrangement = Arrangement.Center,
+                        verticalAlignment = Alignment.CenterVertically
                     ) {
-                        val cancelShape = RoundedCornerShape(dimensionResource(id = R.dimen.eight_dp))
-                        Box(
+                        AppButton(
+                            text = stringResource(id = R.string.cancel),
+                            onClick = {
+                                focusManager.clearFocus(force = true)
+                                keyboardController?.hide()
+                                onCancelClick()
+                            },
                             modifier = Modifier
-                                .weight(1f)
-                                .height(dimensionResource(id = R.dimen.forty_dp))
-                                .shadow(elevation = dimensionResource(id = R.dimen.four_dp), shape = cancelShape)
-                                .background(color = colorResource(id = R.color.dark_grey), shape = cancelShape)
-                                .clickable { onCancelClick() },
-                            contentAlignment = Alignment.Center
-                        ) {
-                            androidx.compose.material3.Text(
-                                text = "Cancel",
-                                style = TextStyle(
-                                    fontFamily = GillSans,
-                                    fontWeight = FontWeight.W600,
-                                    fontSize = 15.sp,
-                                    color = colorResource(id = R.color.black)
-                                )
+                                .width(dimensionResource(id = R.dimen.module_btn_size))
+                                .height(dimensionResource(id = R.dimen.forty_dp)),
+                            shape = RoundedCornerShape(dimensionResource(id = R.dimen.eight_dp)),
+                            containerColor = colorResource(id = R.color.dark_grey),
+                            contentColor = colorResource(id = R.color.black),
+                            textStyle = TextStyle(
+                                fontFamily = GillSansBold,
+                                fontSize = 13.sp,
+                                color = colorResource(id = R.color.black)
                             )
-                        }
+                        )
 
                         AppSpacer(width = dimensionResource(id = R.dimen.ten_dp))
 
-                        val submitShape = RoundedCornerShape(dimensionResource(id = R.dimen.eight_dp))
-                        val btnColor = if (isSubmitEnabled) colorResource(id = R.color.blue) else colorResource(id = R.color.dullBlueColor)
-                        Box(
+                        AppButton(
+                            text = stringResource(id = R.string.submit),
+                            onClick = {
+                                focusManager.clearFocus(force = true)
+                                keyboardController?.hide()
+                                onSubmitClick()
+                            },
                             modifier = Modifier
-                                .weight(1f)
-                                .height(dimensionResource(id = R.dimen.forty_dp))
-                                .shadow(elevation = dimensionResource(id = R.dimen.four_dp), shape = submitShape)
-                                .background(color = btnColor, shape = submitShape)
-                                .clickable(enabled = isSubmitEnabled) { onSubmitClick() },
-                            contentAlignment = Alignment.Center
-                        ) {
-                            androidx.compose.material3.Text(
-                                text = "Submit",
-                                style = TextStyle(
-                                    fontFamily = GillSansBold,
-                                    fontSize = 15.sp,
-                                    color = colorResource(id = R.color.white)
-                                )
+                                .width(dimensionResource(id = R.dimen.module_btn_size))
+                                .height(dimensionResource(id = R.dimen.forty_dp)),
+                            shape = RoundedCornerShape(dimensionResource(id = R.dimen.eight_dp)),
+                            containerColor = colorResource(id = R.color.blue),
+                            contentColor = colorResource(id = R.color.white),
+                            textStyle = TextStyle(
+                                fontFamily = GillSansBold,
+                                fontSize = 13.sp,
+                                color = colorResource(id = R.color.white)
                             )
-                        }
+                        )
                     }
+
+                    AppSpacer(height = dimensionResource(id = R.dimen.ten_dp))
                 }
             }
         }
@@ -249,11 +242,11 @@ fun ForgotPasswordScreen(
     }
 }
 
-@Preview(showBackground = true, name = "Forgot Password Preview")
+@Preview(showBackground = true)
 @Composable
 fun ForgotPasswordScreenPreview() {
     ForgotPasswordScreen(
-        emailValue = "user@lauditor.com",
+        emailValue = "user@example.com",
         onEmailChange = {},
         firmList = emptyList(),
         selectedFirm = null,

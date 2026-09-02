@@ -48,7 +48,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import com.digicoffer.lauditor.feature.notifications.presentation.components.NotificationsSearchBar
+import com.digicoffer.lauditor.core.ui.common.search.AppSearchField
 import com.digicoffer.lauditor.CommonFiles.GlobalFiles.AndroidUtils
 import com.digicoffer.lauditor.CommonFiles.GlobalFiles.Constants
 import com.digicoffer.lauditor.CommonFiles.GlobalFiles.NewModel
@@ -70,21 +70,6 @@ enum class MembersScreenMode {
     CREATION,
     EDITING,
     GROUP_ASSIGNMENT
-}
-
-@Composable
-fun HeaderActionButton(
-    text: String,
-    iconResId: Int,
-    onClick: () -> Unit,
-    modifier: Modifier = Modifier
-) {
-    AppHeaderButton(
-        text = text,
-        iconRes = iconResId,
-        onClick = onClick,
-        modifier = modifier
-    )
 }
 
 @Composable
@@ -226,9 +211,9 @@ fun MembersScreen(
                 // Sub-header action controls
                 when (screenMode) {
                     MembersScreenMode.LISTING -> {
-                        HeaderActionButton(
+                        AppHeaderButton(
                             text = "Create Members",
-                            iconResId = 0, // draws '+'
+                            iconRes = 0, // draws '+'
                             onClick = {
                                 if (!Constants.is_active) {
                                     (context as? android.app.Activity)?.let {
@@ -242,9 +227,9 @@ fun MembersScreen(
                         )
                     }
                     MembersScreenMode.CREATION, MembersScreenMode.EDITING, MembersScreenMode.GROUP_ASSIGNMENT -> {
-                        HeaderActionButton(
+                        AppHeaderButton(
                             text = "View Members",
-                            iconResId = R.drawable.eye_icon,
+                            iconRes = R.drawable.eye_icon,
                             onClick = {
                                 screenMode = MembersScreenMode.LISTING
                                 isUgaMode = false
@@ -257,9 +242,9 @@ fun MembersScreen(
             // Body layouts based on state mode
             when (screenMode) {
                 MembersScreenMode.LISTING -> {
-                    NotificationsSearchBar(
-                        query = searchQuery,
-                        onQueryChange = { searchQuery = it },
+                    AppSearchField(
+                        value = searchQuery,
+                        onValueChange = { searchQuery = it },
                         placeholder = "Search Team Members",
                         modifier = Modifier.padding(horizontal = 10.dp)
                     )

@@ -9,31 +9,36 @@ import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.foundation.text.BasicTextField
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.rotate
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.ColorFilter
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.Font
 import androidx.compose.ui.text.font.FontFamily
-import androidx.compose.ui.text.TextStyle
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import androidx.compose.ui.draw.rotate
 import com.digicoffer.lauditor.CommonFiles.GlobalFiles.Constants
 import com.digicoffer.lauditor.Matter.Models.ClientsModel
 import com.digicoffer.lauditor.Matter.Models.TeamModel
 import com.digicoffer.lauditor.Matter.Models.ViewMatterModel
 import com.digicoffer.lauditor.R
 import com.digicoffer.lauditor.core.designsystem.colors.ColorTokens
-import com.digicoffer.lauditor.core.ui.common.feedback.AppLoader
+import com.digicoffer.lauditor.core.ui.common.dialogs.AppDialog
 import com.digicoffer.lauditor.core.ui.common.dropdowns.AppDropdown
+import com.digicoffer.lauditor.core.ui.common.feedback.AppLoader
 import com.digicoffer.lauditor.feature.matter.presentation.viewmodel.MatterEditViewModel
-import androidx.compose.foundation.text.BasicTextField
 
 private val GillSans = FontFamily(Font(R.font.gill_sans))
 private val GillSansBold = FontFamily(Font(R.font.gill_sans_bold))
@@ -52,19 +57,6 @@ fun GctScreen(
     // Fetch team members on initialization
     LaunchedEffect(Unit) {
         viewModel.loadTeamMembers()
-    }
-
-    // Handle error dialog using native showAlert
-    LaunchedEffect(uiState.errorMessage) {
-        if (uiState.errorMessage != null) {
-            com.digicoffer.lauditor.CommonFiles.GlobalFiles.AndroidUtils.showAlert(
-                uiState.errorMessage,
-                context as? android.app.Activity,
-                "Alert"
-            ) {
-                viewModel.clearErrorMessage()
-            }
-        }
     }
 
     // Dropdown checked state map (tm_id -> isChecked)
@@ -88,14 +80,14 @@ fun GctScreen(
 
     Box(
         modifier = modifier
-            .fillMaxWidth()
-            .wrapContentHeight()
+            .fillMaxSize()
             .background(ColorTokens.LightBlueBg)
             .padding(10.dp)
     ) {
         Card(
             modifier = Modifier
-                .fillMaxWidth(),
+                .fillMaxWidth()
+                .verticalScroll(rememberScrollState()),
             shape = RoundedCornerShape(8.dp),
             colors = CardDefaults.cardColors(containerColor = Color.White),
             elevation = CardDefaults.cardElevation(defaultElevation = 4.dp)
@@ -119,7 +111,10 @@ fun GctScreen(
                         modifier = Modifier.weight(1f)
                     )
                     IconButton(
-                        onClick = { onNavigateBack() },
+                        onClick = {
+                            viewModel.resetTransientState()
+                            onNavigateBack()
+                        },
                         modifier = Modifier.size(32.dp)
                     ) {
                         Icon(
@@ -298,9 +293,9 @@ fun GctScreen(
                             Row(
                                 modifier = Modifier
                                     .fillMaxWidth()
-                                    .border(1.dp, Color(0xFFE8E8E8), RoundedCornerShape(4.dp))
-                                    .background(Color.White)
-                                    .padding(horizontal = 12.dp, vertical = 10.dp),
+                                    .background(Color(0xFFEEEEEE), RoundedCornerShape(6.dp))
+                                    .border(1.dp, Color(0xFFDDDDDE), RoundedCornerShape(6.dp))
+                                    .padding(horizontal = 12.dp, vertical = 8.dp),
                                 horizontalArrangement = Arrangement.SpaceBetween,
                                 verticalAlignment = Alignment.CenterVertically
                             ) {
@@ -310,17 +305,13 @@ fun GctScreen(
                                     fontSize = 15.sp,
                                     color = Color.Black
                                 )
-                                IconButton(
-                                    onClick = { viewModel.removeClient(client) },
-                                    modifier = Modifier.size(24.dp)
-                                ) {
-                                    Icon(
-                                        painter = painterResource(id = R.drawable.cancel_icon),
-                                        contentDescription = "Remove Client",
-                                        tint = Color.Red,
-                                        modifier = Modifier.size(18.dp)
-                                    )
-                                }
+                                Image(
+                                    painter = painterResource(id = R.drawable.cancel_red_icon),
+                                    contentDescription = "Remove Client",
+                                    modifier = Modifier
+                                        .size(20.dp)
+                                        .clickable { viewModel.removeClient(client) }
+                                )
                             }
                         }
                     }
@@ -340,15 +331,7 @@ fun GctScreen(
                     Spacer(modifier = Modifier.height(6.dp))
 
                     val assignedNames = uiState.selectedTeamMembers.map { it.tm_name ?: "" }
-                    val newlyCheckedNames = uiState.teamMembersList
-                        .filter { checkedDropdownMembers[it.tm_id] == true }
-                        .map { it.tm_name ?: "" }
-                    val allNames = (assignedNames + newlyCheckedNames).distinct()
-                    val dropdownHeaderText = if (allNames.isNotEmpty()) {
-                        allNames.joinToString(", ")
-                    } else {
-                        "Select Assign Team Member(s)"
-                    }
+                    val dropdownHeaderText = "Select Assign Team Member(s)"
 
                     AppDropdown(
                         options = filteredDropdownMembers,
@@ -373,7 +356,7 @@ fun GctScreen(
                                     text = dropdownHeaderText,
                                     fontFamily = GillSans,
                                     fontSize = 15.sp,
-                                    color = if (allNames.isNotEmpty()) Color.Black else Color.Gray
+                                    color = Color.Gray
                                 )
                                 Icon(
                                     painter = painterResource(id = R.drawable.drop_down_blue),
@@ -444,7 +427,7 @@ fun GctScreen(
                                                     }
                                                 }
                                                 checkedDropdownMembers.clear()
-                                                viewModel.toggleTeamMembersDropdown()
+                                                viewModel.setTeamMembersDropdownExpanded(false)
                                             },
                                             colors = ButtonDefaults.buttonColors(
                                                 containerColor = ColorTokens.BluePrimary,
@@ -466,10 +449,12 @@ fun GctScreen(
                         }
                     )
 
-                    // Selected Team Members Rows
+                    // Selected Team Members Rows (Assigned Team Members)
                     if (uiState.selectedTeamMembers.isNotEmpty()) {
                         Column(
-                            modifier = Modifier.fillMaxWidth().padding(top = 10.dp),
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .padding(top = 10.dp),
                             verticalArrangement = Arrangement.spacedBy(6.dp)
                         ) {
                             Text(
@@ -485,9 +470,9 @@ fun GctScreen(
                                 Row(
                                     modifier = Modifier
                                         .fillMaxWidth()
-                                        .border(1.dp, Color(0xFFE8E8E8), RoundedCornerShape(4.dp))
-                                        .background(Color.White)
-                                        .padding(horizontal = 12.dp, vertical = 10.dp),
+                                        .background(Color(0xFFEEEEEE), RoundedCornerShape(6.dp))
+                                        .border(1.dp, Color(0xFFDDDDDE), RoundedCornerShape(6.dp))
+                                        .padding(horizontal = 12.dp, vertical = 8.dp),
                                     horizontalArrangement = Arrangement.SpaceBetween,
                                     verticalAlignment = Alignment.CenterVertically
                                 ) {
@@ -498,17 +483,13 @@ fun GctScreen(
                                         color = Color.Black
                                     )
                                     if (isRemovable) {
-                                        IconButton(
-                                            onClick = { viewModel.removeTeamMember(member) },
-                                            modifier = Modifier.size(24.dp)
-                                        ) {
-                                            Icon(
-                                                painter = painterResource(id = R.drawable.cancel_icon),
-                                                contentDescription = "Remove Member",
-                                                tint = Color.Red,
-                                                modifier = Modifier.size(18.dp)
-                                            )
-                                        }
+                                        Image(
+                                            painter = painterResource(id = R.drawable.cancel_red_icon),
+                                            contentDescription = "Remove Member",
+                                            modifier = Modifier
+                                                .size(20.dp)
+                                                .clickable { viewModel.removeTeamMember(member) }
+                                        )
                                     }
                                 }
                             }
@@ -519,7 +500,9 @@ fun GctScreen(
                 }
 
                 Row(
-                    modifier = Modifier.fillMaxWidth(),
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(top = 16.dp, bottom = 8.dp),
                     horizontalArrangement = Arrangement.Center,
                     verticalAlignment = Alignment.CenterVertically
                 ) {
@@ -573,7 +556,31 @@ fun GctScreen(
             }
         }
     }
+
+    if (uiState.alertMessage != null) {
+        AppDialog(
+            title = uiState.alertTitle ?: "Alert",
+            onDismiss = { viewModel.dismissAlert() },
+            onConfirm = { viewModel.dismissAlert() },
+            confirmText = "OK"
+        ) {
+            Text(
+                text = uiState.alertMessage ?: "",
+                fontFamily = GillSans,
+                fontSize = 15.sp,
+                textAlign = TextAlign.Center,
+                color = Color.Black
+            )
+        }
+    }
+
     if (uiState.isLoading) {
         AppLoader()
     }
+
+    // In-App Toast with App Logo
+    com.digicoffer.lauditor.core.ui.common.feedback.AppToast(
+        message = uiState.toastMessage,
+        onDismiss = { viewModel.clearToastMessage() }
+    )
 }

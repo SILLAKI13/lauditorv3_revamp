@@ -20,19 +20,25 @@ import androidx.compose.ui.graphics.drawscope.Stroke
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.text.font.Font
+import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import androidx.compose.ui.window.Dialog
-import com.digicoffer.lauditor.R
 import com.digicoffer.lauditor.CommonFiles.GlobalFiles.Constants
-import com.digicoffer.lauditor.feature.matter.presentation.viewmodel.MatterEditViewModel
+import com.digicoffer.lauditor.Documents.Models.ViewDocumentsModel
+import com.digicoffer.lauditor.R
+import com.digicoffer.lauditor.core.designsystem.colors.ColorTokens
+import com.digicoffer.lauditor.core.ui.common.dialogs.AppDialog
 import com.digicoffer.lauditor.core.ui.common.feedback.AppLoader
-import java.io.File
-import java.util.Calendar
+import com.digicoffer.lauditor.feature.documents.presentation.screen.EditMetadataDialog
+import com.digicoffer.lauditor.feature.matter.presentation.viewmodel.MatterEditViewModel
+import org.json.JSONObject
 
-@OptIn(ExperimentalMaterial3Api::class)
+private val GillSans = FontFamily(Font(R.font.gill_sans))
+private val GillSansBold = FontFamily(Font(R.font.gill_sans_bold))
+
 @Composable
 fun DocumentsScreen(
     viewModel: MatterEditViewModel,
@@ -41,12 +47,11 @@ fun DocumentsScreen(
     onCancel: () -> Unit
 ) {
     val uiState by viewModel.uiState.collectAsState()
-    val context = LocalContext.current
 
     Box(
         modifier = Modifier
             .fillMaxSize()
-            .background(Color(0xFFF1F5F9))
+            .background(ColorTokens.LightBlueBg)
             .padding(10.dp)
     ) {
         Column(
@@ -56,7 +61,7 @@ fun DocumentsScreen(
             Card(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .padding(4.dp),
+                    .verticalScroll(rememberScrollState()),
                 shape = RoundedCornerShape(8.dp),
                 colors = CardDefaults.cardColors(containerColor = Color.White),
                 elevation = CardDefaults.cardElevation(defaultElevation = 4.dp)
@@ -64,7 +69,7 @@ fun DocumentsScreen(
                 Column(
                     modifier = Modifier
                         .fillMaxWidth()
-                        .padding(10.dp)
+                        .padding(12.dp)
                 ) {
                     // Header title + close icon
                     Row(
@@ -73,92 +78,41 @@ fun DocumentsScreen(
                         verticalAlignment = Alignment.CenterVertically
                     ) {
                         Text(
-                            text = if (Constants.create_matter) (uiState.title.ifEmpty { "Matter Documents" }) else "",
+                            text = uiState.title.ifEmpty { "Matter Documents" },
                             fontSize = 20.sp,
+                            fontFamily = GillSansBold,
                             fontWeight = FontWeight.Bold,
-                            color = Color(0xFF0F172A)
+                            color = ColorTokens.BluePrimary
                         )
-                        IconButton(onClick = onCancel) {
+                        IconButton(onClick = {
+                            viewModel.consumeUpdateSuccess()
+                            viewModel.resetTransientState()
+                            onCancel()
+                        }) {
                             Icon(
                                 painter = painterResource(id = R.drawable.cancel_icon_1),
                                 contentDescription = "Close",
                                 tint = Color.Unspecified,
-                                modifier = Modifier.size(30.dp)
+                                modifier = Modifier.size(24.dp)
                             )
                         }
                     }
 
                     Spacer(modifier = Modifier.height(10.dp))
 
-                    // Dashed drop zone container
-                    Box(
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .height(180.dp)
-                            .drawBehind {
-                                val stroke = Stroke(
-                                    width = 2f,
-                                    pathEffect = PathEffect.dashPathEffect(floatArrayOf(10f, 10f), 0f)
-                                )
-                                drawRoundRect(
-                                    color = Color.LightGray,
-                                    style = stroke,
-                                    cornerRadius = CornerRadius(8.dp.toPx())
-                                )
-                            }
-                            .background(Color(0xFFF8FAFC), shape = RoundedCornerShape(8.dp))
-                            .clickable(onClick = onBrowseClick),
-                        contentAlignment = Alignment.Center
-                    ) {
-                        Column(
-                            horizontalAlignment = Alignment.CenterHorizontally,
-                            verticalArrangement = Arrangement.Center,
-                            modifier = Modifier.padding(10.dp)
-                        ) {
-                            Icon(
-                                painter = painterResource(id = R.drawable.cloud_icon),
-                                contentDescription = "Upload Icon",
-                                tint = Color.Unspecified,
-                                modifier = Modifier.size(40.dp)
-                            )
-                            Spacer(modifier = Modifier.height(10.dp))
-                            Text(
-                                text = "Choose the files from your device or drag\n& drop them here",
-                                color = Color.Gray,
-                                fontSize = 12.sp,
-                                textAlign = TextAlign.Center
-                            )
-                            Spacer(modifier = Modifier.height(10.dp))
-                            Button(
-                                onClick = onBrowseClick,
-                                colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF004D87)),
-                                shape = RoundedCornerShape(4.dp),
-                                contentPadding = PaddingValues(horizontal = 16.dp, vertical = 8.dp)
-                            ) {
-                                Text(
-                                    text = "Browse Files",
-                                    color = Color.White,
-                                    fontSize = 15.sp,
-                                    fontWeight = FontWeight.Bold
-                                )
-                            }
-                        }
-                    }
-
-                    Spacer(modifier = Modifier.height(16.dp))
-
-                    // Section header for selected/attached files
+                    // Section header for selected/attached files (shown above Browse Files)
                     if (uiState.selectedExistingDocuments.isNotEmpty() || uiState.selectedUploadFiles.isNotEmpty()) {
                         Text(
                             text = stringResource(id = R.string.selected_documents),
-                            fontSize = 15.sp,
+                            fontSize = 16.sp,
+                            fontFamily = GillSansBold,
                             fontWeight = FontWeight.Bold,
-                            color = Color(0xFF0F172A),
+                            color = ColorTokens.BluePrimary,
                             modifier = Modifier.padding(start = 4.dp, bottom = 8.dp)
                         )
                     }
 
-                    // Render existing attached documents
+                    // Render existing attached documents (Loaded from matter details)
                     uiState.selectedExistingDocuments.forEachIndexed { index, doc ->
                         Row(
                             modifier = Modifier
@@ -172,6 +126,7 @@ fun DocumentsScreen(
                             Text(
                                 text = doc.name ?: "",
                                 fontSize = 14.sp,
+                                fontFamily = GillSans,
                                 modifier = Modifier.weight(1f),
                                 color = Color.Black
                             )
@@ -211,8 +166,9 @@ fun DocumentsScreen(
                             verticalAlignment = Alignment.CenterVertically
                         ) {
                             Text(
-                                text = "${doc.name}.${doc.content_type}",
+                                text = doc.name ?: "",
                                 fontSize = 14.sp,
+                                fontFamily = GillSans,
                                 modifier = Modifier.weight(1f),
                                 color = Color.Black
                             )
@@ -242,6 +198,65 @@ fun DocumentsScreen(
 
                     Spacer(modifier = Modifier.height(16.dp))
 
+                    // Dashed drop zone container
+                    Box(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .height(180.dp)
+                            .drawBehind {
+                                val stroke = Stroke(
+                                    width = 2f,
+                                    pathEffect = PathEffect.dashPathEffect(floatArrayOf(10f, 10f), 0f)
+                                )
+                                drawRoundRect(
+                                    color = Color.LightGray,
+                                    style = stroke,
+                                    cornerRadius = CornerRadius(8.dp.toPx())
+                                )
+                            }
+                            .background(Color(0xFFF8FAFC), shape = RoundedCornerShape(8.dp))
+                            .clickable(onClick = onBrowseClick),
+                        contentAlignment = Alignment.Center
+                    ) {
+                        Column(
+                            horizontalAlignment = Alignment.CenterHorizontally,
+                            verticalArrangement = Arrangement.Center,
+                            modifier = Modifier.padding(10.dp)
+                        ) {
+                            Icon(
+                                painter = painterResource(id = R.drawable.cloud_icon),
+                                contentDescription = "Upload Icon",
+                                tint = Color.Unspecified,
+                                modifier = Modifier.size(40.dp)
+                            )
+                            Spacer(modifier = Modifier.height(10.dp))
+                            Text(
+                                text = "Choose the files from your device or drag\n& drop them here",
+                                color = Color.Gray,
+                                fontFamily = GillSans,
+                                fontSize = 13.sp,
+                                textAlign = TextAlign.Center
+                            )
+                            Spacer(modifier = Modifier.height(10.dp))
+                            Button(
+                                onClick = onBrowseClick,
+                                colors = ButtonDefaults.buttonColors(containerColor = ColorTokens.BluePrimary),
+                                shape = RoundedCornerShape(4.dp),
+                                contentPadding = PaddingValues(horizontal = 16.dp, vertical = 8.dp)
+                            ) {
+                                Text(
+                                    text = "Browse Files",
+                                    color = Color.White,
+                                    fontSize = 14.sp,
+                                    fontFamily = GillSansBold,
+                                    fontWeight = FontWeight.Bold
+                                )
+                            }
+                        }
+                    }
+
+                    Spacer(modifier = Modifier.height(16.dp))
+
                     Row(
                         modifier = Modifier.fillMaxWidth(),
                         horizontalArrangement = Arrangement.Center,
@@ -259,6 +274,7 @@ fun DocumentsScreen(
                         ) {
                             Text(
                                 text = "Cancel",
+                                fontFamily = GillSansBold,
                                 fontWeight = FontWeight.Bold,
                                 fontSize = 13.sp,
                                 color = Color.Black
@@ -269,11 +285,9 @@ fun DocumentsScreen(
 
                         Button(
                             onClick = {
-                                if (uiState.selectedUploadFiles.isNotEmpty() || uiState.selectedExistingDocuments.isNotEmpty()) {
-                                    viewModel.uploadAndSaveDocuments(onSuccess = {})
-                                }
+                                viewModel.uploadAndSaveDocuments(onSuccess = {})
                             },
-                            colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF004D87)),
+                            colors = ButtonDefaults.buttonColors(containerColor = ColorTokens.BluePrimary),
                             shape = RoundedCornerShape(10.dp),
                             modifier = Modifier
                                 .width(135.dp)
@@ -282,6 +296,7 @@ fun DocumentsScreen(
                         ) {
                             Text(
                                 text = "Save",
+                                fontFamily = GillSansBold,
                                 fontWeight = FontWeight.Bold,
                                 fontSize = 13.sp,
                                 color = Color.White
@@ -292,301 +307,97 @@ fun DocumentsScreen(
             }
         }
 
-        // Edit Metadata Dialog
+        // Full Edit Metadata Dialog with Add Tag support reused from Documents module
         uiState.editMetadataFileIndex?.let { index ->
             val doc = uiState.selectedUploadFiles.getOrNull(index)
             if (doc != null) {
-                var docName by remember { mutableStateOf(doc.name ?: "") }
-                var description by remember { mutableStateOf(doc.description) }
-                var expirationDate by remember { mutableStateOf(doc.expiration_date) }
-                var enableDownload by remember { mutableStateOf(doc.isIsenabled) }
-                var enableEncryption by remember { mutableStateOf(doc.isencrypted ?: false) }
-
-                Dialog(onDismissRequest = { viewModel.setEditMetadataFileIndex(null) }) {
-                    Card(
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .padding(16.dp),
-                        shape = RoundedCornerShape(8.dp),
-                        colors = CardDefaults.cardColors(containerColor = Color.White),
-                        elevation = CardDefaults.cardElevation(defaultElevation = 8.dp)
-                    ) {
-                        Column(
-                            modifier = Modifier.fillMaxWidth()
-                        ) {
-                            // Header Bar
-                            Row(
-                                modifier = Modifier
-                                    .fillMaxWidth()
-                                    .background(Color(0xFF004D87))
-                                    .padding(horizontal = 16.dp, vertical = 12.dp),
-                                horizontalArrangement = Arrangement.SpaceBetween,
-                                verticalAlignment = Alignment.CenterVertically
-                            ) {
-                                Spacer(modifier = Modifier.weight(1f))
-                                Text(
-                                    text = "Edit Metadata",
-                                    fontSize = 18.sp,
-                                    fontWeight = FontWeight.Bold,
-                                    color = Color.White,
-                                    textAlign = TextAlign.Center
-                                )
-                                Spacer(modifier = Modifier.weight(1f))
-                                IconButton(
-                                    onClick = { viewModel.setEditMetadataFileIndex(null) },
-                                    modifier = Modifier.size(24.dp)
-                                ) {
-                                    Icon(
-                                        painter = painterResource(id = R.drawable.cancel_icon),
-                                        contentDescription = "Close",
-                                        tint = Color.White
-                                    )
-                                }
-                            }
-
-                            // Form Container
-                            Column(
-                                modifier = Modifier
-                                    .fillMaxWidth()
-                                    .padding(16.dp)
-                                    .verticalScroll(rememberScrollState())
-                            ) {
-                                // Name input
-                                Row {
-                                    Text(
-                                        text = "Document Name",
-                                        fontSize = 15.sp,
-                                        color = Color(0xFF004D87),
-                                        fontWeight = FontWeight.Bold
-                                    )
-                                    Text(
-                                        text = " *",
-                                        fontSize = 15.sp,
-                                        color = Color.Red,
-                                        fontWeight = FontWeight.Bold
-                                    )
-                                }
-                                Spacer(modifier = Modifier.height(6.dp))
-                                OutlinedTextField(
-                                    value = docName,
-                                    onValueChange = { if (it.length <= 50) docName = it },
-                                    modifier = Modifier.fillMaxWidth(),
-                                    shape = RoundedCornerShape(4.dp),
-                                    singleLine = true,
-                                    colors = OutlinedTextFieldDefaults.colors(
-                                        focusedBorderColor = Color(0xFFCBD5E1),
-                                        unfocusedBorderColor = Color(0xFFCBD5E1),
-                                        focusedContainerColor = Color.White,
-                                        unfocusedContainerColor = Color.White
-                                    )
-                                )
-                                Box(
-                                    modifier = Modifier.fillMaxWidth(),
-                                    contentAlignment = Alignment.CenterEnd
-                                ) {
-                                    Text(
-                                        text = "${docName.length}/50",
-                                        fontSize = 12.sp,
-                                        color = Color.Gray,
-                                        modifier = Modifier.padding(top = 2.dp)
-                                    )
-                                }
-
-                                Spacer(modifier = Modifier.height(10.dp))
-
-                                // Description input
-                                Row {
-                                    Text(
-                                        text = "Description",
-                                        fontSize = 15.sp,
-                                        color = Color(0xFF004D87),
-                                        fontWeight = FontWeight.Bold
-                                    )
-                                    Text(
-                                        text = " *",
-                                        fontSize = 15.sp,
-                                        color = Color.Red,
-                                        fontWeight = FontWeight.Bold
-                                    )
-                                }
-                                Spacer(modifier = Modifier.height(6.dp))
-                                OutlinedTextField(
-                                    value = description,
-                                    onValueChange = { if (it.length <= 300) description = it },
-                                    modifier = Modifier
-                                        .fillMaxWidth()
-                                        .height(120.dp),
-                                    shape = RoundedCornerShape(4.dp),
-                                    colors = OutlinedTextFieldDefaults.colors(
-                                        focusedBorderColor = Color(0xFFCBD5E1),
-                                        unfocusedBorderColor = Color(0xFFCBD5E1),
-                                        focusedContainerColor = Color.White,
-                                        unfocusedContainerColor = Color.White
-                                    )
-                                )
-                                Box(
-                                    modifier = Modifier.fillMaxWidth(),
-                                    contentAlignment = Alignment.CenterEnd
-                                ) {
-                                    Text(
-                                        text = "${description.length}/300",
-                                        fontSize = 12.sp,
-                                        color = Color.Gray,
-                                        modifier = Modifier.padding(top = 2.dp)
-                                    )
-                                }
-
-                                Spacer(modifier = Modifier.height(10.dp))
-
-                                // Expiration Date Picker
-                                Text(
-                                    text = "Expiration Date",
-                                    fontSize = 15.sp,
-                                    color = Color(0xFF004D87),
-                                    fontWeight = FontWeight.Bold
-                                )
-                                Spacer(modifier = Modifier.height(6.dp))
-                                Row(
-                                    modifier = Modifier
-                                        .fillMaxWidth()
-                                        .height(44.dp)
-                                        .border(1.dp, Color(0xFFCBD5E1), RoundedCornerShape(4.dp))
-                                        .background(Color(0xFFF1F5F9))
-                                        .clickable {
-                                            val dummy = android.widget.TextView(context).apply { text = expirationDate }
-                                            com.digicoffer.lauditor.CommonFiles.GlobalFiles.AndroidUtils.showDatePicker(dummy, false, false, true) {
-                                                expirationDate = dummy.text.toString()
-                                            }
-                                        }
-                                        .padding(horizontal = 12.dp),
-                                    horizontalArrangement = Arrangement.SpaceBetween,
-                                    verticalAlignment = Alignment.CenterVertically
-                                ) {
-                                    Text(
-                                        text = expirationDate.ifEmpty { "Expiration Date" },
-                                        color = if (expirationDate.isEmpty()) Color.Gray else Color.Black,
-                                        fontSize = 14.sp
-                                    )
-                                    Icon(
-                                        painter = painterResource(id = R.drawable.calendar_icon_xsmall),
-                                        contentDescription = "Select Date",
-                                        tint = Color.Black,
-                                        modifier = Modifier.size(20.dp)
-                                    )
-                                }
-
-                                Spacer(modifier = Modifier.height(16.dp))
-
-                                // Download Toggle
-                                Row(
-                                    modifier = Modifier
-                                        .fillMaxWidth()
-                                        .padding(vertical = 4.dp),
-                                    horizontalArrangement = Arrangement.SpaceBetween,
-                                    verticalAlignment = Alignment.CenterVertically
-                                ) {
-                                    Text(
-                                        text = "Enable Download",
-                                        color = Color(0xFF004D87),
-                                        fontSize = 15.sp,
-                                        fontWeight = FontWeight.Bold
-                                    )
-                                    Switch(
-                                        checked = enableDownload,
-                                        onCheckedChange = { enableDownload = it },
-                                        colors = SwitchDefaults.colors(
-                                            checkedThumbColor = Color.White,
-                                            checkedTrackColor = Color(0xFF004D87)
-                                        )
-                                    )
-                                }
-
-                                // Encryption Toggle
-                                Row(
-                                    modifier = Modifier
-                                        .fillMaxWidth()
-                                        .padding(vertical = 4.dp),
-                                    horizontalArrangement = Arrangement.SpaceBetween,
-                                    verticalAlignment = Alignment.CenterVertically
-                                ) {
-                                    Text(
-                                        text = "Enable Encryption",
-                                        color = Color(0xFF004D87),
-                                        fontSize = 15.sp,
-                                        fontWeight = FontWeight.Bold
-                                    )
-                                    Switch(
-                                        checked = enableEncryption,
-                                        onCheckedChange = { enableEncryption = it },
-                                        colors = SwitchDefaults.colors(
-                                            checkedThumbColor = Color.White,
-                                            checkedTrackColor = Color(0xFF004D87)
-                                        )
-                                    )
-                                }
-
-                                Spacer(modifier = Modifier.height(16.dp))
-
-                                // Dialog Cancel & Save Buttons
-                                Row(
-                                    modifier = Modifier.fillMaxWidth(),
-                                    horizontalArrangement = Arrangement.spacedBy(16.dp)
-                                ) {
-                                    Button(
-                                        onClick = { viewModel.setEditMetadataFileIndex(null) },
-                                        colors = ButtonDefaults.buttonColors(containerColor = Color(0xFFE2E8F0)),
-                                        shape = RoundedCornerShape(4.dp),
-                                        modifier = Modifier
-                                            .weight(1f)
-                                            .height(44.dp)
-                                    ) {
-                                        Text(text = "Cancel", color = Color.Black, fontWeight = FontWeight.Bold)
-                                    }
-                                    Button(
-                                        onClick = {
-                                            if (docName.isNotEmpty() && description.isNotEmpty()) {
-                                                viewModel.updateUploadFile(
-                                                    index = index,
-                                                    name = docName,
-                                                    description = description,
-                                                    expDate = expirationDate,
-                                                    isDownloadDisabled = enableDownload,
-                                                    isEncrypted = enableEncryption
-                                                )
-                                                viewModel.setEditMetadataFileIndex(null)
-                                            }
-                                        },
-                                        colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF004D87)),
-                                        shape = RoundedCornerShape(4.dp),
-                                        modifier = Modifier
-                                            .weight(1f)
-                                            .height(44.dp)
-                                    ) {
-                                        Text(text = "Save", color = Color.White, fontWeight = FontWeight.Bold)
-                                    }
-                                }
-                            }
-                        }
-                    }
+                val viewDoc = ViewDocumentsModel().apply {
+                    this.name = doc.name
+                    this.description = doc.description
+                    this.expiration_date = doc.expiration_date
+                    this.tag = doc.tags_list ?: JSONObject()
                 }
+
+                EditMetadataDialog(
+                    doc = viewDoc,
+                    initialDownloadDisabled = doc.isIsenabled,
+                    initialEncrypted = doc.isencrypted ?: false,
+                    isStaged = true,
+                    onSave = { updatedName, updatedDesc, updatedExp, isDownloadDisabled, isEncrypted, tagsObj ->
+                        viewModel.updateUploadFileWithTags(
+                            index = index,
+                            name = updatedName,
+                            description = updatedDesc,
+                            expDate = updatedExp,
+                            isDownloadDisabled = isDownloadDisabled,
+                            isEncrypted = isEncrypted,
+                            tags = tagsObj
+                        )
+                        viewModel.setEditMetadataFileIndex(null)
+                    },
+                    onDismiss = { viewModel.setEditMetadataFileIndex(null) }
+                )
             }
         }
-        if (uiState.isUploadingDocuments) {
+
+        if (uiState.showSuccessDialog) {
+            AppDialog(
+                title = "Success",
+                onDismiss = {
+                    viewModel.consumeUpdateSuccess()
+                    onCancel()
+                },
+                onConfirm = {
+                    viewModel.consumeUpdateSuccess()
+                    onCancel()
+                },
+                confirmText = "OK"
+            ) {
+                Text(
+                    text = uiState.successMessage.ifEmpty { "Documents saved successfully." },
+                    fontFamily = GillSans,
+                    fontSize = 15.sp,
+                    textAlign = TextAlign.Center,
+                    color = Color.Black
+                )
+            }
+        }
+
+        if (uiState.alertMessage != null) {
+            AppDialog(
+                title = uiState.alertTitle ?: "Alert",
+                onDismiss = { viewModel.dismissAlert() },
+                onConfirm = { viewModel.dismissAlert() },
+                confirmText = "OK"
+            ) {
+                Text(
+                    text = uiState.alertMessage ?: "",
+                    fontFamily = GillSans,
+                    fontSize = 15.sp,
+                    textAlign = TextAlign.Center,
+                    color = Color.Black
+                )
+            }
+        }
+
+        // Document Preview Dialog
+        uiState.previewDocUrl?.let { url ->
+            com.digicoffer.lauditor.feature.documents.presentation.screen.DocumentViewerDialog(
+                url = url,
+                docName = uiState.previewDocModel?.name ?: "Preview",
+                contentType = uiState.previewDocModel?.content_type ?: "",
+                onDismiss = { viewModel.closePreview() }
+            )
+        }
+
+        if (uiState.isUploadingDocuments || uiState.isLoading) {
             AppLoader()
         }
 
-        LaunchedEffect(uiState.showSuccessDialog) {
-            if (uiState.showSuccessDialog) {
-                val activity = context as? android.app.Activity
-                com.digicoffer.lauditor.CommonFiles.GlobalFiles.AndroidUtils.showAlert(
-                    uiState.successMessage.ifEmpty { "You have successfully updated the matter information" },
-                    activity,
-                    "Success"
-                ) {
-                    viewModel.dismissSuccessDialog()
-                    onCancel()
-                }
-            }
-        }
+        // In-App Toast with App Logo
+        com.digicoffer.lauditor.core.ui.common.feedback.AppToast(
+            message = uiState.toastMessage,
+            onDismiss = { viewModel.clearToastMessage() }
+        )
     }
 }

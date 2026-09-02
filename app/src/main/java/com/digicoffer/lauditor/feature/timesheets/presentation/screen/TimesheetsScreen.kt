@@ -26,7 +26,7 @@ import com.digicoffer.lauditor.core.ui.common.cards.AppCard
 import com.digicoffer.lauditor.core.ui.common.feedback.AppLoader
 import com.digicoffer.lauditor.core.ui.common.foundation.AppSpacer
 import com.digicoffer.lauditor.core.ui.common.foundation.AppText
-import com.digicoffer.lauditor.feature.notifications.presentation.components.NotificationsSearchBar
+import com.digicoffer.lauditor.core.ui.common.search.AppSearchField
 import com.digicoffer.lauditor.feature.timesheets.presentation.state.TimesheetsUiEvent
 import com.digicoffer.lauditor.feature.timesheets.presentation.state.TimesheetsUiState
 import com.digicoffer.lauditor.feature.timesheets.presentation.viewmodel.TimesheetsViewModel
@@ -248,9 +248,9 @@ fun TimesheetsScreen(
         // 4. Search bar (Visible only in Team Members aggregated view)
         if (uiState.mainTab == "Aggregated" && uiState.subTab == "TM") {
             Box(modifier = Modifier.padding(horizontal = 15.dp)) {
-                NotificationsSearchBar(
-                    query = uiState.searchQuery,
-                    onQueryChange = { onEvent(TimesheetsUiEvent.SearchQueryChanged(it)) },
+                AppSearchField(
+                    value = uiState.searchQuery,
+                    onValueChange = { onEvent(TimesheetsUiEvent.SearchQueryChanged(it)) },
                     placeholder = stringResource(id = R.string.type_to_search),
                     modifier = Modifier.fillMaxWidth()
                 )

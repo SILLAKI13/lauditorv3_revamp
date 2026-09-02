@@ -19,9 +19,9 @@ import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.DropdownMenu
-import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.Text
-import com.digicoffer.lauditor.core.ui.common.badges.AppPillBadge
+import com.digicoffer.lauditor.core.ui.common.badges.AppStatusBadge
+import com.digicoffer.lauditor.core.ui.common.badges.AppStatusStyle
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -137,53 +137,67 @@ fun MatterListingCard(
                         onDismissRequest = { expandedMenu = false },
                         modifier = Modifier
                             .background(Color.White)
-                            .width(160.dp)
+                            .width(150.dp)
                     ) {
-                        DropdownMenuItem(
-                            text = {
-                                Text(
-                                    text = "Edit Matter",
-                                    fontFamily = GillSans,
-                                    fontSize = 14.sp,
-                                    color = Color.Black
-                                )
-                            },
-                            onClick = {
-                                expandedMenu = false
-                                onActionClick("Edit Matter", matter)
-                            }
-                        )
-                        HorizontalDivider(thickness = 0.5.dp, color = Color.LightGray)
-                        DropdownMenuItem(
-                            text = {
-                                Text(
-                                    text = "View Timeline",
-                                    fontFamily = GillSans,
-                                    fontSize = 14.sp,
-                                    color = Color.Black
-                                )
-                            },
-                            onClick = {
-                                expandedMenu = false
-                                onActionClick("View Timeline", matter)
-                            }
-                        )
-                        HorizontalDivider(thickness = 0.5.dp, color = Color.LightGray)
+                        // Edit Matter
+                        Row(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .clickable {
+                                    expandedMenu = false
+                                    onActionClick("Edit Matter", matter)
+                                }
+                                .padding(horizontal = 14.dp, vertical = 10.dp),
+                            verticalAlignment = Alignment.CenterVertically
+                        ) {
+                            Text(
+                                text = "Edit Matter",
+                                fontFamily = GillSans,
+                                fontSize = 14.sp,
+                                color = Color.Black
+                            )
+                        }
+                        HorizontalDivider(thickness = 0.5.dp, color = Color(0xFFEEEEEE))
+
+                        // View Timeline
+                        Row(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .clickable {
+                                    expandedMenu = false
+                                    onActionClick("View Timeline", matter)
+                                }
+                                .padding(horizontal = 14.dp, vertical = 10.dp),
+                            verticalAlignment = Alignment.CenterVertically
+                        ) {
+                            Text(
+                                text = "View Timeline",
+                                fontFamily = GillSans,
+                                fontSize = 14.sp,
+                                color = Color.Black
+                            )
+                        }
+                        HorizontalDivider(thickness = 0.5.dp, color = Color(0xFFEEEEEE))
+
+                        // Close or Reopen Matter
                         val closeReopenText = if ("Closed" == matter.status) "Reopen Matter" else "Close Matter"
-                        DropdownMenuItem(
-                            text = {
-                                Text(
-                                    text = closeReopenText,
-                                    fontFamily = GillSans,
-                                    fontSize = 14.sp,
-                                    color = Color.Black
-                                )
-                            },
-                            onClick = {
-                                expandedMenu = false
-                                onActionClick(closeReopenText, matter)
-                            }
-                        )
+                        Row(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .clickable {
+                                    expandedMenu = false
+                                    onActionClick(closeReopenText, matter)
+                                }
+                                .padding(horizontal = 14.dp, vertical = 10.dp),
+                            verticalAlignment = Alignment.CenterVertically
+                        ) {
+                            Text(
+                                text = closeReopenText,
+                                fontFamily = GillSans,
+                                fontSize = 14.sp,
+                                color = Color.Black
+                            )
+                        }
                     }
                 }
             }
@@ -318,16 +332,15 @@ fun MatterListingCard(
                     "Closed" -> "Closed"
                     else -> "Pending"
                 }
-                val (badgeBg, badgeText) = when (matter.status) {
-                    "Active" -> Pair(Color(0xFFC8E6C9), Color(0xFF2E7D32))
-                    "Closed" -> Pair(Color(0xFFFFCDD2), Color(0xFFC62828))
-                    else -> Pair(Color(0xFFFFE0B2), Color(0xFFF57C00))
+                val statusStyle = when (matter.status) {
+                    "Active" -> AppStatusStyle.SUCCESS
+                    "Closed" -> AppStatusStyle.ERROR
+                    else -> AppStatusStyle.WARNING
                 }
 
-                AppPillBadge(
+                AppStatusBadge(
                     text = statusText,
-                    backgroundColor = badgeBg,
-                    textColor = badgeText,
+                    style = statusStyle,
                     shape = RoundedCornerShape(50.dp),
                     paddingHorizontal = 10.dp,
                     paddingVertical = 4.dp,

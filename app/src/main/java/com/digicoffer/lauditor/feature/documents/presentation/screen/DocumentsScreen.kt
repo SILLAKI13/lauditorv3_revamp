@@ -524,7 +524,7 @@ fun DocumentsScreen(
             doc = doc,
             initialDownloadDisabled = doc.isdisabled == true || doc.is_disabled == true,
             initialEncrypted = doc.is_encrypted == true || doc.added_encryption == true,
-            isStaged = true,
+            isStaged = false,
             onSave = { name, desc, exp, _, _, tags ->
                 viewModel.onEvent(DocumentsUiEvent.SaveMetadata(doc.id ?: "", name, desc, exp, tags))
             },
@@ -1259,57 +1259,32 @@ fun DocumentViewerDialog(
                     contentAlignment = Alignment.Center
                 ) {
                     val lowerUrl = url.lowercase(java.util.Locale.ROOT)
-                    val isPDF = lowerUrl.contains("application/pdf") || lowerUrl.contains(".pdf")
                     val isImage = contentType.startsWith("image/", ignoreCase = true) ||
-                            lowerUrl.contains(".jpg") ||
-                            lowerUrl.contains(".jpeg") ||
-                            lowerUrl.contains(".png") ||
-                            lowerUrl.contains(".gif") ||
-                            lowerUrl.contains(".webp")
+                            lowerUrl.endsWith(".jpg") ||
+                            lowerUrl.endsWith(".jpeg") ||
+                            lowerUrl.endsWith(".png") ||
+                            lowerUrl.endsWith(".gif") ||
+                            lowerUrl.endsWith(".webp") ||
+                            lowerUrl.endsWith(".bmp")
 
-                    if (isPDF) {
-                        AndroidView(
-                            factory = { ctx ->
-                                val pBar = ProgressBar(ctx)
-                                val pView = com.github.barteksc.pdfviewer.PDFView(ctx, null)
-                                val frameLayout = FrameLayout(ctx).apply {
-                                    addView(pView)
-                                    addView(pBar, FrameLayout.LayoutParams(
-                                        FrameLayout.LayoutParams.WRAP_CONTENT,
-                                        FrameLayout.LayoutParams.WRAP_CONTENT,
-                                        android.view.Gravity.CENTER
-                                    ))
-                                }
-                                if (url.startsWith("localfile://")) {
-                                    try {
-                                        val filePath = url.replace("localfile://", "")
-                                        val file = File(filePath)
-                                        pView.fromFile(file)
-                                            .onLoad { pBar.visibility = android.view.View.GONE }
-                                            .load()
-                                    } catch (e: Exception) {
-                                        e.printStackTrace()
-                                        pBar.visibility = android.view.View.GONE
-                                    }
-                                } else {
-                                    com.digicoffer.lauditor.CommonFiles.PdfUtils.RetrievePDFfromUrl(pView, pBar).execute(url)
-                                }
-                                frameLayout
-                            },
-                            modifier = Modifier.fillMaxSize()
-                        )
-                    } else if (isImage) {
+                    if (isImage) {
                         AndroidView(
                             factory = { ctx ->
                                 val pBar = ProgressBar(ctx)
                                 val imgView = ImageView(ctx).apply {
                                     scaleType = ImageView.ScaleType.FIT_CENTER
-                                    layoutParams = ViewGroup.LayoutParams(
-                                        ViewGroup.LayoutParams.MATCH_PARENT,
-                                        ViewGroup.LayoutParams.MATCH_PARENT
+                                    adjustViewBounds = true
+                                    layoutParams = FrameLayout.LayoutParams(
+                                        FrameLayout.LayoutParams.MATCH_PARENT,
+                                        FrameLayout.LayoutParams.MATCH_PARENT,
+                                        android.view.Gravity.CENTER
                                     )
                                 }
                                 val frameLayout = FrameLayout(ctx).apply {
+                                    layoutParams = FrameLayout.LayoutParams(
+                                        FrameLayout.LayoutParams.MATCH_PARENT,
+                                        FrameLayout.LayoutParams.MATCH_PARENT
+                                    )
                                     addView(imgView)
                                     addView(pBar, FrameLayout.LayoutParams(
                                         FrameLayout.LayoutParams.WRAP_CONTENT,
@@ -1317,8 +1292,14 @@ fun DocumentViewerDialog(
                                         android.view.Gravity.CENTER
                                     ))
                                 }
+                                val loadTarget: Any = if (url.startsWith("localfile://")) {
+                                    File(url.replace("localfile://", ""))
+                                } else {
+                                    url
+                                }
                                 com.bumptech.glide.Glide.with(ctx)
-                                    .load(url)
+                                    .load(loadTarget)
+                                    .fitCenter()
                                     .listener(object : com.bumptech.glide.request.RequestListener<android.graphics.drawable.Drawable> {
                                         override fun onLoadFailed(
                                             e: com.bumptech.glide.load.engine.GlideException?,
@@ -1347,13 +1328,44 @@ fun DocumentViewerDialog(
                             modifier = Modifier.fillMaxSize()
                         )
                     } else {
-                        // Embed WebView to display normal web content or docs
+                        // PDF & converted documents (XLS, XLSX, DOC, DOCX, etc.) render in PDFView
                         AndroidView(
                             factory = { ctx ->
-                                android.webkit.WebView(ctx).apply {
-                                    settings.javaScriptEnabled = true
-                                    loadUrl(url)
+                                val pBar = ProgressBar(ctx)
+                                val pView = com.github.barteksc.pdfviewer.PDFView(ctx, null).apply {
+                                    layoutParams = FrameLayout.LayoutParams(
+                                        FrameLayout.LayoutParams.MATCH_PARENT,
+                                        FrameLayout.LayoutParams.MATCH_PARENT,
+                                        android.view.Gravity.CENTER
+                                    )
                                 }
+                                val frameLayout = FrameLayout(ctx).apply {
+                                    layoutParams = FrameLayout.LayoutParams(
+                                        FrameLayout.LayoutParams.MATCH_PARENT,
+                                        FrameLayout.LayoutParams.MATCH_PARENT
+                                    )
+                                    addView(pView)
+                                    addView(pBar, FrameLayout.LayoutParams(
+                                        FrameLayout.LayoutParams.WRAP_CONTENT,
+                                        FrameLayout.LayoutParams.WRAP_CONTENT,
+                                        android.view.Gravity.CENTER
+                                    ))
+                                }
+                                if (url.startsWith("localfile://")) {
+                                    try {
+                                        val filePath = url.replace("localfile://", "")
+                                        val file = File(filePath)
+                                        pView.fromFile(file)
+                                            .onLoad { pBar.visibility = android.view.View.GONE }
+                                            .load()
+                                    } catch (e: Exception) {
+                                        e.printStackTrace()
+                                        pBar.visibility = android.view.View.GONE
+                                    }
+                                } else {
+                                    com.digicoffer.lauditor.CommonFiles.PdfUtils.RetrievePDFfromUrl(pView, pBar).execute(url)
+                                }
+                                frameLayout
                             },
                             modifier = Modifier.fillMaxSize()
                         )
