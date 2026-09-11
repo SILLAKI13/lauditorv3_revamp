@@ -29,6 +29,13 @@ import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.compose.foundation.text.KeyboardOptions
+import androidx.compose.ui.text.SpanStyle
+import androidx.compose.ui.text.buildAnnotatedString
+import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.input.KeyboardType
+import androidx.compose.ui.text.withStyle
+import com.digicoffer.lauditor.CommonFiles.GlobalFiles.AndroidUtils
 import com.digicoffer.lauditor.CommonFiles.GlobalFiles.Constants
 import com.digicoffer.lauditor.Matter.Models.ClientsModel
 import com.digicoffer.lauditor.Matter.Models.TeamModel
@@ -44,6 +51,24 @@ private val GillSans = FontFamily(Font(R.font.gill_sans))
 private val GillSansBold = FontFamily(Font(R.font.gill_sans_bold))
 
 @Composable
+private fun AddClientFormLabel(text: String, isMandatory: Boolean = true) {
+    Text(
+        text = buildAnnotatedString {
+            append(text)
+            if (isMandatory) {
+                withStyle(style = SpanStyle(color = Color.Red, fontWeight = FontWeight.Bold)) {
+                    append(" *")
+                }
+            }
+        },
+        fontFamily = GillSansBold,
+        fontSize = 14.sp,
+        color = ColorTokens.BluePrimary,
+        modifier = Modifier.padding(bottom = 4.dp)
+    )
+}
+
+@Composable
 fun GctScreen(
     editModel: ViewMatterModel?,
     onNavigateBack: () -> Unit,
@@ -54,9 +79,10 @@ fun GctScreen(
     val uiState by viewModel.uiState.collectAsState()
     val context = LocalContext.current
 
-    // Fetch team members on initialization
+    // Fetch team members and countries on initialization
     LaunchedEffect(Unit) {
         viewModel.loadTeamMembers()
+        viewModel.loadCountries()
     }
 
     // Dropdown checked state map (tm_id -> isChecked)
@@ -260,6 +286,454 @@ fun GctScreen(
                         contentAlignment = Alignment.Center
                     ) {
                         CircularProgressIndicator(color = ColorTokens.BluePrimary)
+                    }
+                }
+
+                // Client Not Found Banner & Add New Client Form
+                if (uiState.clientNotFoundQuery != null && uiState.isAddClientFormVisible) {
+                    var selectedClientType by remember { mutableStateOf("consumer") }
+                    var tempFirstName by remember(uiState.clientNotFoundQuery) { mutableStateOf(uiState.clientNotFoundQuery ?: "") }
+                    var tempLastName by remember(uiState.clientNotFoundQuery) { mutableStateOf("") }
+                    var tempEmail by remember(uiState.clientNotFoundQuery) { mutableStateOf("") }
+                    var tempConfirmEmail by remember(uiState.clientNotFoundQuery) { mutableStateOf("") }
+                    var tempPhone by remember(uiState.clientNotFoundQuery) { mutableStateOf("") }
+                    var tempCountry by remember(uiState.clientNotFoundQuery) { mutableStateOf("") }
+                    var countryDropdownExpanded by remember { mutableStateOf(false) }
+
+                    Column(modifier = Modifier.fillMaxWidth()) {
+                        // 1. Red warning message
+                        Text(
+                            text = "${uiState.clientNotFoundQuery} - not found. Please fill in the details below to send relationship invite.",
+                            fontFamily = GillSans,
+                            fontSize = 13.sp,
+                            color = Color(0xFFD32F2F),
+                            modifier = Modifier.padding(top = 8.dp, bottom = 12.dp)
+                        )
+
+                        // 2. Client Type Toggle
+                        Text(
+                            text = "Client Type",
+                            fontFamily = GillSansBold,
+                            fontSize = 15.sp,
+                            color = ColorTokens.BluePrimary,
+                            modifier = Modifier.padding(bottom = 6.dp)
+                        )
+
+                        Row(
+                            modifier = Modifier
+                                .width(200.dp)
+                                .height(38.dp)
+                                .background(Color(0xFFECEFF1), RoundedCornerShape(20.dp))
+                                .padding(2.dp),
+                            verticalAlignment = Alignment.CenterVertically
+                        ) {
+                            Box(
+                                modifier = Modifier
+                                    .weight(1f)
+                                    .fillMaxHeight()
+                                    .background(
+                                        if (selectedClientType == "consumer") ColorTokens.BluePrimary else Color.Transparent,
+                                        RoundedCornerShape(18.dp)
+                                    )
+                                    .clickable { selectedClientType = "consumer" },
+                                contentAlignment = Alignment.Center
+                            ) {
+                                Text(
+                                    text = "Individual",
+                                    fontFamily = if (selectedClientType == "consumer") GillSansBold else GillSans,
+                                    fontSize = 14.sp,
+                                    color = if (selectedClientType == "consumer") Color.White else Color.Black
+                                )
+                            }
+                            Box(
+                                modifier = Modifier
+                                    .weight(1f)
+                                    .fillMaxHeight()
+                                    .background(
+                                        if (selectedClientType == "entity") ColorTokens.BluePrimary else Color.Transparent,
+                                        RoundedCornerShape(18.dp)
+                                    )
+                                    .clickable { selectedClientType = "entity" },
+                                contentAlignment = Alignment.Center
+                            ) {
+                                Text(
+                                    text = "Entity",
+                                    fontFamily = if (selectedClientType == "entity") GillSansBold else GillSans,
+                                    fontSize = 14.sp,
+                                    color = if (selectedClientType == "entity") Color.White else Color.Black
+                                )
+                            }
+                        }
+
+                        Spacer(modifier = Modifier.height(12.dp))
+
+                        if (selectedClientType == "consumer") {
+                            // First Name
+                            AddClientFormLabel(text = "First Name", isMandatory = true)
+                            Box(
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .height(42.dp)
+                                    .border(1.dp, Color(0xFFDDDDDE), RoundedCornerShape(4.dp))
+                                    .background(Color.White)
+                                    .padding(horizontal = 10.dp),
+                                contentAlignment = Alignment.CenterStart
+                            ) {
+                                BasicTextField(
+                                    value = tempFirstName,
+                                    onValueChange = { tempFirstName = it },
+                                    singleLine = true,
+                                    textStyle = TextStyle(fontFamily = GillSans, fontSize = 15.sp, color = Color.Black),
+                                    modifier = Modifier.fillMaxWidth(),
+                                    decorationBox = { inner ->
+                                        if (tempFirstName.isEmpty()) {
+                                            Text(text = "First Name", fontFamily = GillSans, fontSize = 15.sp, color = Color.Gray)
+                                        }
+                                        inner()
+                                    }
+                                )
+                            }
+
+                            Spacer(modifier = Modifier.height(10.dp))
+
+                            // Last Name
+                            AddClientFormLabel(text = "Last Name", isMandatory = true)
+                            Box(
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .height(42.dp)
+                                    .border(1.dp, Color(0xFFDDDDDE), RoundedCornerShape(4.dp))
+                                    .background(Color.White)
+                                    .padding(horizontal = 10.dp),
+                                contentAlignment = Alignment.CenterStart
+                            ) {
+                                BasicTextField(
+                                    value = tempLastName,
+                                    onValueChange = { tempLastName = it },
+                                    singleLine = true,
+                                    textStyle = TextStyle(fontFamily = GillSans, fontSize = 15.sp, color = Color.Black),
+                                    modifier = Modifier.fillMaxWidth(),
+                                    decorationBox = { inner ->
+                                        if (tempLastName.isEmpty()) {
+                                            Text(text = "Last Name", fontFamily = GillSans, fontSize = 15.sp, color = Color.Gray)
+                                        }
+                                        inner()
+                                    }
+                                )
+                            }
+                        } else {
+                            // Firm Name
+                            AddClientFormLabel(text = "Firm Name", isMandatory = true)
+                            Box(
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .height(42.dp)
+                                    .border(1.dp, Color(0xFFDDDDDE), RoundedCornerShape(4.dp))
+                                    .background(Color.White)
+                                    .padding(horizontal = 10.dp),
+                                contentAlignment = Alignment.CenterStart
+                            ) {
+                                BasicTextField(
+                                    value = tempFirstName,
+                                    onValueChange = { tempFirstName = it },
+                                    singleLine = true,
+                                    textStyle = TextStyle(fontFamily = GillSans, fontSize = 15.sp, color = Color.Black),
+                                    modifier = Modifier.fillMaxWidth(),
+                                    decorationBox = { inner ->
+                                        if (tempFirstName.isEmpty()) {
+                                            Text(text = "Firm Name", fontFamily = GillSans, fontSize = 15.sp, color = Color.Gray)
+                                        }
+                                        inner()
+                                    }
+                                )
+                            }
+
+                            Spacer(modifier = Modifier.height(10.dp))
+
+                            // Contact Person
+                            AddClientFormLabel(text = "Contact Person", isMandatory = true)
+                            Box(
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .height(42.dp)
+                                    .border(1.dp, Color(0xFFDDDDDE), RoundedCornerShape(4.dp))
+                                    .background(Color.White)
+                                    .padding(horizontal = 10.dp),
+                                contentAlignment = Alignment.CenterStart
+                            ) {
+                                BasicTextField(
+                                    value = tempLastName,
+                                    onValueChange = { tempLastName = it },
+                                    singleLine = true,
+                                    textStyle = TextStyle(fontFamily = GillSans, fontSize = 15.sp, color = Color.Black),
+                                    modifier = Modifier.fillMaxWidth(),
+                                    decorationBox = { inner ->
+                                        if (tempLastName.isEmpty()) {
+                                            Text(text = "Contact Person", fontFamily = GillSans, fontSize = 15.sp, color = Color.Gray)
+                                        }
+                                        inner()
+                                    }
+                                )
+                            }
+                        }
+
+                        Spacer(modifier = Modifier.height(10.dp))
+
+                        // Email Address
+                        AddClientFormLabel(text = "Email Address", isMandatory = true)
+                        Box(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .height(42.dp)
+                                .border(1.dp, Color(0xFFDDDDDE), RoundedCornerShape(4.dp))
+                                .background(Color.White)
+                                .padding(horizontal = 10.dp),
+                            contentAlignment = Alignment.CenterStart
+                        ) {
+                            BasicTextField(
+                                value = tempEmail,
+                                onValueChange = { tempEmail = it },
+                                singleLine = true,
+                                keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Email),
+                                textStyle = TextStyle(fontFamily = GillSans, fontSize = 15.sp, color = Color.Black),
+                                modifier = Modifier.fillMaxWidth(),
+                                decorationBox = { inner ->
+                                    if (tempEmail.isEmpty()) {
+                                        Text(text = "Email Address", fontFamily = GillSans, fontSize = 15.sp, color = Color.Gray)
+                                    }
+                                    inner()
+                                }
+                            )
+                        }
+                        val isEmailValid = tempEmail.isEmpty() || AndroidUtils.isValidEmail(tempEmail.trim())
+                        if (!isEmailValid) {
+                            Spacer(modifier = Modifier.height(4.dp))
+                            Text(
+                                text = "Please Enter A Valid Email Address",
+                                color = Color(0xFF585858),
+                                fontSize = 12.sp,
+                                fontFamily = GillSans,
+                                modifier = Modifier.padding(start = 2.dp)
+                            )
+                        }
+
+                        Spacer(modifier = Modifier.height(10.dp))
+
+                        // Confirm Email Address
+                        AddClientFormLabel(text = "Confirm Email Address", isMandatory = true)
+                        Box(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .height(42.dp)
+                                .border(1.dp, Color(0xFFDDDDDE), RoundedCornerShape(4.dp))
+                                .background(Color.White)
+                                .padding(horizontal = 10.dp),
+                            contentAlignment = Alignment.CenterStart
+                        ) {
+                            BasicTextField(
+                                value = tempConfirmEmail,
+                                onValueChange = { tempConfirmEmail = it },
+                                singleLine = true,
+                                keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Email),
+                                textStyle = TextStyle(fontFamily = GillSans, fontSize = 15.sp, color = Color.Black),
+                                modifier = Modifier.fillMaxWidth(),
+                                decorationBox = { inner ->
+                                    if (tempConfirmEmail.isEmpty()) {
+                                        Text(text = "Confirm Email Address", fontFamily = GillSans, fontSize = 15.sp, color = Color.Gray)
+                                    }
+                                    inner()
+                                }
+                            )
+                        }
+                        val isConfirmEmailValid = tempConfirmEmail.isEmpty() || AndroidUtils.isValidEmail(tempConfirmEmail.trim())
+                        if (tempConfirmEmail.isNotEmpty()) {
+                            if (!isConfirmEmailValid) {
+                                Spacer(modifier = Modifier.height(4.dp))
+                                Text(
+                                    text = "Please Enter A Valid Email Address",
+                                    color = Color(0xFF585858),
+                                    fontSize = 12.sp,
+                                    fontFamily = GillSans,
+                                    modifier = Modifier.padding(start = 2.dp)
+                                )
+                            } else if (tempEmail.isNotEmpty() && tempEmail.trim() != tempConfirmEmail.trim()) {
+                                Spacer(modifier = Modifier.height(4.dp))
+                                Text(
+                                    text = "Please Enter A Valid Confirm Email Address",
+                                    color = Color(0xFF585858),
+                                    fontSize = 12.sp,
+                                    fontFamily = GillSans,
+                                    modifier = Modifier.padding(start = 2.dp)
+                                )
+                            }
+                        }
+
+                        Spacer(modifier = Modifier.height(10.dp))
+
+                        // Country
+                        AddClientFormLabel(text = "Country", isMandatory = true)
+                        Box(modifier = Modifier.fillMaxWidth()) {
+                            Row(
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .height(42.dp)
+                                    .border(1.dp, Color(0xFFDDDDDE), RoundedCornerShape(4.dp))
+                                    .background(Color.White)
+                                    .clickable { countryDropdownExpanded = !countryDropdownExpanded }
+                                    .padding(horizontal = 10.dp),
+                                verticalAlignment = Alignment.CenterVertically,
+                                horizontalArrangement = Arrangement.SpaceBetween
+                            ) {
+                                Text(
+                                    text = tempCountry.ifEmpty { "Select Country" },
+                                    fontFamily = GillSans,
+                                    fontSize = 15.sp,
+                                    color = if (tempCountry.isEmpty()) Color.Gray else Color.Black
+                                )
+                                Icon(
+                                    painter = painterResource(id = R.drawable.down_arrow),
+                                    contentDescription = "Dropdown",
+                                    tint = ColorTokens.BluePrimary,
+                                    modifier = Modifier.size(16.dp)
+                                )
+                            }
+
+                            DropdownMenu(
+                                expanded = countryDropdownExpanded,
+                                onDismissRequest = { countryDropdownExpanded = false },
+                                modifier = Modifier
+                                    .fillMaxWidth(0.9f)
+                                    .heightIn(max = 250.dp)
+                                    .background(Color.White)
+                            ) {
+                                uiState.countriesList.forEach { countryPair ->
+                                    DropdownMenuItem(
+                                        text = {
+                                            Text(
+                                                text = countryPair.second,
+                                                fontFamily = GillSans,
+                                                fontSize = 15.sp,
+                                                color = Color.Black
+                                            )
+                                        },
+                                        onClick = {
+                                            tempCountry = countryPair.second
+                                            countryDropdownExpanded = false
+                                        }
+                                    )
+                                }
+                            }
+                        }
+
+                        Spacer(modifier = Modifier.height(10.dp))
+
+                        // Phone Number (Optional)
+                        AddClientFormLabel(text = "Phone Number", isMandatory = false)
+                        Box(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .height(42.dp)
+                                .border(1.dp, Color(0xFFDDDDDE), RoundedCornerShape(4.dp))
+                                .background(Color.White)
+                                .padding(horizontal = 10.dp),
+                            contentAlignment = Alignment.CenterStart
+                        ) {
+                            BasicTextField(
+                                value = tempPhone,
+                                onValueChange = { input ->
+                                    if (input.isEmpty() || input.all { it.isDigit() }) {
+                                        if (input.length <= 15) {
+                                            tempPhone = input
+                                        }
+                                    }
+                                },
+                                singleLine = true,
+                                keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Phone),
+                                textStyle = TextStyle(fontFamily = GillSans, fontSize = 15.sp, color = Color.Black),
+                                modifier = Modifier.fillMaxWidth(),
+                                decorationBox = { inner ->
+                                    if (tempPhone.isEmpty()) {
+                                        Text(text = "Phone Number", fontFamily = GillSans, fontSize = 15.sp, color = Color.Gray)
+                                    }
+                                    inner()
+                                }
+                            )
+                        }
+                        val isPhoneValid = tempPhone.isEmpty() || tempPhone.trim().length >= 10
+                        if (tempPhone.isNotEmpty() && !isPhoneValid) {
+                            Spacer(modifier = Modifier.height(4.dp))
+                            Text(
+                                text = "Please enter a 10 digit valid mobile number.",
+                                color = Color(0xFF585858),
+                                fontSize = 12.sp,
+                                fontFamily = GillSans,
+                                modifier = Modifier.padding(start = 2.dp)
+                            )
+                        }
+
+                        Spacer(modifier = Modifier.height(16.dp))
+
+                        // Action Buttons
+                        Row(
+                            modifier = Modifier.fillMaxWidth(),
+                            horizontalArrangement = Arrangement.Center,
+                            verticalAlignment = Alignment.CenterVertically
+                        ) {
+                            Button(
+                                onClick = { viewModel.dismissClientNotFound() },
+                                colors = ButtonDefaults.buttonColors(
+                                    containerColor = Color(0xFFECEFF1)
+                                ),
+                                shape = RoundedCornerShape(6.dp),
+                                modifier = Modifier
+                                    .width(130.dp)
+                                    .height(42.dp)
+                            ) {
+                                Text(
+                                    text = "Cancel",
+                                    fontFamily = GillSansBold,
+                                    fontSize = 15.sp,
+                                    color = Color.Black
+                                )
+                            }
+
+                            Spacer(modifier = Modifier.width(16.dp))
+
+                            val isEmailStrictValid = tempEmail.isNotBlank() && AndroidUtils.isValidEmail(tempEmail.trim())
+                            val isConfirmEmailStrictValid = tempConfirmEmail.isNotBlank() && AndroidUtils.isValidEmail(tempConfirmEmail.trim()) && tempConfirmEmail.trim() == tempEmail.trim()
+                            val isPhoneStrictValid = tempPhone.isBlank() || tempPhone.trim().length >= 10
+                            val isFormFilled = tempFirstName.isNotBlank() && tempLastName.isNotBlank() &&
+                                    isEmailStrictValid && isConfirmEmailStrictValid && tempCountry.isNotBlank() && isPhoneStrictValid
+
+                            Button(
+                                onClick = {
+                                    viewModel.inviteClient(
+                                        clientType = selectedClientType,
+                                        firstName = tempFirstName,
+                                        lastName = tempLastName,
+                                        email = tempEmail,
+                                        confirmEmail = tempConfirmEmail,
+                                        phone = tempPhone,
+                                        country = tempCountry
+                                    )
+                                },
+                                colors = ButtonDefaults.buttonColors(
+                                    containerColor = if (isFormFilled) ColorTokens.BluePrimary else Color(0xFF8FAECB),
+                                    disabledContainerColor = Color(0xFF8FAECB)
+                                ),
+                                shape = RoundedCornerShape(6.dp),
+                                modifier = Modifier
+                                    .width(150.dp)
+                                    .height(42.dp)
+                            ) {
+                                Text(
+                                    text = "Add as Client",
+                                    fontFamily = GillSansBold,
+                                    fontSize = 15.sp,
+                                    color = Color.White
+                                )
+                            }
+                        }
                     }
                 }
 

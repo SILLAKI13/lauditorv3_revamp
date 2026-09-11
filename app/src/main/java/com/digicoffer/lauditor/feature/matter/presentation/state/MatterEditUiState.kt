@@ -51,10 +51,13 @@ data class MatterEditUiState(
     val searchQuery: String = "",
     val searchResults: List<ClientsModel> = emptyList(),
     val isSearchingClient: Boolean = false,
+    val clientNotFoundQuery: String? = null,
+    val isAddClientFormVisible: Boolean = false,
     val selectedClients: List<ClientsModel> = emptyList(),
     val teamMembersList: List<TeamModel> = emptyList(),
     val selectedTeamMembers: List<TeamModel> = emptyList(),
     val isTeamMembersDropdownExpanded: Boolean = false,
+    val countriesList: List<Pair<String, String>> = emptyList(),
 
     // Step 3 Fields (Document(s))
     val selectedUploadFiles: List<com.digicoffer.lauditor.Documents.Models.DocumentsModel> = emptyList(),

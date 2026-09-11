@@ -39,6 +39,7 @@ private val GillSans = FontFamily(Font(R.font.gill_sans))
 @Composable
 fun NotificationRowItem(
     notification: NotificationsDo,
+    isSelected: Boolean,
     onCheckedChange: (Boolean) -> Unit,
     onRowClick: () -> Unit,
     isLastItem: Boolean,
@@ -115,7 +116,7 @@ fun NotificationRowItem(
                 modifier = Modifier.padding(end = 12.dp)
             ) {
                 AppCircleCheckbox(
-                    checked = notification.isChecked,
+                    checked = isSelected,
                     onCheckedChange = onCheckedChange,
                     size = 22.dp
                 )
@@ -159,9 +160,8 @@ fun NotificationRowItemUnreadPreview() {
             message = "This is an unread notification message."
             timestamp = "2026-07-29T10:00:00.000Z"
             status = "unread"
-            isChecked = false
         }
-        NotificationRowItem(notification = n, onCheckedChange = {}, onRowClick = {}, isLastItem = false)
+        NotificationRowItem(notification = n, isSelected = false, onCheckedChange = {}, onRowClick = {}, isLastItem = false)
     }
 }
 
@@ -173,8 +173,7 @@ fun NotificationRowItemReadPreview() {
             message = "This is a read notification message."
             timestamp = "2026-07-29T09:30:00.000Z"
             status = "read"
-            isChecked = true
         }
-        NotificationRowItem(notification = n, onCheckedChange = {}, onRowClick = {}, isLastItem = true)
+        NotificationRowItem(notification = n, isSelected = true, onCheckedChange = {}, onRowClick = {}, isLastItem = true)
     }
 }

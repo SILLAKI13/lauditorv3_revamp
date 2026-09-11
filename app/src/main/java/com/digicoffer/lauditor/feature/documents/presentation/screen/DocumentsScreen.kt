@@ -17,11 +17,12 @@ import androidx.compose.foundation.text.BasicTextField
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.lazy.grid.GridCells
-import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
-import androidx.compose.foundation.lazy.grid.items
-import androidx.compose.foundation.lazy.grid.GridItemSpan
-import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.lazy.itemsIndexed
+import androidx.compose.foundation.lazy.staggeredgrid.LazyVerticalStaggeredGrid
+import androidx.compose.foundation.lazy.staggeredgrid.StaggeredGridCells
+import androidx.compose.foundation.lazy.staggeredgrid.StaggeredGridItemSpan
+import androidx.compose.foundation.lazy.staggeredgrid.itemsIndexed
+import com.digicoffer.lauditor.core.ui.common.animation.fallDownItem
 import androidx.compose.ui.graphics.asImageBitmap
 import androidx.compose.ui.layout.ContentScale
 import com.bumptech.glide.Glide
@@ -64,6 +65,7 @@ import com.digicoffer.lauditor.core.designsystem.theme.LauditorTheme
 import com.digicoffer.lauditor.core.ui.common.buttons.AppButton
 import com.digicoffer.lauditor.core.ui.common.buttons.AppHeaderButton
 import com.digicoffer.lauditor.core.ui.common.cards.AppCard
+import com.digicoffer.lauditor.core.ui.common.dialogs.AppConfirmationDialog
 import com.digicoffer.lauditor.core.ui.common.dialogs.AppDialog
 import com.digicoffer.lauditor.core.ui.common.dropdowns.DropdownSelectorField
 import com.digicoffer.lauditor.core.ui.common.search.AppSearchField
@@ -85,10 +87,20 @@ private val GillSans = FontFamily(
 @Composable
 fun DocumentsScreen(
     viewModel: DocumentsViewModel,
+    onTitleChanged: (String) -> Unit = {},
     onBrowseClick: () -> Unit
 ) {
     val uiState by viewModel.uiState.collectAsState()
     var showDeletedBanner by rememberSaveable { mutableStateOf(true) }
+
+    LaunchedEffect(uiState.currentTab, uiState.isUploadMode) {
+        val title = when {
+            uiState.currentTab == "delete" -> "Deleted Documents"
+            uiState.isUploadMode -> "Upload New"
+            else -> "Document View"
+        }
+        onTitleChanged(title)
+    }
 
     Box(
         modifier = Modifier
@@ -203,49 +215,52 @@ fun DocumentsScreen(
                                 fontSize = 16.sp,
                                 fontFamily = GillSans,
                                 fontWeight = FontWeight.Bold,
-                                color = Color(0xFF004D87)
+                                color = Color(0xFF004D87),
+                                maxLines = 2,
+                                overflow = TextOverflow.Ellipsis,
+                                modifier = Modifier
+                                    .weight(1f)
+                                    .padding(end = 8.dp)
                             )
 
-                            if (uiState.currentTab != "delete") {
-                                Row(
-                                    verticalAlignment = Alignment.CenterVertically,
-                                    horizontalArrangement = Arrangement.spacedBy(1.dp)
+                            Row(
+                                verticalAlignment = Alignment.CenterVertically,
+                                horizontalArrangement = Arrangement.spacedBy(1.dp)
+                            ) {
+                                // List Layout toggler
+                                IconButton(
+                                    onClick = { viewModel.onEvent(DocumentsUiEvent.ToggleGridView(false)) },
+                                    modifier = Modifier
+                                        .background(
+                                            if (!uiState.isGridView) Color(0xFF004D87) else Color(0xFFDDDDDE),
+                                            shape = RoundedCornerShape(topStart = 4.dp, bottomStart = 4.dp)
+                                        )
+                                        .size(36.dp)
                                 ) {
-                                    // List Layout toggler
-                                    IconButton(
-                                        onClick = { viewModel.onEvent(DocumentsUiEvent.ToggleGridView(false)) },
-                                        modifier = Modifier
-                                            .background(
-                                                if (!uiState.isGridView) Color(0xFF004D87) else Color(0xFFDDDDDE),
-                                                shape = RoundedCornerShape(topStart = 4.dp, bottomStart = 4.dp)
-                                            )
-                                            .size(36.dp)
-                                    ) {
-                                        Icon(
-                                            painter = painterResource(id = R.drawable.white_list),
-                                            contentDescription = "List View",
-                                            tint = if (!uiState.isGridView) Color.White else Color(0xFF585858),
-                                            modifier = Modifier.size(16.dp)
-                                        )
-                                    }
+                                    Icon(
+                                        painter = painterResource(id = R.drawable.white_list),
+                                        contentDescription = "List View",
+                                        tint = if (!uiState.isGridView) Color.White else Color(0xFF585858),
+                                        modifier = Modifier.size(16.dp)
+                                    )
+                                }
 
-                                    // Grid Layout toggler
-                                    IconButton(
-                                        onClick = { viewModel.onEvent(DocumentsUiEvent.ToggleGridView(true)) },
-                                        modifier = Modifier
-                                            .background(
-                                                if (uiState.isGridView) Color(0xFF004D87) else Color(0xFFDDDDDE),
-                                                shape = RoundedCornerShape(topEnd = 4.dp, bottomEnd = 4.dp)
-                                            )
-                                            .size(36.dp)
-                                    ) {
-                                        Icon(
-                                            painter = painterResource(id = R.drawable.list_view),
-                                            contentDescription = "Grid View",
-                                            tint = if (uiState.isGridView) Color.White else Color(0xFF585858),
-                                            modifier = Modifier.size(16.dp)
+                                // Grid Layout toggler
+                                IconButton(
+                                    onClick = { viewModel.onEvent(DocumentsUiEvent.ToggleGridView(true)) },
+                                    modifier = Modifier
+                                        .background(
+                                            if (uiState.isGridView) Color(0xFF004D87) else Color(0xFFDDDDDE),
+                                            shape = RoundedCornerShape(topEnd = 4.dp, bottomEnd = 4.dp)
                                         )
-                                    }
+                                        .size(36.dp)
+                                ) {
+                                    Icon(
+                                        painter = painterResource(id = R.drawable.list_view),
+                                        contentDescription = "Grid View",
+                                        tint = if (uiState.isGridView) Color.White else Color(0xFF585858),
+                                        modifier = Modifier.size(16.dp)
+                                    )
                                 }
                             }
                         }
@@ -326,22 +341,127 @@ fun DocumentsScreen(
                                     fontSize = 14.sp,
                                     modifier = Modifier.padding(bottom = 4.dp)
                                 )
-                                DropdownSelectorField(
-                                    items = uiState.groupsList,
-                                    selectedItem = uiState.selectedFilterGroup,
-                                    onItemSelected = { g ->
-                                        viewModel.onEvent(DocumentsUiEvent.SelectFilterGroup(g))
-                                    },
-                                    itemToLabel = { it.name ?: "" },
-                                    placeholder = "All Groups",
-                                    onClearSelection = if (uiState.selectedFilterGroup != uiState.groupsList.firstOrNull()) {
-                                        {
-                                            uiState.groupsList.firstOrNull()?.let {
-                                                viewModel.onEvent(DocumentsUiEvent.SelectFilterGroup(it))
+                                var firmGroupsExpanded by remember { mutableStateOf(false) }
+
+                                val selectedText = if (uiState.selectedFilterGroups.any { it.name == "All Groups" }) {
+                                    "All Groups"
+                                } else if (uiState.selectedFilterGroups.isNotEmpty()) {
+                                    uiState.selectedFilterGroups.joinToString(", ") { it.name ?: "" }
+                                } else {
+                                    "All Groups"
+                                }
+
+                                Row(
+                                    modifier = Modifier
+                                        .fillMaxWidth()
+                                        .height(40.dp)
+                                        .background(Color(0xFFF9FAFB), RoundedCornerShape(6.dp))
+                                        .border(0.5.dp, Color(0xFFC0C0C0), RoundedCornerShape(6.dp))
+                                        .clickable { firmGroupsExpanded = !firmGroupsExpanded },
+                                    horizontalArrangement = Arrangement.SpaceBetween,
+                                    verticalAlignment = Alignment.CenterVertically
+                                ) {
+                                    Text(
+                                        text = selectedText,
+                                        fontFamily = GillSans,
+                                        fontSize = 15.sp,
+                                        color = Color.Black,
+                                        maxLines = 1,
+                                        modifier = Modifier
+                                            .weight(1f)
+                                            .padding(start = 10.dp)
+                                    )
+                                    Icon(
+                                        painter = painterResource(id = R.drawable.drop_down_blue),
+                                        contentDescription = "Dropdown Arrow",
+                                        tint = Color.Unspecified,
+                                        modifier = Modifier
+                                            .padding(end = 15.dp)
+                                            .size(12.dp)
+                                    )
+                                }
+
+                                if (firmGroupsExpanded && uiState.groupsList.isNotEmpty()) {
+                                    Column(
+                                        modifier = Modifier
+                                            .fillMaxWidth()
+                                            .padding(top = 4.dp)
+                                            .heightIn(max = 160.dp)
+                                            .background(Color.White, RoundedCornerShape(6.dp))
+                                            .border(0.5.dp, Color(0xFFC0C0C0), RoundedCornerShape(6.dp))
+                                            .padding(6.dp)
+                                            .verticalScroll(rememberScrollState()),
+                                        verticalArrangement = Arrangement.spacedBy(4.dp)
+                                    ) {
+                                        val allGroupsItem = uiState.groupsList.firstOrNull { it.name == "All Groups" }
+                                        uiState.groupsList.forEach { grp ->
+                                            val isAllGroups = grp.name == "All Groups"
+                                            val isChecked = if (isAllGroups) {
+                                                uiState.selectedFilterGroups.any { it.name == "All Groups" }
+                                            } else {
+                                                !uiState.selectedFilterGroups.any { it.name == "All Groups" } &&
+                                                        uiState.selectedFilterGroups.any { it.id == grp.id }
+                                            }
+
+                                            Row(
+                                                modifier = Modifier
+                                                    .fillMaxWidth()
+                                                    .clickable {
+                                                        val nextList = if (isAllGroups) {
+                                                            if (isChecked) emptyList() else listOf(grp)
+                                                        } else {
+                                                            val cur = uiState.selectedFilterGroups.filter { it.name != "All Groups" }.toMutableList()
+                                                            if (cur.any { it.id == grp.id }) {
+                                                                cur.removeAll { it.id == grp.id }
+                                                            } else {
+                                                                cur.add(grp)
+                                                            }
+                                                            if (cur.isEmpty() && allGroupsItem != null) {
+                                                                listOf(allGroupsItem)
+                                                            } else {
+                                                                cur
+                                                            }
+                                                        }
+                                                        viewModel.onEvent(DocumentsUiEvent.SelectFilterGroups(nextList))
+                                                    }
+                                                    .padding(vertical = 2.dp),
+                                                verticalAlignment = Alignment.CenterVertically
+                                            ) {
+                                                Checkbox(
+                                                    checked = isChecked,
+                                                    onCheckedChange = { checked ->
+                                                        val nextList = if (isAllGroups) {
+                                                            if (checked) listOf(grp) else emptyList()
+                                                        } else {
+                                                            val cur = uiState.selectedFilterGroups.filter { it.name != "All Groups" }.toMutableList()
+                                                            if (checked) {
+                                                                cur.add(grp)
+                                                            } else {
+                                                                cur.removeAll { it.id == grp.id }
+                                                            }
+                                                            if (cur.isEmpty() && allGroupsItem != null) {
+                                                                listOf(allGroupsItem)
+                                                            } else {
+                                                                cur
+                                                            }
+                                                        }
+                                                        viewModel.onEvent(DocumentsUiEvent.SelectFilterGroups(nextList))
+                                                    },
+                                                    colors = CheckboxDefaults.colors(
+                                                        checkedColor = Color(0xFF004D87),
+                                                        checkmarkColor = Color.White
+                                                    )
+                                                )
+                                                Text(
+                                                    text = grp.name ?: "",
+                                                    fontFamily = GillSans,
+                                                    fontSize = 14.sp,
+                                                    color = Color.Black
+                                                )
                                             }
                                         }
-                                    } else null
-                                )
+                                    }
+                                }
                             }
                             "delete" -> {
                                 Text(
@@ -352,12 +472,16 @@ fun DocumentsScreen(
                                     fontWeight = FontWeight.Normal,
                                     modifier = Modifier.padding(bottom = 4.dp)
                                 )
+                                val deleteDocTypes = if ("solo" == com.digicoffer.lauditor.CommonFiles.GlobalFiles.Constants.CATEGORY) {
+                                    listOf("Matter", "Client")
+                                } else {
+                                    listOf("Matter", "Client", "Firm")
+                                }
                                 DropdownSelectorField(
-                                    items = if ("solo" == com.digicoffer.lauditor.CommonFiles.GlobalFiles.Constants.CATEGORY) listOf("All types", "Client") else listOf("All types", "Firm", "Client"),
-                                    selectedItem = uiState.selectedFilterDocType ?: "All types",
+                                    items = deleteDocTypes,
+                                    selectedItem = uiState.selectedFilterDocType?.replaceFirstChar { if (it.isLowerCase()) it.titlecase(Locale.ROOT) else it.toString() },
                                     onItemSelected = { name ->
-                                        val type = if (name == "All types") null else name.lowercase()
-                                        viewModel.onEvent(DocumentsUiEvent.SelectFilterDocType(type))
+                                        viewModel.onEvent(DocumentsUiEvent.SelectFilterDocType(name.lowercase(Locale.ROOT)))
                                     },
                                     itemToLabel = { it },
                                     placeholder = "Select Document Type",
@@ -387,14 +511,14 @@ fun DocumentsScreen(
                 if (uiState.filteredDocumentsList.isEmpty()) {
                     // Render exact legacy empty states
                     val emptyTitle = when (uiState.currentTab) {
-                        "firm" -> "No Firm Documents"
-                        "client" -> "No Client Documents"
-                        "delete" -> if ("solo" == com.digicoffer.lauditor.CommonFiles.GlobalFiles.Constants.CATEGORY) "No Deleted Documents Yet!" else "No Documents Pending Approval"
-                        else -> "No Matter Documents"
+                        "firm" -> "No Firm Documents Yet!"
+                        "client" -> "No Client Documents Yet!"
+                        "delete" -> if ("solo" == com.digicoffer.lauditor.CommonFiles.GlobalFiles.Constants.CATEGORY) "No Deleted Documents Yet!" else "No Documents Pending Approval Yet!"
+                        else -> "No Matter Documents Yet!"
                     }
                     val emptySubtitle = when (uiState.currentTab) {
                         "delete" -> if ("solo" == com.digicoffer.lauditor.CommonFiles.GlobalFiles.Constants.CATEGORY) "Deleted documents will appear here" else "Documents pending approval will appear here"
-                        else -> "Upload documents to get started"
+                        else -> "Secure and organize your documents by start uploading it."
                     }
                     Column(
                         modifier = Modifier
@@ -407,7 +531,18 @@ fun DocumentsScreen(
                             title = emptyTitle,
                             description = emptySubtitle,
                             imageRes = R.drawable.empty_doc,
-                            imageSize = 120.dp
+                            imageSize = 120.dp,
+                            titleColor = Color(0xFF004D87),
+                            titleStyle = androidx.compose.ui.text.TextStyle(
+                                fontFamily = GillSans,
+                                fontWeight = FontWeight.Bold,
+                                fontSize = 18.sp
+                            ),
+                            descriptionColor = Color(0xFF555555),
+                            descriptionStyle = androidx.compose.ui.text.TextStyle(
+                                fontFamily = GillSans,
+                                fontSize = 14.sp
+                            )
                         )
                         val dbg = uiState.debugInfo
                         if (uiState.currentTab == "client" && dbg != null) {
@@ -446,58 +581,70 @@ fun DocumentsScreen(
                         emptyList()
                     }
 
-                    if (uiState.isGridView) {
-                        LazyVerticalGrid(
-                            columns = GridCells.Fixed(2),
-                            horizontalArrangement = Arrangement.spacedBy(8.dp),
-                            verticalArrangement = Arrangement.spacedBy(8.dp),
-                            modifier = Modifier.fillMaxSize()
-                        ) {
-                            items(paginatedDocs, key = { it.id ?: "" }) { doc ->
-                                ViewDocumentItemGrid(
-                                    doc = doc,
-                                    previewUrl = uiState.previewUrls[doc.id ?: ""],
-                                    previewBitmap = uiState.previewBitmaps[doc.id ?: ""],
-                                    isLoadingPreview = uiState.loadingPreviewIds.contains(doc.id ?: ""),
-                                    isFailedPreview = uiState.failedPreviewIds.contains(doc.id ?: ""),
-                                    onAction = { action ->
-                                        viewModel.onEvent(DocumentsUiEvent.TriggerAction(action, doc))
-                                    },
-                                    onLoadPreview = {
-                                        viewModel.onEvent(DocumentsUiEvent.LoadPreview(doc))
-                                    }
-                                )
+                    Box(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .weight(1f)
+                    ) {
+                        if (uiState.isGridView) {
+                            LazyVerticalStaggeredGrid(
+                                columns = StaggeredGridCells.Fixed(2),
+                                horizontalArrangement = Arrangement.spacedBy(8.dp),
+                                verticalItemSpacing = 8.dp,
+                                contentPadding = PaddingValues(bottom = 8.dp),
+                                modifier = Modifier.fillMaxSize()
+                            ) {
+                                itemsIndexed(paginatedDocs, key = { _, doc -> doc.id ?: "" }) { index, doc ->
+                                    ViewDocumentItemGrid(
+                                        doc = doc,
+                                        currentTab = uiState.currentTab,
+                                        previewUrl = uiState.previewUrls[doc.id ?: ""],
+                                        previewBitmap = uiState.previewBitmaps[doc.id ?: ""],
+                                        isLoadingPreview = uiState.loadingPreviewIds.contains(doc.id ?: ""),
+                                        isFailedPreview = uiState.failedPreviewIds.contains(doc.id ?: ""),
+                                        onAction = { action ->
+                                            viewModel.onEvent(DocumentsUiEvent.TriggerAction(action, doc))
+                                        },
+                                        onLoadPreview = {
+                                            viewModel.onEvent(DocumentsUiEvent.LoadPreview(doc))
+                                        },
+                                        modifier = Modifier.fallDownItem(
+                                            index = index,
+                                            triggerKey = Pair(uiState.currentPage, uiState.isGridView)
+                                        )
+                                    )
+                                }
                             }
-                            if (totalPages > 1) {
-                                item(span = { GridItemSpan(maxLineSpan) }) {
-                                    PaginationBar(
-                                        currentPage = uiState.currentPage,
-                                        totalPages = totalPages,
-                                        onPageSelected = { viewModel.onEvent(DocumentsUiEvent.SelectPage(it)) }
+                        } else {
+                            LazyColumn(
+                                verticalArrangement = Arrangement.spacedBy(8.dp),
+                                contentPadding = PaddingValues(bottom = 8.dp),
+                                modifier = Modifier.fillMaxSize()
+                            ) {
+                                itemsIndexed(paginatedDocs, key = { _, doc -> doc.id ?: "" }) { index, doc ->
+                                    ViewDocumentItemCard(
+                                        doc = doc,
+                                        currentTab = uiState.currentTab,
+                                        onAction = { action ->
+                                            viewModel.onEvent(DocumentsUiEvent.TriggerAction(action, doc))
+                                        },
+                                        modifier = Modifier.fallDownItem(
+                                            index = index,
+                                            triggerKey = Pair(uiState.currentPage, uiState.isGridView)
+                                        )
                                     )
                                 }
                             }
                         }
-                    } else {
-                        LazyColumn(
-                            verticalArrangement = Arrangement.spacedBy(8.dp),
-                            modifier = Modifier.fillMaxSize()
-                        ) {
-                            items(paginatedDocs, key = { it.id ?: "" }) { doc ->
-                                ViewDocumentItemCard(doc = doc, currentTab = uiState.currentTab, onAction = { action ->
-                                    viewModel.onEvent(DocumentsUiEvent.TriggerAction(action, doc))
-                                })
-                            }
-                            if (totalPages > 1) {
-                                item {
-                                    PaginationBar(
-                                        currentPage = uiState.currentPage,
-                                        totalPages = totalPages,
-                                        onPageSelected = { viewModel.onEvent(DocumentsUiEvent.SelectPage(it)) }
-                                    )
-                                }
-                            }
-                        }
+                    }
+
+                    if (totalPages > 1) {
+                        PaginationBar(
+                            currentPage = uiState.currentPage,
+                            totalPages = totalPages,
+                            onPrev = { viewModel.onEvent(DocumentsUiEvent.PagePrev) },
+                            onNext = { viewModel.onEvent(DocumentsUiEvent.PageNext) }
+                        )
                     }
                 }
             }
@@ -573,7 +720,7 @@ fun DocumentsScreen(
     // Alert dialogs
     if (uiState.alertMessage != null) {
         AppDialog(
-            title = uiState.alertTitle ?: "Alert",
+            title = uiState.alertTitle ?: "Alert !",
             onConfirm = { viewModel.onEvent(DocumentsUiEvent.DismissAlert) },
             onDismiss = { viewModel.onEvent(DocumentsUiEvent.DismissAlert) },
             confirmText = "OK",
@@ -582,8 +729,9 @@ fun DocumentsScreen(
                 Text(
                     text = uiState.alertMessage ?: "",
                     fontFamily = GillSans,
-                    fontSize = 14.sp,
-                    color = Color.Black
+                    fontSize = 15.sp,
+                    color = Color.Black,
+                    textAlign = TextAlign.Center
                 )
             }
         )
@@ -591,15 +739,145 @@ fun DocumentsScreen(
 }
 
 @Composable
+fun DocumentActionMenu(
+    expanded: Boolean,
+    onDismissRequest: () -> Unit,
+    currentTab: String,
+    doc: ViewDocumentsModel,
+    onAction: (String) -> Unit
+) {
+    DropdownMenu(
+        expanded = expanded,
+        onDismissRequest = onDismissRequest,
+        modifier = Modifier
+            .background(Color.White)
+            .width(160.dp)
+    ) {
+        if (currentTab == "delete") {
+            DropdownMenuItem(
+                text = {
+                    Text(
+                        text = "Restore",
+                        fontFamily = GillSans,
+                        fontSize = 14.sp,
+                        color = Color.Black
+                    )
+                },
+                onClick = {
+                    onDismissRequest()
+                    onAction("restore")
+                }
+            )
+            HorizontalDivider(thickness = 0.5.dp, color = Color.LightGray)
+            DropdownMenuItem(
+                text = {
+                    Text(
+                        text = "Delete",
+                        fontFamily = GillSans,
+                        fontSize = 14.sp,
+                        color = Color.Black
+                    )
+                },
+                onClick = {
+                    onDismissRequest()
+                    onAction("deleted")
+                }
+            )
+        } else {
+            DropdownMenuItem(
+                text = {
+                    Text(
+                        text = "View",
+                        fontFamily = GillSans,
+                        fontSize = 14.sp,
+                        color = Color.Black
+                    )
+                },
+                onClick = {
+                    onDismissRequest()
+                    onAction("View")
+                }
+            )
+            HorizontalDivider(thickness = 0.5.dp, color = Color.LightGray)
+            DropdownMenuItem(
+                text = {
+                    Text(
+                        text = "Edit Info",
+                        fontFamily = GillSans,
+                        fontSize = 14.sp,
+                        color = Color.Black
+                    )
+                },
+                onClick = {
+                    onDismissRequest()
+                    onAction("Edit Info")
+                }
+            )
+            val canDownload = !doc.is_disabled
+            if (canDownload) {
+                HorizontalDivider(thickness = 0.5.dp, color = Color.LightGray)
+                DropdownMenuItem(
+                    text = {
+                        Text(
+                            text = "Download",
+                            fontFamily = GillSans,
+                            fontSize = 14.sp,
+                            color = Color.Black
+                        )
+                    },
+                    onClick = {
+                        onDismissRequest()
+                        onAction("Download")
+                    }
+                )
+            }
+            HorizontalDivider(thickness = 0.5.dp, color = Color.LightGray)
+            DropdownMenuItem(
+                text = {
+                    Text(
+                        text = "Delete",
+                        fontFamily = GillSans,
+                        fontSize = 14.sp,
+                        color = Color.Black
+                    )
+                },
+                onClick = {
+                    onDismissRequest()
+                    onAction("Delete")
+                }
+            )
+            HorizontalDivider(thickness = 0.5.dp, color = Color.LightGray)
+            DropdownMenuItem(
+                text = {
+                    Text(
+                        text = "Update Tags",
+                        fontFamily = GillSans,
+                        fontSize = 14.sp,
+                        color = Color.Black
+                    )
+                },
+                onClick = {
+                    onDismissRequest()
+                    onAction("Update Tags")
+                }
+            )
+        }
+    }
+}
+
+@Composable
 fun ViewDocumentItemCard(
     doc: ViewDocumentsModel,
     currentTab: String,
-    onAction: (String) -> Unit
+    onAction: (String) -> Unit,
+    modifier: Modifier = Modifier
 ) {
     var expandedMenu by remember { mutableStateOf(false) }
+    val labelColor = Color(0xFF757575)
+    val valueColor = Color.Black
 
     Card(
-        modifier = Modifier
+        modifier = modifier
             .fillMaxWidth()
             .alpha(if (doc.isdisabled) 0.5f else 1.0f),
         shape = RoundedCornerShape(8.dp),
@@ -641,7 +919,6 @@ fun ViewDocumentItemCard(
                 }
 
                 if (currentTab != "delete") {
-                    // Lock icon toggle (Clicking toggles encrypt/decrypt state)
                     val lockIcon = if (doc.is_encrypted || doc.added_encryption) {
                         R.drawable.close
                     } else {
@@ -662,15 +939,14 @@ fun ViewDocumentItemCard(
 
                     AppSpacer(width = 4.dp)
 
-                    // Download icon status (Clicking toggles disable/enable download state)
-                    val isDownloadDisabled = doc.is_disabled
-                    val downloadIcon = if (isDownloadDisabled) {
+                    val isDownloadEnabled = !doc.is_disabled
+                    val downloadIcon = if (isDownloadEnabled) {
                         R.drawable.down_enabled
                     } else {
                         R.drawable.down_disable
                     }
                     IconButton(
-                        onClick = { onAction(if (isDownloadDisabled) "disabled" else "enabled") },
+                        onClick = { onAction(if (isDownloadEnabled) "disable_download" else "enable_download") },
                         enabled = !doc.isdisabled,
                         modifier = Modifier.size(24.dp)
                     ) {
@@ -683,7 +959,6 @@ fun ViewDocumentItemCard(
                     }
                 }
 
-                // 3-dot spinner options menu
                 Box {
                     IconButton(
                         onClick = { expandedMenu = true },
@@ -697,122 +972,13 @@ fun ViewDocumentItemCard(
                             modifier = Modifier.size(24.dp)
                         )
                     }
-                    DropdownMenu(
+                    DocumentActionMenu(
                         expanded = expandedMenu,
                         onDismissRequest = { expandedMenu = false },
-                        modifier = Modifier
-                            .background(Color.White)
-                            .width(160.dp)
-                    ) {
-                        if (currentTab == "delete") {
-                            DropdownMenuItem(
-                                text = {
-                                    Text(
-                                        text = "Restore",
-                                        fontFamily = GillSans,
-                                        fontSize = 14.sp,
-                                        color = Color.Black
-                                    )
-                                },
-                                onClick = {
-                                    expandedMenu = false
-                                    onAction("restore")
-                                }
-                            )
-                            HorizontalDivider(thickness = 0.5.dp, color = Color.LightGray)
-                            DropdownMenuItem(
-                                text = {
-                                    Text(
-                                        text = "Delete",
-                                        fontFamily = GillSans,
-                                        fontSize = 14.sp,
-                                        color = Color.Black
-                                    )
-                                },
-                                onClick = {
-                                    expandedMenu = false
-                                    onAction("deleted")
-                                }
-                            )
-                        } else {
-                            DropdownMenuItem(
-                                text = {
-                                    Text(
-                                        text = "View",
-                                        fontFamily = GillSans,
-                                        fontSize = 14.sp,
-                                        color = Color.Black
-                                    )
-                                },
-                                onClick = {
-                                    expandedMenu = false
-                                    onAction("View")
-                                }
-                            )
-                            HorizontalDivider(thickness = 0.5.dp, color = Color.LightGray)
-                            DropdownMenuItem(
-                                text = {
-                                    Text(
-                                        text = "Edit Info",
-                                        fontFamily = GillSans,
-                                        fontSize = 14.sp,
-                                        color = Color.Black
-                                    )
-                                },
-                                onClick = {
-                                    expandedMenu = false
-                                    onAction("Edit Info")
-                                }
-                            )
-                            if (doc.isdisabled != true && doc.is_disabled != true) {
-                                HorizontalDivider(thickness = 0.5.dp, color = Color.LightGray)
-                                DropdownMenuItem(
-                                    text = {
-                                        Text(
-                                            text = "Download",
-                                            fontFamily = GillSans,
-                                            fontSize = 14.sp,
-                                            color = Color.Black
-                                        )
-                                    },
-                                    onClick = {
-                                        expandedMenu = false
-                                        onAction("Download")
-                                    }
-                                )
-                            }
-                            HorizontalDivider(thickness = 0.5.dp, color = Color.LightGray)
-                            DropdownMenuItem(
-                                text = {
-                                    Text(
-                                        text = "Update Tags",
-                                        fontFamily = GillSans,
-                                        fontSize = 14.sp,
-                                        color = Color.Black
-                                    )
-                                },
-                                onClick = {
-                                    expandedMenu = false
-                                    onAction("Update Tags")
-                                }
-                            )
-                            HorizontalDivider(thickness = 0.5.dp, color = Color.LightGray)
-                            DropdownMenuItem(
-                                text = {
-                                    Text(
-                                        text = "Delete",
-                                        fontFamily = GillSans,
-                                        fontSize = 14.sp,
-                                        color = Color.Black
-                                    )
-                                },
-                                onClick = {
-                                    expandedMenu = false
-                                    onAction("Delete")
-                                }
-                            )
-                        }
-                    }
+                        currentTab = currentTab,
+                        doc = doc,
+                        onAction = onAction
+                    )
                 }
             }
 
@@ -826,48 +992,149 @@ fun ViewDocumentItemCard(
                     .background(Color(0xFFF9FAFB), RoundedCornerShape(6.dp))
                     .padding(10.dp)
             ) {
-                Column(verticalArrangement = Arrangement.spacedBy(4.dp)) {
-                    Row {
-                        Text(
-                            text = "Uploaded By : ",
-                            fontSize = 12.sp,
-                            fontFamily = GillSans,
-                            color = Color.Black
-                        )
-                        Text(
-                            text = doc.uploaded_by ?: "",
-                            fontSize = 12.sp,
-                            fontFamily = GillSans,
-                            color = Color.Black
-                        )
+                if (currentTab == "delete") {
+                    Column(verticalArrangement = Arrangement.spacedBy(4.dp)) {
+                        Row(verticalAlignment = Alignment.CenterVertically) {
+                            Text(
+                                text = "Date : ",
+                                fontSize = 12.sp,
+                                fontFamily = GillSans,
+                                color = labelColor
+                            )
+                            Text(
+                                text = doc.created ?: "",
+                                fontSize = 12.sp,
+                                fontFamily = GillSans,
+                                color = valueColor,
+                                maxLines = 1,
+                                overflow = TextOverflow.Ellipsis
+                            )
+                        }
+                        Row(verticalAlignment = Alignment.CenterVertically) {
+                            Text(
+                                text = "Deleted By : ",
+                                fontSize = 12.sp,
+                                fontFamily = GillSans,
+                                color = labelColor
+                            )
+                            Text(
+                                text = doc.deletedBy ?: "",
+                                fontSize = 12.sp,
+                                fontFamily = GillSans,
+                                color = valueColor,
+                                maxLines = 1,
+                                overflow = TextOverflow.Ellipsis
+                            )
+                        }
+                        Row(verticalAlignment = Alignment.CenterVertically) {
+                            Text(
+                                text = "Deleted On : ",
+                                fontSize = 12.sp,
+                                fontFamily = GillSans,
+                                color = labelColor
+                            )
+                            Text(
+                                text = doc.deletedOn ?: "",
+                                fontSize = 12.sp,
+                                fontFamily = GillSans,
+                                color = valueColor,
+                                maxLines = 1,
+                                overflow = TextOverflow.Ellipsis
+                            )
+                        }
+                        Row(verticalAlignment = Alignment.CenterVertically) {
+                            Text(
+                                text = "Document Type : ",
+                                fontSize = 12.sp,
+                                fontFamily = GillSans,
+                                color = labelColor
+                            )
+                            Text(
+                                text = doc.category?.ifEmpty { doc.doc_type } ?: (doc.doc_type ?: ""),
+                                fontSize = 12.sp,
+                                fontFamily = GillSans,
+                                color = valueColor,
+                                maxLines = 1,
+                                overflow = TextOverflow.Ellipsis
+                            )
+                        }
                     }
-                    Row {
-                        Text(
-                            text = "Uploaded On : ",
-                            fontSize = 12.sp,
-                            fontFamily = GillSans,
-                            color = Color.Black
-                        )
-                        Text(
-                            text = doc.created ?: "",
-                            fontSize = 12.sp,
-                            fontFamily = GillSans,
-                            color = Color.Black
-                        )
-                    }
-                    Row {
-                        Text(
-                            text = "Expiration : ",
-                            fontSize = 12.sp,
-                            fontFamily = GillSans,
-                            color = Color.Black
-                        )
-                        Text(
-                            text = doc.expiration_date?.ifEmpty { "NA" } ?: "NA",
-                            fontSize = 12.sp,
-                            fontFamily = GillSans,
-                            color = Color.Black
-                        )
+                } else {
+                    Column(verticalArrangement = Arrangement.spacedBy(4.dp)) {
+                        Row(verticalAlignment = Alignment.CenterVertically) {
+                            Text(
+                                text = "Uploaded By : ",
+                                fontSize = 12.sp,
+                                fontFamily = GillSans,
+                                color = labelColor
+                            )
+                            Text(
+                                text = doc.uploaded_by ?: "",
+                                fontSize = 12.sp,
+                                fontFamily = GillSans,
+                                color = valueColor,
+                                textDecoration = TextDecoration.Underline,
+                                maxLines = 1,
+                                overflow = TextOverflow.Ellipsis
+                            )
+                        }
+                        Row(verticalAlignment = Alignment.CenterVertically) {
+                            Text(
+                                text = "Uploaded On : ",
+                                fontSize = 12.sp,
+                                fontFamily = GillSans,
+                                color = labelColor
+                            )
+                            Text(
+                                text = doc.created ?: "",
+                                fontSize = 12.sp,
+                                fontFamily = GillSans,
+                                color = valueColor,
+                                maxLines = 1,
+                                overflow = TextOverflow.Ellipsis
+                            )
+                        }
+                        Row(verticalAlignment = Alignment.CenterVertically) {
+                            Text(
+                                text = "Expiration : ",
+                                fontSize = 12.sp,
+                                fontFamily = GillSans,
+                                color = labelColor
+                            )
+                            Text(
+                                text = doc.expiration_date?.ifEmpty { "NA" } ?: "NA",
+                                fontSize = 12.sp,
+                                fontFamily = GillSans,
+                                color = valueColor,
+                                maxLines = 1,
+                                overflow = TextOverflow.Ellipsis
+                            )
+                        }
+                        val tagsList = mutableListOf<String>()
+                        doc.tag?.let { t ->
+                            t.keys().forEach { k ->
+                                val v = t.optString(k)
+                                if (v.isNotEmpty()) tagsList.add("$k-$v") else tagsList.add(k)
+                            }
+                        }
+                        if (tagsList.isNotEmpty()) {
+                            Row(verticalAlignment = Alignment.CenterVertically) {
+                                Text(
+                                    text = "Tags : ",
+                                    fontSize = 12.sp,
+                                    fontFamily = GillSans,
+                                    color = labelColor
+                                )
+                                Text(
+                                    text = tagsList.joinToString(", "),
+                                    fontSize = 12.sp,
+                                    fontFamily = GillSans,
+                                    color = valueColor,
+                                    maxLines = 1,
+                                    overflow = TextOverflow.Ellipsis
+                                )
+                            }
+                        }
                     }
                 }
             }
@@ -878,14 +1145,18 @@ fun ViewDocumentItemCard(
 @Composable
 fun ViewDocumentItemGrid(
     doc: ViewDocumentsModel,
+    currentTab: String,
     previewUrl: String?,
     previewBitmap: android.graphics.Bitmap?,
     isLoadingPreview: Boolean,
     isFailedPreview: Boolean,
     onAction: (String) -> Unit,
-    onLoadPreview: () -> Unit
+    onLoadPreview: () -> Unit,
+    modifier: Modifier = Modifier
 ) {
     var expandedMenu by remember { mutableStateOf(false) }
+    val labelColor = Color(0xFF757575)
+    val valueColor = Color.Black
 
     LaunchedEffect(doc.id) {
         onLoadPreview()
@@ -897,61 +1168,65 @@ fun ViewDocumentItemGrid(
         R.drawable.unlock
     }
 
-    val isDownloadDisabled = doc.is_disabled
-    val downloadIcon = if (isDownloadDisabled) {
+    val isDownloadEnabled = !doc.is_disabled
+    val downloadIcon = if (isDownloadEnabled) {
         R.drawable.down_enabled
     } else {
         R.drawable.down_disable
     }
 
     Card(
-        modifier = Modifier
+        modifier = modifier
             .fillMaxWidth()
-            .height(210.dp)
+            .wrapContentHeight()
             .alpha(if (doc.isdisabled) 0.5f else 1.0f),
         shape = RoundedCornerShape(8.dp),
         colors = CardDefaults.cardColors(containerColor = Color.White),
         elevation = CardDefaults.cardElevation(defaultElevation = 2.dp)
     ) {
         Column(
-            modifier = Modifier.fillMaxSize()
+            modifier = Modifier
+                .fillMaxWidth()
+                .wrapContentHeight()
         ) {
             // 1. Top bar containing Lock & Download toggle status
-            Row(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .height(32.dp)
-                    .background(Color(0xFFF9F9F9))
-                    .padding(horizontal = 8.dp),
-                horizontalArrangement = Arrangement.End,
-                verticalAlignment = Alignment.CenterVertically
-            ) {
-                IconButton(
-                    onClick = { onAction(if (doc.is_encrypted || doc.added_encryption) "decrypt" else "encrypt") },
-                    enabled = !doc.isdisabled,
-                    modifier = Modifier.size(20.dp)
+            if (currentTab != "delete") {
+                Row(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .height(32.dp)
+                        .background(Color(0xFFF9F9F9))
+                        .padding(horizontal = 8.dp),
+                    horizontalArrangement = Arrangement.End,
+                    verticalAlignment = Alignment.CenterVertically
                 ) {
-                    Icon(
-                        painter = painterResource(id = lockIcon),
-                        contentDescription = "Lock",
-                        tint = Color.Unspecified,
-                        modifier = Modifier.size(18.dp)
-                    )
-                }
+                    IconButton(
+                        onClick = { onAction(if (doc.is_encrypted || doc.added_encryption) "decrypt" else "encrypt") },
+                        enabled = !doc.isdisabled,
+                        modifier = Modifier.size(20.dp)
+                    ) {
+                        Icon(
+                            painter = painterResource(id = lockIcon),
+                            contentDescription = "Lock",
+                            tint = Color.Unspecified,
+                            modifier = Modifier.size(18.dp)
+                        )
+                    }
 
-                Spacer(modifier = Modifier.width(6.dp))
+                    Spacer(modifier = Modifier.width(6.dp))
 
-                IconButton(
-                    onClick = { onAction(if (isDownloadDisabled) "disabled" else "enabled") },
-                    enabled = !doc.isdisabled,
-                    modifier = Modifier.size(20.dp)
-                ) {
-                    Icon(
-                        painter = painterResource(id = downloadIcon),
-                        contentDescription = "Download Status",
-                        tint = Color.Unspecified,
-                        modifier = Modifier.size(18.dp)
-                    )
+                    IconButton(
+                        onClick = { onAction(if (isDownloadEnabled) "disable_download" else "enable_download") },
+                        enabled = !doc.isdisabled,
+                        modifier = Modifier.size(20.dp)
+                    ) {
+                        Icon(
+                            painter = painterResource(id = downloadIcon),
+                            contentDescription = "Download Status",
+                            tint = Color.Unspecified,
+                            modifier = Modifier.size(18.dp)
+                        )
+                    }
                 }
             }
 
@@ -1004,91 +1279,61 @@ fun ViewDocumentItemGrid(
                 }
             }
 
-            // 3. Bottom area with Details & Menu trigger
-            Row(
+            // 3. Bottom area with Document Name and (Date + 3-dot Menu)
+            Column(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .weight(1f)
-                    .padding(horizontal = 8.dp, vertical = 4.dp),
-                verticalAlignment = Alignment.CenterVertically
+                    .background(Color(0xFFF9F9F9))
+                    .padding(horizontal = 10.dp, vertical = 8.dp)
             ) {
-                Column(
-                    modifier = Modifier.weight(1f),
-                    verticalArrangement = Arrangement.Center
+                Text(
+                    text = doc.name ?: "",
+                    fontSize = 13.sp,
+                    fontFamily = GillSans,
+                    fontWeight = FontWeight.Bold,
+                    color = Color.Black,
+                    maxLines = 2,
+                    overflow = TextOverflow.Ellipsis,
+                    modifier = Modifier.fillMaxWidth()
+                )
+
+                Spacer(modifier = Modifier.height(6.dp))
+
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    verticalAlignment = Alignment.CenterVertically,
+                    horizontalArrangement = Arrangement.SpaceBetween
                 ) {
+                    val formattedDate = formatGridDate(if (currentTab == "delete" && !doc.deletedOn.isNullOrEmpty()) doc.deletedOn else doc.created)
                     Text(
-                        text = doc.name ?: "",
-                        fontSize = 12.sp,
+                        text = formattedDate,
+                        fontSize = 11.sp,
                         fontFamily = GillSans,
-                        fontWeight = FontWeight.Bold,
                         color = Color.Black,
                         maxLines = 1,
-                        overflow = TextOverflow.Ellipsis
+                        overflow = TextOverflow.Ellipsis,
+                        modifier = Modifier.weight(1f)
                     )
-                    Spacer(modifier = Modifier.height(2.dp))
-                    Text(
-                        text = doc.created ?: "",
-                        fontSize = 10.sp,
-                        fontFamily = GillSans,
-                        color = Color.Gray,
-                        maxLines = 1
-                    )
-                }
 
-                Box {
-                    IconButton(
-                        onClick = { expandedMenu = true },
-                        enabled = !doc.isdisabled,
-                        modifier = Modifier.size(24.dp)
-                    ) {
-                        Icon(
-                            painter = painterResource(id = R.drawable.img_17),
-                            contentDescription = "Options",
-                            tint = Color.Unspecified,
-                            modifier = Modifier.size(20.dp)
-                        )
-                    }
-                    DropdownMenu(
-                        expanded = expandedMenu,
-                        onDismissRequest = { expandedMenu = false },
-                        modifier = Modifier
-                            .background(Color.White)
-                            .width(160.dp)
-                    ) {
-                        DropdownMenuItem(
-                            text = {
-                                Text(
-                                    text = "View",
-                                    fontFamily = GillSans,
-                                    fontSize = 14.sp,
-                                    color = Color.Black
-                                )
-                            },
-                            onClick = { expandedMenu = false; onAction("View") }
-                        )
-                        HorizontalDivider(thickness = 0.5.dp, color = Color.LightGray)
-                        DropdownMenuItem(
-                            text = {
-                                Text(
-                                    text = "Edit Info",
-                                    fontFamily = GillSans,
-                                    fontSize = 14.sp,
-                                    color = Color.Black
-                                )
-                            },
-                            onClick = { expandedMenu = false; onAction("Edit Info") }
-                        )
-                        HorizontalDivider(thickness = 0.5.dp, color = Color.LightGray)
-                        DropdownMenuItem(
-                            text = {
-                                Text(
-                                    text = "Delete",
-                                    fontFamily = GillSans,
-                                    fontSize = 14.sp,
-                                    color = Color.Black
-                                )
-                            },
-                            onClick = { expandedMenu = false; onAction("Delete") }
+                    Box {
+                        IconButton(
+                            onClick = { expandedMenu = true },
+                            enabled = !doc.isdisabled,
+                            modifier = Modifier.size(24.dp)
+                        ) {
+                            Icon(
+                                painter = painterResource(id = R.drawable.img_17),
+                                contentDescription = "Options",
+                                tint = Color.Unspecified,
+                                modifier = Modifier.size(20.dp)
+                            )
+                        }
+                        DocumentActionMenu(
+                            expanded = expandedMenu,
+                            onDismissRequest = { expandedMenu = false },
+                            currentTab = currentTab,
+                            doc = doc,
+                            onAction = onAction
                         )
                     }
                 }
@@ -1097,82 +1342,91 @@ fun ViewDocumentItemGrid(
     }
 }
 
+private fun formatGridDate(createdDate: String?): String {
+    if (createdDate.isNullOrEmpty()) return ""
+    return if (createdDate.contains(",")) {
+        val parts = createdDate.split(",")
+        if (parts.size >= 2) {
+            "${parts[0].trim()}, ${parts[1].trim()}"
+        } else {
+            createdDate
+        }
+    } else {
+        createdDate
+    }
+}
+
 @Composable
 fun PaginationBar(
     currentPage: Int,
     totalPages: Int,
-    onPageSelected: (Int) -> Unit,
+    onPrev: () -> Unit,
+    onNext: () -> Unit,
     modifier: Modifier = Modifier
 ) {
     if (totalPages <= 1) return
 
+    val isPrevEnabled = currentPage > 1
+    val isNextEnabled = currentPage < totalPages
+
     Row(
         modifier = modifier
             .fillMaxWidth()
-            .padding(vertical = 16.dp),
-        horizontalArrangement = Arrangement.Center,
+            .padding(vertical = 12.dp, horizontal = 10.dp),
+        horizontalArrangement = Arrangement.End,
         verticalAlignment = Alignment.CenterVertically
     ) {
-        val leftEnabled = currentPage > 1
-        Box(
+        // Previous Button
+        Button(
+            onClick = onPrev,
+            colors = ButtonDefaults.buttonColors(
+                containerColor = Color(0xFF004D87),
+                disabledContainerColor = Color(0xFF7A9BB8),
+                contentColor = Color.White,
+                disabledContentColor = Color.White
+            ),
+            shape = RoundedCornerShape(8.dp),
+            elevation = ButtonDefaults.buttonElevation(defaultElevation = 2.dp),
             modifier = Modifier
-                .size(32.dp)
-                .clickable(enabled = leftEnabled) { onPageSelected(currentPage - 1) },
-            contentAlignment = Alignment.Center
+                .width(100.dp)
+                .height(38.dp)
+                .alpha(if (isPrevEnabled) 1.0f else 0.5f),
+            enabled = isPrevEnabled
         ) {
             Text(
-                text = "<",
+                text = "<< Prev",
                 fontFamily = GillSans,
+                fontSize = 14.sp,
                 fontWeight = FontWeight.Bold,
-                fontSize = 16.sp,
-                color = if (leftEnabled) Color(0xFF004D87) else Color.LightGray
+                color = Color.White
             )
         }
 
-        Spacer(modifier = Modifier.width(8.dp))
+        Spacer(modifier = Modifier.width(10.dp))
 
-        val blueGradient = androidx.compose.ui.graphics.Brush.linearGradient(
-            colors = listOf(Color(0xFF0073C6), Color(0xFF004D87))
-        )
-
-        for (page in 1..totalPages) {
-            val isActive = page == currentPage
-            Box(
-                modifier = Modifier
-                    .size(32.dp)
-                    .background(
-                        brush = if (isActive) blueGradient else androidx.compose.ui.graphics.Brush.linearGradient(listOf(Color.Transparent, Color.Transparent)),
-                        shape = RoundedCornerShape(8.dp)
-                    )
-                    .clickable { onPageSelected(page) },
-                contentAlignment = Alignment.Center
-            ) {
-                Text(
-                    text = page.toString(),
-                    fontFamily = GillSans,
-                    fontWeight = FontWeight.Bold,
-                    fontSize = 14.sp,
-                    color = if (isActive) Color.White else Color(0xFF004D87)
-                )
-            }
-            Spacer(modifier = Modifier.width(4.dp))
-        }
-
-        Spacer(modifier = Modifier.width(4.dp))
-
-        val rightEnabled = currentPage < totalPages
-        Box(
+        // Next Button
+        Button(
+            onClick = onNext,
+            colors = ButtonDefaults.buttonColors(
+                containerColor = Color(0xFF004D87),
+                disabledContainerColor = Color(0xFF7A9BB8),
+                contentColor = Color.White,
+                disabledContentColor = Color.White
+            ),
+            shape = RoundedCornerShape(8.dp),
+            elevation = ButtonDefaults.buttonElevation(defaultElevation = 2.dp),
             modifier = Modifier
-                .size(32.dp)
-                .clickable(enabled = rightEnabled) { onPageSelected(currentPage + 1) },
-            contentAlignment = Alignment.Center
+                .width(100.dp)
+                .height(38.dp)
+                .alpha(if (isNextEnabled) 1.0f else 0.5f),
+            enabled = isNextEnabled
         ) {
             Text(
-                text = ">",
+                text = "Next >>",
                 fontFamily = GillSans,
+                fontSize = 14.sp,
                 fontWeight = FontWeight.Bold,
-                fontSize = 16.sp,
-                color = if (rightEnabled) Color(0xFF004D87) else Color.LightGray
+                color = Color.White
             )
         }
     }
@@ -1186,8 +1440,8 @@ fun AppConfirmDialog(
     onDismiss: () -> Unit
 ) {
     val message = when (actionType) {
-        "disabled" -> "Are you sure you want to enable download for this document?"
-        "enabled" -> "Are you sure you want to disable download for this document?"
+        "disable_download", "enabled" -> "Are you sure you want to disable download for this document?"
+        "enable_download", "disabled" -> "Are you sure you want to enable download for this document?"
         "encrypt" -> "Are you sure you want to encrypt Document?"
         "decrypt" -> "Are you sure you want to decrypt Document?"
         "deleted" -> "Are you sure to permanently delete document?"
@@ -1200,21 +1454,12 @@ fun AppConfirmDialog(
         else -> "Confirmation"
     }
 
-    AppDialog(
+    AppConfirmationDialog(
         title = title,
+        message = message,
         onConfirm = onConfirm,
-        onDismiss = onDismiss,
-        confirmText = "Yes",
-        dismissText = "No"
-    ) {
-        Text(
-            text = message,
-            fontFamily = GillSans,
-            fontSize = 15.sp,
-            color = Color.Black,
-            textAlign = TextAlign.Center
-        )
-    }
+        onDismiss = onDismiss
+    )
 }
 
 @Composable
@@ -1224,153 +1469,96 @@ fun DocumentViewerDialog(
     contentType: String,
     onDismiss: () -> Unit
 ) {
-    Dialog(
-        onDismissRequest = onDismiss,
-        properties = DialogProperties(usePlatformDefaultWidth = false)
-    ) {
-        Surface(
-            modifier = Modifier.fillMaxSize(),
-            color = Color.White
-        ) {
-            Column(modifier = Modifier.fillMaxSize()) {
-                Row(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .background(Color(0xFF004D87))
-                        .padding(12.dp),
-                    horizontalArrangement = Arrangement.SpaceBetween,
-                    verticalAlignment = Alignment.CenterVertically
-                ) {
-                    Text(text = docName, color = Color.White, fontWeight = FontWeight.Bold)
-                    IconButton(onClick = onDismiss) {
-                        Icon(
-                            painter = painterResource(id = R.drawable.cancel_white_icon),
-                            contentDescription = "Close Preview",
-                            tint = Color.Unspecified,
-                            modifier = Modifier.size(24.dp)
-                        )
-                    }
+    val context = LocalContext.current
+    DisposableEffect(url) {
+        val activity = context as? androidx.fragment.app.FragmentActivity
+        val dialog = if (activity != null) {
+            val dialogBuilder = android.app.AlertDialog.Builder(activity)
+            val inflater = activity.layoutInflater
+            val view = inflater.inflate(R.layout.view_documents, null)
+            val progressBar = view.findViewById<ProgressBar>(R.id.progress_pdf)
+            val iv_image = view.findViewById<ImageView>(R.id.doc_image)
+            val idPDFView = view.findViewById<com.github.barteksc.pdfviewer.PDFView>(R.id.idPDFView)
+            val header = view.findViewById<android.widget.TextView>(R.id.header_name)
+            val iv_close_edit_docs = view.findViewById<ImageView>(R.id.close_edit_docs)
+            header.text = docName
+            val dlg = dialogBuilder.create()
+            val pdfTask = arrayOfNulls<com.digicoffer.lauditor.CommonFiles.PdfUtils.RetrievePDFfromUrl>(1)
+
+            iv_close_edit_docs.setOnClickListener {
+                try {
+                    idPDFView?.recycle()
+                    pdfTask[0]?.cancelLoading()
+                    pdfTask[0]?.cancel(true)
+                } catch (ignored: Exception) {
                 }
+                dlg.dismiss()
+                onDismiss()
+            }
+            dlg.setOnDismissListener {
+                onDismiss()
+            }
 
-                Box(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .weight(1f),
-                    contentAlignment = Alignment.Center
-                ) {
-                    val lowerUrl = url.lowercase(java.util.Locale.ROOT)
-                    val isImage = contentType.startsWith("image/", ignoreCase = true) ||
-                            lowerUrl.endsWith(".jpg") ||
-                            lowerUrl.endsWith(".jpeg") ||
-                            lowerUrl.endsWith(".png") ||
-                            lowerUrl.endsWith(".gif") ||
-                            lowerUrl.endsWith(".webp") ||
-                            lowerUrl.endsWith(".bmp")
+            val lowerUrl = url.lowercase(java.util.Locale.getDefault())
+            val cleanUrlPath = lowerUrl.substringBefore('?')
+            val isImage = contentType.startsWith("image/", ignoreCase = true) ||
+                    contentType.contains("image", ignoreCase = true) ||
+                    lowerUrl.contains("response-content-type=image") ||
+                    lowerUrl.contains("image%2f") ||
+                    cleanUrlPath.endsWith(".jpg") ||
+                    cleanUrlPath.endsWith(".jpeg") ||
+                    cleanUrlPath.endsWith(".png") ||
+                    cleanUrlPath.endsWith(".gif") ||
+                    cleanUrlPath.endsWith(".webp") ||
+                    cleanUrlPath.endsWith(".bmp") ||
+                    cleanUrlPath.endsWith(".svg") ||
+                    cleanUrlPath.endsWith(".apng") ||
+                    cleanUrlPath.endsWith(".avif") ||
+                    docName.endsWith(".jpg", ignoreCase = true) ||
+                    docName.endsWith(".jpeg", ignoreCase = true) ||
+                    docName.endsWith(".png", ignoreCase = true) ||
+                    docName.endsWith(".gif", ignoreCase = true) ||
+                    docName.endsWith(".webp", ignoreCase = true)
 
-                    if (isImage) {
-                        AndroidView(
-                            factory = { ctx ->
-                                val pBar = ProgressBar(ctx)
-                                val imgView = ImageView(ctx).apply {
-                                    scaleType = ImageView.ScaleType.FIT_CENTER
-                                    adjustViewBounds = true
-                                    layoutParams = FrameLayout.LayoutParams(
-                                        FrameLayout.LayoutParams.MATCH_PARENT,
-                                        FrameLayout.LayoutParams.MATCH_PARENT,
-                                        android.view.Gravity.CENTER
-                                    )
-                                }
-                                val frameLayout = FrameLayout(ctx).apply {
-                                    layoutParams = FrameLayout.LayoutParams(
-                                        FrameLayout.LayoutParams.MATCH_PARENT,
-                                        FrameLayout.LayoutParams.MATCH_PARENT
-                                    )
-                                    addView(imgView)
-                                    addView(pBar, FrameLayout.LayoutParams(
-                                        FrameLayout.LayoutParams.WRAP_CONTENT,
-                                        FrameLayout.LayoutParams.WRAP_CONTENT,
-                                        android.view.Gravity.CENTER
-                                    ))
-                                }
-                                val loadTarget: Any = if (url.startsWith("localfile://")) {
-                                    File(url.replace("localfile://", ""))
-                                } else {
-                                    url
-                                }
-                                com.bumptech.glide.Glide.with(ctx)
-                                    .load(loadTarget)
-                                    .fitCenter()
-                                    .listener(object : com.bumptech.glide.request.RequestListener<android.graphics.drawable.Drawable> {
-                                        override fun onLoadFailed(
-                                            e: com.bumptech.glide.load.engine.GlideException?,
-                                            model: Any?,
-                                            target: com.bumptech.glide.request.target.Target<android.graphics.drawable.Drawable>?,
-                                            isFirstResource: Boolean
-                                        ): Boolean {
-                                            pBar.visibility = android.view.View.GONE
-                                            return false
-                                        }
-
-                                        override fun onResourceReady(
-                                            resource: android.graphics.drawable.Drawable?,
-                                            model: Any?,
-                                            target: com.bumptech.glide.request.target.Target<android.graphics.drawable.Drawable>?,
-                                            dataSource: com.bumptech.glide.load.DataSource?,
-                                            isFirstResource: Boolean
-                                        ): Boolean {
-                                            pBar.visibility = android.view.View.GONE
-                                            return false
-                                        }
-                                    })
-                                    .into(imgView)
-                                frameLayout
-                            },
-                            modifier = Modifier.fillMaxSize()
-                        )
-                    } else {
-                        // PDF & converted documents (XLS, XLSX, DOC, DOCX, etc.) render in PDFView
-                        AndroidView(
-                            factory = { ctx ->
-                                val pBar = ProgressBar(ctx)
-                                val pView = com.github.barteksc.pdfviewer.PDFView(ctx, null).apply {
-                                    layoutParams = FrameLayout.LayoutParams(
-                                        FrameLayout.LayoutParams.MATCH_PARENT,
-                                        FrameLayout.LayoutParams.MATCH_PARENT,
-                                        android.view.Gravity.CENTER
-                                    )
-                                }
-                                val frameLayout = FrameLayout(ctx).apply {
-                                    layoutParams = FrameLayout.LayoutParams(
-                                        FrameLayout.LayoutParams.MATCH_PARENT,
-                                        FrameLayout.LayoutParams.MATCH_PARENT
-                                    )
-                                    addView(pView)
-                                    addView(pBar, FrameLayout.LayoutParams(
-                                        FrameLayout.LayoutParams.WRAP_CONTENT,
-                                        FrameLayout.LayoutParams.WRAP_CONTENT,
-                                        android.view.Gravity.CENTER
-                                    ))
-                                }
-                                if (url.startsWith("localfile://")) {
-                                    try {
-                                        val filePath = url.replace("localfile://", "")
-                                        val file = File(filePath)
-                                        pView.fromFile(file)
-                                            .onLoad { pBar.visibility = android.view.View.GONE }
-                                            .load()
-                                    } catch (e: Exception) {
-                                        e.printStackTrace()
-                                        pBar.visibility = android.view.View.GONE
-                                    }
-                                } else {
-                                    com.digicoffer.lauditor.CommonFiles.PdfUtils.RetrievePDFfromUrl(pView, pBar).execute(url)
-                                }
-                                frameLayout
-                            },
-                            modifier = Modifier.fillMaxSize()
-                        )
-                    }
+            if (isImage) {
+                iv_image.visibility = android.view.View.VISIBLE
+                progressBar.visibility = android.view.View.GONE
+                val loadTarget: Any = if (url.startsWith("localfile://")) {
+                    File(url.replace("localfile://", ""))
+                } else {
+                    url
                 }
+                com.bumptech.glide.Glide.with(context)
+                    .load(loadTarget)
+                    .placeholder(R.drawable.progress_animation)
+                    .fitCenter()
+                    .into(iv_image)
+            } else {
+                idPDFView.visibility = android.view.View.VISIBLE
+                progressBar.visibility = android.view.View.VISIBLE
+                if (url.startsWith("localfile://")) {
+                    val localPath = url.replace("localfile://", "")
+                    val file = File(localPath)
+                    idPDFView.fromFile(file)
+                        .onLoad { progressBar.visibility = android.view.View.GONE }
+                        .load()
+                } else {
+                    pdfTask[0] = com.digicoffer.lauditor.CommonFiles.PdfUtils.RetrievePDFfromUrl(idPDFView, progressBar)
+                    pdfTask[0]?.execute(url)
+                }
+            }
+            dlg.setCancelable(false)
+            dlg.setCanceledOnTouchOutside(false)
+            dlg.window?.setBackgroundDrawableResource(android.R.color.transparent)
+            dlg.setView(view)
+            dlg.show()
+            dlg
+        } else null
+
+        onDispose {
+            try {
+                dialog?.dismiss()
+            } catch (ignored: Exception) {
             }
         }
     }

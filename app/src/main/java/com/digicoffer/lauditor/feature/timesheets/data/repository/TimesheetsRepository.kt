@@ -14,6 +14,7 @@ class TimesheetsRepository(private val context: Context) {
 
     suspend fun fetchTimesheets(date: String, submitted: Boolean): HttpResultDo = suspendCancellableCoroutine { continuation ->
         if (com.digicoffer.lauditor.CommonFiles.GlobalFiles.Constants.TOKEN == "mock_token_123") {
+            android.util.Log.d("TIMESHEET_DEBUG", "fetchTimesheets mock response for date=$date, submitted=$submitted")
             continuation.resume(HttpResultDo().apply {
                 result = WebServiceHelper.ServiceCallStatus.Success
                 responseContent = getMockTimesheetsJson(date, submitted)
@@ -22,13 +23,15 @@ class TimesheetsRepository(private val context: Context) {
         }
         try {
             val url = if (date.isEmpty()) {
-                "v3/user/timesheets"
+                if (submitted) "v3/user/timesheets?submitted=true" else "v3/user/timesheets"
             } else {
                 "v3/user/timesheets/$date?submitted=$submitted"
             }
+            android.util.Log.d("TIMESHEET_DEBUG", "fetchTimesheets calling GET url: $url")
             WebServiceHelper.callHttpWebService(
                 object : AsyncTaskCompleteListener {
                     override fun onAsyncTaskComplete(httpResult: HttpResultDo) {
+                        android.util.Log.d("TIMESHEET_DEBUG", "fetchTimesheets onAsyncTaskComplete result=${httpResult.result}, response=${httpResult.responseContent}")
                         continuation.resume(httpResult)
                     }
                     override fun onClick(view: View) {}
@@ -40,6 +43,7 @@ class TimesheetsRepository(private val context: Context) {
                 JSONObject().toString()
             )
         } catch (e: Exception) {
+            android.util.Log.e("TIMESHEET_DEBUG", "fetchTimesheets exception: ${e.message}", e)
             continuation.resume(createFailedResult(e))
         }
     }

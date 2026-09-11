@@ -157,10 +157,31 @@ fun HistoryTimelineCard(
                 modifier = Modifier.padding(top = 4.dp)
             )
 
-            // Payment info
-            val symbol = appointment.payment?.symbol ?: ""
-            val amount = appointment.payment?.amount_paid ?: "0"
-            val paymentLabel = appointment.payment?.label?.takeIf { it.isNotBlank() } ?: "$symbol$amount"
+            // Status & Payment info
+            val cleanHistoryStatus = appointment.appointment_status.lowercase(Locale.ROOT).trim()
+            val isCancelledHistory = cleanHistoryStatus == "cancelled" || cleanHistoryStatus == "canceled"
+
+            val symbol = appointment.payment?.symbol?.ifEmpty { "₹" } ?: "₹"
+            val amount = appointment.payment?.amount_paid?.trim() ?: ""
+            val paymentStatus = (appointment.payment?.status ?: "").lowercase(Locale.ROOT).trim()
+            val apiLabel = appointment.payment?.label?.trim() ?: ""
+
+            val paymentLabel = when {
+                isCancelledHistory -> {
+                    val amt = when {
+                        amount.isNotEmpty() && amount != "0" -> amount
+                        apiLabel.contains(symbol) -> apiLabel.substringAfter(symbol).trim()
+                        else -> ""
+                    }
+                    if (amt.isNotEmpty() && amt != "0") "Refunded - $symbol$amt" else "Refunded"
+                }
+                apiLabel.isNotBlank() -> apiLabel
+                paymentStatus == "paid" -> "Paid - $symbol${if (amount.isNotEmpty()) amount else "0"}"
+                paymentStatus == "refunded" -> "Refunded - $symbol${if (amount.isNotEmpty()) amount else "0"}"
+                paymentStatus == "refund_initiated" -> "Refund Initiated - $symbol${if (amount.isNotEmpty()) amount else "0"}"
+                else -> "Pending - $symbol${if (amount.isNotEmpty()) amount else "0"}"
+            }
+
             Text(
                 text = "Payment: $paymentLabel",
                 fontSize = 15.sp,
@@ -170,14 +191,13 @@ fun HistoryTimelineCard(
             )
 
             // Status Badge
-            val cleanHistoryStatus = appointment.appointment_status.lowercase(Locale.ROOT).trim()
             val (displayHistoryStatus, historyStatusStyle) = when (cleanHistoryStatus) {
                 "completed" -> Pair("Completed", AppStatusStyle.SUCCESS)
                 "cancelled", "canceled" -> Pair("Cancelled", AppStatusStyle.ERROR)
                 "upcoming" -> Pair("Upcoming", AppStatusStyle.INFO)
                 "ongoing" -> Pair("Ongoing", AppStatusStyle.INFO)
                 "payment_pending", "pending" -> Pair("Payment Pending", AppStatusStyle.WARNING)
-                else -> Pair(if (cleanHistoryStatus.isNotEmpty()) appointment.appointment_status.replaceFirstChar { it.uppercase() } else "Scheduled", AppStatusStyle.NEUTRAL)
+                else -> Pair(if (cleanHistoryStatus.isNotEmpty()) appointment.appointment_status.replaceFirstChar { it.uppercase() } else "Upcoming", AppStatusStyle.NEUTRAL)
             }
             AppStatusBadge(
                 text = displayHistoryStatus,
@@ -202,13 +222,19 @@ fun HistoryTimelineCard(
                             noteAddingDraft
                         }
 
+                        val wordCount = getWordCount(editorText)
+                        val maxWords = 500
+
                         OutlinedTextField(
                             value = editorText,
-                            onValueChange = {
-                                if (isEditing) {
-                                    onNoteEditDraftChanged(editingNoteId!!, it)
-                                } else {
-                                    onNoteDraftChanged(it)
+                            onValueChange = { newText ->
+                                val newWordCount = getWordCount(newText)
+                                if (newWordCount <= maxWords || newText.length < editorText.length) {
+                                    if (isEditing) {
+                                        onNoteEditDraftChanged(editingNoteId!!, newText)
+                                    } else {
+                                        onNoteDraftChanged(newText)
+                                    }
                                 }
                             },
                             placeholder = { Text("Notes", color = Color(0xFF546E7A)) },
@@ -238,7 +264,7 @@ fun HistoryTimelineCard(
                             modifier = Modifier.fillMaxWidth()
                         ) {
                             Text(
-                                text = "${editorText.length}/500",
+                                text = "$wordCount/$maxWords Words",
                                 fontSize = 12.sp,
                                 color = Color(0xFF546E7A),
                                 fontFamily = FontFamily(Font(R.font.gill_sans_regular)),
@@ -339,4 +365,9 @@ private fun formatHistoryDateTime(from: String, to: String): String {
     } catch (e: Exception) {
         "$from - $to"
     }
+}
+
+private fun getWordCount(text: String): Int {
+    val trimmed = text.trim()
+    return if (trimmed.isEmpty()) 0 else trimmed.split("\\s+".toRegex()).filter { it.isNotEmpty() }.size
 }

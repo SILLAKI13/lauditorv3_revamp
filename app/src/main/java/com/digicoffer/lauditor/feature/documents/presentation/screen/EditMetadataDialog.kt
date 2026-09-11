@@ -34,6 +34,7 @@ import androidx.compose.ui.window.DialogProperties
 import com.digicoffer.lauditor.R
 import com.digicoffer.lauditor.Documents.Models.ViewDocumentsModel
 import com.digicoffer.lauditor.core.ui.common.dialogs.AppDialog
+import com.digicoffer.lauditor.core.ui.common.dialogs.AppConfirmationDialog
 import org.json.JSONObject
 import java.util.Calendar
 import java.util.Date
@@ -61,61 +62,98 @@ fun EditMetadataDialog(
         val raw = doc.name ?: ""
         raw.substringBeforeLast('.', missingDelimiterValue = raw)
     }
+    val initialName = remember(doc) {
+        if (!doc.name.isNullOrEmpty()) {
+            doc.name?.substringBeforeLast('.', missingDelimiterValue = doc.name ?: "") ?: ""
+        } else ""
+    }
+    val initialDescription = remember(doc) {
+        if (!doc.description.isNullOrEmpty()) {
+            doc.description?.substringBeforeLast('.', missingDelimiterValue = doc.description ?: "") ?: ""
+        } else {
+            defaultBaseName
+        }
+    }
+    val initialExpirationDate = remember(doc) {
+        val raw = doc.expiration_date ?: ""
+        if (raw.equals("NA", ignoreCase = true)) "" else raw
+    }
+    val initialEnableDownloadVal = remember(initialDownloadDisabled, doc) {
+        !initialDownloadDisabled
+    }
+    val initialEnableEncryptionVal = remember(initialEncrypted, doc) {
+        initialEncrypted
+    }
+    val initialTags = remember(doc) {
+        val map = mutableMapOf<String, String>()
+        val list = doc.tagslist
+        if (list != null) {
+            for (i in 0 until list.length()) {
+                val obj = list.optJSONObject(i)
+                if (obj != null) {
+                    val k = obj.optString("key")
+                    val v = obj.optString("value")
+                    if (k.isNotEmpty()) map[k] = v
+                }
+            }
+        }
+        if (map.isEmpty()) {
+            val tagObj = doc.tag
+            if (tagObj != null) {
+                val keys = tagObj.keys()
+                while (keys.hasNext()) {
+                    val k = keys.next()
+                    val v = tagObj.optString(k)
+                    if (k.isNotEmpty()) map[k] = v
+                }
+            }
+        }
+        map
+    }
+
     var name by remember(doc) {
-        mutableStateOf(
-            if (!doc.name.isNullOrEmpty()) {
-                doc.name?.substringBeforeLast('.', missingDelimiterValue = doc.name ?: "") ?: ""
-            } else ""
-        )
+        mutableStateOf(initialName)
     }
     var description by remember(doc) {
-        mutableStateOf(
-            if (!doc.description.isNullOrEmpty()) {
-                doc.description?.substringBeforeLast('.', missingDelimiterValue = doc.description ?: "") ?: ""
-            } else {
-                defaultBaseName
-            }
-        )
+        mutableStateOf(initialDescription)
     }
-    var expirationDate by remember(doc) { mutableStateOf(doc.expiration_date ?: "") }
+    var expirationDate by remember(doc) {
+        mutableStateOf(initialExpirationDate)
+    }
 
-    // Switch states: New document defaults to OFF for both switches; existing document uses saved backend values
-    var enableDownload by remember(doc) {
-        mutableStateOf(if (isStaged) false else !initialDownloadDisabled)
+    // Switch states: Preserve initial boolean values passed into dialog
+    var enableDownload by remember(initialDownloadDisabled, doc) {
+        mutableStateOf(initialEnableDownloadVal)
     }
-    var enableEncryption by remember(doc) {
-        mutableStateOf(if (isStaged) false else initialEncrypted)
+    var enableEncryption by remember(initialEncrypted, doc) {
+        mutableStateOf(initialEnableEncryptionVal)
     }
 
     // Tags list mapping
     val tagsMap = remember(doc) {
         mutableStateMapOf<String, String>().apply {
-            val list = doc.tagslist
-            if (list != null) {
-                for (i in 0 until list.length()) {
-                    val obj = list.optJSONObject(i)
-                    if (obj != null) {
-                        val k = obj.optString("key")
-                        val v = obj.optString("value")
-                        if (k.isNotEmpty()) {
-                            put(k, v)
-                        }
-                    }
-                }
-            }
-            if (isEmpty()) {
-                val tagObj = doc.tag
-                if (tagObj != null) {
-                    val keys = tagObj.keys()
-                    while (keys.hasNext()) {
-                        val k = keys.next()
-                        val v = tagObj.optString(k)
-                        if (k.isNotEmpty()) {
-                            put(k, v)
-                        }
-                    }
-                }
-            }
+            putAll(initialTags)
+        }
+    }
+
+    val hasChanged by remember(name, description, expirationDate, enableDownload, enableEncryption, tagsMap.toMap()) {
+        derivedStateOf {
+            name != initialName ||
+            description != initialDescription ||
+            expirationDate != initialExpirationDate ||
+            (isStaged && enableDownload != initialEnableDownloadVal) ||
+            (isStaged && enableEncryption != initialEnableEncryptionVal) ||
+            (isStaged && tagsMap.toMap() != initialTags)
+        }
+    }
+
+    var showDiscardAlert by remember { mutableStateOf(false) }
+
+    val handleCancelOrClose = {
+        if (hasChanged) {
+            showDiscardAlert = true
+        } else {
+            onDismiss()
         }
     }
 
@@ -128,16 +166,18 @@ fun EditMetadataDialog(
     var datePickerError by remember { mutableStateOf<String?>(null) }
 
     val context = LocalContext.current
+    val configuration = androidx.compose.ui.platform.LocalConfiguration.current
+    val maxDialogHeight = (configuration.screenHeightDp * 0.88f).dp
 
     Dialog(
-        onDismissRequest = onDismiss,
+        onDismissRequest = handleCancelOrClose,
         properties = DialogProperties(usePlatformDefaultWidth = false)
     ) {
         Surface(
             modifier = Modifier
                 .fillMaxWidth(0.92f)
-                .wrapContentHeight()
-                .padding(vertical = 24.dp),
+                .heightIn(max = maxDialogHeight)
+                .padding(vertical = 16.dp),
             shape = RoundedCornerShape(8.dp),
             color = Color.White
         ) {
@@ -158,7 +198,7 @@ fun EditMetadataDialog(
                         fontSize = 16.sp
                     )
                     IconButton(
-                        onClick = onDismiss,
+                        onClick = handleCancelOrClose,
                         modifier = Modifier.size(24.dp)
                     ) {
                         Icon(
@@ -170,12 +210,13 @@ fun EditMetadataDialog(
                     }
                 }
 
-                // Body content
+                // Body content (Inner Scroll)
                 Column(
                     modifier = Modifier
                         .fillMaxWidth()
-                        .padding(16.dp)
-                        .verticalScroll(rememberScrollState()),
+                        .weight(1f, fill = false)
+                        .verticalScroll(rememberScrollState())
+                        .padding(16.dp),
                     verticalArrangement = Arrangement.spacedBy(10.dp)
                 ) {
                     // Document Name *
@@ -289,166 +330,167 @@ fun EditMetadataDialog(
                         )
                     }
 
-                    Spacer(modifier = Modifier.height(4.dp))
+                    if (isStaged) {
+                        Spacer(modifier = Modifier.height(4.dp))
 
-                    // Enable Download Switch
-                    Row(
-                        modifier = Modifier.fillMaxWidth(),
-                        horizontalArrangement = Arrangement.SpaceBetween,
-                        verticalAlignment = Alignment.CenterVertically
-                    ) {
-                        Text(
-                            text = "Enable Download",
-                            color = Color(0xFF004D87),
-                            fontFamily = GillSansBold,
-                            fontSize = 14.sp
-                        )
-                        CompactCustomSwitch(
-                            checked = enableDownload,
-                            onCheckedChange = { enableDownload = it }
-                        )
-                    }
-
-                    // Enable Encryption Switch
-                    Row(
-                        modifier = Modifier.fillMaxWidth(),
-                        horizontalArrangement = Arrangement.SpaceBetween,
-                        verticalAlignment = Alignment.CenterVertically
-                    ) {
-                        Text(
-                            text = "Enable Encryption",
-                            color = Color(0xFF004D87),
-                            fontFamily = GillSansBold,
-                            fontSize = 14.sp
-                        )
-                        CompactCustomSwitch(
-                            checked = enableEncryption,
-                            onCheckedChange = { enableEncryption = it }
-                        )
-                    }
-
-                    Spacer(modifier = Modifier.height(4.dp))
-
-                    // Tags row
-                    Row(
-                        modifier = Modifier.fillMaxWidth(),
-                        horizontalArrangement = Arrangement.SpaceBetween,
-                        verticalAlignment = Alignment.CenterVertically
-                    ) {
-                        Text(
-                            text = "Tags",
-                            color = Color(0xFF004D87),
-                            fontFamily = GillSansBold,
-                            fontSize = 14.sp
-                        )
-                        Button(
-                            onClick = {
-                                tagToEditKey = null
-                                tagToEditVal = null
-                                showAddTagDialog = true
-                            },
-                            colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF004D87)),
-                            shape = RoundedCornerShape(4.dp),
-                            contentPadding = PaddingValues(horizontal = 14.dp, vertical = 6.dp),
-                            modifier = Modifier.height(34.dp)
+                        // Enable Download Switch
+                        Row(
+                            modifier = Modifier.fillMaxWidth(),
+                            horizontalArrangement = Arrangement.SpaceBetween,
+                            verticalAlignment = Alignment.CenterVertically
                         ) {
-                            Text("Add Tag", color = Color.White, fontFamily = GillSansBold, fontSize = 13.sp)
+                            Text(
+                                text = "Enable Download",
+                                color = Color(0xFF004D87),
+                                fontFamily = GillSansBold,
+                                fontSize = 14.sp
+                            )
+                            CompactCustomSwitch(
+                                checked = enableDownload,
+                                onCheckedChange = { enableDownload = it }
+                            )
                         }
-                    }
 
-                    // Tags list layout showing added tags as grey rounded rectangular cards (Image 1 style)
-                    if (tagsMap.isNotEmpty()) {
-                        FlowRow(
-                            mainAxisSpacing = 8.dp,
-                            crossAxisSpacing = 8.dp,
-                            modifier = Modifier.fillMaxWidth()
+                        // Enable Encryption Switch
+                        Row(
+                            modifier = Modifier.fillMaxWidth(),
+                            horizontalArrangement = Arrangement.SpaceBetween,
+                            verticalAlignment = Alignment.CenterVertically
                         ) {
-                            tagsMap.entries.forEach { entry ->
-                                Row(
-                                    modifier = Modifier
-                                        .background(Color(0xFFEEEEEE), shape = RoundedCornerShape(6.dp))
-                                        .border(BorderStroke(1.dp, Color(0xFFDDDDDE)), shape = RoundedCornerShape(6.dp))
-                                        .padding(horizontal = 10.dp, vertical = 8.dp),
-                                    verticalAlignment = Alignment.CenterVertically,
-                                    horizontalArrangement = Arrangement.spacedBy(8.dp)
-                                ) {
-                                    Text(
-                                        text = "${entry.key} : ${entry.value}",
-                                        color = Color.Black,
-                                        fontFamily = GillSans,
-                                        fontSize = 13.sp
-                                    )
-                                    Icon(
-                                        painter = painterResource(id = R.drawable.edit__icon),
-                                        contentDescription = "Edit Tag",
-                                        tint = Color.Unspecified,
+                            Text(
+                                text = "Enable Encryption",
+                                color = Color(0xFF004D87),
+                                fontFamily = GillSansBold,
+                                fontSize = 14.sp
+                            )
+                            CompactCustomSwitch(
+                                checked = enableEncryption,
+                                onCheckedChange = { enableEncryption = it }
+                            )
+                        }
+
+                        Spacer(modifier = Modifier.height(4.dp))
+
+                        // Tags row
+                        Row(
+                            modifier = Modifier.fillMaxWidth(),
+                            horizontalArrangement = Arrangement.SpaceBetween,
+                            verticalAlignment = Alignment.CenterVertically
+                        ) {
+                            Text(
+                                text = "Tags",
+                                color = Color(0xFF004D87),
+                                fontFamily = GillSansBold,
+                                fontSize = 14.sp
+                            )
+                            Button(
+                                onClick = {
+                                    tagToEditKey = null
+                                    tagToEditVal = null
+                                    showAddTagDialog = true
+                                },
+                                colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF004D87)),
+                                shape = RoundedCornerShape(4.dp),
+                                contentPadding = PaddingValues(horizontal = 14.dp, vertical = 6.dp),
+                                modifier = Modifier.height(34.dp)
+                            ) {
+                                Text("Add Tag", color = Color.White, fontFamily = GillSansBold, fontSize = 13.sp)
+                            }
+                        }
+
+                        // Tags list layout showing added tags as grey rounded rectangular cards (Image 1 style)
+                        if (tagsMap.isNotEmpty()) {
+                            FlowRow(
+                                mainAxisSpacing = 8.dp,
+                                crossAxisSpacing = 8.dp,
+                                modifier = Modifier.fillMaxWidth()
+                            ) {
+                                tagsMap.entries.forEach { entry ->
+                                    Row(
                                         modifier = Modifier
-                                            .size(16.dp)
-                                            .clickable {
-                                                tagToEditKey = entry.key
-                                                tagToEditVal = entry.value
-                                                showAddTagDialog = true
-                                            }
-                                    )
-                                    Icon(
-                                        painter = painterResource(id = R.drawable.cancel_red_icon),
-                                        contentDescription = "Remove Tag",
-                                        tint = Color.Unspecified,
-                                        modifier = Modifier
-                                            .size(16.dp)
-                                            .clickable {
-                                                tagsMap.remove(entry.key)
-                                            }
-                                    )
+                                            .background(Color(0xFFEEEEEE), shape = RoundedCornerShape(6.dp))
+                                            .border(BorderStroke(1.dp, Color(0xFFDDDDDE)), shape = RoundedCornerShape(6.dp))
+                                            .padding(horizontal = 10.dp, vertical = 8.dp),
+                                        verticalAlignment = Alignment.CenterVertically,
+                                        horizontalArrangement = Arrangement.spacedBy(8.dp)
+                                    ) {
+                                        Text(
+                                            text = "${entry.key} : ${entry.value}",
+                                            color = Color.Black,
+                                            fontFamily = GillSans,
+                                            fontSize = 13.sp
+                                        )
+                                        Icon(
+                                            painter = painterResource(id = R.drawable.edit__icon),
+                                            contentDescription = "Edit Tag",
+                                            tint = Color.Unspecified,
+                                            modifier = Modifier
+                                                .size(16.dp)
+                                                .clickable {
+                                                    tagToEditKey = entry.key
+                                                    tagToEditVal = entry.value
+                                                    showAddTagDialog = true
+                                                }
+                                        )
+                                        Icon(
+                                            painter = painterResource(id = R.drawable.cancel_red_icon),
+                                            contentDescription = "Remove Tag",
+                                            tint = Color.Unspecified,
+                                            modifier = Modifier
+                                                .size(16.dp)
+                                                .clickable {
+                                                    tagsMap.remove(entry.key)
+                                                }
+                                        )
+                                    }
                                 }
                             }
                         }
                     }
+                }
 
-                    Spacer(modifier = Modifier.height(10.dp))
-
-                    // Footer (Action Buttons)
-                    Row(
+                // Fixed Footer (Action Buttons)
+                Row(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .background(Color.White)
+                        .padding(horizontal = 16.dp, vertical = 12.dp),
+                    horizontalArrangement = Arrangement.spacedBy(12.dp)
+                ) {
+                    Button(
+                        onClick = handleCancelOrClose,
+                        colors = ButtonDefaults.buttonColors(containerColor = Color(0xFFEEEEEE)),
+                        shape = RoundedCornerShape(6.dp),
                         modifier = Modifier
-                            .fillMaxWidth()
-                            .padding(top = 8.dp),
-                        horizontalArrangement = Arrangement.spacedBy(12.dp)
+                            .weight(1f)
+                            .height(40.dp)
                     ) {
-                        Button(
-                            onClick = onDismiss,
-                            colors = ButtonDefaults.buttonColors(containerColor = Color(0xFFEEEEEE)),
-                            shape = RoundedCornerShape(6.dp),
-                            modifier = Modifier
-                                .weight(1f)
-                                .height(40.dp)
-                        ) {
-                            Text("Cancel", color = Color.Black, fontFamily = GillSansBold, fontSize = 14.sp)
-                        }
-                        Button(
-                            onClick = {
-                                if (name.isNotEmpty() && description.isNotEmpty()) {
-                                    val tagsJson = if (tagsMap.isNotEmpty()) {
-                                        JSONObject().apply {
-                                            tagsMap.forEach { (k, v) -> put(k, v) }
-                                        }
-                                    } else {
-                                        null
+                        Text("Cancel", color = Color.Black, fontFamily = GillSansBold, fontSize = 14.sp)
+                    }
+                    Button(
+                        onClick = {
+                            if (name.isNotEmpty() && description.isNotEmpty()) {
+                                val tagsJson = if (tagsMap.isNotEmpty()) {
+                                    JSONObject().apply {
+                                        tagsMap.forEach { (k, v) -> put(k, v) }
                                     }
-                                    onSave(name, description, expirationDate, !enableDownload, enableEncryption, tagsJson)
+                                } else {
+                                    null
                                 }
-                            },
-                            colors = ButtonDefaults.buttonColors(
-                                containerColor = Color(0xFF004D87),
-                                disabledContainerColor = Color(0xFFD0D0D0)
-                            ),
-                            shape = RoundedCornerShape(6.dp),
-                            modifier = Modifier
-                                .weight(1f)
-                                .height(40.dp),
-                            enabled = name.isNotEmpty() && description.isNotEmpty()
-                        ) {
-                            Text("Save", color = Color.White, fontFamily = GillSansBold, fontSize = 14.sp)
-                        }
+                                onSave(name, description, expirationDate, !enableDownload, enableEncryption, tagsJson)
+                            }
+                        },
+                        colors = ButtonDefaults.buttonColors(
+                            containerColor = Color(0xFF004D87),
+                            disabledContainerColor = Color(0xFFD0D0D0)
+                        ),
+                        shape = RoundedCornerShape(6.dp),
+                        modifier = Modifier
+                            .weight(1f)
+                            .height(40.dp),
+                        enabled = name.isNotEmpty() && description.isNotEmpty()
+                    ) {
+                        Text("Save", color = Color.White, fontFamily = GillSansBold, fontSize = 14.sp)
                     }
                 }
             }
@@ -777,6 +819,28 @@ fun EditMetadataDialog(
                     color = Color.Black,
                     textAlign = TextAlign.Center
                 )
+            }
+        )
+    }
+
+    if (showDiscardAlert) {
+        AppConfirmationDialog(
+            title = "Alert!",
+            message = "Changes you made will not be saved. Do you want to continue?",
+            confirmText = "Yes",
+            dismissText = "No",
+            onConfirm = {
+                // "Yes" -> Continue on editing
+                showDiscardAlert = false
+            },
+            onDismiss = {
+                // "No" -> Discard changes and close
+                showDiscardAlert = false
+                onDismiss()
+            },
+            onClose = {
+                // Close 'X' icon -> Stay on editing
+                showDiscardAlert = false
             }
         )
     }

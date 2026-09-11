@@ -151,7 +151,7 @@ fun TimesheetsScreen(
                         Column(
                             horizontalAlignment = Alignment.Start, // Corrected label start-alignment
                             modifier = Modifier
-                                .clickable(enabled = uiState.mainTab == "MyTimeSheets") { onDatePickerClick() }
+                                .clickable { onDatePickerClick() }
                         ) {
                             AppText(
                                 text = stringResource(id = R.string.from),
@@ -178,7 +178,7 @@ fun TimesheetsScreen(
                         Column(
                             horizontalAlignment = Alignment.Start, // Corrected label start-alignment
                             modifier = Modifier
-                                .clickable(enabled = uiState.mainTab == "MyTimeSheets") { onDatePickerClick() }
+                                .clickable { onDatePickerClick() }
                         ) {
                             AppText(
                                 text = stringResource(id = R.string.to),

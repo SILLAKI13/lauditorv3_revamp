@@ -44,7 +44,8 @@ fun DocumentsScreen(
     viewModel: MatterEditViewModel,
     onBrowseClick: () -> Unit,
     onViewDocument: (com.digicoffer.lauditor.Documents.Models.DocumentsModel) -> Unit,
-    onCancel: () -> Unit
+    onCancel: () -> Unit,
+    onSaveSuccess: () -> Unit = onCancel
 ) {
     val uiState by viewModel.uiState.collectAsState()
 
@@ -100,105 +101,7 @@ fun DocumentsScreen(
 
                     Spacer(modifier = Modifier.height(10.dp))
 
-                    // Section header for selected/attached files (shown above Browse Files)
-                    if (uiState.selectedExistingDocuments.isNotEmpty() || uiState.selectedUploadFiles.isNotEmpty()) {
-                        Text(
-                            text = stringResource(id = R.string.selected_documents),
-                            fontSize = 16.sp,
-                            fontFamily = GillSansBold,
-                            fontWeight = FontWeight.Bold,
-                            color = ColorTokens.BluePrimary,
-                            modifier = Modifier.padding(start = 4.dp, bottom = 8.dp)
-                        )
-                    }
-
-                    // Render existing attached documents (Loaded from matter details)
-                    uiState.selectedExistingDocuments.forEachIndexed { index, doc ->
-                        Row(
-                            modifier = Modifier
-                                .fillMaxWidth()
-                                .padding(vertical = 4.dp)
-                                .border(1.dp, Color(0xFFE2E8F0), RoundedCornerShape(4.dp))
-                                .background(Color(0xFFF8FAFC))
-                                .padding(8.dp),
-                            verticalAlignment = Alignment.CenterVertically
-                        ) {
-                            Text(
-                                text = doc.name ?: "",
-                                fontSize = 14.sp,
-                                fontFamily = GillSans,
-                                modifier = Modifier.weight(1f),
-                                color = Color.Black
-                            )
-                            IconButton(
-                                onClick = { onViewDocument(doc) },
-                                modifier = Modifier.size(30.dp)
-                            ) {
-                                Icon(
-                                    painter = painterResource(id = R.drawable.eye_icon),
-                                    contentDescription = "View File",
-                                    tint = Color.Unspecified
-                                )
-                            }
-                            Spacer(modifier = Modifier.width(8.dp))
-                            IconButton(
-                                onClick = { viewModel.removeExistingDocument(index) },
-                                modifier = Modifier.size(30.dp)
-                            ) {
-                                Icon(
-                                    painter = painterResource(id = R.drawable.cancel_red_icon),
-                                    contentDescription = "Remove File",
-                                    tint = Color.Unspecified
-                                )
-                            }
-                        }
-                    }
-
-                    // Render newly added files to upload
-                    uiState.selectedUploadFiles.forEachIndexed { index, doc ->
-                        Row(
-                            modifier = Modifier
-                                .fillMaxWidth()
-                                .padding(vertical = 4.dp)
-                                .border(1.dp, Color(0xFFE2E8F0), RoundedCornerShape(4.dp))
-                                .background(Color(0xFFF8FAFC))
-                                .padding(8.dp),
-                            verticalAlignment = Alignment.CenterVertically
-                        ) {
-                            Text(
-                                text = doc.name ?: "",
-                                fontSize = 14.sp,
-                                fontFamily = GillSans,
-                                modifier = Modifier.weight(1f),
-                                color = Color.Black
-                            )
-                            IconButton(
-                                onClick = { viewModel.setEditMetadataFileIndex(index) },
-                                modifier = Modifier.size(30.dp)
-                            ) {
-                                Icon(
-                                    painter = painterResource(id = R.drawable.edit__icon),
-                                    contentDescription = "Edit Metadata",
-                                    tint = Color.Unspecified
-                                )
-                            }
-                            Spacer(modifier = Modifier.width(8.dp))
-                            IconButton(
-                                onClick = { viewModel.removeUploadFile(index) },
-                                modifier = Modifier.size(30.dp)
-                            ) {
-                                Icon(
-                                    painter = painterResource(id = R.drawable.cancel_red_icon),
-                                    contentDescription = "Remove File",
-                                    tint = Color.Unspecified
-                                )
-                            }
-                        }
-                    }
-
-                    Spacer(modifier = Modifier.height(16.dp))
-
-                    // Dashed drop zone container
+                    // Dashed drop zone container (Always displayed)
                     Box(
                         modifier = Modifier
                             .fillMaxWidth()
@@ -255,6 +158,99 @@ fun DocumentsScreen(
                         }
                     }
 
+                    // Render selected / attached documents below Browse Files
+                    if (uiState.selectedExistingDocuments.isNotEmpty() || uiState.selectedUploadFiles.isNotEmpty()) {
+                        Spacer(modifier = Modifier.height(12.dp))
+
+                        // Existing attached documents (Loaded from matter details)
+                        uiState.selectedExistingDocuments.forEachIndexed { index, doc ->
+                            Row(
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .padding(vertical = 4.dp)
+                                    .border(1.dp, Color(0xFFE2E8F0), RoundedCornerShape(8.dp))
+                                    .background(Color(0xFFF1F5F9), RoundedCornerShape(8.dp))
+                                    .padding(horizontal = 12.dp, vertical = 8.dp),
+                                verticalAlignment = Alignment.CenterVertically
+                            ) {
+                                Text(
+                                    text = doc.name ?: "",
+                                    fontSize = 14.sp,
+                                    fontFamily = GillSans,
+                                    maxLines = 1,
+                                    overflow = androidx.compose.ui.text.style.TextOverflow.Ellipsis,
+                                    modifier = Modifier.weight(1f),
+                                    color = Color.Black
+                                )
+                                IconButton(
+                                    onClick = { onViewDocument(doc) },
+                                    modifier = Modifier.size(30.dp)
+                                ) {
+                                    Icon(
+                                        painter = painterResource(id = R.drawable.eye_icon),
+                                        contentDescription = "View File",
+                                        tint = Color.Unspecified
+                                    )
+                                }
+                                Spacer(modifier = Modifier.width(8.dp))
+                                IconButton(
+                                    onClick = { viewModel.removeExistingDocument(index) },
+                                    modifier = Modifier.size(30.dp)
+                                ) {
+                                    Icon(
+                                        painter = painterResource(id = R.drawable.cancel_red_icon),
+                                        contentDescription = "Remove File",
+                                        tint = Color.Unspecified
+                                    )
+                                }
+                            }
+                        }
+
+                        // Newly added files to upload
+                        uiState.selectedUploadFiles.forEachIndexed { index, doc ->
+                            Row(
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .padding(vertical = 4.dp)
+                                    .border(1.dp, Color(0xFFE2E8F0), RoundedCornerShape(8.dp))
+                                    .background(Color(0xFFF1F5F9), RoundedCornerShape(8.dp))
+                                    .padding(horizontal = 12.dp, vertical = 8.dp),
+                                verticalAlignment = Alignment.CenterVertically
+                            ) {
+                                Text(
+                                    text = doc.name ?: "",
+                                    fontSize = 14.sp,
+                                    fontFamily = GillSans,
+                                    maxLines = 1,
+                                    overflow = androidx.compose.ui.text.style.TextOverflow.Ellipsis,
+                                    modifier = Modifier.weight(1f),
+                                    color = Color.Black
+                                )
+                                IconButton(
+                                    onClick = { viewModel.setEditMetadataFileIndex(index) },
+                                    modifier = Modifier.size(30.dp)
+                                ) {
+                                    Icon(
+                                        painter = painterResource(id = R.drawable.edit__icon),
+                                        contentDescription = "Edit Metadata",
+                                        tint = Color.Unspecified
+                                    )
+                                }
+                                Spacer(modifier = Modifier.width(8.dp))
+                                IconButton(
+                                    onClick = { viewModel.removeUploadFile(index) },
+                                    modifier = Modifier.size(30.dp)
+                                ) {
+                                    Icon(
+                                        painter = painterResource(id = R.drawable.cancel_red_icon),
+                                        contentDescription = "Remove File",
+                                        tint = Color.Unspecified
+                                    )
+                                }
+                            }
+                        }
+                    }
+
                     Spacer(modifier = Modifier.height(16.dp))
 
                     Row(
@@ -285,7 +281,7 @@ fun DocumentsScreen(
 
                         Button(
                             onClick = {
-                                viewModel.uploadAndSaveDocuments(onSuccess = {})
+                                viewModel.uploadAndSaveDocuments(onSuccess = onSaveSuccess)
                             },
                             colors = ButtonDefaults.buttonColors(containerColor = ColorTokens.BluePrimary),
                             shape = RoundedCornerShape(10.dp),
@@ -336,29 +332,6 @@ fun DocumentsScreen(
                         viewModel.setEditMetadataFileIndex(null)
                     },
                     onDismiss = { viewModel.setEditMetadataFileIndex(null) }
-                )
-            }
-        }
-
-        if (uiState.showSuccessDialog) {
-            AppDialog(
-                title = "Success",
-                onDismiss = {
-                    viewModel.consumeUpdateSuccess()
-                    onCancel()
-                },
-                onConfirm = {
-                    viewModel.consumeUpdateSuccess()
-                    onCancel()
-                },
-                confirmText = "OK"
-            ) {
-                Text(
-                    text = uiState.successMessage.ifEmpty { "Documents saved successfully." },
-                    fontFamily = GillSans,
-                    fontSize = 15.sp,
-                    textAlign = TextAlign.Center,
-                    color = Color.Black
                 )
             }
         }

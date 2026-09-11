@@ -43,6 +43,7 @@ fun AppointmentCardItem(
     isMenuExpanded: Boolean,
     onMenuToggle: () -> Unit,
     onHistoryClick: () -> Unit,
+    onSettlementHistoryClick: () -> Unit = {},
     onCancelClick: () -> Unit,
     onDeleteClick: () -> Unit,
     onVideoCallClick: () -> Unit,
@@ -142,17 +143,56 @@ fun AppointmentCardItem(
 
                 Spacer(modifier = Modifier.height(10.dp))
 
-                // Payment Status
-                val paymentStatus = appointment.payment?.status ?: ""
-                val amountPaid = appointment.payment?.amount_paid ?: ""
-                val symbol = appointment.payment?.symbol ?: ""
-                val isPaid = "paid".equals(paymentStatus, ignoreCase = true)
+                // Status & Payment Status
+                val cleanStatus = appointment.appointment_status.lowercase(Locale.ROOT).trim()
+                val isCancelled = cleanStatus == "cancelled" || cleanStatus == "canceled"
+
+                val paymentStatus = (appointment.payment?.status ?: "").lowercase(Locale.ROOT).trim()
+                val amountPaid = appointment.payment?.amount_paid?.trim() ?: ""
+                val symbol = appointment.payment?.symbol?.ifEmpty { "₹" } ?: "₹"
+                val apiLabel = appointment.payment?.label?.trim() ?: ""
+
+                val (paymentText, paymentColor) = when {
+                    isCancelled -> {
+                        val amt = when {
+                            amountPaid.isNotEmpty() && amountPaid != "0" -> amountPaid
+                            apiLabel.contains(symbol) -> apiLabel.substringAfter(symbol).trim()
+                            else -> ""
+                        }
+                        val text = if (amt.isNotEmpty() && amt != "0") "Refunded - $symbol$amt" else "Refunded"
+                        Pair(text, Color(0xFFFF9800))
+                    }
+                    apiLabel.isNotBlank() -> {
+                        val color = when (paymentStatus) {
+                            "paid" -> Color(0xFF4CAF50)
+                            "refund_initiated", "refunded" -> Color(0xFFFF9800)
+                            else -> Color(0xFFFF9800)
+                        }
+                        Pair(apiLabel, color)
+                    }
+                    paymentStatus == "paid" -> {
+                        val amt = if (amountPaid.isNotEmpty()) amountPaid else "0"
+                        Pair("Paid - $symbol$amt", Color(0xFF4CAF50))
+                    }
+                    paymentStatus == "refund_initiated" -> {
+                        val amt = if (amountPaid.isNotEmpty()) amountPaid else "0"
+                        Pair("Refund Initiated - $symbol$amt", Color(0xFFFF9800))
+                    }
+                    paymentStatus == "refunded" -> {
+                        val amt = if (amountPaid.isNotEmpty()) amountPaid else "0"
+                        Pair("Refunded - $symbol$amt", Color(0xFFFF9800))
+                    }
+                    else -> {
+                        val displayAmt = if (amountPaid.isNotEmpty()) amountPaid else "0"
+                        Pair("Pending - $symbol$displayAmt", Color(0xFFFF9800))
+                    }
+                }
 
                 Text(
-                    text = if (isPaid) "Paid - $symbol$amountPaid" else "Pending - ${symbol}0",
+                    text = paymentText,
                     fontSize = 15.sp,
                     fontWeight = FontWeight.Bold,
-                    color = if (isPaid) Color(0xFF4CAF50) else Color(0xFFFF9800),
+                    color = paymentColor,
                     fontFamily = FontFamily(Font(R.font.gill_sans_regular))
                 )
 
@@ -163,14 +203,13 @@ fun AppointmentCardItem(
                     verticalAlignment = Alignment.CenterVertically,
                     modifier = Modifier.fillMaxWidth()
                 ) {
-                    val cleanStatus = appointment.appointment_status.lowercase(Locale.ROOT).trim()
                     val (displayStatus, statusStyle) = when (cleanStatus) {
                         "completed" -> Pair("Completed", AppStatusStyle.SUCCESS)
                         "cancelled", "canceled" -> Pair("Cancelled", AppStatusStyle.ERROR)
                         "upcoming" -> Pair("Upcoming", AppStatusStyle.INFO)
                         "ongoing" -> Pair("Ongoing", AppStatusStyle.INFO)
                         "payment_pending", "pending" -> Pair("Payment Pending", AppStatusStyle.WARNING)
-                        else -> Pair(if (cleanStatus.isNotEmpty()) appointment.appointment_status.replaceFirstChar { it.uppercase() } else "Scheduled", AppStatusStyle.NEUTRAL)
+                        else -> Pair(if (cleanStatus.isNotEmpty()) appointment.appointment_status.replaceFirstChar { it.uppercase() } else "Upcoming", AppStatusStyle.NEUTRAL)
                     }
 
                     AppStatusBadge(
@@ -230,6 +269,10 @@ fun AppointmentCardItem(
                     onMenuToggle()
                     onHistoryClick()
                 },
+                onSettlementHistoryClick = {
+                    onMenuToggle()
+                    onSettlementHistoryClick()
+                },
                 onCancelClick = {
                     onMenuToggle()
                     onCancelClick()
@@ -247,7 +290,7 @@ fun AppointmentCardItem(
 }
 
 // Replicate datetime formats
-private fun formatAppointmentDateTime(from: String, to: String): String {
+fun formatAppointmentDateTime(from: String, to: String): String {
     return try {
         val parser = SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss", Locale.ENGLISH)
         val dateFormatter = SimpleDateFormat("MMM dd, yyyy", Locale.ENGLISH)

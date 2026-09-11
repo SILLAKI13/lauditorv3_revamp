@@ -6,6 +6,7 @@ import androidx.compose.foundation.Image
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.material3.Text
@@ -62,10 +63,18 @@ fun AppEmptyState(
             Text(
                 text = title,
                 style = titleStyle,
-                color = titleColor ?: Color.Black
+                color = titleColor ?: Color.Black,
+                textAlign = TextAlign.Center,
+                modifier = Modifier.fillMaxWidth()
             )
         } else {
-            AppText(text = title, style = LauditorTheme.typography.headerTitle)
+            Text(
+                text = title,
+                style = LauditorTheme.typography.headerTitle,
+                color = titleColor ?: Color.Black,
+                textAlign = TextAlign.Center,
+                modifier = Modifier.fillMaxWidth()
+            )
         }
 
         if (description != null) {
@@ -75,13 +84,16 @@ fun AppEmptyState(
                     text = description,
                     style = descriptionStyle,
                     color = descriptionColor ?: Color.Gray,
-                    textAlign = TextAlign.Center
+                    textAlign = TextAlign.Center,
+                    modifier = Modifier.fillMaxWidth()
                 )
             } else {
-                AppText(
+                Text(
                     text = description,
                     style = LauditorTheme.typography.bodyRegular,
-                    color = LauditorTheme.colors.onSurfaceVariant
+                    color = descriptionColor ?: LauditorTheme.colors.onSurfaceVariant,
+                    textAlign = TextAlign.Center,
+                    modifier = Modifier.fillMaxWidth()
                 )
             }
         }

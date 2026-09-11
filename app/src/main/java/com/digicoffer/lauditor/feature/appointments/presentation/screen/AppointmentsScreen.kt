@@ -44,12 +44,18 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.compose.ui.platform.LocalFocusManager
+import androidx.compose.ui.platform.LocalSoftwareKeyboardController
+import java.util.Locale
 import com.digicoffer.lauditor.Appointments.Models.AppointmentModel
 import com.digicoffer.lauditor.R
+import com.digicoffer.lauditor.core.ui.common.dialogs.AppConfirmationDialog
 import com.digicoffer.lauditor.core.ui.common.dialogs.AppDialog
 import com.digicoffer.lauditor.core.ui.common.feedback.AppLoader
 import com.digicoffer.lauditor.feature.appointments.presentation.components.AppointmentCardItem
 import com.digicoffer.lauditor.feature.appointments.presentation.components.HistoryOverlayScreen
+import com.digicoffer.lauditor.feature.appointments.presentation.components.SettlementHistoryScreen
+import com.digicoffer.lauditor.feature.appointments.presentation.components.formatAppointmentDateTime
 import com.digicoffer.lauditor.feature.appointments.presentation.state.AppointmentsUiEvent
 import com.digicoffer.lauditor.feature.appointments.presentation.state.AppointmentsUiState
 import com.digicoffer.lauditor.feature.appointments.presentation.viewmodel.AppointmentsViewModel
@@ -81,6 +87,9 @@ fun AppointmentsScreen(
     onVideoCallClick: (AppointmentModel) -> Unit,
     modifier: Modifier = Modifier
 ) {
+    val keyboardController = LocalSoftwareKeyboardController.current
+    val focusManager = LocalFocusManager.current
+
     // Local Dialog States
     var pendingCancelAppointment by remember { mutableStateOf<AppointmentModel?>(null) }
     var pendingDeleteAppointment by remember { mutableStateOf<AppointmentModel?>(null) }
@@ -91,8 +100,13 @@ fun AppointmentsScreen(
             .fillMaxSize()
             .background(Color(0xFFE4F2FF))
     ) {
-        // Main Content Switch: Overlay vs Main Listing
-        if (uiState.historyClientId.isNotEmpty()) {
+        // Main Content Switch: Settlement History vs Client History vs Main Listing
+        if (uiState.settlementClientId.isNotEmpty()) {
+            SettlementHistoryScreen(
+                uiState = uiState,
+                onEvent = onEvent
+            )
+        } else if (uiState.historyClientId.isNotEmpty()) {
             HistoryOverlayScreen(
                 clientName = uiState.historyClientName,
                 clientProfilePic = uiState.historyClientProfilePic,
@@ -162,6 +176,15 @@ fun AppointmentsScreen(
                     value = uiState.searchQuery,
                     onValueChange = { onEvent(AppointmentsUiEvent.SearchQueryChanged(it)) },
                     placeholder = stringResource(id = R.string.search_appointments),
+                    onClearClick = {
+                        keyboardController?.hide()
+                        focusManager.clearFocus()
+                        onEvent(AppointmentsUiEvent.SearchQueryChanged(""))
+                    },
+                    onSearchKeyboardAction = {
+                        keyboardController?.hide()
+                        focusManager.clearFocus()
+                    },
                     modifier = Modifier
                         .fillMaxWidth()
                         .padding(horizontal = 10.dp, vertical = 5.dp)
@@ -223,6 +246,7 @@ fun AppointmentsScreen(
                                 isMenuExpanded = (index == uiState.expandedCardPosition),
                                 onMenuToggle = { onEvent(AppointmentsUiEvent.ToggleActionMenu(index)) },
                                 onHistoryClick = { onEvent(AppointmentsUiEvent.OpenHistory(item)) },
+                                onSettlementHistoryClick = { onEvent(AppointmentsUiEvent.OpenSettlementHistory(item)) },
                                 onCancelClick = { pendingCancelAppointment = item },
                                 onDeleteClick = { pendingDeleteAppointment = item },
                                 onVideoCallClick = { onVideoCallClick(item) },
@@ -301,7 +325,7 @@ fun AppointmentsScreen(
 
         // 1. Cancel Appointment Alert
         pendingCancelAppointment?.let { appointment ->
-            CustomConfirmationDialog(
+            AppConfirmationDialog(
                 title = "Cancel Appointment",
                 message = "Are you sure you want to cancel this appointment? This action cannot be undone.",
                 onConfirm = {
@@ -314,7 +338,7 @@ fun AppointmentsScreen(
 
         // 2. Delete Appointment Alert
         pendingDeleteAppointment?.let { appointment ->
-            CustomConfirmationDialog(
+            AppConfirmationDialog(
                 title = "Confirmation",
                 message = "Are you sure you want to delete this appointment? This action cannot be undone.",
                 onConfirm = {
@@ -327,7 +351,7 @@ fun AppointmentsScreen(
 
         // 3. Delete Note Alert
         pendingDeleteNote?.let { pair ->
-            CustomConfirmationDialog(
+            AppConfirmationDialog(
                 title = "Delete Note",
                 message = "Are you sure you want to delete this note?",
                 onConfirm = {
@@ -358,123 +382,6 @@ fun AppointmentsScreen(
                     )
                 }
             )
-        }
-    }
-}
-
-@Composable
-private fun CustomConfirmationDialog(
-    title: String,
-    message: String,
-    onConfirm: () -> Unit,
-    onDismiss: () -> Unit
-) {
-    androidx.compose.ui.window.Dialog(
-        onDismissRequest = onDismiss,
-        properties = androidx.compose.ui.window.DialogProperties(usePlatformDefaultWidth = false)
-    ) {
-        androidx.compose.material3.Surface(
-            modifier = Modifier
-                .fillMaxWidth(0.88f)
-                .wrapContentHeight(),
-            shape = RoundedCornerShape(12.dp),
-            color = Color.White,
-            shadowElevation = 8.dp
-        ) {
-            Column(
-                horizontalAlignment = Alignment.CenterHorizontally,
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(16.dp)
-            ) {
-                // Top close button
-                Row(
-                    horizontalArrangement = Arrangement.End,
-                    modifier = Modifier.fillMaxWidth()
-                ) {
-                    Image(
-                        painter = painterResource(id = R.drawable.simple_cancel),
-                        contentDescription = "Close",
-                        modifier = Modifier
-                            .size(24.dp)
-                            .clickable { onDismiss() }
-                    )
-                }
-
-                // Dialog Title in Primary Blue
-                Text(
-                    text = title,
-                    fontSize = 18.sp,
-                    fontWeight = FontWeight.Bold,
-                    color = Color(0xFF004D87),
-                    fontFamily = FontFamily(Font(R.font.gill_sans_regular)),
-                    textAlign = TextAlign.Center,
-                    modifier = Modifier.padding(top = 4.dp, bottom = 12.dp)
-                )
-
-                // Message Body
-                Text(
-                    text = message,
-                    fontSize = 15.sp,
-                    color = Color.Black,
-                    fontFamily = FontFamily(Font(R.font.gill_sans_regular)),
-                    textAlign = TextAlign.Center,
-                    modifier = Modifier
-                        .padding(horizontal = 8.dp, vertical = 8.dp)
-                        .fillMaxWidth()
-                )
-
-                Spacer(modifier = Modifier.height(16.dp))
-
-                // Bottom Buttons: No (Grey) and Yes (Blue)
-                Row(
-                    horizontalArrangement = Arrangement.Center,
-                    verticalAlignment = Alignment.CenterVertically,
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(bottom = 8.dp)
-                ) {
-                    Button(
-                        onClick = onDismiss,
-                        shape = RoundedCornerShape(8.dp),
-                        colors = ButtonDefaults.buttonColors(
-                            containerColor = Color(0xFFECEFF1)
-                        ),
-                        modifier = Modifier
-                            .height(40.dp)
-                            .width(100.dp)
-                    ) {
-                        Text(
-                            text = stringResource(id = R.string.no),
-                            color = Color.Black,
-                            fontSize = 15.sp,
-                            fontWeight = FontWeight.Bold,
-                            fontFamily = FontFamily(Font(R.font.gill_sans_regular))
-                        )
-                    }
-
-                    Spacer(modifier = Modifier.width(20.dp))
-
-                    Button(
-                        onClick = onConfirm,
-                        shape = RoundedCornerShape(8.dp),
-                        colors = ButtonDefaults.buttonColors(
-                            containerColor = Color(0xFF004D87)
-                        ),
-                        modifier = Modifier
-                            .height(40.dp)
-                            .width(100.dp)
-                    ) {
-                        Text(
-                            text = stringResource(id = R.string.yes),
-                            color = Color.White,
-                            fontSize = 15.sp,
-                            fontWeight = FontWeight.Bold,
-                            fontFamily = FontFamily(Font(R.font.gill_sans_regular))
-                        )
-                    }
-                }
-            }
         }
     }
 }

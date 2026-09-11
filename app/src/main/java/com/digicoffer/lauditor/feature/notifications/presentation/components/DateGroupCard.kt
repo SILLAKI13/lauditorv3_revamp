@@ -40,6 +40,7 @@ private val GillSans = FontFamily(Font(R.font.gill_sans))
 fun DateGroupCard(
     dateKey: String,
     notifications: List<NotificationsDo>,
+    selectedNotificationIds: Set<String>,
     onCheckedChange: (NotificationsDo, Boolean) -> Unit,
     onRowClick: (NotificationsDo) -> Unit,
     highlightIds: Set<String>,
@@ -113,6 +114,7 @@ fun DateGroupCard(
             notifications.forEachIndexed { index, notification ->
                 NotificationRowItem(
                     notification = notification,
+                    isSelected = selectedNotificationIds.contains(notification.id ?: ""),
                     onCheckedChange = { isChecked -> onCheckedChange(notification, isChecked) },
                     onRowClick = { onRowClick(notification) },
                     isLastItem = index == notifications.size - 1
@@ -137,6 +139,7 @@ fun DateGroupCardHighlightedPreview() {
         DateGroupCard(
             dateKey = "Jul 29, 2026",
             notifications = list,
+            selectedNotificationIds = setOf("n1"),
             onCheckedChange = { _, _ -> },
             onRowClick = {},
             highlightIds = setOf("n1"),

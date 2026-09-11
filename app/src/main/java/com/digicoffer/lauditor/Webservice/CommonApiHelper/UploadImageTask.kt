@@ -53,13 +53,15 @@ class UploadImageTask(
             val keys = json.keys()
             while (keys.hasNext()) {
                 val key = keys.next()
+                if (key == "content_type") continue
                 val value = json.optString(key)
                 builder.addFormDataPart(key, value)
             }
 
-            var contentType = getMimeType(uploadFile.absolutePath)
-            if (contentType == null) {
-                contentType = "application/octet-stream"
+            var contentType = if (json.has("content_type") && json.optString("content_type").isNotEmpty()) {
+                json.optString("content_type")
+            } else {
+                getMimeType(uploadFile.absolutePath) ?: "application/octet-stream"
             }
 
             builder.addFormDataPart("content_type", contentType)

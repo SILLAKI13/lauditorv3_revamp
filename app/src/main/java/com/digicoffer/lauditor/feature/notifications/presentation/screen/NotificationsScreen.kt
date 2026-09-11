@@ -16,11 +16,9 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.foundation.shape.CircleShape
-import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Text
-import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
@@ -34,16 +32,20 @@ import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.Font
 import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.digicoffer.lauditor.Notifications.Models.Navigation
 import com.digicoffer.lauditor.Notifications.Models.NotificationsDo
 import com.digicoffer.lauditor.R
-import com.digicoffer.lauditor.core.ui.common.inputs.AppCircleCheckbox
-import com.digicoffer.lauditor.core.ui.common.badges.AppPillBadge
 import com.digicoffer.lauditor.core.designsystem.theme.LauditorTheme
+import com.digicoffer.lauditor.core.ui.common.animation.fallDownItem
+import com.digicoffer.lauditor.core.ui.common.badges.AppPillBadge
+import com.digicoffer.lauditor.core.ui.common.dialogs.AppConfirmationDialog
+import com.digicoffer.lauditor.core.ui.common.dialogs.AppDialog
 import com.digicoffer.lauditor.core.ui.common.feedback.AppLoader
+import com.digicoffer.lauditor.core.ui.common.inputs.AppCircleCheckbox
 import com.digicoffer.lauditor.core.ui.common.search.AppSearchField
 import com.digicoffer.lauditor.feature.notifications.presentation.components.DateGroupCard
 import com.digicoffer.lauditor.feature.notifications.presentation.state.NotificationsUiEvent
@@ -230,10 +232,11 @@ fun NotificationsScreen(
                         .weight(1f)
                         .padding(horizontal = 4.dp, vertical = 4.dp)
                 ) {
-                    items(uiState.groupedItems.toList()) { (dateKey, items) ->
+                    itemsIndexed(uiState.groupedItems.toList()) { index, (dateKey, items) ->
                         DateGroupCard(
                             dateKey = dateKey,
                             notifications = items,
+                            selectedNotificationIds = uiState.selectedNotificationIds,
                             onCheckedChange = { notification, isChecked ->
                                 onEvent(NotificationsUiEvent.NotificationCheckedChange(notification, isChecked))
                             },
@@ -243,7 +246,8 @@ fun NotificationsScreen(
                             highlightIds = uiState.activeHighlightIds,
                             onHighlightDismiss = { ids ->
                                 onEvent(NotificationsUiEvent.HighlightCardDismissed(ids))
-                            }
+                            },
+                            modifier = Modifier.fallDownItem(index = index, triggerKey = uiState.notificationList)
                         )
                     }
                     
@@ -256,57 +260,31 @@ fun NotificationsScreen(
         }
     }
     
-    // Custom Confirmation & Alert Dialog Handling
-    if (uiState.alertTitle != null && uiState.alertMessage != null) {
-        AlertDialog(
-            onDismissRequest = { onEvent(NotificationsUiEvent.DismissDialogs) },
-            title = {
-                Text(
-                    text = uiState.alertTitle,
-                    fontFamily = GillSansRegular,
-                    fontWeight = FontWeight.Bold,
-                    fontSize = 18.sp,
-                    color = Color.Black
-                )
-            },
-            text = {
-                Text(
-                    text = uiState.alertMessage,
-                    fontFamily = GillSansRegular,
-                    fontSize = 14.sp,
-                    color = Color.Black
-                )
-            },
-            confirmButton = {
-                TextButton(
-                    onClick = {
-                        if (uiState.alertTitle == "Confirmation") {
-                            onEvent(NotificationsUiEvent.ConfirmDeleteSelected)
-                        }
-                        onEvent(NotificationsUiEvent.DismissDialogs)
-                    }
-                ) {
-                    Text(
-                        text = if (uiState.alertTitle == "Confirmation") "Yes" else "Ok",
-                        fontFamily = GillSansRegular,
-                        color = Color(0xFF004D87),
-                        fontWeight = FontWeight.Bold
-                    )
-                }
-            },
-            dismissButton = if (uiState.alertTitle == "Confirmation") {
-                {
-                    TextButton(onClick = { onEvent(NotificationsUiEvent.DismissDialogs) }) {
-                        Text(
-                            text = "No",
-                            fontFamily = GillSansRegular,
-                            color = Color(0xFF666666),
-                            fontWeight = FontWeight.Bold
-                        )
-                    }
-                }
-            } else null
+    // Delete Confirmation Dialog
+    if (uiState.showDeleteConfirmation) {
+        AppConfirmationDialog(
+            title = "Confirmation",
+            message = "Are you sure you want to delete the selected notifications?",
+            onConfirm = { onEvent(NotificationsUiEvent.ConfirmDeleteSelected) },
+            onDismiss = { onEvent(NotificationsUiEvent.DismissDialogs) }
         )
+    }
+
+    // Success / Error Alert Dialog
+    if (!uiState.alertMessage.isNullOrEmpty()) {
+        AppDialog(
+            title = if (uiState.alertTitle.isNullOrBlank()) "Alert" else uiState.alertTitle!!,
+            onConfirm = { onEvent(NotificationsUiEvent.DismissDialogs) },
+            onDismiss = { onEvent(NotificationsUiEvent.DismissDialogs) }
+        ) {
+            Text(
+                text = uiState.alertMessage!!,
+                fontFamily = GillSansRegular,
+                fontSize = 15.sp,
+                color = Color.Black,
+                textAlign = TextAlign.Center
+            )
+        }
     }
     
     // API Progress Loader Overlay
@@ -331,6 +309,7 @@ fun NotificationsScreenPreview() {
             notificationList = testList,
             filteredList = testList,
             groupedItems = mapOf("Jul 29, 2026" to testList),
+            selectedNotificationIds = setOf("1"),
             hasSelection = true,
             isAllSelected = false
         )

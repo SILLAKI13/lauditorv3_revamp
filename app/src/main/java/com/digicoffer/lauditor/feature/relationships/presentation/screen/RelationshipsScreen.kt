@@ -8,6 +8,7 @@ import androidx.compose.foundation.verticalScroll
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.*
@@ -20,6 +21,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.foundation.BorderStroke
+import com.digicoffer.lauditor.core.ui.common.animation.fallDownItem
 import androidx.compose.ui.text.buildAnnotatedString
 import androidx.compose.ui.text.withStyle
 import androidx.compose.ui.text.SpanStyle
@@ -93,13 +95,26 @@ fun RelationshipsScreen(
     val currentRelType = remember { Constants.Rel_Type ?: "Individual" }
 
     // Search query on main directory
-    var directorySearchQuery by remember { mutableStateOf("") }
+    var searchDraft by remember { mutableStateOf("") }
+    var appliedSearchQuery by remember { mutableStateOf("") }
 
     // Dialog state targets
     var activeRelationModel by remember { mutableStateOf<RelationshipsModel?>(null) }
     var validationAlertMessage by remember { mutableStateOf<String?>(null) }
 
     val coroutineScope = rememberCoroutineScope()
+
+    fun triggerSearch(query: String) {
+        appliedSearchQuery = query.trim()
+        viewModel.onEvent(
+            RelationshipsUiEvent.FetchRelationships(
+                tag = currentRelType,
+                navPosition = "",
+                searchQuery = appliedSearchQuery,
+                anchorId = ""
+            )
+        )
+    }
 
     val handleViewDoc: (SharedDocumentsDo, String) -> Unit = { doc, sharedTag ->
         val effContentType = getEffectiveContentType(doc)
@@ -167,14 +182,14 @@ fun RelationshipsScreen(
     var groupSearchQuery by remember { mutableStateOf("") }
     val selectedGroupIds = remember { mutableStateListOf<String>() }
 
-    LaunchedEffect(screenMode, currentRelType, directorySearchQuery) {
+    LaunchedEffect(screenMode, currentRelType) {
         if (screenMode == ScreenMode.LIST) {
             onTitleChange("View Relationships")
             viewModel.onEvent(
                 RelationshipsUiEvent.FetchRelationships(
                     tag = currentRelType,
                     navPosition = "",
-                    searchQuery = directorySearchQuery,
+                    searchQuery = appliedSearchQuery,
                     anchorId = ""
                 )
             )
@@ -217,7 +232,8 @@ fun RelationshipsScreen(
                             fontFamily = GillSans,
                             fontWeight = FontWeight.Bold,
                             fontSize = 17.sp,
-                            lineHeight = 22.sp
+                            lineHeight = 22.sp,
+                            modifier = Modifier.weight(1f).padding(end = 8.dp)
                         )
 
                         AppHeaderButton(
@@ -228,11 +244,27 @@ fun RelationshipsScreen(
                         )
                     }
 
-                    // Unified Search Bar layout matching screenshot
+                    // Unified Submit-Only Search Bar
                     AppSearchField(
-                        value = directorySearchQuery,
-                        onValueChange = { directorySearchQuery = it },
-                        onSearchClick = { /* search query matches fetch */ },
+                        value = searchDraft,
+                        onValueChange = { 
+                            searchDraft = it
+                            if (it.isEmpty() && appliedSearchQuery.isNotEmpty()) {
+                                triggerSearch("")
+                            }
+                        },
+                        onSearchClick = {
+                            triggerSearch(searchDraft)
+                        },
+                        onClearClick = {
+                            searchDraft = ""
+                            if (appliedSearchQuery.isNotEmpty()) {
+                                triggerSearch("")
+                            }
+                        },
+                        onSearchKeyboardAction = {
+                            triggerSearch(searchDraft)
+                        },
                         placeholder = "Search Relationship",
                         modifier = Modifier.padding(horizontal = 10.dp, vertical = 10.dp)
                     )
@@ -240,7 +272,9 @@ fun RelationshipsScreen(
                     // Main Relationships directory list
                     if (uiState.relationshipsList.isEmpty() && !uiState.isLoading) {
                         Box(
-                            modifier = Modifier.fillMaxSize(),
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .weight(1f),
                             contentAlignment = Alignment.Center
                         ) {
                             Column(
@@ -273,9 +307,11 @@ fun RelationshipsScreen(
                         }
                     } else {
                         LazyColumn(
-                            modifier = Modifier.fillMaxSize()
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .weight(1f)
                         ) {
-                            items(uiState.relationshipsList) { model ->
+                            itemsIndexed(uiState.relationshipsList) { index, model ->
                                 RelationshipCardItem(
                                     model = model,
                                     onActionClick = { action, targetModel ->
@@ -313,94 +349,105 @@ fun RelationshipsScreen(
                                                 viewModel.onEvent(RelationshipsUiEvent.ActivateRelationship(targetModel.id ?: "") { success, msg ->
                                                     validationAlertMessage = msg
                                                     if (success) {
-                                                        viewModel.onEvent(RelationshipsUiEvent.FetchRelationships(currentRelType, "", "", ""))
+                                                        viewModel.onEvent(RelationshipsUiEvent.FetchRelationships(currentRelType, "", appliedSearchQuery, ""))
                                                     }
                                                 })
                                             }
                                         }
                                     },
                                     onCardClick = { targetModel ->
-                                        if (currentRelType.lowercase() != "deleted") {
+                                        val isInactive = targetModel.status?.lowercase() == "inactive"
+                                        val isPending = !isInactive && (targetModel.status?.lowercase() == "pending" || !targetModel.isAccepted)
+                                        if (currentRelType.lowercase() != "deleted" && !isPending && !isInactive && targetModel.isAccepted) {
                                             activeRelationModel = targetModel
                                             screenMode = ScreenMode.EXCHANGE_INFO
                                         }
-                                    }
+                                    },
+                                    modifier = Modifier.fallDownItem(index = index, triggerKey = uiState.relationshipsList)
                                 )
                             }
+                        }
 
-                            // Bottom Pagination Row as part of list scroll
-                            if (uiState.nextCursor != null || uiState.prevCursor != null) {
-                                item {
-                                    Row(
-                                        modifier = Modifier
-                                            .fillMaxWidth()
-                                            .background(Color.White)
-                                            .padding(horizontal = 10.dp, vertical = 10.dp),
-                                        horizontalArrangement = Arrangement.End,
-                                        verticalAlignment = Alignment.CenterVertically
-                                    ) {
-                                        Button(
-                                            onClick = {
-                                                uiState.prevCursor?.let { cursor ->
-                                                    viewModel.onEvent(
-                                                        RelationshipsUiEvent.FetchRelationships(
-                                                            tag = currentRelType,
-                                                            navPosition = "prev",
-                                                            searchQuery = directorySearchQuery,
-                                                            anchorId = cursor
-                                                        )
-                                                    )
-                                                }
-                                            },
-                                            enabled = uiState.prevCursor != null,
-                                            modifier = Modifier.width(110.dp).height(40.dp),
-                                            colors = ButtonDefaults.buttonColors(
-                                                containerColor = Color(0xFF004D87),
-                                                disabledContainerColor = Color.LightGray
-                                            ),
-                                            shape = RoundedCornerShape(10.dp),
-                                            contentPadding = PaddingValues(0.dp)
-                                        ) {
-                                            Text(
-                                                text = "<< Prev",
-                                                color = Color.White,
-                                                fontFamily = GillSans,
-                                                fontWeight = FontWeight.Bold,
-                                                fontSize = 15.sp
+                        // Fixed Bottom Pagination Bar
+                        if (uiState.nextCursor != null || uiState.prevCursor != null) {
+                            val isPrevEnabled = uiState.prevCursor != null
+                            val isNextEnabled = uiState.nextCursor != null
+
+                            Row(
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .padding(horizontal = 10.dp, vertical = 10.dp),
+                                horizontalArrangement = Arrangement.End,
+                                verticalAlignment = Alignment.CenterVertically
+                            ) {
+                                Button(
+                                    onClick = {
+                                        uiState.prevCursor?.let { cursor ->
+                                            viewModel.onEvent(
+                                                RelationshipsUiEvent.FetchRelationships(
+                                                    tag = currentRelType,
+                                                    navPosition = "prev",
+                                                    searchQuery = appliedSearchQuery,
+                                                    anchorId = cursor
+                                                )
                                             )
                                         }
-                                        Spacer(modifier = Modifier.width(10.dp))
-                                        Button(
-                                            onClick = {
-                                                uiState.nextCursor?.let { cursor ->
-                                                    viewModel.onEvent(
-                                                        RelationshipsUiEvent.FetchRelationships(
-                                                            tag = currentRelType,
-                                                            navPosition = "next",
-                                                            searchQuery = directorySearchQuery,
-                                                            anchorId = cursor
-                                                        )
-                                                    )
-                                                }
-                                            },
-                                            enabled = uiState.nextCursor != null,
-                                            modifier = Modifier.width(110.dp).height(40.dp),
-                                            colors = ButtonDefaults.buttonColors(
-                                                containerColor = Color(0xFF004D87),
-                                                disabledContainerColor = Color.LightGray
-                                            ),
-                                            shape = RoundedCornerShape(10.dp),
-                                            contentPadding = PaddingValues(0.dp)
-                                        ) {
-                                            Text(
-                                                text = "Next >>",
-                                                color = Color.White,
-                                                fontFamily = GillSans,
-                                                fontWeight = FontWeight.Bold,
-                                                fontSize = 15.sp
+                                    },
+                                    enabled = isPrevEnabled,
+                                    shape = RoundedCornerShape(8.dp),
+                                    colors = ButtonDefaults.buttonColors(
+                                        containerColor = Color(0xFF004D87),
+                                        disabledContainerColor = Color.LightGray,
+                                        contentColor = Color.White,
+                                        disabledContentColor = Color.White
+                                    ),
+                                    modifier = Modifier
+                                        .width(100.dp)
+                                        .height(38.dp)
+                                ) {
+                                    Text(
+                                        text = "<< Prev",
+                                        fontFamily = GillSans,
+                                        fontSize = 14.sp,
+                                        fontWeight = FontWeight.Bold,
+                                        color = Color.White
+                                    )
+                                }
+
+                                Spacer(modifier = Modifier.width(8.dp))
+
+                                Button(
+                                    onClick = {
+                                        uiState.nextCursor?.let { cursor ->
+                                            viewModel.onEvent(
+                                                RelationshipsUiEvent.FetchRelationships(
+                                                    tag = currentRelType,
+                                                    navPosition = "next",
+                                                    searchQuery = appliedSearchQuery,
+                                                    anchorId = cursor
+                                                )
                                             )
                                         }
-                                    }
+                                    },
+                                    enabled = isNextEnabled,
+                                    shape = RoundedCornerShape(8.dp),
+                                    colors = ButtonDefaults.buttonColors(
+                                        containerColor = Color(0xFF004D87),
+                                        disabledContainerColor = Color.LightGray,
+                                        contentColor = Color.White,
+                                        disabledContentColor = Color.White
+                                    ),
+                                    modifier = Modifier
+                                        .width(100.dp)
+                                        .height(38.dp)
+                                ) {
+                                    Text(
+                                        text = "Next >>",
+                                        fontFamily = GillSans,
+                                        fontSize = 14.sp,
+                                        fontWeight = FontWeight.Bold,
+                                        color = Color.White
+                                    )
                                 }
                             }
                         }
@@ -410,6 +457,7 @@ fun RelationshipsScreen(
                 ScreenMode.CREATE -> {
                     RelationshipFormCard(
                         countriesList = uiState.countriesList,
+                        initialTab = currentRelType,
                         onCancel = { screenMode = ScreenMode.LIST },
                         onSubmitRequest = { payload, onResult ->
                             viewModel.onEvent(
@@ -550,11 +598,12 @@ fun RelationshipsScreen(
                 Dialog(onDismissRequest = { screenMode = ScreenMode.LIST }) {
                     Card(
                         modifier = Modifier
-                            .fillMaxWidth(0.95f)
+                            .fillMaxWidth(0.9f)
                             .wrapContentHeight()
-                            .border(width = 0.5.dp, color = Color(0xFFDDDDDE), shape = RoundedCornerShape(12.dp)),
+                            .border(width = 0.5.dp, color = Color(0xFFDDDDDE), shape = RoundedCornerShape(10.dp)),
                         colors = CardDefaults.cardColors(containerColor = Color.White),
-                        elevation = CardDefaults.cardElevation(defaultElevation = 8.dp)
+                        elevation = CardDefaults.cardElevation(defaultElevation = 8.dp),
+                        shape = RoundedCornerShape(10.dp)
                     ) {
                         Column(
                             modifier = Modifier
@@ -570,15 +619,16 @@ fun RelationshipsScreen(
                                     text = "Update Member Access - ${model.name}",
                                     color = Color(0xFF004D87),
                                     fontWeight = FontWeight.Bold,
-                                    fontSize = 16.sp
+                                    fontFamily = GillSans,
+                                    fontSize = 17.sp
                                 )
-                                IconButton(onClick = { screenMode = ScreenMode.LIST }) {
-                                    Icon(
-                                        painter = painterResource(id = R.drawable.outline_close),
-                                        contentDescription = "Close",
-                                        tint = Color.Black
-                                    )
-                                }
+                                Image(
+                                    painter = painterResource(id = R.drawable.simple_cancel),
+                                    contentDescription = "Close",
+                                    modifier = Modifier
+                                        .size(24.dp)
+                                        .clickable { screenMode = ScreenMode.LIST }
+                                )
                             }
 
                             Spacer(modifier = Modifier.height(12.dp))
@@ -589,13 +639,13 @@ fun RelationshipsScreen(
                                 placeholder = "Search Member(S)"
                             )
 
-                            Spacer(modifier = Modifier.height(16.dp))
+                            Spacer(modifier = Modifier.height(12.dp))
 
                             // Checklist rows
                             Column(
                                 modifier = Modifier
                                     .fillMaxWidth()
-                                    .height(200.dp)
+                                    .heightIn(max = 240.dp)
                                     .verticalScroll(rememberScrollState())
                             ) {
                                 val filteredMembers = uiState.groupsList.filter {
@@ -605,11 +655,11 @@ fun RelationshipsScreen(
                                     Row(
                                         modifier = Modifier
                                             .fillMaxWidth()
-                                            .padding(vertical = 6.dp)
+                                            .padding(vertical = 4.dp)
                                             .border(
                                                 width = 0.5.dp,
                                                 color = Color(0xFFDDDDDE),
-                                                shape = RoundedCornerShape(8.dp)
+                                                shape = RoundedCornerShape(6.dp)
                                             )
                                             .clickable {
                                                 if (selectedMemberIds.contains(member.id)) {
@@ -618,11 +668,11 @@ fun RelationshipsScreen(
                                                     selectedMemberIds.add(member.id ?: "")
                                                 }
                                             }
-                                            .padding(10.dp),
+                                            .padding(8.dp),
                                         verticalAlignment = Alignment.CenterVertically,
                                         horizontalArrangement = Arrangement.SpaceBetween
                                     ) {
-                                        Text(text = member.name ?: "", color = Color.Black, fontSize = 14.sp)
+                                        Text(text = member.name ?: "", color = Color.Black, fontFamily = GillSans, fontSize = 15.sp)
                                         Checkbox(
                                             checked = selectedMemberIds.contains(member.id),
                                             onCheckedChange = null,
@@ -641,16 +691,20 @@ fun RelationshipsScreen(
                             // Action Buttons
                             Row(
                                 modifier = Modifier.fillMaxWidth(),
-                                horizontalArrangement = Arrangement.SpaceAround
+                                horizontalArrangement = Arrangement.Center,
+                                verticalAlignment = Alignment.CenterVertically
                             ) {
                                 Button(
                                     onClick = { screenMode = ScreenMode.LIST },
-                                    colors = ButtonDefaults.buttonColors(containerColor = Color(0xFFE0E0E0)),
-                                    shape = RoundedCornerShape(20.dp),
-                                    modifier = Modifier.width(100.dp)
+                                    colors = ButtonDefaults.buttonColors(containerColor = Color(0xFFEEEEEE)),
+                                    border = BorderStroke(1.dp, Color(0xFFDDDDDE)),
+                                    shape = RoundedCornerShape(8.dp),
+                                    modifier = Modifier.width(100.dp).height(40.dp)
                                 ) {
-                                    Text(text = "Cancel", color = Color.Black)
+                                    Text(text = "Cancel", color = Color.Black, fontFamily = GillSans, fontWeight = FontWeight.Bold, fontSize = 15.sp)
                                 }
+
+                                Spacer(modifier = Modifier.width(20.dp))
 
                                 Button(
                                     onClick = {
@@ -671,7 +725,7 @@ fun RelationshipsScreen(
                                                     RelationshipsUiEvent.FetchRelationships(
                                                         tag = currentRelType,
                                                         navPosition = "",
-                                                        searchQuery = directorySearchQuery,
+                                                        searchQuery = appliedSearchQuery,
                                                         anchorId = ""
                                                     )
                                                 )
@@ -679,10 +733,10 @@ fun RelationshipsScreen(
                                         )
                                     },
                                     colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF004D87)),
-                                    shape = RoundedCornerShape(20.dp),
-                                    modifier = Modifier.width(100.dp)
+                                    shape = RoundedCornerShape(8.dp),
+                                    modifier = Modifier.width(100.dp).height(40.dp)
                                 ) {
-                                    Text(text = "Save", color = Color.White)
+                                    Text(text = "Save", color = Color.White, fontFamily = GillSans, fontWeight = FontWeight.Bold, fontSize = 15.sp)
                                 }
                             }
                         }
@@ -696,11 +750,12 @@ fun RelationshipsScreen(
                 Dialog(onDismissRequest = { screenMode = ScreenMode.LIST }) {
                     Card(
                         modifier = Modifier
-                            .fillMaxWidth(0.95f)
+                            .fillMaxWidth(0.9f)
                             .wrapContentHeight()
-                            .border(width = 0.5.dp, color = Color(0xFFDDDDDE), shape = RoundedCornerShape(12.dp)),
+                            .border(width = 0.5.dp, color = Color(0xFFDDDDDE), shape = RoundedCornerShape(10.dp)),
                         colors = CardDefaults.cardColors(containerColor = Color.White),
-                        elevation = CardDefaults.cardElevation(defaultElevation = 8.dp)
+                        elevation = CardDefaults.cardElevation(defaultElevation = 8.dp),
+                        shape = RoundedCornerShape(10.dp)
                     ) {
                         Column(
                             modifier = Modifier
@@ -716,15 +771,16 @@ fun RelationshipsScreen(
                                     text = "Modify Group Access - ${model.name}",
                                     color = Color(0xFF004D87),
                                     fontWeight = FontWeight.Bold,
-                                    fontSize = 16.sp
+                                    fontFamily = GillSans,
+                                    fontSize = 17.sp
                                 )
-                                IconButton(onClick = { screenMode = ScreenMode.LIST }) {
-                                    Icon(
-                                        painter = painterResource(id = R.drawable.outline_close),
-                                        contentDescription = "Close",
-                                        tint = Color.Black
-                                    )
-                                }
+                                Image(
+                                    painter = painterResource(id = R.drawable.simple_cancel),
+                                    contentDescription = "Close",
+                                    modifier = Modifier
+                                        .size(24.dp)
+                                        .clickable { screenMode = ScreenMode.LIST }
+                                )
                             }
 
                             Spacer(modifier = Modifier.height(12.dp))
@@ -735,13 +791,13 @@ fun RelationshipsScreen(
                                 placeholder = "Search Group(S)"
                             )
 
-                            Spacer(modifier = Modifier.height(16.dp))
+                            Spacer(modifier = Modifier.height(12.dp))
 
                             // Checklist rows
                             Column(
                                 modifier = Modifier
                                     .fillMaxWidth()
-                                    .height(200.dp)
+                                    .heightIn(max = 240.dp)
                                     .verticalScroll(rememberScrollState())
                             ) {
                                 val filteredGroups = uiState.groupsList.filter {
@@ -751,11 +807,11 @@ fun RelationshipsScreen(
                                     Row(
                                         modifier = Modifier
                                             .fillMaxWidth()
-                                            .padding(vertical = 6.dp)
+                                            .padding(vertical = 4.dp)
                                             .border(
                                                 width = 0.5.dp,
                                                 color = Color(0xFFDDDDDE),
-                                                shape = RoundedCornerShape(8.dp)
+                                                shape = RoundedCornerShape(6.dp)
                                             )
                                             .clickable {
                                                 if (selectedGroupIds.contains(group.id)) {
@@ -764,11 +820,11 @@ fun RelationshipsScreen(
                                                     selectedGroupIds.add(group.id ?: "")
                                                 }
                                             }
-                                            .padding(10.dp),
+                                            .padding(8.dp),
                                         verticalAlignment = Alignment.CenterVertically,
                                         horizontalArrangement = Arrangement.SpaceBetween
                                     ) {
-                                        Text(text = group.name ?: "", color = Color.Black, fontSize = 14.sp)
+                                        Text(text = group.name ?: "", color = Color.Black, fontFamily = GillSans, fontSize = 15.sp)
                                         Checkbox(
                                             checked = selectedGroupIds.contains(group.id),
                                             onCheckedChange = null,
@@ -787,16 +843,20 @@ fun RelationshipsScreen(
                             // Action Buttons
                             Row(
                                 modifier = Modifier.fillMaxWidth(),
-                                horizontalArrangement = Arrangement.SpaceAround
+                                horizontalArrangement = Arrangement.Center,
+                                verticalAlignment = Alignment.CenterVertically
                             ) {
                                 Button(
                                     onClick = { screenMode = ScreenMode.LIST },
-                                    colors = ButtonDefaults.buttonColors(containerColor = Color(0xFFE0E0E0)),
-                                    shape = RoundedCornerShape(20.dp),
-                                    modifier = Modifier.width(100.dp)
+                                    colors = ButtonDefaults.buttonColors(containerColor = Color(0xFFEEEEEE)),
+                                    border = BorderStroke(1.dp, Color(0xFFDDDDDE)),
+                                    shape = RoundedCornerShape(8.dp),
+                                    modifier = Modifier.width(100.dp).height(40.dp)
                                 ) {
-                                    Text(text = "Cancel", color = Color.Black)
+                                    Text(text = "Cancel", color = Color.Black, fontFamily = GillSans, fontWeight = FontWeight.Bold, fontSize = 15.sp)
                                 }
+
+                                Spacer(modifier = Modifier.width(20.dp))
 
                                 Button(
                                     onClick = {
@@ -816,7 +876,7 @@ fun RelationshipsScreen(
                                                     RelationshipsUiEvent.FetchRelationships(
                                                         tag = currentRelType,
                                                         navPosition = "",
-                                                        searchQuery = directorySearchQuery,
+                                                        searchQuery = appliedSearchQuery,
                                                         anchorId = ""
                                                     )
                                                 )
@@ -824,10 +884,10 @@ fun RelationshipsScreen(
                                         )
                                     },
                                     colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF004D87)),
-                                    shape = RoundedCornerShape(20.dp),
-                                    modifier = Modifier.width(100.dp)
+                                    shape = RoundedCornerShape(8.dp),
+                                    modifier = Modifier.width(100.dp).height(40.dp)
                                 ) {
-                                    Text(text = "Save", color = Color.White)
+                                    Text(text = "Save", color = Color.White, fontFamily = GillSans, fontWeight = FontWeight.Bold, fontSize = 15.sp)
                                 }
                             }
                         }
@@ -838,105 +898,42 @@ fun RelationshipsScreen(
 
         if (screenMode == ScreenMode.DELETE) {
             activeRelationModel?.let { model ->
-                Dialog(onDismissRequest = { screenMode = ScreenMode.LIST }) {
-                    Card(
-                        modifier = Modifier
-                            .fillMaxWidth(0.9f)
-                            .wrapContentHeight()
-                            .border(width = 0.5.dp, color = Color(0xFFDDDDDE), shape = RoundedCornerShape(12.dp)),
-                        colors = CardDefaults.cardColors(containerColor = Color.White),
-                        elevation = CardDefaults.cardElevation(defaultElevation = 8.dp)
-                    ) {
-                        Column(
-                            modifier = Modifier
-                                .fillMaxWidth()
-                                .padding(16.dp)
-                        ) {
-                            Box(
-                                modifier = Modifier.fillMaxWidth(),
-                                contentAlignment = Alignment.Center
-                            ) {
-                                Text(
-                                    text = "Confirmation",
-                                    color = Color(0xFF004D87),
-                                    fontWeight = FontWeight.Bold,
-                                    fontSize = 18.sp
-                                )
-                                IconButton(
-                                    onClick = { screenMode = ScreenMode.LIST },
-                                    modifier = Modifier.align(Alignment.CenterEnd)
-                                ) {
-                                    Icon(
-                                        painter = painterResource(id = R.drawable.outline_close),
-                                        contentDescription = "Close",
-                                        tint = Color.Black
-                                    )
-                                }
-                            }
-
-                            Spacer(modifier = Modifier.height(16.dp))
-
-                            val warningText = androidx.compose.ui.text.buildAnnotatedString {
-                                append("Are you sure you want to delete the relationship request sent to ")
-                                withStyle(style = androidx.compose.ui.text.SpanStyle(fontWeight = FontWeight.Bold)) {
-                                    append(model.name ?: "")
-                                }
-                                append("?")
-                            }
-                            Text(
-                                text = warningText,
-                                color = Color.Black,
-                                fontSize = 15.sp,
-                                textAlign = androidx.compose.ui.text.style.TextAlign.Center,
-                                modifier = Modifier.fillMaxWidth()
-                            )
-
-                            Spacer(modifier = Modifier.height(24.dp))
-
-                            Row(
-                                modifier = Modifier.fillMaxWidth(),
-                                horizontalArrangement = Arrangement.SpaceAround
-                            ) {
-                                Button(
-                                    onClick = { screenMode = ScreenMode.LIST },
-                                    colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF004D87)),
-                                    shape = RoundedCornerShape(20.dp),
-                                    modifier = Modifier.width(100.dp)
-                                ) {
-                                    Text(text = "No", color = Color.White)
-                                }
-
-                                Button(
-                                    onClick = {
-                                        viewModel.onEvent(
-                                            RelationshipsUiEvent.DeleteRelationship(
-                                                id = model.id ?: "",
-                                                isArchive = currentRelType == "Corporate"
-                                            ) { success, msg ->
-                                                screenMode = ScreenMode.LIST
-                                                validationAlertMessage = msg
-                                                // Refresh directory
-                                                viewModel.onEvent(
-                                                    RelationshipsUiEvent.FetchRelationships(
-                                                        tag = currentRelType,
-                                                        navPosition = "",
-                                                        searchQuery = directorySearchQuery,
-                                                        anchorId = ""
-                                                    )
-                                                )
-                                            }
-                                        )
-                                    },
-                                    colors = ButtonDefaults.buttonColors(containerColor = Color(0xFFE0E0E0)),
-                                    shape = RoundedCornerShape(20.dp),
-                                    modifier = Modifier.width(100.dp)
-                                ) {
-                                    Text(text = "Yes", color = Color.Black)
-                                }
-                            }
-                        }
+                val warningText = buildAnnotatedString {
+                    append("Are you sure you want to delete the relationship request sent to ")
+                    withStyle(style = SpanStyle(fontWeight = FontWeight.Bold)) {
+                        append(model.name ?: "")
                     }
+                    append("?")
                 }
+
+                com.digicoffer.lauditor.core.ui.common.dialogs.AppConfirmationDialog(
+                    title = "Confirmation",
+                    annotatedMessage = warningText,
+                    confirmText = "Yes",
+                    dismissText = "No",
+                    onConfirm = {
+                        viewModel.onEvent(
+                            RelationshipsUiEvent.DeleteRelationship(
+                                id = model.id ?: "",
+                                isArchive = currentRelType == "Corporate"
+                            ) { success, msg ->
+                                screenMode = ScreenMode.LIST
+                                validationAlertMessage = msg
+                                // Refresh directory
+                                viewModel.onEvent(
+                                    RelationshipsUiEvent.FetchRelationships(
+                                        tag = currentRelType,
+                                        navPosition = "",
+                                        searchQuery = appliedSearchQuery,
+                                        anchorId = ""
+                                    )
+                                )
+                            }
+                        )
+                    },
+                    onDismiss = { screenMode = ScreenMode.LIST },
+                    onClose = { screenMode = ScreenMode.LIST }
+                )
             }
         }
 

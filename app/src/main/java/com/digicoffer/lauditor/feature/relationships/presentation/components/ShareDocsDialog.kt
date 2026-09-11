@@ -48,6 +48,9 @@ fun ShareDocsDialog(
     var selectedSubTab by remember { mutableStateOf(initialCategory) } // "client" or "firm"
     var docsList by remember { mutableStateOf<List<SharedDocumentsDo>>(emptyList()) }
     var isLoading by remember { mutableStateOf(false) }
+    var shareMessage by remember { mutableStateOf("") }
+    var showShareConfirmationDialog by remember { mutableStateOf(false) }
+    var validationAlertMessage by remember { mutableStateOf<String?>(null) }
 
     val selectedDocIds = remember { mutableStateListOf<String>() }
 
@@ -195,32 +198,49 @@ fun ShareDocsDialog(
                         Row(
                             modifier = Modifier
                                 .fillMaxWidth()
-                                .padding(start = 12.dp),
-                            horizontalArrangement = Arrangement.Start,
+                                .padding(start = 12.dp, end = 12.dp),
+                            horizontalArrangement = Arrangement.SpaceBetween,
                             verticalAlignment = Alignment.CenterVertically
                         ) {
-                            Checkbox(
-                                checked = allSelected,
-                                onCheckedChange = { checked ->
-                                    if (checked) {
-                                        filteredDocsList.forEach { doc ->
-                                            if (!selectedDocIds.contains(doc.id)) {
-                                                selectedDocIds.add(doc.id ?: "")
+                            Row(verticalAlignment = Alignment.CenterVertically) {
+                                Checkbox(
+                                    checked = allSelected,
+                                    onCheckedChange = { checked ->
+                                        if (checked) {
+                                            filteredDocsList.forEach { doc ->
+                                                if (!selectedDocIds.contains(doc.id)) {
+                                                    selectedDocIds.add(doc.id ?: "")
+                                                }
                                             }
+                                        } else {
+                                            selectedDocIds.clear()
                                         }
-                                    } else {
-                                        selectedDocIds.clear()
-                                    }
-                                },
-                                modifier = Modifier.size(24.dp)
-                            )
-                            Spacer(modifier = Modifier.width(8.dp))
-                            Text(
-                                text = "Select All",
-                                color = Color.Black,
-                                fontFamily = GillSans,
-                                fontSize = 15.sp
-                            )
+                                    },
+                                    colors = CheckboxDefaults.colors(
+                                        checkedColor = Color(0xFF004D87),
+                                        checkmarkColor = Color.White,
+                                        uncheckedColor = Color(0xFF707070)
+                                    ),
+                                    modifier = Modifier.size(24.dp)
+                                )
+                                Spacer(modifier = Modifier.width(8.dp))
+                                Text(
+                                    text = "Select All",
+                                    color = Color.Black,
+                                    fontFamily = GillSans,
+                                    fontSize = 15.sp
+                                )
+                            }
+
+                            if (selectedDocIds.isNotEmpty()) {
+                                Text(
+                                    text = "${selectedDocIds.size} selected",
+                                    color = Color(0xFF004D87),
+                                    fontFamily = GillSans,
+                                    fontWeight = FontWeight.Bold,
+                                    fontSize = 14.sp
+                                )
+                            }
                         }
                     }
 
@@ -265,7 +285,7 @@ fun ShareDocsDialog(
                         }
                     }
 
-                    Spacer(modifier = Modifier.height(16.dp))
+                    Spacer(modifier = Modifier.height(14.dp))
 
                     // Bottom Buttons (always visible)
                     Row(
@@ -287,28 +307,11 @@ fun ShareDocsDialog(
 
                         Button(
                             onClick = {
-                                val addArray = JSONArray()
-                                for (id in selectedDocIds) {
-                                    val doc = docsList.find { it.id == id }
-                                    addArray.put(JSONObject().apply {
-                                        put("docid", id)
-                                        put("doctype", "general")
-                                        val matters = JSONArray()
-                                        if (doc?.has_Confidential == true) {
-                                            matters.put(doc.matter_details_id)
-                                        }
-                                        put("matters", matters)
-                                    })
+                                if (selectedDocIds.isEmpty()) {
+                                    validationAlertMessage = "Please select at least one document"
+                                    return@Button
                                 }
-                                val payload = JSONObject().apply {
-                                    if (isCorporate) {
-                                        put("relid", model.id)
-                                    }
-                                    put("add", addArray)
-                                    put("remove", JSONArray())
-                                    put("message", "")
-                                }
-                                onShareDocs(payload)
+                                showShareConfirmationDialog = true
                             },
                             colors = ButtonDefaults.buttonColors(
                                 containerColor = Color(0xFF004D87),
@@ -324,6 +327,186 @@ fun ShareDocsDialog(
                     }
                 }
             }
+        }
+
+        // Documents Share Confirmation Modal
+        if (showShareConfirmationDialog) {
+            Dialog(
+                onDismissRequest = { showShareConfirmationDialog = false },
+                properties = DialogProperties(usePlatformDefaultWidth = false)
+            ) {
+                Card(
+                    modifier = Modifier
+                        .fillMaxWidth(0.92f)
+                        .wrapContentHeight(),
+                    colors = CardDefaults.cardColors(containerColor = Color.White),
+                    shape = RoundedCornerShape(10.dp),
+                    elevation = CardDefaults.cardElevation(defaultElevation = 8.dp)
+                ) {
+                    Column(
+                        modifier = Modifier.fillMaxWidth()
+                    ) {
+                        // Blue Header Bar
+                        Box(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .background(Color(0xFF004D87))
+                                .padding(vertical = 12.dp, horizontal = 16.dp),
+                            contentAlignment = Alignment.Center
+                        ) {
+                            Text(
+                                text = "Documents Share",
+                                color = Color.White,
+                                fontFamily = GillSans,
+                                fontWeight = FontWeight.Bold,
+                                fontSize = 17.sp
+                            )
+                        }
+
+                        Column(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .padding(16.dp)
+                        ) {
+                            Text(
+                                text = "Selected Document(s)",
+                                color = Color.Black,
+                                fontFamily = GillSans,
+                                fontWeight = FontWeight.Medium,
+                                fontSize = 15.sp
+                            )
+
+                            Spacer(modifier = Modifier.height(8.dp))
+
+                            val selectedDocs = remember(selectedDocIds, docsList) {
+                                docsList.filter { selectedDocIds.contains(it.id) }
+                            }
+
+                            LazyColumn(
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .heightIn(max = 120.dp)
+                            ) {
+                                items(selectedDocs) { doc ->
+                                    Text(
+                                        text = doc.name ?: "",
+                                        color = Color(0xFF004D87),
+                                        fontFamily = GillSans,
+                                        fontWeight = FontWeight.Bold,
+                                        fontSize = 15.sp,
+                                        modifier = Modifier.padding(vertical = 2.dp)
+                                    )
+                                }
+                            }
+
+                            Spacer(modifier = Modifier.height(14.dp))
+
+                            // Optional Message Field inside Confirmation Dialog
+                            androidx.compose.foundation.text.BasicTextField(
+                                value = shareMessage,
+                                onValueChange = { shareMessage = it },
+                                textStyle = androidx.compose.ui.text.TextStyle(
+                                    fontSize = 15.sp,
+                                    fontFamily = GillSans,
+                                    color = Color.Black
+                                ),
+                                cursorBrush = androidx.compose.ui.graphics.SolidColor(Color.Black),
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .height(90.dp)
+                                    .background(Color(0xFFF9FAFB), shape = RoundedCornerShape(6.dp))
+                                    .border(width = 0.5.dp, color = Color(0xFFC0C0C0), shape = RoundedCornerShape(6.dp))
+                                    .padding(10.dp),
+                                decorationBox = { innerTextField ->
+                                    Box(modifier = Modifier.fillMaxSize()) {
+                                        if (shareMessage.isEmpty()) {
+                                            Text(
+                                                text = "Type your message(optional)",
+                                                color = Color(0xFFA0A0A0),
+                                                fontFamily = GillSans,
+                                                fontSize = 15.sp
+                                            )
+                                        }
+                                        innerTextField()
+                                    }
+                                }
+                            )
+
+                            Spacer(modifier = Modifier.height(18.dp))
+
+                            // Modal Action Buttons
+                            Row(
+                                modifier = Modifier.fillMaxWidth(),
+                                horizontalArrangement = Arrangement.SpaceAround
+                            ) {
+                                OutlinedButton(
+                                    onClick = { showShareConfirmationDialog = false },
+                                    colors = ButtonDefaults.outlinedButtonColors(
+                                        containerColor = Color(0xFFEEEEEE),
+                                        contentColor = Color.Black
+                                    ),
+                                    border = BorderStroke(1.dp, Color(0xFFDDDDDE)),
+                                    shape = RoundedCornerShape(10.dp),
+                                    modifier = Modifier.width(110.dp)
+                                ) {
+                                    Text(text = "Cancel", color = Color.Black, fontFamily = GillSans, fontWeight = FontWeight.Bold)
+                                }
+
+                                Button(
+                                    onClick = {
+                                        val addArray = JSONArray()
+                                        for (id in selectedDocIds) {
+                                            val doc = docsList.find { it.id == id }
+                                            addArray.put(JSONObject().apply {
+                                                put("docid", id)
+                                                put("doctype", "general")
+                                                val matters = JSONArray()
+                                                if (doc?.has_Confidential == true) {
+                                                    matters.put(doc.matter_details_id)
+                                                }
+                                                put("matters", matters)
+                                            })
+                                        }
+                                        val payload = JSONObject().apply {
+                                            if (isCorporate) {
+                                                put("relid", model.id)
+                                            }
+                                            put("add", addArray)
+                                            put("remove", JSONArray())
+                                            put("message", shareMessage.trim())
+                                        }
+                                        showShareConfirmationDialog = false
+                                        onShareDocs(payload)
+                                    },
+                                    colors = ButtonDefaults.buttonColors(
+                                        containerColor = Color(0xFF004D87)
+                                    ),
+                                    shape = RoundedCornerShape(10.dp),
+                                    modifier = Modifier.width(110.dp)
+                                ) {
+                                    Text(text = "Share", color = Color.White, fontFamily = GillSans, fontWeight = FontWeight.Bold)
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        }
+
+        validationAlertMessage?.let { msg ->
+            AlertDialog(
+                onDismissRequest = { validationAlertMessage = null },
+                title = { Text("Lauditor", fontFamily = GillSans, fontWeight = FontWeight.Bold) },
+                text = { Text(msg, fontFamily = GillSans) },
+                confirmButton = {
+                    Button(
+                        onClick = { validationAlertMessage = null },
+                        colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF004D87))
+                    ) {
+                        Text("OK", color = Color.White, fontFamily = GillSans)
+                    }
+                }
+            )
         }
     }
 }
@@ -434,6 +617,11 @@ private fun DocumentRow(
                     Checkbox(
                         checked = isSelected,
                         onCheckedChange = onCheckedChange,
+                        colors = CheckboxDefaults.colors(
+                            checkedColor = Color(0xFF004D87),
+                            checkmarkColor = Color.White,
+                            uncheckedColor = Color(0xFF707070)
+                        ),
                         modifier = Modifier
                             .padding(horizontal = 10.dp)
                             .size(25.dp)

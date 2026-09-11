@@ -9,6 +9,7 @@ class PaymentModel : Parcelable {
     var currency: String = ""
     var symbol: String = ""
     var label: String = ""
+    var method: String = ""
 
     constructor()
 
@@ -18,6 +19,7 @@ class PaymentModel : Parcelable {
         currency = parcel.readString() ?: ""
         symbol = parcel.readString() ?: ""
         label = parcel.readString() ?: ""
+        method = parcel.readString() ?: ""
     }
 
     override fun writeToParcel(parcel: Parcel, flags: Int) {
@@ -26,6 +28,7 @@ class PaymentModel : Parcelable {
         parcel.writeString(currency)
         parcel.writeString(symbol)
         parcel.writeString(label)
+        parcel.writeString(method)
     }
 
     override fun describeContents(): Int {

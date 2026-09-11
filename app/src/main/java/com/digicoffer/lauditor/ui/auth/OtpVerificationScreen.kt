@@ -43,6 +43,7 @@ import com.digicoffer.lauditor.core.ui.common.buttons.ButtonVariant
 import com.digicoffer.lauditor.core.ui.common.feedback.AppLoader
 import com.digicoffer.lauditor.core.ui.common.foundation.AppSpacer
 import com.digicoffer.lauditor.core.ui.common.inputs.AppOtpField
+import com.digicoffer.lauditor.core.ui.common.inputs.OTPInputView
 
 private val GillSans = FontFamily(Font(R.font.gill_sans))
 private val GillSansBold = FontFamily(Font(R.font.gill_sans_bold))
@@ -142,10 +143,11 @@ fun OtpVerificationScreen(
                             )
                     )
 
-                    // OTP Input Fields matching otpverification.xml line 73
-                    AppOtpField(
-                        otpValue = otpValue,
-                        onOtpChange = onOtpChange
+                    // OTP Input Fields matching client OTPInputView
+                    OTPInputView(
+                        otp = otpValue,
+                        onOtpChange = onOtpChange,
+                        length = 6
                     )
 
                     // Resend OTP Countdown Timer Link matching otpverification.xml line 186

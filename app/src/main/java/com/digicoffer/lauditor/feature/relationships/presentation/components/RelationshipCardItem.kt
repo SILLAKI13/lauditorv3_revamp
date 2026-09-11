@@ -66,17 +66,21 @@ fun formatCreatedDate(rawDate: String): String {
 fun RelationshipCardItem(
     model: RelationshipsModel,
     onActionClick: (String, RelationshipsModel) -> Unit,
-    onCardClick: (RelationshipsModel) -> Unit
+    onCardClick: (RelationshipsModel) -> Unit,
+    modifier: Modifier = Modifier
 ) {
     var expanded by remember { mutableStateOf(false) }
 
     val isInactive = model.status?.lowercase() == "inactive"
     val isPending = !isInactive && (model.status?.lowercase() == "pending" || !model.isAccepted)
+    val isClickable = !isInactive && !isPending && model.isAccepted
 
     Card(
-        modifier = Modifier
+        modifier = modifier
             .fillMaxWidth()
-            .clickable { onCardClick(model) }
+            .then(
+                if (isClickable) Modifier.clickable { onCardClick(model) } else Modifier
+            )
             .padding(vertical = 5.dp, horizontal = 10.dp),
         colors = CardDefaults.cardColors(containerColor = Color.White),
         shape = RoundedCornerShape(8.dp),
@@ -155,11 +159,18 @@ fun RelationshipCardItem(
 
                 val isSolo = "solo" == com.digicoffer.lauditor.CommonFiles.GlobalFiles.Constants.CATEGORY
                 val isIndividual = model.clientType?.lowercase() == "consumer"
-                val isActive = model.isAccepted && model.status?.lowercase() != "inactive"
+                val isInactive = model.status?.lowercase() == "inactive"
+                val isPending = !isInactive && (model.status?.lowercase() == "pending" || !model.isAccepted)
+                val isActive = !isInactive && !isPending && model.isAccepted
 
-                val actionsList = remember(model, isSolo, isIndividual, isActive) {
+                val actionsList = remember(model, isSolo, isIndividual, isActive, isInactive, isPending) {
                     val actions = mutableListOf<String>()
-                    if (isActive) {
+                    if (isInactive) {
+                        actions.add("Activate Relationship")
+                        actions.add("Delete Relationship")
+                    } else if (isPending) {
+                        actions.add("Delete Relationship")
+                    } else { // Active
                         actions.add("Exchange Information")
                         if ((com.digicoffer.lauditor.CommonFiles.GlobalFiles.Constants.ROLE == "GH" || com.digicoffer.lauditor.CommonFiles.GlobalFiles.Constants.ROLE == "TM") && !isSolo && !isIndividual) {
                             actions.add("Manage Groups")
@@ -167,12 +178,6 @@ fun RelationshipCardItem(
                         if (!isSolo) {
                             actions.add("Manage Team Members")
                         }
-                        actions.add("Delete Relationship")
-                    } else if (model.status?.lowercase() == "inactive") {
-                        actions.add("Activate Relationship")
-                        actions.add("Delete Relationship")
-                    } else {
-                        actions.add("Exchange Information")
                         actions.add("Delete Relationship")
                     }
                     actions

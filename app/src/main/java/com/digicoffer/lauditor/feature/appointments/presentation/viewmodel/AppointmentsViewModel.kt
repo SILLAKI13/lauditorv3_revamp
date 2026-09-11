@@ -79,6 +79,68 @@ class AppointmentsViewModel(
                     )
                 }
             }
+            is AppointmentsUiEvent.OpenSettlementHistory -> {
+                _uiState.update {
+                    it.copy(
+                        settlementClientId = event.model.client_id,
+                        settlementClientName = event.model.client_name,
+                        settlementClientProfilePic = event.model.client_profile_pic,
+                        rawSettlementList = emptyList(),
+                        filteredSettlementList = emptyList(),
+                        currentSettlementPageList = emptyList(),
+                        settlementSearchQuery = "",
+                        settlementStatusFilter = "All Status",
+                        settlementSortOption = "Latest First",
+                        settlementCurrentPage = 0,
+                        settlementTotalPages = 0
+                    )
+                }
+                loadSettlementHistory(event.model.client_id)
+            }
+            is AppointmentsUiEvent.CloseSettlementHistory -> {
+                _uiState.update {
+                    it.copy(
+                        settlementClientId = "",
+                        settlementClientName = "",
+                        settlementClientProfilePic = "",
+                        rawSettlementList = emptyList(),
+                        filteredSettlementList = emptyList(),
+                        currentSettlementPageList = emptyList(),
+                        settlementApiTotalPaid = null,
+                        settlementApiTotalTransactions = null,
+                        settlementApiTotalRefunded = null,
+                        settlementApiTotalRefundInitiated = null
+                    )
+                }
+            }
+            is AppointmentsUiEvent.SettlementSearchQuerySubmitted -> {
+                _uiState.update { it.copy(settlementSearchQuery = event.query) }
+                applySettlementFilterAndSorting()
+            }
+            is AppointmentsUiEvent.SettlementStatusFilterChanged -> {
+                _uiState.update { it.copy(settlementStatusFilter = event.status) }
+                applySettlementFilterAndSorting()
+            }
+            is AppointmentsUiEvent.SettlementSortOptionChanged -> {
+                _uiState.update { it.copy(settlementSortOption = event.sortOption) }
+                applySettlementFilterAndSorting()
+            }
+            is AppointmentsUiEvent.SettlementPageNext -> {
+                val state = _uiState.value
+                if (state.settlementCurrentPage < state.settlementTotalPages - 1) {
+                    val nextPage = state.settlementCurrentPage + 1
+                    _uiState.update { it.copy(settlementCurrentPage = nextPage) }
+                    renderCurrentSettlementPage()
+                }
+            }
+            is AppointmentsUiEvent.SettlementPagePrev -> {
+                val state = _uiState.value
+                if (state.settlementCurrentPage > 0) {
+                    val prevPage = state.settlementCurrentPage - 1
+                    _uiState.update { it.copy(settlementCurrentPage = prevPage) }
+                    renderCurrentSettlementPage()
+                }
+            }
             is AppointmentsUiEvent.DismissDialogs -> {
                 _uiState.update { it.copy(alertTitle = null, alertMessage = null, toastMessage = null) }
             }
@@ -185,6 +247,27 @@ class AppointmentsViewModel(
         }
     }
 
+    private fun computeDynamicStatus(apiStatus: String, fromStr: String, toStr: String): String {
+        val clean = apiStatus.trim().lowercase(Locale.ROOT)
+        if (clean == "cancelled" || clean == "canceled") return "Cancelled"
+        if (clean == "payment_pending" || clean == "payment pending") return "Payment Pending"
+
+        val fromDate = parseApiDate(fromStr)
+        val toDate = parseApiDate(toStr)
+        val now = java.util.Date()
+
+        return when {
+            toDate != null && now.after(toDate) -> "Completed"
+            fromDate != null && toDate != null && now.after(fromDate) && now.before(toDate) -> "Ongoing"
+            fromDate != null && now.before(fromDate) -> "Upcoming"
+            clean == "completed" -> "Completed"
+            clean == "ongoing" -> "Ongoing"
+            clean == "upcoming" -> "Upcoming"
+            clean.isNotEmpty() -> apiStatus.replaceFirstChar { it.uppercase() }
+            else -> "Upcoming"
+        }
+    }
+
     private fun parseAppointments(array: JSONArray): List<AppointmentModel> {
         val list = mutableListOf<AppointmentModel>()
         for (i in 0 until array.length()) {
@@ -197,7 +280,11 @@ class AppointmentsViewModel(
                 appointment_from = jsonObject.optString("appointment_from", "")
                 appointment_to = jsonObject.optString("appointment_to", "")
                 consultation_mode = jsonObject.optString("consultation_mode", "")
-                appointment_status = jsonObject.optString("appointment_status", "")
+                appointment_status = computeDynamicStatus(
+                    jsonObject.optString("appointment_status", ""),
+                    appointment_from,
+                    appointment_to
+                )
                 meeting_room_id = jsonObject.optString("meeting_room_id", "")
                 meeting_room_expires_at = jsonObject.optString("meeting_room_expires_at", "")
                 rsvp_status = jsonObject.optString("rsvp_status", "")
@@ -217,6 +304,7 @@ class AppointmentsViewModel(
                         currency = paymentObj.optString("currency")
                         symbol = paymentObj.optString("symbol")
                         label = paymentObj.optString("label")
+                        method = paymentObj.optString("method")
                     }
                 }
                 if (jsonObject.has("notes")) {
@@ -243,13 +331,35 @@ class AppointmentsViewModel(
         }
 
         val sorted = filtered.sortedWith { o1, o2 ->
-            val date1 = parseApiDate(o1.appointment_from)
-            val date2 = parseApiDate(o2.appointment_from)
-            when {
-                date1 == null && date2 == null -> 0
-                date1 == null -> 1
-                date2 == null -> -1
-                else -> date2.compareTo(date1)
+            val status1 = o1.appointment_status.lowercase(Locale.ROOT)
+            val status2 = o2.appointment_status.lowercase(Locale.ROOT)
+
+            val isPriority1 = status1 == "upcoming" || status1 == "ongoing"
+            val isPriority2 = status2 == "upcoming" || status2 == "ongoing"
+
+            val d1 = parseApiDate(o1.appointment_from)
+            val d2 = parseApiDate(o2.appointment_from)
+
+            if (isPriority1 && isPriority2) {
+                // Both are upcoming/ongoing -> ASCENDING (earliest first)
+                when {
+                    d1 == null && d2 == null -> 0
+                    d1 == null -> 1
+                    d2 == null -> -1
+                    else -> d1.compareTo(d2)
+                }
+            } else if (isPriority1) {
+                -1
+            } else if (isPriority2) {
+                1
+            } else {
+                // Neither is priority (completed, cancelled, etc.) -> DESCENDING (most recent first)
+                when {
+                    d1 == null && d2 == null -> 0
+                    d1 == null -> 1
+                    d2 == null -> -1
+                    else -> d2.compareTo(d1)
+                }
             }
         }
 
@@ -266,10 +376,26 @@ class AppointmentsViewModel(
         renderCurrentPage()
     }
 
-    private fun parseApiDate(dateStr: String) = try {
-        dateFormat.parse(dateStr)
-    } catch (e: Exception) {
-        null
+    private fun parseApiDate(dateStr: String): java.util.Date? {
+        if (dateStr.isBlank()) return null
+        val patterns = arrayOf(
+            "yyyy-MM-dd'T'HH:mm:ss",
+            "yyyy-MM-dd'T'HH:mm:ss.SSS'Z'",
+            "yyyy-MM-dd'T'HH:mm:ss.SSS",
+            "yyyy-MM-dd'T'HH:mm:ssXXX",
+            "yyyy-MM-dd HH:mm:ss",
+            "yyyy-MM-dd"
+        )
+        for (pattern in patterns) {
+            try {
+                val sdf = SimpleDateFormat(pattern, Locale.ENGLISH)
+                val date = sdf.parse(dateStr)
+                if (date != null) return date
+            } catch (e: Exception) {
+                // continue
+            }
+        }
+        return null
     }
 
     private fun renderCurrentPage() {
@@ -496,6 +622,123 @@ class AppointmentsViewModel(
                 }
             }
         }
+    }
+
+    private fun loadSettlementHistory(clientId: String) {
+        viewModelScope.launch {
+            _uiState.update { it.copy(isSettlementLoading = true) }
+            val result = repository.fetchHistory(clientId)
+            _uiState.update { it.copy(isSettlementLoading = false) }
+
+            if (result.result == WebServiceHelper.ServiceCallStatus.Success) {
+                try {
+                    val rootJson = JSONObject(result.responseContent ?: "")
+                    if (!rootJson.optBoolean("error", false)) {
+                        val historyArray = rootJson.optJSONArray("appointments") ?: JSONArray()
+                        val list = parseAppointments(historyArray)
+
+                        val summaryObj = rootJson.optJSONObject("summary") ?: rootJson.optJSONObject("settlement")
+                        val apiTotalPaid = (summaryObj?.optDouble("total_paid") ?: rootJson.optDouble("total_paid")).takeIf { !it.isNaN() && it > 0 }
+                        val apiTotalTrans = (summaryObj?.optInt("total_transactions") ?: rootJson.optInt("total_transactions")).takeIf { it > 0 }
+                        val apiRefunded = (summaryObj?.optDouble("refunded") ?: rootJson.optDouble("refunded")).takeIf { !it.isNaN() && it >= 0 }
+                        val apiRefundInitiated = (summaryObj?.optDouble("refund_initiated") ?: rootJson.optDouble("refund_initiated")).takeIf { !it.isNaN() && it >= 0 }
+
+                        _uiState.update {
+                            it.copy(
+                                rawSettlementList = list,
+                                settlementApiTotalPaid = apiTotalPaid,
+                                settlementApiTotalTransactions = apiTotalTrans,
+                                settlementApiTotalRefunded = apiRefunded,
+                                settlementApiTotalRefundInitiated = apiRefundInitiated
+                            )
+                        }
+                        applySettlementFilterAndSorting()
+                    } else {
+                        val errorMsg = rootJson.optString("msg").ifEmpty { "Failed to fetch settlement history" }
+                        _uiState.update {
+                            it.copy(
+                                alertTitle = "Error",
+                                alertMessage = errorMsg
+                            )
+                        }
+                    }
+                } catch (e: Exception) {
+                    _uiState.update { it.copy(alertTitle = "Error", alertMessage = e.message ?: "Failed parsing response") }
+                }
+            } else {
+                val cleanMsg = extractErrorMessage(result.responseContent)
+                _uiState.update {
+                    it.copy(
+                        alertTitle = "Error",
+                        alertMessage = cleanMsg.ifEmpty { "Failed to connect to settlement service" }
+                    )
+                }
+            }
+        }
+    }
+
+    private fun applySettlementFilterAndSorting() {
+        val state = _uiState.value
+        val query = state.settlementSearchQuery.trim().lowercase(Locale.ROOT)
+        var list = state.rawSettlementList
+
+        // 1. Search Filter (Local multi-field search)
+        if (query.isNotEmpty()) {
+            list = list.filter { item ->
+                val p = item.payment
+                val cleanAppointmentStatus = item.appointment_status.lowercase(Locale.ROOT).trim()
+                val rawPaymentStatus = (p?.status ?: "").lowercase(Locale.ROOT).trim()
+                val isCancelled = cleanAppointmentStatus == "cancelled" || cleanAppointmentStatus == "canceled"
+                val displayStatus = when {
+                    isCancelled || rawPaymentStatus == "refunded" -> "refunded"
+                    rawPaymentStatus == "refund_initiated" || rawPaymentStatus == "refund initiated" -> "refund initiated"
+                    rawPaymentStatus == "paid" -> "paid"
+                    rawPaymentStatus == "pending" || rawPaymentStatus == "payment_pending" || rawPaymentStatus == "payment pending" -> "pending"
+                    else -> rawPaymentStatus
+                }
+
+                item.client_name.lowercase(Locale.ROOT).contains(query) ||
+                item.id.lowercase(Locale.ROOT).contains(query) ||
+                displayStatus.contains(query) ||
+                rawPaymentStatus.contains(query) ||
+                (p?.method ?: "").lowercase(Locale.ROOT).contains(query) ||
+                (p?.amount_paid ?: "").contains(query) ||
+                (p?.label ?: "").lowercase(Locale.ROOT).contains(query) ||
+                item.appointment_from.lowercase(Locale.ROOT).contains(query) ||
+                item.appointment_to.lowercase(Locale.ROOT).contains(query) ||
+                item.appointment_status.lowercase(Locale.ROOT).contains(query) ||
+                item.consultation_mode.lowercase(Locale.ROOT).contains(query)
+            }
+        }
+
+        // 2. Sorting by date (Latest First)
+        list = list.sortedByDescending { parseApiDate(it.appointment_from)?.time ?: 0L }
+
+        val total = list.size
+        val pages = if (total == 0) 0 else Math.ceil(total.toDouble() / PAGE_SIZE).toInt()
+
+        _uiState.update {
+            it.copy(
+                filteredSettlementList = list,
+                settlementTotalPages = pages,
+                settlementCurrentPage = 0
+            )
+        }
+        renderCurrentSettlementPage()
+    }
+
+    private fun renderCurrentSettlementPage() {
+        val state = _uiState.value
+        val startIndex = state.settlementCurrentPage * PAGE_SIZE
+        val endIndex = Math.min(startIndex + PAGE_SIZE, state.filteredSettlementList.size)
+
+        val pageList = if (startIndex < state.filteredSettlementList.size) {
+            state.filteredSettlementList.subList(startIndex, endIndex)
+        } else {
+            emptyList()
+        }
+
+        _uiState.update { it.copy(currentSettlementPageList = pageList) }
     }
 
     private fun extractErrorMessage(responseContent: String?): String {

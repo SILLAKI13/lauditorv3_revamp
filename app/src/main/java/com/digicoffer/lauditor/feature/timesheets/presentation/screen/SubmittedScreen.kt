@@ -48,7 +48,8 @@ fun SubmittedScreen(
             }
 
             val dayLogs = uiState.timesheetsList.filter { log ->
-                log.date?.contains(dateVal) == true || log.date?.startsWith(day) == true
+                val lDate = log.date ?: ""
+                lDate.startsWith(day) || (dateVal.isNotEmpty() && lDate.contains(dateVal))
             }
 
             val totalMins = dayLogs.sumOf { (it.hours?.toIntOrNull() ?: 0) * 60 + (it.minutes?.toIntOrNull() ?: 0) }
@@ -73,14 +74,12 @@ fun SubmittedScreen(
             item {
                 AppSpacer(height = 20.dp)
                 AppEmptyState(
-                    title = "No Timesheet entries for this week",
-                    description = "Submitted logs are displayed here.",
+                    title = if (!uiState.isFrozen) "Timesheet Not Submitted Please Select Other Week" else "No Timesheet entries for this week",
+                    description = null,
                     imageRes = R.drawable.empty_appointments,
                     imageSize = 130.dp,
                     titleStyle = TextStyle(fontSize = 18.sp, fontWeight = FontWeight.Bold, fontFamily = FontTokens.DefaultFontFamily),
-                    descriptionStyle = TextStyle(fontSize = 14.sp, fontFamily = FontTokens.DefaultFontFamily),
-                    titleColor = Color.Black,
-                    descriptionColor = Color(0xFF666666)
+                    titleColor = Color.Black
                 )
             }
         } else {

@@ -1311,18 +1311,23 @@ class Matter : Fragment(), AsyncTaskCompleteListener, View.OnClickListener, Bott
 
     private fun showPhotoOptions() {
         val bottommSheetUploadDocument = BottomSheetUploadFile(null)
-        bottommSheetUploadDocument.show(parentFragmentManager, "")
+        bottommSheetUploadDocument.setOnPhotoSelectedListener(this)
         bottommSheetUploadDocument.setTargetFragment(this, 1)
+        bottommSheetUploadDocument.show(parentFragmentManager, "BottomSheetUploadFile")
     }
 
     override fun getImagepath(imagepath: File?, ImageURI: Uri?) {
-        if (imagepath != null && imagepath.exists()) {
-            val name = imagepath.name
-            editViewModel.addUploadFile(imagepath, name)
-        } else if (ImageURI != null) {
-            val file = getFile(requireContext(), ImageURI)
-            val name = file.name
-            editViewModel.addUploadFile(file, name)
+        try {
+            if (imagepath != null && imagepath.exists()) {
+                val name = if (ImageURI != null) queryName(requireContext(), ImageURI) else imagepath.name
+                editViewModel.addUploadFile(imagepath, name)
+            } else if (ImageURI != null) {
+                val file = getFile(requireContext(), ImageURI)
+                val name = queryName(requireContext(), ImageURI)
+                editViewModel.addUploadFile(file, name)
+            }
+        } catch (e: Exception) {
+            e.printStackTrace()
         }
     }
 

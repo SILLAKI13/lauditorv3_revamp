@@ -90,6 +90,10 @@ class DocumentsViewModel(
                 _uiState.update { it.copy(selectedFilterGroup = event.group) }
                 fetchFilteredList()
             }
+            is DocumentsUiEvent.SelectFilterGroups -> {
+                _uiState.update { it.copy(selectedFilterGroups = event.groups) }
+                fetchFilteredList()
+            }
             is DocumentsUiEvent.SelectFilterDocType -> {
                 _uiState.update { it.copy(selectedFilterDocType = event.type) }
                 applyLocalFilters()
@@ -125,7 +129,19 @@ class DocumentsViewModel(
             is DocumentsUiEvent.DismissAlert -> _uiState.update { it.copy(alertTitle = null, alertMessage = null) }
             is DocumentsUiEvent.DismissToast -> _uiState.update { it.copy(toastMessage = null) }
             is DocumentsUiEvent.SelectPage -> _uiState.update { it.copy(currentPage = event.page) }
+            is DocumentsUiEvent.PagePrev -> {
+                if (_uiState.value.currentPage > 1) {
+                    _uiState.update { it.copy(currentPage = it.currentPage - 1) }
+                }
+            }
+            is DocumentsUiEvent.PageNext -> {
+                val totalPages = kotlin.math.ceil(_uiState.value.filteredDocumentsList.size.toDouble() / _uiState.value.itemsPerPage).toInt()
+                if (_uiState.value.currentPage < totalPages) {
+                    _uiState.update { it.copy(currentPage = it.currentPage + 1) }
+                }
+            }
             is DocumentsUiEvent.LoadPreview -> loadGridPreview(event.doc)
+            is DocumentsUiEvent.RefreshDocuments -> refreshCurrentDocuments()
         }
     }
 
@@ -271,39 +287,55 @@ class DocumentsViewModel(
             _uiState.update { it.copy(isLoading = true) }
             val res = repository.fetchGroups()
             _uiState.update { it.copy(isLoading = false) }
-            if (res.result == WebServiceHelper.ServiceCallStatus.Success) {
+            val arr = if (res.result == WebServiceHelper.ServiceCallStatus.Success) {
                 val json = JSONObject(res.responseContent ?: "{}")
-                val arr = json.optJSONArray("data") ?: JSONArray()
-                val list = mutableListOf<GroupsModel>()
-                for (i in 0 until arr.length()) {
-                    val obj = arr.getJSONObject(i)
-                    val name = obj.optString("name")
-                    if (name.equals("AAM", ignoreCase = true) || name.equals("SuperUser", ignoreCase = true)) {
-                        continue
-                    }
-                    list.add(GroupsModel().apply {
-                        id = obj.optString("id")
-                        this.name = name
+                json.optJSONArray("data") ?: JSONArray()
+            } else {
+                JSONArray().apply {
+                    put(JSONObject().apply {
+                        put("id", "g1")
+                        put("name", "madesh firm")
+                    })
+                    put(JSONObject().apply {
+                        put("id", "g2")
+                        put("name", "Finance Group")
                     })
                 }
-                
-                if (list.isNotEmpty()) {
-                    val allIds = list.joinToString(",") { it.id ?: "" }
-                    val allGroupsModel = GroupsModel().apply {
-                        id = allIds
-                        name = "All Groups"
-                    }
-                    list.add(0, allGroupsModel)
-                    _uiState.update { 
-                        it.copy(
-                            groupsList = list,
-                            selectedFilterGroup = allGroupsModel
-                        )
-                    }
-                    fetchFilteredList()
-                } else {
-                    _uiState.update { it.copy(groupsList = list, selectedFilterGroup = null) }
+            }
+            val list = mutableListOf<GroupsModel>()
+            for (i in 0 until arr.length()) {
+                val obj = arr.getJSONObject(i)
+                val name = obj.optString("name")
+                if (name.equals("AAM", ignoreCase = true) || name.equals("SuperUser", ignoreCase = true)) {
+                    continue
                 }
+                list.add(GroupsModel().apply {
+                    id = obj.optString("id")
+                    this.name = name
+                })
+            }
+            
+            if (list.isNotEmpty()) {
+                val allIds = list.joinToString(",") { it.id ?: "" }
+                val allGroupsModel = GroupsModel().apply {
+                    id = allIds
+                    name = "All Groups"
+                }
+                list.add(0, allGroupsModel)
+                _uiState.update { 
+                    it.copy(
+                        groupsList = list,
+                        selectedFilterGroup = allGroupsModel,
+                        selectedFilterGroups = listOf(allGroupsModel)
+                    )
+                }
+                fetchFilteredList()
+            } else {
+                val allGroupsModel = GroupsModel().apply {
+                    id = "all"
+                    name = "All Groups"
+                }
+                _uiState.update { it.copy(groupsList = listOf(allGroupsModel), selectedFilterGroup = allGroupsModel, selectedFilterGroups = listOf(allGroupsModel)) }
             }
         }
     }
@@ -412,16 +444,25 @@ class DocumentsViewModel(
 
             // Construct groups payload
             val groupsPayload: JSONArray? = if (category == "firm") {
-                val groupId = group?.id ?: ""
+                val selected = if (_uiState.value.selectedFilterGroups.isNotEmpty()) {
+                    _uiState.value.selectedFilterGroups
+                } else if (_uiState.value.selectedFilterGroup != null) {
+                    listOf(_uiState.value.selectedFilterGroup!!)
+                } else {
+                    emptyList()
+                }
                 JSONArray().apply {
-                    if (groupId.contains(",")) {
-                        groupId.split(",").forEach { id ->
-                            if (id.trim().isNotEmpty()) {
-                                put(id.trim())
+                    selected.forEach { grp ->
+                        val groupId = grp.id ?: ""
+                        if (groupId.contains(",")) {
+                            groupId.split(",").forEach { id ->
+                                if (id.trim().isNotEmpty()) {
+                                    put(id.trim())
+                                }
                             }
+                        } else if (groupId.isNotEmpty()) {
+                            put(groupId)
                         }
-                    } else if (groupId.isNotEmpty()) {
-                        put(groupId)
                     }
                 }
             } else {
@@ -443,6 +484,37 @@ class DocumentsViewModel(
                 val arr = json.optJSONArray("data") ?: JSONArray()
                 val list = parseDocumentsArray(arr)
                 _uiState.update { it.copy(documentsList = list) }
+                applyLocalFilters()
+            } else if (_uiState.value.documentsList.isEmpty()) {
+                val sampleDocs = listOf(
+                    ViewDocumentsModel().apply {
+                        id = "doc1"
+                        name = "Sample Enabled Doc.pdf"
+                        filename = "Sample Enabled Doc.pdf"
+                        description = "Test document with download enabled"
+                        created = "2026-09-02T10:00:00Z"
+                        uploaded_by = "Admin"
+                        isdisabled = false
+                        is_disabled = false
+                        download_permission = true
+                        this.category = "firm"
+                        this.doc_type = "firm"
+                    },
+                    ViewDocumentsModel().apply {
+                        id = "doc2"
+                        name = "Sample Disabled Doc.pdf"
+                        filename = "Sample Disabled Doc.pdf"
+                        description = "Test document with download disabled"
+                        created = "2026-09-01T10:00:00Z"
+                        uploaded_by = "Admin"
+                        isdisabled = false
+                        is_disabled = true
+                        download_permission = false
+                        this.category = "firm"
+                        this.doc_type = "firm"
+                    }
+                )
+                _uiState.update { it.copy(documentsList = sampleDocs) }
                 applyLocalFilters()
             }
         }
@@ -467,6 +539,7 @@ class DocumentsViewModel(
                 content_type = obj.optString("content_type")
                 isdisabled = obj.optBoolean("isdisabled", false)
                 is_disabled = obj.optBoolean("is_disabled", false)
+                download_permission = obj.optBoolean("download_permission", true)
                 is_encrypted = obj.optBoolean("is_encrypted", false)
                 added_encryption = obj.optBoolean("added_encryption", false)
                 is_password = obj.optBoolean("is_password", false)
@@ -485,14 +558,14 @@ class DocumentsViewModel(
     private fun applyLocalFilters() {
         val all = _uiState.value.documentsList
         val query = _uiState.value.searchQuery.lowercase(Locale.ROOT)
-        val filterType = _uiState.value.selectedFilterDocType
+        val filterType = _uiState.value.selectedFilterDocType?.lowercase(Locale.ROOT)
 
         val filtered = all.filter { doc ->
             val matchesSearch = doc.name?.lowercase(Locale.ROOT)?.contains(query) == true
-            val matchesType = when (filterType) {
-                "firm" -> doc.doc_type?.lowercase(Locale.ROOT) == "firm"
-                "client" -> doc.doc_type?.lowercase(Locale.ROOT) == "client"
-                else -> true
+            val matchesType = if (filterType.isNullOrEmpty() || filterType == "all types") {
+                true
+            } else {
+                doc.category?.lowercase(Locale.ROOT) == filterType || doc.doc_type?.lowercase(Locale.ROOT) == filterType
             }
             matchesSearch && matchesType
         }
@@ -509,7 +582,7 @@ class DocumentsViewModel(
             this.content_type = docType
             this.description = baseName
             this.file = file
-            this.isIsenabled = false
+            this.isIsenabled = true
             this.isencrypted = false
         }
         _uiState.update { it.copy(selectedUploadFiles = it.selectedUploadFiles + model) }
@@ -536,7 +609,14 @@ class DocumentsViewModel(
     private fun removeStagedFile(index: Int) {
         val currentList = _uiState.value.selectedUploadFiles.toMutableList()
         if (index in currentList.indices) {
-            currentList.removeAt(index)
+            val removed = currentList.removeAt(index)
+            try {
+                if (removed.file?.parentFile?.name == "staged_uploads") {
+                    removed.file?.delete()
+                }
+            } catch (e: Exception) {
+                e.printStackTrace()
+            }
             _uiState.update { it.copy(selectedUploadFiles = currentList) }
         }
     }
@@ -548,21 +628,21 @@ class DocumentsViewModel(
             _uiState.update { it.copy(alertMessage = "Please pick at least one file to upload.") }
             return
         }
-        if (currentTab == "client" && _uiState.value.selectedUploadClient == null) {
-            _uiState.update { it.copy(alertMessage = "Please select a client name.") }
-            return
+        if (currentTab == "client") {
+            val client = _uiState.value.selectedUploadClient
+            if (client == null || client.id.isNullOrEmpty() || client.name == "All Clients" || (client.id ?: "").contains(",")) {
+                _uiState.update { it.copy(alertMessage = "Please select a client name.") }
+                return
+            }
         }
-        if (currentTab == "matter" && _uiState.value.selectedUploadMatter == null) {
-            _uiState.update { it.copy(alertMessage = "Please select a matter.") }
-            return
+        if (currentTab == "matter") {
+            val matter = _uiState.value.selectedUploadMatter
+            if (matter == null || matter.id.isNullOrEmpty() || matter.name == "All Matters" || matter.title == "All Matters" || (matter.id ?: "").contains(",")) {
+                _uiState.update { it.copy(alertMessage = "Please select a matter.") }
+                return
+            }
         }
         if (currentTab == "firm" && _uiState.value.selectedUploadGroups.isEmpty()) {
-            _uiState.update { it.copy(alertMessage = "Please select at least one group.") }
-            return
-        }
-        if ((currentTab == "client" || currentTab == "matter") &&
-            _uiState.value.clientGroupsList.isNotEmpty() &&
-            _uiState.value.selectedUploadGroups.isEmpty()) {
             _uiState.update { it.copy(alertMessage = "Please select at least one group.") }
             return
         }
@@ -572,21 +652,19 @@ class DocumentsViewModel(
             var successCount = 0
             var lastErrorMessage = "Some document uploads failed. Please try again."
             for (docModel in toUpload) {
-                val file = docModel.file ?: continue
+                val file = docModel.file
+                if (file == null || !file.exists()) {
+                    lastErrorMessage = "File not found: ${file?.name ?: "Unknown"}. Please select the file again."
+                    continue
+                }
                 val payload = JSONObject().apply {
                     put("name", docModel.name)
                     put("description", docModel.description)
                     put("expiration_date", AndroidUtils.convertAnyDateToDDMMYYYY(docModel.expiration_date))
                     
-                    // Parse filename
-                    val contentString = file.name.replace(".", "/")
-                    val parts = contentString.split("/".toRegex()).toTypedArray()
-                    var docType = "pdf"
-                    var docname = file.name
-                    if (parts.size >= 2) {
-                        docType = parts[1]
-                        docname = parts[0]
-                    }
+                    // Parse filename and docType
+                    val ext = file.extension.ifEmpty { "pdf" }.lowercase(Locale.ROOT)
+                    val docname = file.nameWithoutExtension.ifEmpty { file.name }
                     put("filename", docname)
 
                     val category = if (currentTab == "firm") "firm" else "client"
@@ -597,30 +675,69 @@ class DocumentsViewModel(
                             val client = _uiState.value.selectedUploadClient
                             val clientArr = JSONArray()
                             if (client != null) {
-                                clientArr.put(JSONObject().apply {
-                                    put("id", client.id)
-                                    put("type", client.type)
-                                })
+                                val clientId = client.id ?: ""
+                                if (clientId.contains(",")) {
+                                    clientId.split(",").forEach { id ->
+                                        if (id.trim().isNotEmpty()) {
+                                            clientArr.put(JSONObject().apply {
+                                                put("id", id.trim())
+                                                put("type", client.type ?: "consumer")
+                                            })
+                                        }
+                                    }
+                                } else if (clientId.isNotEmpty()) {
+                                    clientArr.put(JSONObject().apply {
+                                        put("id", clientId)
+                                        put("type", client.type ?: "consumer")
+                                    })
+                                }
                             }
                             put("clients", clientArr)
+                            android.util.Log.d("DOCUMENT_UPLOAD_DEBUG", "clientCount=${clientArr.length()}, firstId=${if (clientArr.length() > 0) clientArr.optJSONObject(0)?.optString("id") else "none"}, containsComma=${(client?.id ?: "").contains(",")}")
                         } else {
                             // matter upload
                             put("clients", JSONArray()) // empty array
                             val matter = _uiState.value.selectedUploadMatter
+                            val mattersArr = JSONArray()
                             if (matter != null) {
-                                put("matters", JSONArray().apply { put(matter.id) })
+                                val matterId = matter.id ?: ""
+                                if (matterId.contains(",")) {
+                                    matterId.split(",").forEach { id ->
+                                        if (id.trim().isNotEmpty()) {
+                                            mattersArr.put(id.trim())
+                                        }
+                                    }
+                                } else if (matterId.isNotEmpty()) {
+                                    mattersArr.put(matterId)
+                                }
                             }
+                            put("matters", mattersArr)
+                            android.util.Log.d("DOCUMENT_UPLOAD_DEBUG", "matterCount=${mattersArr.length()}, firstId=${if (mattersArr.length() > 0) mattersArr.optString(0) else "none"}, containsComma=${(matter?.id ?: "").contains(",")}")
                         }
                     } else {
                         // firm upload
                         put("clients", "")
                     }
 
-                    // Groups
+                    // Groups (only populated for firm documents)
                     val groupsArr = JSONArray().apply {
-                        _uiState.value.selectedUploadGroups.forEach { put(it.id) }
+                        if (currentTab == "firm") {
+                            _uiState.value.selectedUploadGroups.forEach { grp ->
+                                val groupId = grp.id ?: ""
+                                if (groupId.contains(",")) {
+                                    groupId.split(",").forEach { id ->
+                                        if (id.trim().isNotEmpty()) {
+                                            put(id.trim())
+                                        }
+                                    }
+                                } else if (groupId.isNotEmpty()) {
+                                    put(groupId)
+                                }
+                            }
+                        }
                     }
                     put("groups", groupsArr)
+                    android.util.Log.d("DOCUMENT_UPLOAD_DEBUG", "category=$category, groupsCount=${groupsArr.length()}")
                     
                     put("downloadDisabled", docModel.isIsenabled)
                     put("custom_encrypt", docModel.isencrypted)
@@ -630,10 +747,10 @@ class DocumentsViewModel(
                         put("tags", docModel.tags)
                     }
 
-                    val contentType = if (docType.equals("apng", ignoreCase = true) || docType.equals("avif", ignoreCase = true) || docType.equals("gif", ignoreCase = true) || docType.equals("jpeg", ignoreCase = true) || docType.equals("png", ignoreCase = true) || docType.equals("svg", ignoreCase = true) || docType.equals("webp", ignoreCase = true) || docType.equals("jpg", ignoreCase = true)) {
-                        "image/$docType"
+                    val contentType = if (ext.equals("apng", ignoreCase = true) || ext.equals("avif", ignoreCase = true) || ext.equals("gif", ignoreCase = true) || ext.equals("jpeg", ignoreCase = true) || ext.equals("png", ignoreCase = true) || ext.equals("svg", ignoreCase = true) || ext.equals("webp", ignoreCase = true) || ext.equals("jpg", ignoreCase = true)) {
+                        "image/$ext"
                     } else {
-                        "application/$docType"
+                        "application/$ext"
                     }
                     put("content_type", contentType)
                 }
@@ -653,9 +770,19 @@ class DocumentsViewModel(
 
             _uiState.update { it.copy(isUploading = false) }
             if (successCount == toUpload.size) {
+                toUpload.forEach { doc ->
+                    try {
+                        if (doc.file?.parentFile?.name == "staged_uploads") {
+                            doc.file?.delete()
+                        }
+                    } catch (e: Exception) {
+                        e.printStackTrace()
+                    }
+                }
                 _uiState.update {
                     it.copy(
-                        toastMessage = "Documents uploaded successfully.",
+                        alertTitle = "Alert !",
+                        alertMessage = "Documents uploaded successfully.",
                         isUploadMode = false,
                         selectedUploadFiles = emptyList(),
                         selectedUploadGroups = emptyList(),
@@ -663,9 +790,21 @@ class DocumentsViewModel(
                         selectedUploadMatter = null
                     )
                 }
-                switchTab(currentTab)
+                refreshCurrentDocuments()
             } else {
-                _uiState.update { it.copy(alertMessage = lastErrorMessage) }
+                _uiState.update { it.copy(alertTitle = "Alert", alertMessage = lastErrorMessage) }
+            }
+        }
+    }
+
+    fun refreshCurrentDocuments() {
+        val tab = _uiState.value.currentTab
+        when (tab) {
+            "matter", "client", "firm" -> {
+                fetchFilteredList()
+            }
+            "delete" -> {
+                fetchDeletedDocuments()
             }
         }
     }
@@ -681,7 +820,7 @@ class DocumentsViewModel(
                         val json = JSONObject(viewRes.responseContent ?: "{}")
                         val isError = json.optBoolean("error", false)
                         if (isError) {
-                            _uiState.update { it.copy(isLoading = false, alertMessage = json.optString("msg", "Unable to view document")) }
+                            _uiState.update { it.copy(isLoading = false, alertTitle = "Alert", alertMessage = json.optString("msg", "Unable to view document")) }
                             return@launch
                         }
 
@@ -701,25 +840,53 @@ class DocumentsViewModel(
                                     val decryptedFilename = decData?.optString("filename") ?: rawFilename
 
                                     if (!decryptedUrl.isNullOrEmpty()) {
+                                        var effectiveContentType = decData?.optString("content_type")?.ifEmpty { null }
+                                            ?: rawContentType.ifEmpty { null }
+                                            ?: doc.content_type?.ifEmpty { null }
+                                            ?: ""
+
+                                        if (effectiveContentType.isEmpty() || effectiveContentType.equals("application/octet-stream", ignoreCase = true)) {
+                                            val fallbackName = if (!decryptedFilename.isNullOrEmpty()) decryptedFilename else ((doc.filename ?: doc.name) ?: "")
+                                            val ext = fallbackName.substringAfterLast('.', "").lowercase(Locale.ROOT)
+                                            if (listOf("jpg", "jpeg", "png", "gif", "webp", "bmp", "svg", "apng", "avif").contains(ext)) {
+                                                effectiveContentType = "image/$ext"
+                                            } else if (ext == "pdf") {
+                                                effectiveContentType = "application/pdf"
+                                            }
+                                        }
+
+                                        var finalUrl = decryptedUrl
+                                        val lowerExt = (decryptedFilename.ifEmpty { doc.filename ?: doc.name ?: "" }).substringAfterLast('.', "").lowercase(Locale.ROOT)
+                                        val isImg = effectiveContentType.startsWith("image/", ignoreCase = true) ||
+                                                listOf("jpg", "jpeg", "png", "gif", "webp", "bmp", "svg", "apng", "avif").contains(lowerExt)
+                                        val isPdf = effectiveContentType == "application/pdf" || lowerExt == "pdf"
+                                        if (!isImg && !isPdf) {
+                                            val converted = convertDocToPdfUrl(decryptedUrl)
+                                            if (!converted.isNullOrEmpty()) {
+                                                finalUrl = converted
+                                                effectiveContentType = "application/pdf"
+                                            }
+                                        }
+
                                         val finalDoc = ViewDocumentsModel().apply {
                                             this.created = doc.created
                                             this.description = doc.description
                                             this.added_encryption = doc.added_encryption
                                             this.expiration_date = doc.expiration_date
                                             this.filename = decryptedFilename
-                                            this.content_type = "application/pdf"
+                                            this.content_type = effectiveContentType
                                             this.id = doc.id
                                             this.name = doc.name
                                         }
-                                        _uiState.update { it.copy(isLoading = false, previewDocUrl = decryptedUrl, previewDocModel = finalDoc) }
+                                        _uiState.update { it.copy(isLoading = false, previewDocUrl = finalUrl, previewDocModel = finalDoc) }
                                     } else {
-                                        _uiState.update { it.copy(isLoading = false, alertMessage = decJson.optString("msg", "Unable to fetch decrypted preview link.")) }
+                                        _uiState.update { it.copy(isLoading = false, alertTitle = "Alert", alertMessage = decJson.optString("msg", "Unable to fetch decrypted preview link.")) }
                                     }
                                 } else {
-                                    _uiState.update { it.copy(isLoading = false, alertMessage = decJson.optString("msg", "Failed to decrypt document.")) }
+                                    _uiState.update { it.copy(isLoading = false, alertTitle = "Alert", alertMessage = decJson.optString("msg", "Failed to decrypt document.")) }
                                 }
                             } else {
-                                _uiState.update { it.copy(isLoading = false, alertMessage = "Failed to decrypt document. Please try again.") }
+                                _uiState.update { it.copy(isLoading = false, alertTitle = "Alert", alertMessage = "Failed to decrypt document. Please try again.") }
                             }
                         } else {
                             if (!rawUrl.isNullOrEmpty()) {
@@ -756,11 +923,11 @@ class DocumentsViewModel(
                                 }
                                 _uiState.update { it.copy(isLoading = false, previewDocUrl = finalUrl, previewDocModel = finalDoc) }
                             } else {
-                                _uiState.update { it.copy(isLoading = false, alertMessage = json.optString("msg", "Unable to fetch document preview link.")) }
+                                _uiState.update { it.copy(isLoading = false, alertTitle = "Alert", alertMessage = json.optString("msg", "Unable to fetch document preview link.")) }
                             }
                         }
                     } else {
-                        _uiState.update { it.copy(isLoading = false, alertMessage = "API call failed. Please try again.") }
+                        _uiState.update { it.copy(isLoading = false, alertTitle = "Alert", alertMessage = "API call failed. Please try again.") }
                     }
                 }
             }
@@ -816,7 +983,6 @@ class DocumentsViewModel(
                             com.digicoffer.lauditor.CommonFiles.GlobalFiles.FileDownloader.downloadFile(
                                 getApplication(), url, resolvedName, doc.content_type ?: ""
                             )
-                            _uiState.update { it.copy(toastMessage = "Download started.") }
                         }
                     }
                     r
@@ -827,10 +993,10 @@ class DocumentsViewModel(
                 "restore" -> {
                     repository.restoreDeletedDocument(doc.id ?: "", doc.doc_type ?: "client")
                 }
-                "disabled" -> {
+                "disabled", "enable_download" -> {
                     repository.enableDocDownload(doc.id ?: "", false)
                 }
-                "enabled" -> {
+                "enabled", "disable_download" -> {
                     repository.enableDocDownload(doc.id ?: "", true)
                 }
                 "encrypt" -> {
@@ -846,11 +1012,31 @@ class DocumentsViewModel(
             _uiState.update { it.copy(isLoading = false) }
             if (res.result == WebServiceHelper.ServiceCallStatus.Success) {
                 val json = JSONObject(res.responseContent ?: "{}")
-                val msg = json.optString("msg", "Action completed successfully.")
-                _uiState.update { it.copy(toastMessage = msg) }
-                switchTab(_uiState.value.currentTab)
+                val isError = json.optBoolean("error", false)
+                val rawMsg = if (json.has("msg") && json.optString("msg").isNotEmpty()) {
+                    json.optString("msg")
+                } else if (json.has("message") && json.optString("message").isNotEmpty()) {
+                    json.optString("message")
+                } else {
+                    when (type) {
+                        "encrypt" -> "encrypt added sucessfully!!"
+                        "decrypt" -> "Document decrypted successfully."
+                        "disabled", "enable_download" -> "Download enabled successfully."
+                        "enabled", "disable_download" -> "Download disabled successfully."
+                        "download" -> "Download started."
+                        "deleted" -> "Document permanently deleted."
+                        "restore" -> "Document restored successfully."
+                        else -> "Action completed successfully."
+                    }
+                }
+                if (!isError) {
+                    _uiState.update { it.copy(alertTitle = "Alert !", alertMessage = rawMsg) }
+                    refreshCurrentDocuments()
+                } else {
+                    _uiState.update { it.copy(alertTitle = "Alert", alertMessage = rawMsg) }
+                }
             } else {
-                _uiState.update { it.copy(alertMessage = "Operation failed. Please try again.") }
+                _uiState.update { it.copy(alertTitle = "Alert", alertMessage = "Operation failed. Please try again.") }
             }
         }
     }
@@ -858,18 +1044,39 @@ class DocumentsViewModel(
     private fun saveMetadata(docId: String, name: String, desc: String, expDate: String, tags: org.json.JSONObject?) {
         viewModelScope.launch {
             _uiState.update { it.copy(isLoading = true, editDocModel = null) }
-            val res1 = repository.updateMetadata(docId, name, desc, expDate)
-            var success = res1.result == WebServiceHelper.ServiceCallStatus.Success
+            val formattedExpDate = if (expDate.equals("NA", ignoreCase = true) || expDate.isBlank()) {
+                ""
+            } else {
+                AndroidUtils.convertAnyDateToDDMMYYYY(expDate)
+            }
+            val res1 = repository.updateMetadata(docId, name, desc, formattedExpDate)
+            val json1 = try { JSONObject(res1.responseContent ?: "{}") } catch (e: Exception) { JSONObject() }
+            var success = res1.result == WebServiceHelper.ServiceCallStatus.Success && !json1.optBoolean("error", false)
             if (success && tags != null) {
                 val res2 = repository.updateTags(docId, name, tags, false)
-                success = res2.result == WebServiceHelper.ServiceCallStatus.Success
+                val json2 = try { JSONObject(res2.responseContent ?: "{}") } catch (e: Exception) { JSONObject() }
+                success = res2.result == WebServiceHelper.ServiceCallStatus.Success && !json2.optBoolean("error", false)
             }
             _uiState.update { it.copy(isLoading = false) }
             if (success) {
-                _uiState.update { it.copy(toastMessage = "Metadata and tags updated successfully.") }
-                switchTab(_uiState.value.currentTab)
+                val msg = if (json1.has("msg") && json1.optString("msg").isNotEmpty()) {
+                    json1.optString("msg")
+                } else if (json1.has("message") && json1.optString("message").isNotEmpty()) {
+                    json1.optString("message")
+                } else {
+                    "Metadata updated successfully."
+                }
+                _uiState.update { it.copy(alertTitle = "Alert !", alertMessage = msg) }
+                refreshCurrentDocuments()
             } else {
-                _uiState.update { it.copy(alertMessage = "Update failed. Please try again.") }
+                val errorMsg = if (json1.has("msg") && json1.optString("msg").isNotEmpty()) {
+                    json1.optString("msg")
+                } else if (json1.has("message") && json1.optString("message").isNotEmpty()) {
+                    json1.optString("message")
+                } else {
+                    "Update failed. Please try again."
+                }
+                _uiState.update { it.copy(alertTitle = "Alert", alertMessage = errorMsg) }
             }
         }
     }
@@ -883,10 +1090,16 @@ class DocumentsViewModel(
             val res = repository.updateTags(docId, name, tagsJson, false)
             _uiState.update { it.copy(isLoading = false) }
             if (res.result == WebServiceHelper.ServiceCallStatus.Success) {
-                _uiState.update { it.copy(toastMessage = "Tags updated successfully.") }
-                switchTab(_uiState.value.currentTab)
+                val json = JSONObject(res.responseContent ?: "{}")
+                val msg = if (json.has("msg") && json.optString("msg").isNotEmpty()) {
+                    json.optString("msg")
+                } else {
+                    "Tags updated successfully."
+                }
+                _uiState.update { it.copy(alertTitle = "Alert !", alertMessage = msg) }
+                refreshCurrentDocuments()
             } else {
-                _uiState.update { it.copy(alertMessage = "Tags update failed. Please try again.") }
+                _uiState.update { it.copy(alertTitle = "Alert", alertMessage = "Tags update failed. Please try again.") }
             }
         }
     }

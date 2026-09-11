@@ -28,6 +28,10 @@ class ViewDocumentsModel {
     @set:JvmName("setIs_disabled")
     var is_disabled: Boolean = false
     
+    @get:JvmName("getDownload_permission")
+    @set:JvmName("setDownload_permission")
+    var download_permission: Boolean = true
+    
     @get:JvmName("isIs_encrypted")
     @set:JvmName("setIs_encrypted")
     var is_encrypted: Boolean = false

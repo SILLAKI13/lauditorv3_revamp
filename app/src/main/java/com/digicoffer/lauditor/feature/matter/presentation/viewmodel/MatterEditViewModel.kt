@@ -24,6 +24,7 @@ import kotlinx.coroutines.launch
 import kotlinx.coroutines.suspendCancellableCoroutine
 import org.json.JSONArray
 import org.json.JSONObject
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import okhttp3.MediaType.Companion.toMediaTypeOrNull
@@ -836,10 +837,6 @@ class MatterEditViewModel(application: Application) : AndroidViewModel(applicati
                         Constants.GeneratedMatterId = _uiState.value.matterNumber
                         Constants.GeneratedMatterTitle = _uiState.value.title
 
-                        if (msg.isNotEmpty()) {
-                            AndroidUtils.showToast(msg, getApplication())
-                        }
-
                         if (isSaveLater) {
                             _uiState.update {
                                 it.copy(
@@ -1174,9 +1171,24 @@ class MatterEditViewModel(application: Application) : AndroidViewModel(applicati
                         list.add(model)
                     }
                     if (list.isEmpty()) {
-                        AndroidUtils.showToast("No clients found matching '$query'", getApplication())
+                        _uiState.update { 
+                            it.copy(
+                                searchResults = emptyList(), 
+                                isSearchingClient = false,
+                                clientNotFoundQuery = query,
+                                isAddClientFormVisible = true
+                            ) 
+                        }
+                    } else {
+                        _uiState.update { 
+                            it.copy(
+                                searchResults = list, 
+                                isSearchingClient = false,
+                                clientNotFoundQuery = null,
+                                isAddClientFormVisible = false
+                            ) 
+                        }
                     }
-                    _uiState.update { it.copy(searchResults = list, isSearchingClient = false) }
                 } else {
                     _uiState.update { it.copy(isSearchingClient = false) }
                     AndroidUtils.showToast("Search failed, try again", getApplication())
@@ -1185,6 +1197,223 @@ class MatterEditViewModel(application: Application) : AndroidViewModel(applicati
                 android.util.Log.e("MatterEditViewModel", "Error in searchClients", e)
                 _uiState.update { it.copy(isSearchingClient = false) }
                 AndroidUtils.showToast("Error searching: ${e.message}", getApplication())
+            }
+        }
+    }
+
+    fun dismissClientNotFound() {
+        _uiState.update { it.copy(clientNotFoundQuery = null, isAddClientFormVisible = false) }
+    }
+
+    fun setAddClientFormVisible(visible: Boolean) {
+        _uiState.update { it.copy(isAddClientFormVisible = visible) }
+    }
+
+    fun loadCountries() {
+        if (_uiState.value.countriesList.isNotEmpty()) return
+        viewModelScope.launch {
+            try {
+                val result = suspendCancellableCoroutine<HttpResultDo> { continuation ->
+                    WebServiceHelper.callHttpWebService(
+                        object : AsyncTaskCompleteListener {
+                            override fun onAsyncTaskComplete(httpResult: HttpResultDo) {
+                                continuation.resume(httpResult)
+                            }
+                            override fun onClick(view: View) {}
+                        },
+                        getApplication(),
+                        WebServiceHelper.RestMethodType.GET,
+                        "countries",
+                        "countries",
+                        JSONObject().toString()
+                    )
+                }
+                if (result.result == WebServiceHelper.ServiceCallStatus.Success) {
+                    val json = JSONObject(result.responseContent ?: "")
+                    if (!json.optBoolean("error", false)) {
+                        val dataObj = json.optJSONObject("data")
+                        val countriesArray = dataObj?.optJSONArray("countries") ?: JSONArray()
+                        val list = mutableListOf<Pair<String, String>>()
+                        for (i in 1 until countriesArray.length()) {
+                            val item = countriesArray.optJSONArray(i) ?: continue
+                            val code = item.optString(0)
+                            val name = item.optString(1)
+                            list.add(Pair(code, name))
+                        }
+                        _uiState.update { it.copy(countriesList = list) }
+                    }
+                }
+            } catch (e: Exception) {
+                android.util.Log.e("MatterEditViewModel", "Error fetching countries", e)
+            }
+        }
+    }
+
+    fun inviteClient(
+        clientType: String,
+        firstName: String,
+        lastName: String,
+        email: String,
+        confirmEmail: String,
+        phone: String,
+        country: String,
+        onSuccess: () -> Unit = {}
+    ) {
+        val cleanEmail = email.trim()
+        val cleanConfirmEmail = confirmEmail.trim()
+        val cleanCountry = country.trim()
+
+        if (clientType == "consumer") {
+            if (firstName.isBlank()) {
+                _uiState.update { it.copy(alertTitle = "Alert !", alertMessage = "Please enter first name") }
+                return
+            }
+            if (lastName.isBlank()) {
+                _uiState.update { it.copy(alertTitle = "Alert !", alertMessage = "Please enter last name") }
+                return
+            }
+        } else {
+            if (firstName.isBlank()) {
+                _uiState.update { it.copy(alertTitle = "Alert !", alertMessage = "Please enter firm name") }
+                return
+            }
+            if (lastName.isBlank()) {
+                _uiState.update { it.copy(alertTitle = "Alert !", alertMessage = "Please enter contact person") }
+                return
+            }
+        }
+
+        if (cleanEmail.isBlank()) {
+            _uiState.update { it.copy(alertTitle = "Alert !", alertMessage = "Please enter email address") }
+            return
+        }
+        if (!AndroidUtils.isValidEmail(cleanEmail)) {
+            _uiState.update { it.copy(alertTitle = "Alert !", alertMessage = "Please Enter A Valid Email Address") }
+            return
+        }
+        if (cleanConfirmEmail.isBlank() || cleanConfirmEmail != cleanEmail) {
+            _uiState.update { it.copy(alertTitle = "Alert !", alertMessage = "Please Enter A Valid Confirm Email Address") }
+            return
+        }
+        if (cleanCountry.isBlank() || cleanCountry == "Select" || cleanCountry == "Choose country") {
+            _uiState.update { it.copy(alertTitle = "Alert !", alertMessage = "Please select country") }
+            return
+        }
+        if (phone.isNotBlank() && phone.trim().length < 10) {
+            _uiState.update { it.copy(alertTitle = "Alert !", alertMessage = "Please enter a 10 digit valid mobile number.") }
+            return
+        }
+
+        _uiState.update { it.copy(isLoading = true) }
+        viewModelScope.launch {
+            try {
+                val jsonObject = JSONObject().apply {
+                    if (clientType == "entity") {
+                        put("fullname", firstName.trim())
+                        put("contact_person", lastName.trim())
+                        put("email", cleanEmail)
+                        put("country", cleanCountry)
+                        if (phone.isNotBlank()) {
+                            put("contact_phone", phone.trim())
+                        }
+                    } else {
+                        put("first_name", firstName.trim())
+                        put("last_name", lastName.trim())
+                        put("email", cleanEmail)
+                        put("country", cleanCountry)
+                    }
+                }
+
+                val result = suspendCancellableCoroutine<HttpResultDo> { continuation ->
+                    WebServiceHelper.callHttpWebService(
+                        object : AsyncTaskCompleteListener {
+                            override fun onAsyncTaskComplete(httpResult: HttpResultDo) {
+                                continuation.resume(httpResult)
+                            }
+                            override fun onClick(view: View) {}
+                        },
+                        getApplication(),
+                        WebServiceHelper.RestMethodType.POST,
+                        "v2/relationship/invite/$clientType",
+                        "temp_client",
+                        jsonObject.toString()
+                    )
+                }
+
+                _uiState.update { it.copy(isLoading = false) }
+
+                val responseContent = result.responseContent ?: ""
+                val json = try { JSONObject(responseContent) } catch (e: Exception) { JSONObject() }
+
+                if (result.result == WebServiceHelper.ServiceCallStatus.Success && !json.optBoolean("error", false)) {
+                    val msg = json.optString("msg", "Invitation sent successfully.")
+                    val tempClientId = if (clientType == "entity") {
+                        json.optString("profId").ifEmpty { json.optString("createdId") }
+                    } else {
+                        json.optString("conId").ifEmpty { json.optString("createdId") }
+                    }
+                    val tempRelId = if (clientType == "entity") {
+                        json.optString("createdId")
+                    } else {
+                        json.optString("rel_id")
+                    }
+                    val tempName = json.optString("name", if (clientType == "entity") firstName.trim() else "${firstName.trim()} ${lastName.trim()}".trim())
+
+                    val newClient = ClientsModel().apply {
+                        this.client_id = tempClientId
+                        this.client_name = tempName
+                        this.client_type = clientType
+                        this.rel_id = tempRelId
+                    }
+
+                    addClient(newClient)
+                    _uiState.update {
+                        it.copy(
+                            clientNotFoundQuery = null,
+                            isAddClientFormVisible = false,
+                            alertTitle = "Alert !",
+                            alertMessage = msg
+                        )
+                    }
+                    onSuccess()
+                } else {
+                    val errorMsg = if (json.has("errors")) {
+                        val errorsArr = json.optJSONArray("errors")
+                        val sb = StringBuilder()
+                        if (errorsArr != null) {
+                            for (i in 0 until errorsArr.length()) {
+                                val err = errorsArr.optJSONObject(i)
+                                val m = err?.optString("msg") ?: ""
+                                if (m.isNotEmpty()) {
+                                    if (sb.isNotEmpty()) sb.append("\n")
+                                    sb.append(m)
+                                }
+                            }
+                        }
+                        sb.toString().ifEmpty { json.optString("msg", "Failed to add client") }
+                    } else {
+                        json.optString("msg").ifEmpty {
+                            json.optString("message", if (result.errorMessage.isNullOrEmpty()) "Failed to add client" else result.errorMessage)
+                        }
+                    }
+                    _uiState.update {
+                        it.copy(
+                            errorMessage = errorMsg,
+                            alertTitle = "Alert !",
+                            alertMessage = errorMsg
+                        )
+                    }
+                }
+            } catch (e: Exception) {
+                android.util.Log.e("MatterEditViewModel", "Error in inviteClient", e)
+                _uiState.update {
+                    it.copy(
+                        isLoading = false,
+                        errorMessage = "Error: ${e.message}",
+                        alertTitle = "Alert !",
+                        alertMessage = "Error: ${e.message}"
+                    )
+                }
             }
         }
     }
@@ -1353,7 +1582,6 @@ class MatterEditViewModel(application: Application) : AndroidViewModel(applicati
                         }
 
                         if (msg.isNotEmpty()) {
-                            AndroidUtils.showToast(msg, getApplication())
                             _uiState.update { it.copy(toastMessage = msg) }
                         }
 
@@ -1591,16 +1819,28 @@ class MatterEditViewModel(application: Application) : AndroidViewModel(applicati
                                 val decryptedFilename = decryptData?.optString("filename") ?: rawFilename
 
                                 if (!decryptedUrl.isNullOrEmpty()) {
+                                    val lowerExt = (decryptedFilename.ifEmpty { doc.name ?: "" }).substringAfterLast('.', "").lowercase(Locale.ROOT)
+                                    val isImg = listOf("jpg", "jpeg", "png", "gif", "webp", "bmp", "svg", "apng", "avif").contains(lowerExt)
+                                    val isPdf = lowerExt == "pdf"
+                                    var finalUrl = decryptedUrl
+                                    var finalContentType = if (isImg) "image/$lowerExt" else "application/pdf"
+                                    if (!isImg && !isPdf) {
+                                        val converted = convertDocToPdfUrl(decryptedUrl)
+                                        if (!converted.isNullOrEmpty()) {
+                                            finalUrl = converted
+                                            finalContentType = "application/pdf"
+                                        }
+                                    }
                                     val finalDoc = com.digicoffer.lauditor.Documents.Models.ViewDocumentsModel().apply {
                                         this.id = docId
                                         this.name = doc.name
                                         this.filename = decryptedFilename
-                                        this.content_type = "application/pdf"
+                                        this.content_type = finalContentType
                                     }
                                     _uiState.update {
                                         it.copy(
                                             isLoading = false,
-                                            previewDocUrl = decryptedUrl,
+                                            previewDocUrl = finalUrl,
                                             previewDocModel = finalDoc
                                         )
                                     }
@@ -1831,8 +2071,8 @@ class MatterEditViewModel(application: Application) : AndroidViewModel(applicati
     private suspend fun executeUpdateDocuments(documents: JSONArray): HttpResultDo = suspendCancellableCoroutine { continuation ->
         val payload = JSONObject()
         payload.put("documents", documents)
-        val type = _uiState.value.matterType.lowercase(Locale.ROOT)
-        val id = Constants.Matter_id ?: ""
+        val type = _uiState.value.matterType.lowercase(Locale.ROOT).ifEmpty { "legal" }
+        val id = _uiState.value.createdMatterId?.ifEmpty { Constants.Matter_id ?: "" } ?: (Constants.Matter_id ?: "")
         
         WebServiceHelper.callHttpWebService(
             object : AsyncTaskCompleteListener {
@@ -1856,12 +2096,37 @@ class MatterEditViewModel(application: Application) : AndroidViewModel(applicati
                 val uploadedDocsList = mutableListOf<com.digicoffer.lauditor.Documents.Models.DocumentsModel>()
                 val toUpload = _uiState.value.selectedUploadFiles
                 
+                val matterId = _uiState.value.createdMatterId?.ifEmpty { Constants.Matter_id ?: "" } ?: (Constants.Matter_id ?: "")
+                val matters = JSONArray().apply { if (matterId.isNotEmpty()) put(matterId) }
+
+                val clientArray = JSONArray()
+                if (Constants.clientList.length() > 0) {
+                    for (i in 0 until Constants.clientList.length()) {
+                        clientArray.put(Constants.clientList.get(i))
+                    }
+                } else if (Constants.corpclientList.length() > 0) {
+                    for (i in 0 until Constants.corpclientList.length()) {
+                        clientArray.put(Constants.corpclientList.get(i))
+                    }
+                } else {
+                    for (c in _uiState.value.selectedClients) {
+                        val cid = c.client_id ?: ""
+                        if (cid.isNotEmpty()) clientArray.put(cid)
+                    }
+                }
+
+                val groupsArray = JSONArray()
+                if (Constants.ex_group_attachment.length() > 0) {
+                    for (i in 0 until Constants.ex_group_attachment.length()) {
+                        groupsArray.put(Constants.ex_group_attachment.get(i))
+                    }
+                }
+
                 // Parallel uploads using coroutines
                 val jobs = toUpload.map { docModel ->
                     val file = docModel.file ?: return@map null
                     
                     val ext = file.extension.lowercase(Locale.ROOT)
-                    val docname = file.name.substringBeforeLast('.', missingDelimiterValue = file.name)
                     val contentType = when (ext) {
                         "jpg", "jpeg" -> "image/jpeg"
                         "png" -> "image/png"
@@ -1880,7 +2145,6 @@ class MatterEditViewModel(application: Application) : AndroidViewModel(applicati
                         else -> "application/$ext"
                     }
                     
-                    val matters = JSONArray().apply { put(Constants.Matter_id) }
                     val payload = JSONObject().apply {
                         put("name", docModel.name)
                         put("description", docModel.description)
@@ -1888,12 +2152,8 @@ class MatterEditViewModel(application: Application) : AndroidViewModel(applicati
                         put("filename", file.name)
                         put("matters", matters)
                         put("category", "client")
-                        if (Constants.clientList.length() > 0) {
-                            put("clients", Constants.clientList)
-                        } else {
-                            put("clients", Constants.corpclientList)
-                        }
-                        put("groups", Constants.ex_group_attachment)
+                        put("clients", clientArray)
+                        put("groups", groupsArray)
                         put("downloadDisabled", docModel.isIsenabled)
                         put("custom_encrypt", docModel.isencrypted ?: false)
                         put("tags", docModel.tags_list ?: (docModel.tags ?: ""))
@@ -1966,19 +2226,20 @@ class MatterEditViewModel(application: Application) : AndroidViewModel(applicati
                         }
                     }
                     
-                    if (msg.isNotEmpty()) {
-                        AndroidUtils.showToast(msg, getApplication())
-                    }
-
                     _uiState.update {
                         it.copy(
                             isUploadingDocuments = false,
-                            showSuccessDialog = true,
+                            showSuccessDialog = false,
                             successMessage = msg,
                             toastMessage = msg,
                             selectedUploadFiles = emptyList()
                         )
                     }
+                    if (msg.isNotBlank()) {
+                        AndroidUtils.showToast(msg, getApplication())
+                    }
+                    delay(1500)
+                    onSuccess()
                 } else {
                     _uiState.update { it.copy(isUploadingDocuments = false, errorMessage = "Failed to update matter documents.") }
                 }

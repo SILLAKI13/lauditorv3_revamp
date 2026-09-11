@@ -85,6 +85,9 @@ fun MatterListingScreen(
     var showOpenCloseDialog by remember { mutableStateOf(false) }
     var activeMatterForDialog by remember { mutableStateOf<ViewMatterModel?>(null) }
 
+    val keyboardController = androidx.compose.ui.platform.LocalSoftwareKeyboardController.current
+    val focusManager = androidx.compose.ui.platform.LocalFocusManager.current
+
     Column(
         modifier = modifier
             .fillMaxSize()
@@ -97,14 +100,20 @@ fun MatterListingScreen(
                 searchInput = it
             },
             onSearchClick = {
+                keyboardController?.hide()
+                focusManager.clearFocus()
                 viewModel.onSearchQueryChanged(searchInput.trim())
             },
             onSearchKeyboardAction = {
+                keyboardController?.hide()
+                focusManager.clearFocus()
                 viewModel.onSearchQueryChanged(searchInput.trim())
             },
             onClearClick = {
                 val hadSubmittedSearch = uiState.searchQuery.isNotEmpty()
                 searchInput = ""
+                keyboardController?.hide()
+                focusManager.clearFocus()
                 if (hadSubmittedSearch) {
                     viewModel.onSearchQueryChanged("")
                 }
@@ -117,6 +126,8 @@ fun MatterListingScreen(
                         .size(20.dp)
                         .padding(end = 4.dp)
                         .clickable {
+                            keyboardController?.hide()
+                            focusManager.clearFocus()
                             viewModel.onSearchQueryChanged(searchInput.trim())
                         }
                 )

@@ -22,6 +22,7 @@ data class DocumentsUiState(
     val selectedFilterClient: ClientsModel? = null,
     val selectedFilterMatter: MattersModel? = null,
     val selectedFilterGroup: GroupsModel? = null,
+    val selectedFilterGroups: List<GroupsModel> = emptyList(),
     val selectedFilterDocType: String? = null, // Deleted flow: "firm" or "client"
 
     // Search

@@ -50,7 +50,7 @@ fun TeamMembersScreen(
             }
 
             if (filteredMonthList.isEmpty()) {
-                AppEmptyState(title = "No monthly entries found")
+                // Empty area when no matching results
             } else {
                 LazyColumn {
                     items(filteredMonthList) { member ->
@@ -65,7 +65,7 @@ fun TeamMembersScreen(
             }
 
             if (filteredWeekList.isEmpty()) {
-                AppEmptyState(title = "No team members found")
+                // Empty area when no matching results
             } else {
                 LazyColumn {
                     items(filteredWeekList) { member ->

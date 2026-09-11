@@ -37,36 +37,45 @@ class NotificationsViewModel(
                 applyFilterAndSorting()
             }
             is NotificationsUiEvent.NotificationCheckedChange -> {
-                val list = _uiState.value.filteredList
-                for (item in list) {
-                    if (item.id == event.notification.id) {
-                        item.isChecked = event.isChecked
-                    }
+                val id = event.notification.id ?: return
+                val current = _uiState.value.selectedNotificationIds.toMutableSet()
+                if (event.isChecked) {
+                    current.add(id)
+                } else {
+                    current.remove(id)
                 }
-                updateSelectionState()
+                updateSelectionState(current)
             }
             is NotificationsUiEvent.ToggleSelectAll -> {
-                val list = _uiState.value.filteredList
-                for (item in list) {
-                    item.isChecked = event.isChecked
+                val current = if (event.isChecked) {
+                    _uiState.value.filteredList.mapNotNull { it.id }.toSet()
+                } else {
+                    emptySet()
                 }
-                updateSelectionState()
+                updateSelectionState(current)
             }
             is NotificationsUiEvent.MarkSelectedAsRead -> markSelectedAsRead()
             is NotificationsUiEvent.ReadSingleNotification -> markSingleAsRead(event.notification)
             is NotificationsUiEvent.RequestDeleteSelected -> {
                 if (_uiState.value.hasSelection) {
                     _uiState.update {
-                        it.copy(
-                            alertTitle = "Confirmation",
-                            alertMessage = "Are you sure you want to delete the selected notifications?"
-                        )
+                        it.copy(showDeleteConfirmation = true)
                     }
                 }
             }
-            is NotificationsUiEvent.ConfirmDeleteSelected -> deleteSelected()
+            is NotificationsUiEvent.ConfirmDeleteSelected -> {
+                _uiState.update { it.copy(showDeleteConfirmation = false) }
+                deleteSelected()
+            }
             is NotificationsUiEvent.DismissDialogs -> {
-                _uiState.update { it.copy(alertTitle = null, alertMessage = null, toastMessage = null) }
+                _uiState.update {
+                    it.copy(
+                        showDeleteConfirmation = false,
+                        alertTitle = null,
+                        alertMessage = null,
+                        toastMessage = null
+                    )
+                }
             }
             is NotificationsUiEvent.SetPendingHighlight -> {
                 val activeIds = if (event.highlightId.isNotEmpty()) setOf(event.highlightId) else emptySet()
@@ -94,15 +103,10 @@ class NotificationsViewModel(
                     if (!rootJson.getBoolean("error")) {
                         val responseData = JSONObject(rootJson.getString("data"))
                         val rawList = parseNotificationsResponse(responseData)
-                        
-                        // Copy selection states if loading updates
-                        val currentSelectionMap = _uiState.value.filteredList.associate { (it.id ?: "") to it.isChecked }
-                        for (item in rawList) {
-                            item.isChecked = currentSelectionMap[item.id ?: ""] ?: false
-                        }
 
                         _uiState.update { it.copy(notificationList = rawList) }
                         applyFilterAndSorting()
+                        countApi.fetchNotificationCount()
                     } else {
                         _uiState.update {
                             it.copy(
@@ -144,12 +148,15 @@ class NotificationsViewModel(
         updateSelectionState()
     }
 
-    private fun updateSelectionState() {
+    private fun updateSelectionState(selectedIds: Set<String> = _uiState.value.selectedNotificationIds) {
         val filtered = _uiState.value.filteredList
-        val allChecked = filtered.isNotEmpty() && filtered.all { it.isChecked }
-        val anyChecked = filtered.any { it.isChecked }
+        val filteredIds = filtered.mapNotNull { it.id }.toSet()
+        val validSelectedIds = selectedIds.filter { filteredIds.contains(it) }.toSet()
+        val allChecked = filtered.isNotEmpty() && filtered.all { validSelectedIds.contains(it.id) }
+        val anyChecked = validSelectedIds.isNotEmpty()
         _uiState.update {
             it.copy(
+                selectedNotificationIds = validSelectedIds,
                 isAllSelected = allChecked,
                 hasSelection = anyChecked
             )
@@ -157,7 +164,7 @@ class NotificationsViewModel(
     }
 
     private fun markSelectedAsRead() {
-        val selectedIds = _uiState.value.filteredList.filter { it.isChecked }.mapNotNull { it.id }
+        val selectedIds = _uiState.value.selectedNotificationIds.toList()
         if (selectedIds.isEmpty()) {
             _uiState.update { it.copy(toastMessage = "Select at least 1 notification") }
             return
@@ -172,7 +179,10 @@ class NotificationsViewModel(
                 val rootJson = JSONObject(result.responseContent ?: "")
                 _uiState.update {
                     it.copy(
-                        alertTitle = if (rootJson.getBoolean("error")) "Alert" else "",
+                        selectedNotificationIds = emptySet(),
+                        isAllSelected = false,
+                        hasSelection = false,
+                        alertTitle = "Alert",
                         alertMessage = rootJson.getString("msg")
                     )
                 }
@@ -218,7 +228,7 @@ class NotificationsViewModel(
     }
 
     private fun deleteSelected() {
-        val selectedIds = _uiState.value.filteredList.filter { it.isChecked }.mapNotNull { it.id }
+        val selectedIds = _uiState.value.selectedNotificationIds.toList()
         if (selectedIds.isEmpty()) return
 
         viewModelScope.launch {
@@ -230,7 +240,10 @@ class NotificationsViewModel(
                 val rootJson = JSONObject(result.responseContent ?: "")
                 _uiState.update {
                     it.copy(
-                        alertTitle = if (rootJson.getBoolean("error")) "Alert" else "",
+                        selectedNotificationIds = emptySet(),
+                        isAllSelected = false,
+                        hasSelection = false,
+                        alertTitle = "Alert",
                         alertMessage = rootJson.getString("msg")
                     )
                 }

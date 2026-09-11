@@ -6,6 +6,7 @@ import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.text.BasicTextField
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
@@ -84,20 +85,32 @@ fun NonSubmittedScreen(
             .background(Color(0xFFE4F2FF))
             .padding(15.dp) // 15dp margins on all sides matching legacy layout
     ) {
-        item {
-            // Level 1: Outer Card Container (Matches cv_details_activity_log)
-            AppCard(
-                modifier = Modifier.fillMaxWidth(),
-                backgroundColor = Color.White,
-                shape = RoundedCornerShape(8.dp),
-                elevation = 4.dp
-            ) {
-                Column(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(12.dp)
+        if (uiState.isFrozen) {
+            item {
+                AppSpacer(height = 20.dp)
+                AppEmptyState(
+                    title = "Timesheet Already Submitted Please Select Other Week",
+                    description = null,
+                    imageRes = R.drawable.empty_appointments,
+                    imageSize = 130.dp,
+                    titleStyle = TextStyle(fontSize = 18.sp, fontWeight = FontWeight.Bold, fontFamily = FontTokens.DefaultFontFamily),
+                    titleColor = Color.Black
+                )
+            }
+        } else {
+            item {
+                // Level 1: Outer Card Container (Matches cv_details_activity_log)
+                AppCard(
+                    modifier = Modifier.fillMaxWidth(),
+                    backgroundColor = Color.White,
+                    shape = RoundedCornerShape(8.dp),
+                    elevation = 4.dp
                 ) {
-                    if (!uiState.isFrozen) {
+                    Column(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(12.dp)
+                    ) {
                         // Project Dropdown Spinner (Using standard reusable DropdownSelectorField)
                         LabelWithAsterisk(text = "Project")
                         AppSpacer(height = 4.dp)
@@ -176,22 +189,41 @@ fun NonSubmittedScreen(
                             ) {
                                 BlackLabelWithAsterisk(text = "Hours")
                                 AppSpacer(height = 4.dp)
-                                OutlinedTextField(
-                                    value = uiState.hours,
-                                    onValueChange = { onEvent(TimesheetsUiEvent.HoursChanged(it)) },
-                                    placeholder = { Text("Hours", style = TextStyle(fontSize = 15.sp, color = Color.Gray)) },
-                                    keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
-                                    shape = RoundedCornerShape(6.dp),
-                                    singleLine = true,
-                                    textStyle = TextStyle(fontSize = 15.sp, fontFamily = FontTokens.DefaultFontFamily),
-                                    colors = OutlinedTextFieldDefaults.colors(
-                                        focusedBorderColor = Color(0xFFCCCCCC),
-                                        unfocusedBorderColor = Color(0xFFCCCCCC)
-                                    ),
+                                Box(
                                     modifier = Modifier
                                         .fillMaxWidth()
-                                        .height(32.dp) // Set to 32dp to visually match legacy Dropdown selector fields
-                                )
+                                        .height(32.dp)
+                                        .background(Color.White, RoundedCornerShape(6.dp))
+                                        .border(0.5.dp, Color(0xFFCCCCCC), RoundedCornerShape(6.dp))
+                                        .padding(horizontal = 8.dp),
+                                    contentAlignment = Alignment.CenterStart
+                                ) {
+                                    if (uiState.hours.isEmpty()) {
+                                        Text(
+                                            text = "Hours",
+                                            style = TextStyle(fontSize = 15.sp, color = Color.Gray, fontFamily = FontTokens.DefaultFontFamily)
+                                        )
+                                    }
+                                    BasicTextField(
+                                        value = uiState.hours,
+                                        onValueChange = { input ->
+                                            val filtered = input.filter { it.isDigit() }
+                                            val num = filtered.toIntOrNull()
+                                            if (filtered.isEmpty()) {
+                                                onEvent(TimesheetsUiEvent.HoursChanged(""))
+                                            } else if (num != null && num <= 24) {
+                                                onEvent(TimesheetsUiEvent.HoursChanged(num.toString()))
+                                                if (num == 24) {
+                                                    onEvent(TimesheetsUiEvent.MinutesChanged(""))
+                                                }
+                                            }
+                                        },
+                                        keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
+                                        singleLine = true,
+                                        textStyle = TextStyle(fontSize = 15.sp, color = Color.Black, fontFamily = FontTokens.DefaultFontFamily),
+                                        modifier = Modifier.fillMaxWidth()
+                                    )
+                                }
                             }
 
                             // Center Col: Minutes Selector Buttons (Separate rounded-corner button cards with spacing gap)
@@ -205,14 +237,15 @@ fun NonSubmittedScreen(
                                 Row(
                                     modifier = Modifier
                                         .fillMaxWidth()
-                                        .height(32.dp), // Set height to 32dp to match Hours field exactly
+                                        .height(32.dp),
                                     verticalAlignment = Alignment.CenterVertically,
                                     horizontalArrangement = Arrangement.spacedBy(6.dp)
                                 ) {
+                                    val is24Hours = (uiState.hours.toIntOrNull() ?: 0) >= 24
                                     listOf("15", "30", "45").forEach { min ->
-                                        val isSelected = uiState.minutes == min
+                                        val isSelected = uiState.minutes == min && !is24Hours
                                         val bg = if (isSelected) Color(0xFF004D87) else Color(0xFFEFEFEF)
-                                        val txt = if (isSelected) Color.White else Color.Black
+                                        val txt = if (isSelected) Color.White else (if (is24Hours) Color.Gray else Color.Black)
                                         val borderCol = if (isSelected) Color(0xFF004D87) else Color(0xFFCCCCCC)
 
                                         Box(
@@ -221,7 +254,7 @@ fun NonSubmittedScreen(
                                                 .fillMaxHeight()
                                                 .background(bg, RoundedCornerShape(6.dp))
                                                 .border(1.dp, borderCol, RoundedCornerShape(6.dp))
-                                                .clickable {
+                                                .clickable(enabled = !is24Hours) {
                                                     val nextMin = if (isSelected) "" else min
                                                     onEvent(TimesheetsUiEvent.MinutesChanged(nextMin))
                                                 },
@@ -246,28 +279,30 @@ fun NonSubmittedScreen(
                                 val totalHrsText = if (uiState.hours.isEmpty() && uiState.minutes.isEmpty()) {
                                     ""
                                 } else {
-                                    val formattedMins = String.format("%02d", minsVal)
-                                    "$hrsVal:$formattedMins"
+                                    String.format("%02d:%02d", hrsVal, minsVal)
                                 }
 
-                                OutlinedTextField(
-                                    value = totalHrsText,
-                                    onValueChange = {},
-                                    placeholder = { Text("Total..", style = TextStyle(fontSize = 15.sp, color = Color.Gray)) },
-                                    readOnly = true,
-                                    enabled = false,
-                                    shape = RoundedCornerShape(6.dp),
-                                    singleLine = true,
-                                    textStyle = TextStyle(fontSize = 15.sp, fontFamily = FontTokens.DefaultFontFamily),
-                                    colors = OutlinedTextFieldDefaults.colors(
-                                        disabledBorderColor = Color(0xFFCCCCCC),
-                                        disabledContainerColor = Color(0xFFFAFAFA),
-                                        disabledTextColor = Color.Black
-                                    ),
+                                Box(
                                     modifier = Modifier
                                         .fillMaxWidth()
-                                        .height(32.dp) // Set height to 32dp to match selectors exactly
-                                )
+                                        .height(32.dp)
+                                        .background(Color(0xFFFAFAFA), RoundedCornerShape(6.dp))
+                                        .border(0.5.dp, Color(0xFFCCCCCC), RoundedCornerShape(6.dp))
+                                        .padding(horizontal = 8.dp),
+                                    contentAlignment = Alignment.CenterStart
+                                ) {
+                                    if (totalHrsText.isEmpty()) {
+                                        Text(
+                                            text = "Total..",
+                                            style = TextStyle(fontSize = 15.sp, color = Color.Gray, fontFamily = FontTokens.DefaultFontFamily)
+                                        )
+                                    } else {
+                                        Text(
+                                            text = totalHrsText,
+                                            style = TextStyle(fontSize = 15.sp, color = Color.Black, fontFamily = FontTokens.DefaultFontFamily)
+                                        )
+                                    }
+                                }
                             }
                         }
                         AppSpacer(height = 18.dp)
@@ -299,7 +334,6 @@ fun NonSubmittedScreen(
                                 modifier = Modifier.weight(1f).height(40.dp)
                             )
                         }
-                    }
 
                     // Separation gap before logs list
                     AppSpacer(height = 16.dp)
@@ -357,6 +391,7 @@ fun NonSubmittedScreen(
             }
         }
     }
+}
 }
 
 @Composable

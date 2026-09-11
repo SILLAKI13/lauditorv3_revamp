@@ -163,7 +163,7 @@ object Constants {
     @JvmField var totalchatclientlist = JSONArray()
     @JvmField var groupsList_Access = ArrayList<GroupsModel>()
     @JvmField var ISPRODUCTION = false
-    @JvmField var IS_STAGING = false
+    @JvmField var IS_STAGING = true
     @JvmField var Has_Meeting = false
     @JvmField var forgot_pwd_request = false
     @JvmField var Email: String? = ""
@@ -402,6 +402,7 @@ object Constants {
                 mail_document = gmail_document
             }
         }
+        base_URL = PROF_URL
     }
 
     @JvmStatic

@@ -17,6 +17,15 @@ sealed interface AppointmentsUiEvent {
     data class OpenHistory(val model: AppointmentModel) : AppointmentsUiEvent
     object CloseHistory : AppointmentsUiEvent
 
+    // Settlement History Intents
+    data class OpenSettlementHistory(val model: AppointmentModel) : AppointmentsUiEvent
+    object CloseSettlementHistory : AppointmentsUiEvent
+    data class SettlementSearchQuerySubmitted(val query: String) : AppointmentsUiEvent
+    data class SettlementStatusFilterChanged(val status: String) : AppointmentsUiEvent
+    data class SettlementSortOptionChanged(val sortOption: String) : AppointmentsUiEvent
+    object SettlementPageNext : AppointmentsUiEvent
+    object SettlementPagePrev : AppointmentsUiEvent
+
     // Dialog & Feedback Intents
     object DismissDialogs : AppointmentsUiEvent
 

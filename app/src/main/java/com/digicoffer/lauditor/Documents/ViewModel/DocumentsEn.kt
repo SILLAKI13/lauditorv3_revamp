@@ -39,15 +39,25 @@ class DocumentsEn : Fragment(), BottomSheetUploadFile.OnPhotoSelectedListner {
         val docType = arguments?.getString("document_type") ?: "matter"
         viewModel.onEvent(DocumentsUiEvent.SwitchTab(docType))
 
+        val titleViewModel = try {
+            ViewModelProvider(requireActivity()).get(com.digicoffer.lauditor.CommonFiles.GlobalFiles.NewModel::class.java)
+        } catch (e: Exception) {
+            null
+        }
+
         return ComposeView(requireContext()).apply {
             setContent {
                 LauditorTheme {
                     DocumentsScreen(
                         viewModel = viewModel,
+                        onTitleChanged = { title ->
+                            titleViewModel?.setData(title)
+                        },
                         onBrowseClick = {
                             val bottommSheetUploadDocument = BottomSheetUploadFile(null)
-                            bottommSheetUploadDocument.show(parentFragmentManager, "")
+                            bottommSheetUploadDocument.setOnPhotoSelectedListener(this@DocumentsEn)
                             bottommSheetUploadDocument.setTargetFragment(this@DocumentsEn, 1)
+                            bottommSheetUploadDocument.show(parentFragmentManager, "BottomSheetUploadFile")
                         }
                     )
                 }
@@ -61,7 +71,10 @@ class DocumentsEn : Fragment(), BottomSheetUploadFile.OnPhotoSelectedListner {
             viewModel.onEvent(DocumentsUiEvent.AddStagedFile(imagepath, name))
         } else if (ImageURI != null) {
             val context = requireContext()
-            val destinationFilename = File(context.filesDir.path + File.separatorChar + queryName(context, ImageURI))
+            val uploadDir = File(context.filesDir, "staged_uploads").apply {
+                if (!exists()) mkdirs()
+            }
+            val destinationFilename = File(uploadDir, queryName(context, ImageURI))
             try {
                 context.contentResolver.openInputStream(ImageURI).use { ins ->
                     if (ins != null) {

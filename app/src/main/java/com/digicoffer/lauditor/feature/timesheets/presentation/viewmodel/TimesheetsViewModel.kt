@@ -39,6 +39,7 @@ class TimesheetsViewModel(
 
     private var calendarWeek = Calendar.getInstance()
     private var calendarMonth = Calendar.getInstance()
+    private var fetchJob: kotlinx.coroutines.Job? = null
 
     init {
         updateDateBounds()
@@ -148,6 +149,9 @@ class TimesheetsViewModel(
         calendarWeek.set(Calendar.YEAR, year)
         calendarWeek.set(Calendar.MONTH, month)
         calendarWeek.set(Calendar.DAY_OF_MONTH, day)
+        calendarMonth.set(Calendar.YEAR, year)
+        calendarMonth.set(Calendar.MONTH, month)
+        calendarMonth.set(Calendar.DAY_OF_MONTH, day)
         updateDateBounds()
         loadCurrentTabTimesheets()
     }
@@ -179,6 +183,7 @@ class TimesheetsViewModel(
 
     private fun loadCurrentTabTimesheets() {
         val state = _uiState.value
+        android.util.Log.d("TIMESHEET_DEBUG", "loadCurrentTabTimesheets: mainTab=${state.mainTab}, subTab=${state.subTab}, isWeek=${state.isWeek}")
         if (state.mainTab == "Aggregated") {
             if (state.subTab == "TM") {
                 loadAggregatedTeamMembers()
@@ -186,17 +191,20 @@ class TimesheetsViewModel(
                 loadAggregatedProjects()
             }
         } else {
-            val submitted = state.subTab == "Submitted"
+            val submitted = state.subTab == "Submitted" || state.subTab == "SU"
             loadMyTimesheets(submitted)
         }
     }
 
     private fun loadMyTimesheets(submitted: Boolean) {
-        viewModelScope.launch {
-            _uiState.update { it.copy(isLoading = true) }
-            val dateStr = AndroidUtils.convertAnyDateToDDMMYYYY(_uiState.value.fromDateString) ?: ""
+        fetchJob?.cancel()
+        fetchJob = viewModelScope.launch {
+            _uiState.update { it.copy(isLoading = true, timesheetsList = emptyList()) }
+            val dateStr = getWeekStartDate(calendarWeek)
+            android.util.Log.d("TIMESHEET_DEBUG", "loadMyTimesheets: dateStr=$dateStr, submitted=$submitted")
             val result = repository.fetchTimesheets(dateStr, submitted)
             _uiState.update { it.copy(isLoading = false) }
+            android.util.Log.d("TIMESHEET_DEBUG", "loadMyTimesheets result status: ${result.result}")
 
             if (result.result == WebServiceHelper.ServiceCallStatus.Success) {
                 parseMyTimesheetsResponse(result.responseContent ?: "")
@@ -213,11 +221,14 @@ class TimesheetsViewModel(
 
     private fun parseMyTimesheetsResponse(response: String) {
         try {
+            android.util.Log.d("TIMESHEET_DEBUG", "parseMyTimesheetsResponse parsing response...")
             val root = JSONObject(response)
             val dates = root.optJSONObject("dates") ?: JSONObject()
             val isFrozen = dates.optBoolean("isFrozen", false)
+            val currentWeek = dates.optString("currentWeek", "")
 
             val timesheetListObj = root.optJSONObject("timesheetList") ?: JSONObject()
+            val headersObj = timesheetListObj.optJSONObject("headers") ?: JSONObject()
             val weekTotalObj = timesheetListObj.optJSONObject("weekTotal") ?: JSONObject()
             val wTotal = timesheetListObj.optString("wTotal", "")
 
@@ -265,6 +276,7 @@ class TimesheetsViewModel(
 
             // Extract all task logs from matters
             val extractedLogs = mutableListOf<TaskModel>()
+            val days = listOf("Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun")
             parsedMatters.forEach { matter ->
                 val tasks = matter.Tasks
                 if (tasks != null) {
@@ -274,16 +286,18 @@ class TimesheetsViewModel(
                         val taskNameVal = tObj.optString("taskName", "")
 
                         // Map day-wise entries to TaskModel logs
-                        val days = listOf("Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun")
                         days.forEach { day ->
                             val dayObj = tObj.optJSONObject(day)
                             if (dayObj != null) {
                                 val hrs = dayObj.optString("hours", "0")
                                 val mins = dayObj.optString("minutes", "0")
-                                if (hrs != "0" || mins != "0") {
+                                val taskIdVal = dayObj.optString("taskId", "")
+                                val hasTime = (hrs.toIntOrNull() ?: 0) > 0 || (mins.toIntOrNull() ?: 0) > 0
+
+                                if (hasTime && taskNameVal.isNotBlank()) {
                                     val log = TaskModel().apply {
-                                        taskid = dayObj.optString("taskId", "")
-                                        matterid = dayObj.optString("matterId", "")
+                                        taskid = taskIdVal
+                                        matterid = dayObj.optString("matterId", matter.matterid ?: "")
                                         hours = hrs
                                         minutes = mins
                                         Task_name = taskNameVal
@@ -293,11 +307,14 @@ class TimesheetsViewModel(
                                         Task_matter_id = matter.matterid
                                         isLinkedWithCalendar = dayObj.optBoolean("isLinkedWithCalendar", false)
                                         
-                                        // Specific Day info formatted as: "Mon 20-08-2026"
-                                        val dayIndex = days.indexOf(day)
                                         val weekDates = _uiState.value.weekDateInfo?.weekDates
-                                        val logDateStr = if (weekDates != null && dayIndex < weekDates.size) {
-                                            "$day ${weekDates[dayIndex]}"
+                                        val dayIndex = days.indexOf(day)
+                                        val rawDate = if (weekDates != null && dayIndex in weekDates.indices) weekDates[dayIndex] else ""
+                                        val headerDate = headersObj.optString(day, "")
+                                        val logDateStr = if (rawDate.isNotEmpty()) {
+                                            "$day $rawDate"
+                                        } else if (headerDate.isNotEmpty()) {
+                                            "$day $headerDate"
                                         } else {
                                             day
                                         }
@@ -321,6 +338,7 @@ class TimesheetsViewModel(
                 }
             }
 
+            android.util.Log.d("TIMESHEET_DEBUG", "parseMyTimesheetsResponse: extracted ${extractedLogs.size} logs, isFrozen=$isFrozen, currentWeek=$currentWeek")
             _uiState.update {
                 it.copy(
                     isFrozen = isFrozen,
@@ -332,6 +350,7 @@ class TimesheetsViewModel(
                 )
             }
         } catch (e: Exception) {
+            android.util.Log.e("TIMESHEET_DEBUG", "parseMyTimesheetsResponse exception: ${e.message}", e)
             _uiState.update { it.copy(alertTitle = "Parsing Exception", alertMessage = e.message) }
         }
     }
@@ -390,25 +409,31 @@ class TimesheetsViewModel(
             _uiState.update { it.copy(isLoading = true) }
             val data = JSONObject()
             
-            // Format selected date from: "Mon 20-08-2026" to "dd-MM-yyyy"
-            val rawDate = state.selectedDate.split(" ").last()
+            val normalizedDate = normalizeToApiDate(state.selectedDate)
+            
+            android.util.Log.d(
+                "TIMESHEET_EDIT_DEBUG",
+                "isEdit=${state.isEditMode}, displayDate=${state.selectedDate}, rawDate=${state.selectedDate}, normalizedDate=$normalizedDate, entryId=${state.editingLogId}"
+            )
+            
+            val isMatterTypeExists = state.activeProjectsList.any { it.matter_type == state.selectedMatter.matter_type }
+            val matterTypeValue = if (isMatterTypeExists && !state.selectedMatter.matter_type.isNullOrEmpty()) {
+                state.selectedMatter.matter_type
+            } else {
+                state.selectedMatter.mattername ?: ""
+            }
             
             if (state.isEditMode) {
                 // Update PUT payload
                 data.put("id", state.editingLogId)
                 data.put("action", "hours")
                 data.put("billing", if (state.selectedStatus == "Billable") "billable" else "nonbillable")
-                
-                val inputFormat = SimpleDateFormat("dd-MM-yyyy", Locale.US)
-                val outputFormat = SimpleDateFormat("MMM d, yyyy", Locale.US)
-                val dVal = inputFormat.parse(rawDate)
-                val formattedDate = if (dVal != null) outputFormat.format(dVal) else rawDate
-                data.put("date", formattedDate)
+                data.put("date", normalizedDate)
                 data.put("duration_hours", hrs.toString())
                 data.put("duration_minutes", if (mins.isEmpty() || mins == "0") "00" else mins)
                 data.put("matter_id", state.selectedMatter.matterid)
                 data.put("timesheet_update_scope", "UPDATE_TIMESHEET_ONLY")
-                data.put("matter_type", state.selectedMatter.mattername)
+                data.put("matter_type", matterTypeValue)
                 data.put("title", state.selectedTask.displayValue)
                 
                 val result = repository.updateTimesheet(data)
@@ -425,18 +450,11 @@ class TimesheetsViewModel(
                 // Save POST payload
                 data.put("action", "hours")
                 data.put("billing", if (state.selectedStatus == "Billable") "billable" else "nonbillable")
-                
-                val inputFormat = SimpleDateFormat("dd-MM-yyyy", Locale.US)
-                val outputFormat = SimpleDateFormat("MMM d, yyyy", Locale.US)
-                val dVal = inputFormat.parse(rawDate)
-                val formattedDate = if (dVal != null) outputFormat.format(dVal) else rawDate
-                data.put("date", formattedDate)
+                data.put("date", normalizedDate)
                 data.put("duration_hours", hrs.toString())
                 data.put("duration_minutes", if (mins.isEmpty() || mins == "0") "00" else mins)
                 data.put("matter_id", state.selectedMatter.matterid)
-                
-                val isMatterTypeExists = state.activeProjectsList.any { it.matter_type == state.selectedMatter.matter_type }
-                data.put("matter_type", if (isMatterTypeExists) state.selectedMatter.matter_type else state.selectedMatter.mattername)
+                data.put("matter_type", matterTypeValue)
                 data.put("title", state.selectedTask.displayValue)
                 
                 val result = repository.saveTimesheet(data)
@@ -453,9 +471,50 @@ class TimesheetsViewModel(
         }
     }
 
+    private fun normalizeToApiDate(inputDateStr: String): String {
+        val trimmed = inputDateStr.trim()
+        if (trimmed.isEmpty()) return ""
+
+        val possibleFormats = listOf(
+            "dd-MM-yyyy",
+            "MMM d, yyyy",
+            "MMM dd, yyyy",
+            "MMMM d, yyyy",
+            "MMMM dd, yyyy",
+            "EEE MMM d, yyyy",
+            "EEE MMM dd, yyyy",
+            "yyyy-MM-dd"
+        )
+
+        val candidates = mutableListOf<String>()
+        candidates.add(trimmed)
+        if (trimmed.contains(" ")) {
+            val afterFirstSpace = trimmed.substringAfter(" ").trim()
+            candidates.add(afterFirstSpace)
+        }
+
+        val outputFormat = SimpleDateFormat("MMM d, yyyy", Locale.US)
+
+        for (candidate in candidates) {
+            for (pattern in possibleFormats) {
+                try {
+                    val format = SimpleDateFormat(pattern, Locale.US)
+                    format.isLenient = false
+                    val date = format.parse(candidate)
+                    if (date != null) {
+                        return outputFormat.format(date)
+                    }
+                } catch (_: Exception) {}
+            }
+        }
+
+        return trimmed
+    }
+
     private fun populateFormForEdit(log: TaskModel) {
         val state = _uiState.value
-        val matchedMatter = state.matterList.find { it.matterid == log.Task_matter_id }
+        val matchedMatter = state.activeProjectsList.find { it.matterid == log.Task_matter_id || it.matterid == log.matterid }
+            ?: state.matterList.find { it.matterid == log.Task_matter_id || it.matterid == log.matterid }
         val matchedTask = TasksModel().apply {
             displayValue = log.Task_name
             returnValue = log.Task_name
@@ -467,12 +526,12 @@ class TimesheetsViewModel(
                 editingLogId = log.taskid ?: "",
                 selectedMatter = matchedMatter,
                 selectedTask = matchedTask,
-                selectedStatus = if (log.Task_billing == "billable") "Billable" else "Non-Billable",
+                selectedStatus = if (log.Task_billing?.equals("billable", ignoreCase = true) == true) "Billable" else "Non-Billable",
                 selectedDate = log.date ?: "",
                 hours = log.hours ?: "",
                 minutes = log.minutes ?: "",
                 description = "",
-                isBillable = log.Task_billing == "billable"
+                isBillable = log.Task_billing?.equals("billable", ignoreCase = true) == true
             )
         }
         matchedMatter?.let {
@@ -502,7 +561,7 @@ class TimesheetsViewModel(
     private fun submitWeeklyTimesheets() {
         viewModelScope.launch {
             _uiState.update { it.copy(isLoading = true) }
-            val dateStr = AndroidUtils.convertAnyDateToDDMMYYYY(_uiState.value.fromDateString) ?: ""
+            val dateStr = getWeekStartDate(calendarWeek)
             val result = repository.submitTimesheets(dateStr)
             _uiState.update { it.copy(isLoading = false) }
             if (result.result == WebServiceHelper.ServiceCallStatus.Success) {
@@ -518,7 +577,7 @@ class TimesheetsViewModel(
     private fun loadAggregatedTeamMembers() {
         viewModelScope.launch {
             _uiState.update { it.copy(isLoading = true) }
-            val dateStr = AndroidUtils.convertAnyDateToDDMMYYYY(_uiState.value.fromDateString) ?: ""
+            val dateStr = if (_uiState.value.isWeek == "month") getMonthStartDate(calendarMonth) else getWeekStartDate(calendarWeek)
             val result = repository.fetchAggregatedTeamMembers(dateStr, _uiState.value.isWeek)
             _uiState.update { it.copy(isLoading = false) }
 
@@ -579,7 +638,7 @@ class TimesheetsViewModel(
     private fun loadAggregatedProjects() {
         viewModelScope.launch {
             _uiState.update { it.copy(isLoading = true) }
-            val dateStr = AndroidUtils.convertAnyDateToDDMMYYYY(_uiState.value.fromDateString) ?: ""
+            val dateStr = if (_uiState.value.isWeek == "month") getMonthStartDate(calendarMonth) else getWeekStartDate(calendarWeek)
             val result = repository.fetchAggregatedProjects(dateStr, _uiState.value.isWeek)
             _uiState.update { it.copy(isLoading = false) }
 
@@ -652,6 +711,22 @@ class TimesheetsViewModel(
                 taskList = emptyList()
             )
         }
+    }
+
+    private fun getWeekStartDate(weekCal: Calendar): String {
+        val format = SimpleDateFormat("dd-MM-yyyy", Locale.US)
+        val tempCal = weekCal.clone() as Calendar
+        while (tempCal.get(Calendar.DAY_OF_WEEK) != Calendar.MONDAY) {
+            tempCal.add(Calendar.DATE, -1)
+        }
+        return format.format(tempCal.time)
+    }
+
+    private fun getMonthStartDate(monthCal: Calendar): String {
+        val format = SimpleDateFormat("dd-MM-yyyy", Locale.US)
+        val tempCal = monthCal.clone() as Calendar
+        tempCal.set(Calendar.DAY_OF_MONTH, 1)
+        return format.format(tempCal.time)
     }
 
     private fun getMonthRange(monthCal: Calendar): Pair<String, String> {

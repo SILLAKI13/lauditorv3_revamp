@@ -57,7 +57,7 @@ class TimeSheets : Fragment() {
                 }
             } else {
                 viewModel.onEvent(TimesheetsUiEvent.MainTabSelected("MyTimeSheets"))
-                val sub = if (Constants.is_ts_submitted) "SU" else "NS"
+                val sub = if (Constants.is_ts_submitted) "Submitted" else "NS"
                 viewModel.onEvent(TimesheetsUiEvent.SubTabSelected(sub))
             }
             Constants.ts_card_clicked = false

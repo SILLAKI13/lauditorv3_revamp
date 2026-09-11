@@ -16,6 +16,7 @@ sealed interface DocumentsUiEvent {
     data class SelectFilterClient(val client: ClientsModel?) : DocumentsUiEvent
     data class SelectFilterMatter(val matter: MattersModel?) : DocumentsUiEvent
     data class SelectFilterGroup(val group: GroupsModel?) : DocumentsUiEvent
+    data class SelectFilterGroups(val groups: List<GroupsModel>) : DocumentsUiEvent
     data class SelectFilterDocType(val type: String?) : DocumentsUiEvent
 
     // Upload selectors
@@ -54,5 +55,8 @@ sealed interface DocumentsUiEvent {
     object DismissAlert : DocumentsUiEvent
     object DismissToast : DocumentsUiEvent
     data class SelectPage(val page: Int) : DocumentsUiEvent
+    object PagePrev : DocumentsUiEvent
+    object PageNext : DocumentsUiEvent
     data class LoadPreview(val doc: ViewDocumentsModel) : DocumentsUiEvent
+    object RefreshDocuments : DocumentsUiEvent
 }

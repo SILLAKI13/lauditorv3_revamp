@@ -59,7 +59,10 @@ class BottomSheetUploadFile : DialogFragment, View.OnClickListener {
                 inputStream = context.contentResolver.openInputStream(uri)
                 if (inputStream == null) return null
                 val name = fileName ?: "upload_${System.currentTimeMillis()}"
-                val file = File(context.cacheDir, name)
+                val uploadDir = File(context.filesDir, "staged_uploads").apply {
+                    if (!exists()) mkdirs()
+                }
+                val file = File(uploadDir, name)
                 outputStream = FileOutputStream(file)
                 val buffer = ByteArray(4096)
                 var length = inputStream.read(buffer)
@@ -91,6 +94,25 @@ class BottomSheetUploadFile : DialogFragment, View.OnClickListener {
     constructor(clDocument: View?, showDocSelection: Boolean) : this() {
         this.clDocument = clDocument
         this.showDocSelection = showDocSelection
+    }
+
+    fun setOnPhotoSelectedListener(listener: OnPhotoSelectedListner?) {
+        this.onPhotoSelectedListner = listener
+    }
+
+    private fun dismissSafely() {
+        try {
+            if (isAdded) {
+                dismissAllowingStateLoss()
+            } else {
+                dialog?.dismiss()
+            }
+        } catch (e: Exception) {
+            try {
+                dismiss()
+            } catch (ignored: Exception) {}
+        }
+        clDocument?.alpha = 1.0f
     }
 
     interface OnPhotoSelectedListner {
@@ -204,8 +226,7 @@ class BottomSheetUploadFile : DialogFragment, View.OnClickListener {
             }
 
             R.id.tv_cancel -> {
-                dismiss()
-                clDocument?.alpha = 1.0f
+                dismissSafely()
             }
         }
     }
@@ -215,8 +236,8 @@ class BottomSheetUploadFile : DialogFragment, View.OnClickListener {
             if (result.resultCode == Activity.RESULT_OK && result.data != null) {
                 val uri = result.data?.data
                 if (uri != null) handleImageUri(uri)
-                dialog?.dismiss()
             }
+            dismissSafely()
         }
 
     private val mGetMultipleContent =
@@ -237,8 +258,8 @@ class BottomSheetUploadFile : DialogFragment, View.OnClickListener {
                         }
                     }
                 }
-                dialog?.dismiss()
             }
+            dismissSafely()
         }
 
     private val pickMultipleImageLauncher =
@@ -255,8 +276,8 @@ class BottomSheetUploadFile : DialogFragment, View.OnClickListener {
                     val uri = data?.data
                     if (uri != null) handleImageUri(uri)
                 }
-                dialog?.dismiss()
             }
+            dismissSafely()
         }
 
     private fun handleImageUri(uri: Uri) {
@@ -281,18 +302,18 @@ class BottomSheetUploadFile : DialogFragment, View.OnClickListener {
                 val fileName = getFileNameFromUri(requireContext(), uri)
                 if (!isFileAllowed(fileName)) {
                     AndroidUtils.showToast("File type not allowed: $fileName", context)
-                    return@registerForActivityResult
-                }
-                val file = uriToFile(requireContext(), uri, fileName)
-                if (file != null) {
-                    try {
-                        onPhotoSelectedListner?.getImagepath(file, uri)
-                    } catch (e: IOException) {
-                        e.printStackTrace()
+                } else {
+                    val file = uriToFile(requireContext(), uri, fileName)
+                    if (file != null) {
+                        try {
+                            onPhotoSelectedListner?.getImagepath(file, uri)
+                        } catch (e: IOException) {
+                            e.printStackTrace()
+                        }
                     }
                 }
-                dialog?.dismiss()
             }
+            dismissSafely()
         }
 
     private fun isFileAllowed(fileName: String?): Boolean {
@@ -325,15 +346,13 @@ class BottomSheetUploadFile : DialogFragment, View.OnClickListener {
                     e.printStackTrace()
                 }
             }
-            dialog?.dismiss()
+            dismissSafely()
         } else if (requestCode == CAMERA_REQUEST && resultCode == Activity.RESULT_OK) {
             val bitmap = data?.extras?.get("data") as? Bitmap
             onPhotoSelectedListner?.getImageBitmap(bitmap)
-            dialog?.dismiss()
+            dismissSafely()
         } else if (requestCode == 200) {
-            dialog?.dismiss()
-            if (data == null) return
-            try {
+            if (data != null) {
                 val imageuri = data.data
                 if (imageuri != null) {
                     try {
@@ -359,23 +378,25 @@ class BottomSheetUploadFile : DialogFragment, View.OnClickListener {
                         context
                     )
                 }
-            } catch (e: Exception) {
-                AndroidUtils.showToast("File Access error:Please check your file ", context)
             }
-            dialog?.dismiss()
+            dismissSafely()
         } else {
-            dialog?.dismiss()
+            dismissSafely()
         }
     }
 
     override fun onAttach(context: Context) {
+        super.onAttach(context)
         try {
-            onPhotoSelectedListner = targetFragment as? OnPhotoSelectedListner
-        } catch (e: ClassCastException) {
+            if (onPhotoSelectedListner == null) {
+                onPhotoSelectedListner = targetFragment as? OnPhotoSelectedListner
+                    ?: parentFragment as? OnPhotoSelectedListner
+                    ?: (context as? OnPhotoSelectedListner)
+            }
+        } catch (e: Exception) {
             Log.e(TAG, "onAttach: ClasscatchException" + e.message)
             e.printStackTrace()
         }
-        super.onAttach(context)
     }
 
     private fun getFileNameFromUri(context: Context, uri: Uri): String? {

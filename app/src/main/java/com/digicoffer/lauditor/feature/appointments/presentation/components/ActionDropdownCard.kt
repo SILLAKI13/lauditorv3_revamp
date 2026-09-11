@@ -28,6 +28,7 @@ import java.util.Locale
 fun ActionDropdownCard(
     appointment: AppointmentModel,
     onHistoryClick: () -> Unit,
+    onSettlementHistoryClick: () -> Unit,
     onCancelClick: () -> Unit,
     onDeleteClick: () -> Unit,
     modifier: Modifier = Modifier
@@ -41,7 +42,7 @@ fun ActionDropdownCard(
         shape = RoundedCornerShape(6.dp),
         colors = CardDefaults.cardColors(containerColor = Color.White),
         elevation = CardDefaults.cardElevation(defaultElevation = 16.dp),
-        modifier = modifier.width(150.dp)
+        modifier = modifier.width(160.dp)
     ) {
         Column(modifier = Modifier.fillMaxWidth()) {
             // History Item
@@ -54,6 +55,21 @@ fun ActionDropdownCard(
                 modifier = Modifier
                     .fillMaxWidth()
                     .clickable { onHistoryClick() }
+                    .padding(horizontal = 16.dp, vertical = 12.dp)
+            )
+
+            HorizontalDivider(thickness = 0.5.dp, color = Color(0xFFE0E0E0))
+
+            // Settlement History Item
+            Text(
+                text = "Settlement History",
+                fontSize = 15.sp,
+                fontFamily = FontFamily(Font(R.font.gill_sans_regular)),
+                color = Color.Black,
+                textAlign = TextAlign.Start,
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .clickable { onSettlementHistoryClick() }
                     .padding(horizontal = 16.dp, vertical = 12.dp)
             )
 

@@ -9,6 +9,10 @@ import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
+import androidx.compose.foundation.interaction.MutableInteractionSource
+import androidx.compose.foundation.interaction.collectIsPressedAsState
+import androidx.compose.material3.DropdownMenu
+import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
@@ -29,6 +33,9 @@ import androidx.compose.ui.focus.onFocusChanged
 import androidx.compose.ui.focus.FocusRequester
 import androidx.compose.ui.focus.focusRequester
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.platform.LocalDensity
+import androidx.compose.ui.window.Popup
+import androidx.compose.ui.window.PopupProperties
 import androidx.compose.foundation.text.BasicTextField
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.ui.graphics.SolidColor
@@ -43,6 +50,7 @@ import com.digicoffer.lauditor.Webservice.HttpResultDo
 import com.digicoffer.lauditor.Webservice.CommonApiHelper.WebServiceHelper
 import org.json.JSONObject
 import com.digicoffer.lauditor.core.ui.common.feedback.AppLoader
+import com.digicoffer.lauditor.core.ui.common.dialogs.AppConfirmationDialog
 
 private val GillSans = FontFamily(
     Font(R.font.gill_sans)
@@ -73,6 +81,7 @@ fun RelationshipCustomTextField(
     placeholder: String,
     enabled: Boolean = true,
     keyboardOptions: KeyboardOptions = KeyboardOptions.Default,
+    interactionSource: MutableInteractionSource = remember { MutableInteractionSource() },
     modifier: Modifier = Modifier
 ) {
     val inputBorderColor = Color(0xFFC0C0C0)
@@ -88,6 +97,7 @@ fun RelationshipCustomTextField(
         onValueChange = onValueChange,
         textStyle = textStyle,
         keyboardOptions = keyboardOptions,
+        interactionSource = interactionSource,
         singleLine = true,
         enabled = enabled,
         cursorBrush = SolidColor(Color.Black),
@@ -114,13 +124,21 @@ fun RelationshipCustomTextField(
 @Composable
 fun RelationshipFormCard(
     countriesList: List<CountriesDO>,
+    initialTab: String = "Individual",
     onCancel: () -> Unit,
     onSubmitRequest: (JSONObject, (Boolean, String) -> Unit) -> Unit,
     onValidationError: (String) -> Unit,
     onTitleChange: (String) -> Unit = {}
 ) {
     val context = LocalContext.current
-    var activeTab by remember { mutableStateOf("Individual") } // "Individual", "Entity", "Corporate"
+    val startTab = remember(initialTab) {
+        when (initialTab.lowercase()) {
+            "entity", "business" -> "Entity"
+            "corporate" -> "Corporate"
+            else -> "Individual"
+        }
+    }
+    var activeTab by remember(startTab) { mutableStateOf(startTab) } // "Individual", "Entity", "Corporate"
 
     // Search candidates search bar
     var searchQuery by remember { mutableStateOf("") }
@@ -264,13 +282,18 @@ fun RelationshipFormCard(
         showIndividualSuggestions = false
     }
 
-    fun fetchEntityCorporateList(clientType: String) {
+    var isFetchingList by remember { mutableStateOf(false) }
+
+    fun fetchEntityCorporateList(clientType: String, onLoaded: (() -> Unit)? = null) {
+        if (isFetchingList) return
+        isFetchingList = true
         val endpoint = if (clientType == "Corporate") "v2/relationship/search/corporate" else "v2/relationship/search/entity"
         val requestType = if (clientType == "Corporate") "Corporate List" else "Entities List"
         
         WebServiceHelper.callHttpWebService(
             object : AsyncTaskCompleteListener {
                 override fun onAsyncTaskComplete(httpResult: HttpResultDo) {
+                    isFetchingList = false
                     if (httpResult.result == WebServiceHelper.ServiceCallStatus.Success) {
                         try {
                             val result = JSONObject(httpResult.responseContent ?: "{}")
@@ -279,14 +302,16 @@ fun RelationshipFormCard(
                             for (i in 0 until data.length()) {
                                 val jsonObject = data.getJSONObject(i)
                                 val model = EntityModel().apply {
-                                    entityID = jsonObject.optString("entityId")
-                                    name = jsonObject.optString("name")
-                                    contactName = jsonObject.optString("contactName")
+                                    entityID = jsonObject.optString("entityId").ifEmpty { jsonObject.optString("id").ifEmpty { jsonObject.optString("entity_id") } }
+                                    name = jsonObject.optString("name").ifEmpty { jsonObject.optString("entityName").ifEmpty { jsonObject.optString("corporate_name") } }
+                                    contactName = jsonObject.optString("contactName").ifEmpty { jsonObject.optString("contactPerson") }
                                 }
-                                list.add(model)
+                                if (!model.name.isNullOrBlank()) {
+                                    list.add(model)
+                                }
                             }
                             entityCorporateSuggestions = list
-                            showEntityCorporateSuggestions = true
+                            onLoaded?.invoke()
                         } catch (e: Exception) {
                             e.printStackTrace()
                         }
@@ -387,9 +412,11 @@ fun RelationshipFormCard(
             "Individual" -> onTitleChange("Add Relationships")
             "Entity" -> {
                 onTitleChange("Entity")
+                fetchEntityCorporateList("Entity")
             }
             "Corporate" -> {
                 onTitleChange("Corporate")
+                fetchEntityCorporateList("Corporate")
             }
         }
     }
@@ -516,6 +543,27 @@ fun RelationshipFormCard(
                 ) {
 
                     // 2. Search input section
+                    val searchInteractionSource = remember { MutableInteractionSource() }
+                    val isSearchPressed by searchInteractionSource.collectIsPressedAsState()
+
+                    LaunchedEffect(isSearchPressed) {
+                        if (isSearchPressed) {
+                            if (activeTab != "Individual") {
+                                if (entityCorporateSuggestions.isEmpty()) {
+                                    fetchEntityCorporateList(activeTab) {
+                                        showEntityCorporateSuggestions = true
+                                    }
+                                } else {
+                                    showEntityCorporateSuggestions = true
+                                }
+                            } else {
+                                if (individualSuggestions.isNotEmpty()) {
+                                    showIndividualSuggestions = true
+                                }
+                            }
+                        }
+                    }
+
                     Box(modifier = Modifier.fillMaxWidth()) {
                         Row(
                             modifier = Modifier.fillMaxWidth(),
@@ -532,28 +580,23 @@ fun RelationshipFormCard(
                                         }
                                     },
                                     placeholder = "Search",
+                                    interactionSource = searchInteractionSource,
                                     modifier = Modifier
                                         .focusRequester(focusRequester)
                                         .onFocusChanged { focusState ->
-                                            if (focusState.isFocused && activeTab != "Individual") {
-                                                if (entityCorporateSuggestions.isEmpty()) {
-                                                    fetchEntityCorporateList(activeTab)
+                                            if (focusState.isFocused) {
+                                                if (activeTab != "Individual") {
+                                                    if (entityCorporateSuggestions.isEmpty()) {
+                                                        fetchEntityCorporateList(activeTab) {
+                                                            showEntityCorporateSuggestions = true
+                                                        }
+                                                    } else {
+                                                        showEntityCorporateSuggestions = true
+                                                    }
                                                 } else {
-                                                    showEntityCorporateSuggestions = true
-                                                }
-                                            }
-                                        }
-                                )
-                                Box(
-                                    modifier = Modifier
-                                        .matchParentSize()
-                                        .clickable {
-                                            focusRequester.requestFocus()
-                                            if (activeTab != "Individual") {
-                                                if (entityCorporateSuggestions.isEmpty()) {
-                                                    fetchEntityCorporateList(activeTab)
-                                                } else {
-                                                    showEntityCorporateSuggestions = true
+                                                    if (individualSuggestions.isNotEmpty()) {
+                                                        showIndividualSuggestions = true
+                                                    }
                                                 }
                                             }
                                         }
@@ -563,7 +606,17 @@ fun RelationshipFormCard(
                             Button(
                                 onClick = {
                                     if (searchQuery.trim().isEmpty()) {
-                                        onValidationError("Please check the search field..,")
+                                        if (activeTab != "Individual") {
+                                            if (entityCorporateSuggestions.isEmpty()) {
+                                                fetchEntityCorporateList(activeTab) {
+                                                    showEntityCorporateSuggestions = true
+                                                }
+                                            } else {
+                                                showEntityCorporateSuggestions = true
+                                            }
+                                        } else {
+                                            onValidationError("Please check the search field..,")
+                                        }
                                         return@Button
                                     }
                                     if (activeTab == "Individual") {
@@ -574,7 +627,8 @@ fun RelationshipFormCard(
                                         }
                                         if (match != null) {
                                             fetchEntityCorporateDetails(match.entityID ?: "")
-                                            searchQuery = "" // Clear search text field
+                                            searchQuery = match.name ?: ""
+                                            showEntityCorporateSuggestions = false
                                         } else {
                                             if (activeTab == "Corporate") {
                                                 isFormEnabled = false
@@ -589,7 +643,7 @@ fun RelationshipFormCard(
                                                 searchStatusMessage = "$searchQuery - not found."
                                                 isSearchStatusSuccess = false
                                                 showEntityCorporateSuggestions = false
-                                                searchQuery = "" // Clear search text field
+                                                searchQuery = ""
                                             } else {
                                                 isFormEnabled = true
                                                 isFieldsEditable = true
@@ -603,7 +657,7 @@ fun RelationshipFormCard(
                                                 searchStatusMessage = "$searchQuery - not found. Please fill in the details below to send relationship invite."
                                                 isSearchStatusSuccess = false
                                                 showEntityCorporateSuggestions = false
-                                                searchQuery = "" // Clear search text field
+                                                searchQuery = ""
                                             }
                                         }
                                     }
@@ -622,17 +676,20 @@ fun RelationshipFormCard(
                             }
                         }
 
-                        // Autocomplete overlay popups
+                        // Autocomplete popup for Individual
                         if (activeTab == "Individual" && showIndividualSuggestions && individualSuggestions.isNotEmpty()) {
-                            androidx.compose.ui.window.Popup(
-                                offset = androidx.compose.ui.unit.IntOffset(0, 170),
+                            val offsetY = with(LocalDensity.current) { 46.dp.roundToPx() }
+                            Popup(
+                                alignment = Alignment.TopStart,
+                                offset = androidx.compose.ui.unit.IntOffset(0, offsetY),
                                 onDismissRequest = { showIndividualSuggestions = false },
-                                properties = androidx.compose.ui.window.PopupProperties(focusable = true)
+                                properties = PopupProperties(focusable = false)
                             ) {
                                 Card(
                                     modifier = Modifier
-                                        .fillMaxWidth(0.9f)
-                                        .heightIn(max = 250.dp)
+                                        .fillMaxWidth()
+                                        .padding(end = 85.dp)
+                                        .heightIn(max = 240.dp)
                                         .border(width = 0.5.dp, color = Color(0xFFC0C0C0), shape = RoundedCornerShape(8.dp)),
                                     colors = CardDefaults.cardColors(containerColor = Color.White),
                                     shape = RoundedCornerShape(8.dp),
@@ -643,23 +700,26 @@ fun RelationshipFormCard(
                                             Column(
                                                 modifier = Modifier
                                                     .fillMaxWidth()
-                                                    .clickable { selectIndividualSuggestion(item) }
-                                                    .padding(10.dp)
+                                                    .clickable {
+                                                        selectIndividualSuggestion(item)
+                                                        searchQuery = item.name ?: ""
+                                                        showIndividualSuggestions = false
+                                                    }
+                                                    .padding(horizontal = 12.dp, vertical = 10.dp)
                                             ) {
                                                 Text(
                                                     text = item.name ?: "",
                                                     color = Color.Black,
                                                     fontFamily = GillSans,
                                                     fontSize = 15.sp,
-                                                    fontWeight = FontWeight.Normal
+                                                    fontWeight = FontWeight.Bold
                                                 )
                                                 Spacer(modifier = Modifier.height(2.dp))
                                                 Text(
                                                     text = com.digicoffer.lauditor.CommonFiles.GlobalFiles.AndroidUtils.maskEmail(item.email),
                                                     color = Color(0xFF707070),
                                                     fontFamily = GillSans,
-                                                    fontSize = 15.sp,
-                                                    fontWeight = FontWeight.Normal
+                                                    fontSize = 13.sp
                                                 )
                                                 if (!item.mobile.isNullOrBlank()) {
                                                     Spacer(modifier = Modifier.height(2.dp))
@@ -667,28 +727,31 @@ fun RelationshipFormCard(
                                                         text = com.digicoffer.lauditor.CommonFiles.GlobalFiles.AndroidUtils.maskPhoneNumber(item.mobile),
                                                         color = Color(0xFF707070),
                                                         fontFamily = GillSans,
-                                                        fontSize = 15.sp,
-                                                        fontWeight = FontWeight.Normal
+                                                        fontSize = 13.sp
                                                     )
                                                 }
                                             }
-                                            HorizontalDivider(thickness = 1.dp, color = Color(0xFFDDDDDE))
+                                            HorizontalDivider(thickness = 0.5.dp, color = Color(0xFFEEEEEE))
                                         }
                                     }
                                 }
                             }
                         }
 
+                        // Autocomplete popup for Entity / Corporate
                         if (activeTab != "Individual" && showEntityCorporateSuggestions && filteredEntityCorporate.isNotEmpty()) {
-                            androidx.compose.ui.window.Popup(
-                                offset = androidx.compose.ui.unit.IntOffset(0, 170),
+                            val offsetY = with(LocalDensity.current) { 46.dp.roundToPx() }
+                            Popup(
+                                alignment = Alignment.TopStart,
+                                offset = androidx.compose.ui.unit.IntOffset(0, offsetY),
                                 onDismissRequest = { showEntityCorporateSuggestions = false },
-                                properties = androidx.compose.ui.window.PopupProperties(focusable = true)
+                                properties = PopupProperties(focusable = false)
                             ) {
                                 Card(
                                     modifier = Modifier
-                                        .fillMaxWidth(0.9f)
-                                        .heightIn(max = 200.dp)
+                                        .fillMaxWidth()
+                                        .padding(end = 85.dp)
+                                        .heightIn(max = 240.dp)
                                         .border(width = 0.5.dp, color = Color(0xFFC0C0C0), shape = RoundedCornerShape(8.dp)),
                                     colors = CardDefaults.cardColors(containerColor = Color.White),
                                     shape = RoundedCornerShape(8.dp),
@@ -701,18 +764,29 @@ fun RelationshipFormCard(
                                                     .fillMaxWidth()
                                                     .clickable {
                                                         fetchEntityCorporateDetails(item.entityID ?: "")
+                                                        searchQuery = item.name ?: ""
                                                         showEntityCorporateSuggestions = false
                                                     }
-                                                    .padding(12.dp)
+                                                    .padding(horizontal = 14.dp, vertical = 10.dp)
                                             ) {
                                                 Text(
                                                     text = item.name ?: "",
                                                     color = Color.Black,
                                                     fontFamily = GillSans,
-                                                    fontSize = 15.sp
+                                                    fontSize = 15.sp,
+                                                    fontWeight = FontWeight.Normal
                                                 )
+                                                if (!item.contactName.isNullOrBlank()) {
+                                                    Spacer(modifier = Modifier.height(2.dp))
+                                                    Text(
+                                                        text = "Contact: ${item.contactName}",
+                                                        color = Color(0xFF707070),
+                                                        fontFamily = GillSans,
+                                                        fontSize = 12.sp
+                                                    )
+                                                }
                                             }
-                                            HorizontalDivider(thickness = 0.5.dp, color = Color(0xFFDDDDDE))
+                                            HorizontalDivider(thickness = 0.5.dp, color = Color(0xFFEEEEEE))
                                         }
                                     }
                                 }
@@ -1122,119 +1196,38 @@ fun RelationshipFormCard(
     // Confirmation dialogues
     if (showConfirmDialog) {
         val name = if (activeTab == "Individual") "$firstName $lastName".trim() else entityName.trim()
-        val confirmText = "Are you sure you want to send relationship request to $name?"
+        val confirmAnnotated = buildAnnotatedString {
+            append("Are you sure you want to send relationship request to ")
+            withStyle(style = SpanStyle(fontWeight = FontWeight.Bold)) {
+                append(name)
+            }
+            append("?")
+        }
 
-        androidx.compose.ui.window.Dialog(onDismissRequest = { showConfirmDialog = false }) {
-            Card(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(16.dp),
-                shape = RoundedCornerShape(6.dp),
-                colors = CardDefaults.cardColors(containerColor = Color.White),
-                elevation = CardDefaults.cardElevation(defaultElevation = 10.dp)
-            ) {
-                Column(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(12.dp),
-                    horizontalAlignment = Alignment.CenterHorizontally
-                ) {
-                    Box(modifier = Modifier.fillMaxWidth(), contentAlignment = Alignment.TopEnd) {
-                        Icon(
-                            painter = painterResource(id = R.drawable.cancel_red_icon),
-                            contentDescription = "Close",
-                            tint = Color(0xFF004D87),
-                            modifier = Modifier
-                                .size(24.dp)
-                                .clickable { showConfirmDialog = false }
-                        )
-                    }
-
-                    Spacer(modifier = Modifier.height(4.dp))
-
-                    Text(
-                        text = "Confirmation",
-                        color = Color(0xFF004D87),
-                        fontFamily = GillSans,
-                        fontWeight = FontWeight.Bold,
-                        fontSize = 20.sp
-                    )
-
-                    Spacer(modifier = Modifier.height(10.dp))
-
-                    Text(
-                        text = confirmText,
-                        color = Color.Black,
-                        fontFamily = GillSans,
-                        fontSize = 17.sp,
-                        textAlign = androidx.compose.ui.text.style.TextAlign.Center,
-                        modifier = Modifier.padding(horizontal = 10.dp)
-                    )
-
-                    Spacer(modifier = Modifier.height(20.dp))
-
-                    Row(
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .padding(bottom = 8.dp),
-                        horizontalArrangement = Arrangement.Center,
-                        verticalAlignment = Alignment.CenterVertically
-                    ) {
-                        Button(
-                            onClick = { showConfirmDialog = false },
-                            colors = ButtonDefaults.buttonColors(containerColor = Color(0xFFEEEEEE)),
-                            border = BorderStroke(1.dp, Color(0xFFDDDDDE)),
-                            shape = RoundedCornerShape(10.dp),
-                            modifier = Modifier
-                                .width(90.dp)
-                                .height(40.dp)
-                        ) {
-                            Text(
-                                text = "No",
-                                color = Color.Black,
-                                fontFamily = GillSans,
-                                fontWeight = FontWeight.Bold,
-                                fontSize = 15.sp
-                            )
-                        }
-
-                        Spacer(modifier = Modifier.width(30.dp))
-
-                        Button(
-                            onClick = {
-                                showConfirmDialog = false
-                                savedPayload?.let { payload ->
-                                    isLoading = true
-                                    onSubmitRequest(payload) { success, msg ->
-                                        isLoading = false
-                                        if (success) {
-                                            successDialogMessage = msg
-                                            showSuccessDialog = true
-                                        } else {
-                                            errorDialogMessage = msg
-                                            showErrorDialog = true
-                                        }
-                                    }
-                                }
-                            },
-                            colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF004D87)),
-                            shape = RoundedCornerShape(10.dp),
-                            modifier = Modifier
-                                .width(90.dp)
-                                .height(40.dp)
-                        ) {
-                            Text(
-                                text = "Yes",
-                                color = Color.White,
-                                fontFamily = GillSans,
-                                fontWeight = FontWeight.Bold,
-                                fontSize = 15.sp
-                            )
+        AppConfirmationDialog(
+            title = "Confirmation",
+            annotatedMessage = confirmAnnotated,
+            confirmText = "Yes",
+            dismissText = "No",
+            onConfirm = {
+                showConfirmDialog = false
+                savedPayload?.let { payload ->
+                    isLoading = true
+                    onSubmitRequest(payload) { success, msg ->
+                        isLoading = false
+                        if (success) {
+                            successDialogMessage = msg
+                            showSuccessDialog = true
+                        } else {
+                            errorDialogMessage = msg
+                            showErrorDialog = true
                         }
                     }
                 }
-            }
-        }
+            },
+            onDismiss = { showConfirmDialog = false },
+            onClose = { showConfirmDialog = false }
+        )
     }
 
     if (showSuccessDialog) {

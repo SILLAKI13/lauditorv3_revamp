@@ -5,6 +5,7 @@ import android.view.View
 import com.digicoffer.lauditor.Webservice.AsyncTaskCompleteListener
 import com.digicoffer.lauditor.Webservice.HttpResultDo
 import com.digicoffer.lauditor.Webservice.CommonApiHelper.WebServiceHelper
+import com.digicoffer.lauditor.CommonFiles.GlobalFiles.AndroidUtils
 import kotlinx.coroutines.suspendCancellableCoroutine
 import org.json.JSONArray
 import org.json.JSONObject
@@ -63,10 +64,15 @@ class DocumentsRepository(private val context: Context) {
     }
 
     suspend fun updateMetadata(id: String, name: String, desc: String, expDate: String): HttpResultDo = suspendCancellableCoroutine { continuation ->
+        val formattedExpDate = if (expDate.equals("NA", ignoreCase = true) || expDate.isBlank()) {
+            ""
+        } else {
+            AndroidUtils.convertAnyDateToDDMMYYYY(expDate)
+        }
         val payload = JSONObject().apply {
             put("name", name)
             put("description", desc)
-            put("expiration_date", expDate)
+            put("expiration_date", formattedExpDate)
         }
         WebServiceHelper.callHttpWebService(
             object : AsyncTaskCompleteListener {
@@ -249,9 +255,9 @@ class DocumentsRepository(private val context: Context) {
         )
     }
 
-    suspend fun enableDocDownload(id: String, disable: Boolean): HttpResultDo = suspendCancellableCoroutine { continuation ->
+    suspend fun enableDocDownload(id: String, enable: Boolean): HttpResultDo = suspendCancellableCoroutine { continuation ->
         val payload = JSONObject().apply {
-            put("downloadDisabled", disable)
+            put("downloadDisabled", enable)
         }
         WebServiceHelper.callHttpWebService(
             object : AsyncTaskCompleteListener {
@@ -263,7 +269,7 @@ class DocumentsRepository(private val context: Context) {
             context,
             WebServiceHelper.RestMethodType.PATCH,
             "v3/document/$id",
-            "Enabled/Disabled Documents",
+            if (enable) "Enabled Documents" else "Disabled Documents",
             payload.toString()
         )
     }

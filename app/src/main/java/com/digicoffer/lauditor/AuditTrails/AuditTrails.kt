@@ -145,10 +145,20 @@ class AuditTrails : Fragment(), AsyncTaskCompleteListener, DateUtils.OnDateSelec
                                 stateHolder.updateDateRange(stateHolder.uiState.value.startDate, null)
                                 clearDates()
                             },
-                            onPageSelected = { page ->
-                                currentPage = page
-                                load_ChosenType_list()
-                                stateHolder.updateCurrentPage(page)
+                            onPrevClick = {
+                                if (currentPage > 1) {
+                                    currentPage--
+                                    load_ChosenType_list()
+                                    stateHolder.updateCurrentPage(currentPage)
+                                }
+                            },
+                            onNextClick = {
+                                val totalPages = stateHolder.uiState.value.totalPages
+                                if (currentPage < totalPages) {
+                                    currentPage++
+                                    load_ChosenType_list()
+                                    stateHolder.updateCurrentPage(currentPage)
+                                }
                             },
                             onClearCategory = {
                                 CategoryType = ""

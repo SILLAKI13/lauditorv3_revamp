@@ -667,8 +667,9 @@ class MatterDocuments_En : Fragment(), AsyncTaskCompleteListener, DocumentsListA
     private fun showPhotoOptions() {
         cl_matter_document?.alpha = 0.5f
         bottommSheetUploadDocument = BottomSheetUploadFile(cl_matter_document)
-        bottommSheetUploadDocument?.show(parentFragmentManager, "")
+        bottommSheetUploadDocument?.setOnPhotoSelectedListener(this@MatterDocuments_En)
         bottommSheetUploadDocument?.setTargetFragment(this@MatterDocuments_En, 1)
+        bottommSheetUploadDocument?.show(parentFragmentManager, "BottomSheetUploadFile")
     }
 
     private fun loadDocumentLibraryUI() {
@@ -686,31 +687,19 @@ class MatterDocuments_En : Fragment(), AsyncTaskCompleteListener, DocumentsListA
     }
 
     @SuppressLint("Range")
-    @Throws(IOException::class)
     override fun getImagepath(imagepath: File?, ImageURI: Uri?) {
-        if (imagepath != null) {
-            mSelectedBitmap = null
-            mSelectedUri = imagepath
-            val uri = imagepath.toString()
-            if (imageView != null) {
-                val imageLoader = ImageLoader.getInstance()
-                imageLoader.init(ImageLoaderConfiguration.createDefault(requireActivity()))
-                imageLoader.displayImage(Uri.fromFile(File(uri)).toString(), imageView)
+        try {
+            val viewModel = ViewModelProvider(requireParentFragment()).get(MatterEditViewModel::class.java)
+            if (imagepath != null && imagepath.exists()) {
+                val name = if (ImageURI != null) queryName(requireContext(), ImageURI) else imagepath.name
+                viewModel.addUploadFile(imagepath, name)
+            } else if (ImageURI != null) {
+                val file = getFile(requireContext(), ImageURI)
+                val name = queryName(requireContext(), ImageURI)
+                viewModel.addUploadFile(file, name)
             }
-            file = imagepath
-            if (ImageURI != null) {
-                val c = requireContext().contentResolver.query(ImageURI, null, null, null, null)
-                if (c != null && c.moveToFirst()) {
-                    val file_name = c.getString(c.getColumnIndex(OpenableColumns.DISPLAY_NAME))
-                    c.close()
-                    load_documents(file_name, file!!)
-                }
-            }
-        } else if (ImageURI != null) {
-            file = getFile(requireContext(), ImageURI)
-            Log.i("FILE", "Info:" + file.toString())
-            val file_name = file!!.name
-            load_documents(file_name, file!!)
+        } catch (e: Exception) {
+            e.printStackTrace()
         }
         cl_matter_document?.alpha = 1.0f
         bottommSheetUploadDocument?.dismiss()
