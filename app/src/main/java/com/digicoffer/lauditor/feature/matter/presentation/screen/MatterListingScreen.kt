@@ -98,6 +98,9 @@ fun MatterListingScreen(
             value = searchInput,
             onValueChange = {
                 searchInput = it
+                if (it.isEmpty() && uiState.searchQuery.isNotEmpty()) {
+                    viewModel.onSearchQueryChanged("")
+                }
             },
             onSearchClick = {
                 keyboardController?.hide()
@@ -110,11 +113,10 @@ fun MatterListingScreen(
                 viewModel.onSearchQueryChanged(searchInput.trim())
             },
             onClearClick = {
-                val hadSubmittedSearch = uiState.searchQuery.isNotEmpty()
                 searchInput = ""
                 keyboardController?.hide()
                 focusManager.clearFocus()
-                if (hadSubmittedSearch) {
+                if (uiState.searchQuery.isNotEmpty()) {
                     viewModel.onSearchQueryChanged("")
                 }
             },
