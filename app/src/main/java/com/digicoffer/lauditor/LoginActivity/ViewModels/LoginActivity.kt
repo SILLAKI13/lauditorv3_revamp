@@ -33,6 +33,7 @@ import com.digicoffer.lauditor.CommonFiles.GlobalFiles.AndroidUtils
 import com.digicoffer.lauditor.CommonFiles.GlobalFiles.Constants
 import com.digicoffer.lauditor.CommonFiles.GlobalFiles.DynamicUtils
 import com.digicoffer.lauditor.CommonFiles.GlobalFiles.FirebaseInitHelper
+import com.digicoffer.lauditor.CommonFiles.PushNotifications.MyFirebaseMessagingService
 import com.digicoffer.lauditor.CommonFiles.TermsAndCondition.TermsAndCondition
 import com.digicoffer.lauditor.LoginActivity.Models.Dashboard_Model
 import com.digicoffer.lauditor.LoginActivity.Models.FirmsDo
@@ -108,6 +109,7 @@ class LoginActivity : AppCompatActivity(), AsyncTaskCompleteListener, View.OnCli
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+        MyFirebaseMessagingService.initNotificationChannel(this)
         Constants.loginActivity = this
 
         val composeView = androidx.compose.ui.platform.ComposeView(this).apply {

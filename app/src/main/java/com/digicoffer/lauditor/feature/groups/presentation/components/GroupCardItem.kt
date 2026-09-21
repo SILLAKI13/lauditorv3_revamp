@@ -1,6 +1,7 @@
 package com.digicoffer.lauditor.feature.groups.presentation.components
 
 import androidx.compose.foundation.Image
+import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -22,6 +23,9 @@ import com.digicoffer.lauditor.R
 @Composable
 fun GroupCardItem(
     group: ViewGroupModel,
+    isMenuExpanded: Boolean = false,
+    onMenuToggle: () -> Unit = {},
+    onDismissMenu: () -> Unit = {},
     onEditClick: () -> Unit,
     onUpdateMembersClick: () -> Unit,
     onUpdateGroupHeadClick: () -> Unit,
@@ -30,7 +34,6 @@ fun GroupCardItem(
 ) {
     val activeBlue = Color(0xFF004D87)
     val textGray = Color(0xFF333333)
-    var isMenuExpanded by remember { mutableStateOf(false) }
 
     val role = Constants.ROLE ?: ""
     val groupName = group.name ?: ""
@@ -59,95 +62,109 @@ fun GroupCardItem(
         list
     }
 
-    Card(
-        shape = RoundedCornerShape(8.dp),
-        colors = CardDefaults.cardColors(containerColor = Color.White),
-        elevation = CardDefaults.cardElevation(defaultElevation = 2.dp),
+    Box(
         modifier = Modifier
             .fillMaxWidth()
             .padding(horizontal = 16.dp, vertical = 6.dp)
     ) {
-        Column(
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(16.dp)
+        Card(
+            shape = RoundedCornerShape(8.dp),
+            colors = CardDefaults.cardColors(containerColor = Color.White),
+            elevation = CardDefaults.cardElevation(defaultElevation = 2.dp),
+            modifier = Modifier.fillMaxWidth()
         ) {
-            // Header Row: Group Name and Options Menu
-            Row(
-                modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.SpaceBetween,
-                verticalAlignment = Alignment.CenterVertically
+            Column(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(16.dp)
             ) {
-                Text(
-                    text = group.name ?: "",
-                    color = activeBlue,
-                    fontWeight = FontWeight.Bold,
-                    fontSize = 16.sp,
-                    fontFamily = FontFamily(Font(R.font.gill_sans_regular)),
-                    modifier = Modifier.weight(1f)
-                )
+                // Header Row: Group Name and Options Menu
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.SpaceBetween,
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    Text(
+                        text = group.name ?: "",
+                        color = activeBlue,
+                        fontWeight = FontWeight.Bold,
+                        fontSize = 16.sp,
+                        fontFamily = FontFamily(Font(R.font.gill_sans_regular)),
+                        modifier = Modifier.weight(1f)
+                    )
 
-                Box {
                     Image(
                         painter = painterResource(id = R.drawable.img_17), // Vertical three dots options icon
                         contentDescription = "Options menu",
                         modifier = Modifier
                             .size(24.dp)
-                            .clickable { isMenuExpanded = true }
+                            .clickable { onMenuToggle() }
                     )
+                }
 
-                    DropdownMenu(
-                        expanded = isMenuExpanded,
-                        onDismissRequest = { isMenuExpanded = false },
-                        modifier = Modifier.width(180.dp)
-                    ) {
-                        menuItems.forEachIndexed { index, pair ->
-                            DropdownMenuItem(
-                                text = {
-                                    Text(
-                                        text = pair.first,
-                                        fontSize = 15.sp,
-                                        fontFamily = FontFamily(Font(R.font.gill_sans_regular)),
-                                        color = Color.Black
-                                    )
-                                },
-                                onClick = {
-                                    isMenuExpanded = false
+                Spacer(modifier = Modifier.height(10.dp))
+
+                // Body Meta text lines
+                val groupHeadName = group.group_head_name ?: ""
+                Text(
+                    text = "Group Head : $groupHeadName",
+                    color = Color.Black,
+                    fontSize = 14.sp,
+                    fontFamily = FontFamily(Font(R.font.gill_sans_regular))
+                )
+                Spacer(modifier = Modifier.height(4.dp))
+                Text(
+                    text = "Created : ${group.created ?: ""}",
+                    color = Color.Black,
+                    fontSize = 14.sp,
+                    fontFamily = FontFamily(Font(R.font.gill_sans_regular))
+                )
+                Spacer(modifier = Modifier.height(4.dp))
+                Text(
+                    text = "Number of Members : ${group.memberCount ?: ""}",
+                    color = Color.Black,
+                    fontSize = 14.sp,
+                    fontFamily = FontFamily(Font(R.font.gill_sans_regular))
+                )
+            }
+        }
+
+        // Action Dropdown Card Overlay matching Appointments design
+        if (isMenuExpanded) {
+            Card(
+                shape = RoundedCornerShape(6.dp),
+                colors = CardDefaults.cardColors(containerColor = Color.White),
+                elevation = CardDefaults.cardElevation(defaultElevation = 16.dp),
+                modifier = Modifier
+                    .align(Alignment.TopEnd)
+                    .padding(top = 40.dp, end = 10.dp)
+                    .width(220.dp)
+            ) {
+                Column(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .background(Color.White)
+                ) {
+                    menuItems.forEachIndexed { index, pair ->
+                        Text(
+                            text = pair.first,
+                            fontSize = 15.sp,
+                            fontFamily = FontFamily(Font(R.font.gill_sans_regular)),
+                            color = Color.Black,
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .clickable {
+                                    onDismissMenu()
                                     pair.second()
                                 }
-                            )
-                            if (index < menuItems.lastIndex) {
-                                HorizontalDivider(thickness = 0.5.dp, color = Color(0xFFE0E0E0))
-                            }
+                                .padding(horizontal = 16.dp, vertical = 12.dp)
+                        )
+                        if (index < menuItems.lastIndex) {
+                            HorizontalDivider(thickness = 0.5.dp, color = Color(0xFFE0E0E0))
                         }
                     }
                 }
             }
-
-            Spacer(modifier = Modifier.height(10.dp))
-
-            // Body Meta text lines
-            val groupHeadName = group.group_head_name ?: ""
-            Text(
-                text = "Group Head : $groupHeadName",
-                color = textGray,
-                fontSize = 14.sp,
-                fontFamily = FontFamily(Font(R.font.gill_sans_regular))
-            )
-            Spacer(modifier = Modifier.height(4.dp))
-            Text(
-                text = "Created : ${group.created ?: ""}",
-                color = textGray,
-                fontSize = 14.sp,
-                fontFamily = FontFamily(Font(R.font.gill_sans_regular))
-            )
-            Spacer(modifier = Modifier.height(4.dp))
-            Text(
-                text = "Number of Members : ${group.memberCount ?: ""}",
-                color = textGray,
-                fontSize = 14.sp,
-                fontFamily = FontFamily(Font(R.font.gill_sans_regular))
-            )
         }
     }
 }

@@ -7,6 +7,7 @@ class ViewGroupModel {
     var name: String = ""
     var description: String = ""
     var created: String = ""
+    var timestamp: Long = 0L
 
     @get:JvmName("getUser_type")
     @set:JvmName("setUser_type")

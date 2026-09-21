@@ -227,6 +227,8 @@ class GroupsRepository(private val context: Context) {
 
     suspend fun fetchAuditLogs(
         id: String,
+        category: String,
+        client: String,
         fromDate: String,
         toDate: String,
         tm: String,
@@ -234,6 +236,8 @@ class GroupsRepository(private val context: Context) {
     ): HttpResultDo = suspendCancellableCoroutine { continuation ->
         try {
             val postData = JSONObject().apply {
+                put("category", category.ifEmpty { "Groups" })
+                put("client", client)
                 put("fromDate", fromDate)
                 put("toDate", toDate)
                 put("tm", tm)

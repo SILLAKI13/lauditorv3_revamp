@@ -7,6 +7,7 @@ import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
@@ -54,6 +55,7 @@ fun GroupsScreen(
     var selectedGroup by remember { mutableStateOf<ViewGroupModel?>(null) }
 
     var searchQuery by remember { mutableStateOf("") }
+    var expandedGroupId by remember { mutableStateOf<String?>(null) }
     val activeBlue = Color(0xFF004D87)
 
     // Custom Alert/Dialog states
@@ -109,7 +111,7 @@ fun GroupsScreen(
                     ScreenMode.LIST -> "List Of Groups"
                     ScreenMode.CREATE -> "Create Group"
                     ScreenMode.EDIT -> "Edit Group Info"
-                    ScreenMode.UPDATE_MEMBERS -> "Update Group Members"
+                    ScreenMode.UPDATE_MEMBERS -> "Team Members"
                     ScreenMode.UPDATE_GROUP_HEAD -> "Update Group Head"
                     ScreenMode.ACTIVITY_LOG -> "Activity Log"
                     ScreenMode.DELETE -> "Assign Group"
@@ -123,7 +125,7 @@ fun GroupsScreen(
                     fontFamily = FontFamily(Font(R.font.gill_sans_regular))
                 )
 
-                // Sub-header Action Button
+                // Sub-header Action Button (Hidden on UPDATE_MEMBERS)
                 if (screenMode == ScreenMode.LIST) {
                     AppHeaderButton(
                         text = "Create Group",
@@ -133,7 +135,7 @@ fun GroupsScreen(
                             screenMode = ScreenMode.CREATE
                         }
                     )
-                } else {
+                } else if (screenMode != ScreenMode.UPDATE_MEMBERS) {
                     AppHeaderButton(
                         text = "View Groups",
                         iconRes = R.drawable.eye_icon, // Eye icon drawable (View)
@@ -183,42 +185,53 @@ fun GroupsScreen(
                                     Text(
                                         text = "No groups found",
                                         color = Color.Gray,
-                                        fontSize = 14.sp,
+                                        fontSize = 16.sp,
                                         fontFamily = FontFamily(Font(R.font.gill_sans_regular))
                                     )
                                 }
                             } else {
                                 LazyColumn(
                                     modifier = Modifier.fillMaxSize(),
-                                    contentPadding = PaddingValues(bottom = 24.dp)
+                                    contentPadding = PaddingValues(bottom = 16.dp)
                                 ) {
-                                    items(filteredGroups) { group ->
+                                    items(filteredGroups, key = { it.id }) { group ->
                                         GroupCardItem(
                                             group = group,
+                                            isMenuExpanded = expandedGroupId == group.id,
+                                            onMenuToggle = {
+                                                expandedGroupId = if (expandedGroupId == group.id) null else group.id
+                                            },
+                                            onDismissMenu = { expandedGroupId = null },
                                             onEditClick = {
+                                                expandedGroupId = null
                                                 selectedGroup = group
                                                 screenMode = ScreenMode.EDIT
                                             },
                                             onUpdateMembersClick = {
+                                                expandedGroupId = null
                                                 selectedGroup = group
                                                 screenMode = ScreenMode.UPDATE_MEMBERS
                                             },
                                             onUpdateGroupHeadClick = {
+                                                expandedGroupId = null
                                                 selectedGroup = group
                                                 screenMode = ScreenMode.UPDATE_GROUP_HEAD
                                             },
                                             onDeleteClick = {
+                                                expandedGroupId = null
                                                 selectedGroup = group
-                                                reassignedGroupId = ""
-                                                reassignedGroupName = "Select Group Name"
-                                                viewModel.onEvent(GroupsUiEvent.FetchGroupCounts(group.id) { counts ->
-                                                    deleteCounts = counts
-                                                    screenMode = ScreenMode.DELETE
-                                                })
+                                                viewModel.onEvent(
+                                                    GroupsUiEvent.FetchGroupCounts(group.id) { counts ->
+                                                        deleteCounts = counts
+                                                        reassignedGroupId = ""
+                                                        reassignedGroupName = "Select Group Name"
+                                                        screenMode = ScreenMode.DELETE
+                                                    }
+                                                )
                                             },
                                             onActivityLogClick = {
+                                                expandedGroupId = null
                                                 selectedGroup = group
-                                                viewModel.onEvent(GroupsUiEvent.FetchAuditLogs(group.id, "", "", "", ""))
                                                 screenMode = ScreenMode.ACTIVITY_LOG
                                             }
                                         )
@@ -234,10 +247,8 @@ fun GroupsScreen(
                             isAddTeamMemberTab = isAddTeamMemberTab,
                             onTabChange = { isAddTeamMemberTab = it },
                             onSave = { name, desc, head, members ->
-                                // Filter out empty, blank, null values and ensure distinct valid IDs only
-                                val cleanMembers = (members + head).filter { it.isNotBlank() }.distinct()
                                 viewModel.onEvent(
-                                    GroupsUiEvent.CreateGroup(name, desc, head, cleanMembers) {
+                                    GroupsUiEvent.CreateGroup(name, desc, head, members) {
                                         screenMode = ScreenMode.LIST
                                     }
                                 )
@@ -266,13 +277,16 @@ fun GroupsScreen(
                                         .fillMaxWidth()
                                         .padding(16.dp)
                                 ) {
-                                    Text(
-                                        text = "Group Name *",
-                                        color = activeBlue,
-                                        fontWeight = FontWeight.SemiBold,
-                                        fontSize = 15.sp,
-                                        fontFamily = FontFamily(Font(R.font.gill_sans_regular))
-                                    )
+                                    Row(verticalAlignment = Alignment.CenterVertically) {
+                                        Text(
+                                            text = "Group Name",
+                                            color = activeBlue,
+                                            fontWeight = FontWeight.SemiBold,
+                                            fontSize = 15.sp,
+                                            fontFamily = FontFamily(Font(R.font.gill_sans_regular))
+                                        )
+                                        Text(text = " *", color = Color.Red, fontSize = 15.sp)
+                                    }
                                     Spacer(modifier = Modifier.height(6.dp))
                                     CustomTextField(
                                         value = editName,
@@ -282,13 +296,16 @@ fun GroupsScreen(
 
                                     Spacer(modifier = Modifier.height(16.dp))
 
-                                    Text(
-                                        text = "Description *",
-                                        color = activeBlue,
-                                        fontWeight = FontWeight.SemiBold,
-                                        fontSize = 15.sp,
-                                        fontFamily = FontFamily(Font(R.font.gill_sans_regular))
-                                    )
+                                    Row(verticalAlignment = Alignment.CenterVertically) {
+                                        Text(
+                                            text = "Description",
+                                            color = activeBlue,
+                                            fontWeight = FontWeight.SemiBold,
+                                            fontSize = 15.sp,
+                                            fontFamily = FontFamily(Font(R.font.gill_sans_regular))
+                                        )
+                                        Text(text = " *", color = Color.Red, fontSize = 15.sp)
+                                    }
                                     Spacer(modifier = Modifier.height(6.dp))
                                     CustomMultilineTextField(
                                         value = editDesc,
@@ -344,14 +361,13 @@ fun GroupsScreen(
 
                     ScreenMode.UPDATE_MEMBERS -> {
                         selectedGroup?.let { group ->
-                            // Correct JSON mapping: extract `"id"` from members Objects to prevent empty blank IDs in PATCH array!
                             val initialMemberSet = remember(group) {
                                 val set = mutableSetOf<String>()
                                 group.members?.let { array ->
                                     for (i in 0 until array.length()) {
                                         val obj = array.optJSONObject(i)
                                         val mId = if (obj != null) {
-                                            obj.optString("id") // Uses "id" property, NOT "group_id"
+                                            obj.optString("id")
                                         } else {
                                             array.optString(i)
                                         }
@@ -363,41 +379,85 @@ fun GroupsScreen(
                                 set.toSet()
                             }
 
-                            // Key states by group to ensure correct reset
                             var selectedMemberIds by remember(group) { mutableStateOf(initialMemberSet) }
                             var memSearchQuery by remember(group) { mutableStateOf("") }
 
-                            // Wrap entire screen content in a scrollable Column to prevent nested scroll crashes
+                            val filteredMembers = uiState.membersList.filter {
+                                it.id != group.group_head_id && it.name.contains(memSearchQuery, ignoreCase = true)
+                            }
+                            val isAllSelected = filteredMembers.isNotEmpty() && filteredMembers.all { selectedMemberIds.contains(it.id) }
+
                             Column(
                                 modifier = Modifier
-                                    .fillMaxWidth()
-                                    .verticalScroll(rememberScrollState())
-                                    .padding(bottom = 24.dp)
+                                    .fillMaxSize()
+                                    .padding(bottom = 16.dp)
                             ) {
+                                // Select All Row above Card
+                                Row(
+                                    modifier = Modifier
+                                        .fillMaxWidth()
+                                        .padding(horizontal = 16.dp, vertical = 4.dp),
+                                    horizontalArrangement = Arrangement.End,
+                                    verticalAlignment = Alignment.CenterVertically
+                                ) {
+                                    Card(
+                                        shape = RoundedCornerShape(8.dp),
+                                        colors = CardDefaults.cardColors(containerColor = Color.White),
+                                        elevation = CardDefaults.cardElevation(defaultElevation = 1.dp),
+                                        border = androidx.compose.foundation.BorderStroke(0.5.dp, Color(0xFFC0C0C0)),
+                                        modifier = Modifier.clickable {
+                                            val list = filteredMembers.map { it.id }
+                                            selectedMemberIds = if (isAllSelected) {
+                                                selectedMemberIds - list.toSet()
+                                            } else {
+                                                selectedMemberIds + list
+                                            }
+                                        }
+                                    ) {
+                                        Row(
+                                            modifier = Modifier.padding(horizontal = 12.dp, vertical = 8.dp),
+                                            verticalAlignment = Alignment.CenterVertically
+                                        ) {
+                                            CompositionLocalProvider(
+                                                LocalMinimumInteractiveComponentSize provides androidx.compose.ui.unit.Dp.Unspecified
+                                            ) {
+                                                Checkbox(
+                                                    checked = isAllSelected,
+                                                    onCheckedChange = null,
+                                                    colors = CheckboxDefaults.colors(checkedColor = activeBlue),
+                                                    modifier = Modifier.size(20.dp)
+                                                )
+                                            }
+                                            Spacer(modifier = Modifier.width(8.dp))
+                                            Text(
+                                                text = "Select All",
+                                                color = Color.Black,
+                                                fontSize = 14.sp,
+                                                fontWeight = FontWeight.Medium,
+                                                fontFamily = FontFamily(Font(R.font.gill_sans_regular))
+                                            )
+                                        }
+                                    }
+                                }
+
+                                Spacer(modifier = Modifier.height(4.dp))
+
+                                // Main Card Container with scrollable member list & fixed bottom buttons
                                 Card(
                                     shape = RoundedCornerShape(10.dp),
                                     colors = CardDefaults.cardColors(containerColor = Color.White),
                                     elevation = CardDefaults.cardElevation(defaultElevation = 2.dp),
                                     modifier = Modifier
                                         .fillMaxWidth()
-                                        .padding(16.dp)
+                                        .weight(1f)
+                                        .padding(horizontal = 16.dp)
                                 ) {
                                     Column(
                                         modifier = Modifier
-                                            .fillMaxWidth()
+                                            .fillMaxSize()
                                             .padding(16.dp)
                                     ) {
-                                        Text(
-                                            text = "Update Members for ${group.name}",
-                                            color = activeBlue,
-                                            fontWeight = FontWeight.Bold,
-                                            fontSize = 16.sp,
-                                            fontFamily = FontFamily(Font(R.font.gill_sans_regular))
-                                        )
-
-                                        Spacer(modifier = Modifier.height(12.dp))
-
-                                        // Search Team Members Bar INSIDE the Card Container
+                                        // Search Team Members Bar
                                         AppSearchField(
                                             value = memSearchQuery,
                                             onValueChange = { memSearchQuery = it },
@@ -407,19 +467,46 @@ fun GroupsScreen(
 
                                         Spacer(modifier = Modifier.height(12.dp))
 
-                                        val filteredMembers = uiState.membersList.filter {
-                                            // Filter out the Group Head since they cannot be deselected from the checklist
-                                            it.id != group.group_head_id && it.name.contains(memSearchQuery, ignoreCase = true)
+                                        // Group Head Banner Card with R.drawable.new_gh_icon
+                                        val headName = group.group_head_name.ifBlank {
+                                            uiState.membersList.find { it.id == group.group_head_id }?.name.orEmpty()
                                         }
 
-                                        // Render list rows using standard Column + forEach for clean scrolling flow
-                                        Column(
-                                            modifier = Modifier.fillMaxWidth(),
+                                        if (headName.isNotBlank()) {
+                                            Row(
+                                                modifier = Modifier
+                                                    .fillMaxWidth()
+                                                    .background(Color(0xFFF8F8F8), shape = RoundedCornerShape(6.dp))
+                                                    .border(width = 0.5.dp, color = Color(0xFFC0C0C0), shape = RoundedCornerShape(6.dp))
+                                                    .padding(horizontal = 12.dp, vertical = 10.dp),
+                                                verticalAlignment = Alignment.CenterVertically
+                                            ) {
+                                                Image(
+                                                    painter = painterResource(id = R.drawable.new_gh_icon),
+                                                    contentDescription = "Group Head Icon",
+                                                    modifier = Modifier.size(32.dp)
+                                                )
+                                                Spacer(modifier = Modifier.width(10.dp))
+                                                Text(
+                                                    text = "$headName - Group Head",
+                                                    color = Color.Black,
+                                                    fontWeight = FontWeight.Bold,
+                                                    fontSize = 15.sp,
+                                                    fontFamily = FontFamily(Font(R.font.gill_sans_regular))
+                                                )
+                                            }
+                                            Spacer(modifier = Modifier.height(10.dp))
+                                        }
+
+                                        // Scrollable LazyColumn for member items
+                                        LazyColumn(
+                                            modifier = Modifier
+                                                .fillMaxWidth()
+                                                .weight(1f),
                                             verticalArrangement = Arrangement.spacedBy(6.dp)
                                         ) {
-                                            filteredMembers.forEach { member ->
+                                            items(filteredMembers, key = { it.id }) { member ->
                                                 val isChecked = selectedMemberIds.contains(member.id)
-
                                                 Row(
                                                     modifier = Modifier
                                                         .fillMaxWidth()
@@ -448,7 +535,6 @@ fun GroupsScreen(
                                                     CompositionLocalProvider(
                                                         LocalMinimumInteractiveComponentSize provides androidx.compose.ui.unit.Dp.Unspecified
                                                     ) {
-                                                        // Set onCheckedChange = null to prevent double toggle issues. Click handled entirely by parent Row!
                                                         Checkbox(
                                                             checked = isChecked,
                                                             onCheckedChange = null,
@@ -460,8 +546,9 @@ fun GroupsScreen(
                                             }
                                         }
 
-                                        Spacer(modifier = Modifier.height(24.dp))
+                                        Spacer(modifier = Modifier.height(16.dp))
 
+                                        // Fixed Action Buttons: Cancel and Update
                                         Row(
                                             modifier = Modifier.fillMaxWidth(),
                                             horizontalArrangement = Arrangement.spacedBy(16.dp)
@@ -475,12 +562,15 @@ fun GroupsScreen(
                                                     .weight(1f)
                                                     .height(40.dp)
                                             ) {
-                                                Text("Cancel", color = Color.Black)
+                                                Text(
+                                                    text = "Cancel",
+                                                    color = Color.Black,
+                                                    fontFamily = FontFamily(Font(R.font.gill_sans_regular))
+                                                )
                                             }
 
                                             Button(
                                                 onClick = {
-                                                    // Ensure no empty, null, or blank member IDs are submitted
                                                     val finalMembers = (selectedMemberIds + group.group_head_id)
                                                         .filter { it.isNotBlank() }
                                                         .distinct()
@@ -496,7 +586,11 @@ fun GroupsScreen(
                                                     .weight(1f)
                                                     .height(40.dp)
                                             ) {
-                                                Text("Save", color = Color.White)
+                                                Text(
+                                                    text = "Update",
+                                                    color = Color.White,
+                                                    fontFamily = FontFamily(Font(R.font.gill_sans_regular))
+                                                )
                                             }
                                         }
                                     }
@@ -531,7 +625,15 @@ fun GroupsScreen(
                                 auditLogs = uiState.auditLogs,
                                 onSearch = { cat, tm, client, fromDate, search, toDate ->
                                     viewModel.onEvent(
-                                        GroupsUiEvent.FetchAuditLogs(group.id, fromDate, toDate, tm, search)
+                                        GroupsUiEvent.FetchAuditLogs(
+                                            id = group.id,
+                                            category = cat,
+                                            client = client,
+                                            fromDate = fromDate,
+                                            toDate = toDate,
+                                            tm = tm,
+                                            search = search
+                                        )
                                     )
                                 },
                                 onDismiss = { screenMode = ScreenMode.LIST }
@@ -569,13 +671,16 @@ fun GroupsScreen(
                                             .padding(16.dp)
                                     ) {
                                         // Disabled Group Name field
-                                        Text(
-                                            text = "Group Name *",
-                                            color = activeBlue,
-                                            fontWeight = FontWeight.SemiBold,
-                                            fontSize = 15.sp,
-                                            fontFamily = FontFamily(Font(R.font.gill_sans_regular))
-                                        )
+                                        Row(verticalAlignment = Alignment.CenterVertically) {
+                                            Text(
+                                                text = "Group Name",
+                                                color = activeBlue,
+                                                fontWeight = FontWeight.SemiBold,
+                                                fontSize = 15.sp,
+                                                fontFamily = FontFamily(Font(R.font.gill_sans_regular))
+                                            )
+                                            Text(text = " *", color = Color.Red, fontSize = 15.sp)
+                                        }
                                         Spacer(modifier = Modifier.height(6.dp))
                                         CustomTextField(
                                             value = group.name ?: "",
@@ -587,13 +692,16 @@ fun GroupsScreen(
                                         Spacer(modifier = Modifier.height(16.dp))
 
                                         // Disabled Description field
-                                        Text(
-                                            text = "Description *",
-                                            color = activeBlue,
-                                            fontWeight = FontWeight.SemiBold,
-                                            fontSize = 15.sp,
-                                            fontFamily = FontFamily(Font(R.font.gill_sans_regular))
-                                        )
+                                        Row(verticalAlignment = Alignment.CenterVertically) {
+                                            Text(
+                                                text = "Description",
+                                                color = activeBlue,
+                                                fontWeight = FontWeight.SemiBold,
+                                                fontSize = 15.sp,
+                                                fontFamily = FontFamily(Font(R.font.gill_sans_regular))
+                                            )
+                                            Text(text = " *", color = Color.Red, fontSize = 15.sp)
+                                        }
                                         Spacer(modifier = Modifier.height(6.dp))
                                         CustomMultilineTextField(
                                             value = group.description ?: "",
@@ -662,54 +770,92 @@ fun GroupsScreen(
                                         Spacer(modifier = Modifier.height(20.dp))
 
                                         // Reassign Dropdown selection box
-                                        Text(
-                                            text = "Group Name *",
-                                            color = activeBlue,
-                                            fontWeight = FontWeight.SemiBold,
-                                            fontSize = 15.sp,
-                                            fontFamily = FontFamily(Font(R.font.gill_sans_regular))
-                                        )
+                                        Row(verticalAlignment = Alignment.CenterVertically) {
+                                            Text(
+                                                text = "Assign to another active group",
+                                                color = activeBlue,
+                                                fontWeight = FontWeight.SemiBold,
+                                                fontSize = 15.sp,
+                                                fontFamily = FontFamily(Font(R.font.gill_sans_regular))
+                                            )
+                                            Text(text = " *", color = Color.Red, fontSize = 15.sp)
+                                        }
                                         Spacer(modifier = Modifier.height(6.dp))
-                                        Box(
+                                        Row(
                                             modifier = Modifier
                                                 .fillMaxWidth()
                                                 .background(Color(0xFFF9FAFB), shape = RoundedCornerShape(6.dp))
                                                 .border(width = 0.5.dp, color = Color(0xFFC0C0C0), shape = RoundedCornerShape(6.dp))
-                                                .clickable { isReassignExpanded = true }
-                                                .padding(10.dp)
+                                                .clickable { isReassignExpanded = !isReassignExpanded }
+                                                .padding(horizontal = 12.dp, vertical = 10.dp),
+                                            horizontalArrangement = Arrangement.SpaceBetween,
+                                            verticalAlignment = Alignment.CenterVertically
                                         ) {
-                                            Row(
-                                                modifier = Modifier.fillMaxWidth(),
-                                                horizontalArrangement = Arrangement.SpaceBetween,
-                                                verticalAlignment = Alignment.CenterVertically
-                                            ) {
-                                                Text(
-                                                    text = reassignedGroupName,
-                                                    color = if (reassignedGroupId.isEmpty()) Color(0xFF707070) else Color.Black,
-                                                    fontSize = 15.sp,
-                                                    fontFamily = FontFamily(Font(R.font.gill_sans_regular))
-                                                )
-                                                Image(
-                                                    painter = painterResource(id = R.drawable.menu_down_icon), // Down arrow icon
-                                                    contentDescription = "Dropdown Down Arrow",
-                                                    modifier = Modifier.size(20.dp)
-                                                )
+                                            Text(
+                                                text = reassignedGroupName,
+                                                color = if (reassignedGroupId.isEmpty()) Color(0xFF707070) else Color.Black,
+                                                fontSize = 15.sp,
+                                                fontFamily = FontFamily(Font(R.font.gill_sans_regular)),
+                                                modifier = Modifier.weight(1f)
+                                            )
+                                            Image(
+                                                painter = painterResource(id = R.drawable.drop_down_blue),
+                                                contentDescription = "Dropdown Down Arrow",
+                                                modifier = Modifier.size(14.dp)
+                                            )
+                                        }
+
+                                        if (isReassignExpanded) {
+                                            Spacer(modifier = Modifier.height(8.dp))
+                                            var groupSearchQuery by remember { mutableStateOf("") }
+                                            val filteredOtherGroups = otherGroups.filter {
+                                                (it.name ?: "").contains(groupSearchQuery, ignoreCase = true)
                                             }
 
-                                            DropdownMenu(
-                                                expanded = isReassignExpanded,
-                                                onDismissRequest = { isReassignExpanded = false },
-                                                modifier = Modifier.fillMaxWidth(0.8f)
+                                            AppSearchField(
+                                                value = groupSearchQuery,
+                                                onValueChange = { groupSearchQuery = it },
+                                                placeholder = "Search Groups",
+                                                modifier = Modifier.fillMaxWidth()
+                                            )
+
+                                            Spacer(modifier = Modifier.height(8.dp))
+
+                                            Card(
+                                                shape = RoundedCornerShape(6.dp),
+                                                colors = CardDefaults.cardColors(containerColor = Color.White),
+                                                border = androidx.compose.foundation.BorderStroke(0.5.dp, Color(0xFFC0C0C0)),
+                                                modifier = Modifier
+                                                    .fillMaxWidth()
+                                                    .height(180.dp)
                                             ) {
-                                                otherGroups.forEach { other ->
-                                                    DropdownMenuItem(
-                                                        text = { Text(other.name ?: "") },
-                                                        onClick = {
-                                                            reassignedGroupId = other.id
-                                                            reassignedGroupName = other.name ?: ""
-                                                            isReassignExpanded = false
+                                                LazyColumn(
+                                                    modifier = Modifier.fillMaxSize()
+                                                ) {
+                                                    itemsIndexed(filteredOtherGroups, key = { _, it -> it.id }) { index, other ->
+                                                        Column(
+                                                            modifier = Modifier
+                                                                .fillMaxWidth()
+                                                                .clickable {
+                                                                    reassignedGroupId = other.id
+                                                                    reassignedGroupName = other.name ?: ""
+                                                                    isReassignExpanded = false
+                                                                }
+                                                        ) {
+                                                            Text(
+                                                                text = other.name ?: "",
+                                                                color = Color.Black,
+                                                                fontSize = 15.sp,
+                                                                fontFamily = FontFamily(Font(R.font.gill_sans_regular)),
+                                                                modifier = Modifier
+                                                                    .fillMaxWidth()
+                                                                    .padding(horizontal = 14.dp, vertical = 12.dp)
+                                                            )
+                                                            if (index < filteredOtherGroups.lastIndex) {
+                                                                HorizontalDivider(thickness = 0.5.dp, color = Color(0xFFDDDDDE))
+                                                            }
                                                         }
-                                                    )
+                                                    }
                                                 }
                                             }
                                         }
@@ -779,7 +925,7 @@ fun GroupsScreen(
 
         // Custom Validation / Error Alert Popups
         alertMessage?.let { msg ->
-            val titleText = if (msg.contains("Head of the Group", ignoreCase = true)) "Alert !" else "Alert"
+            val titleText = if (msg.contains("member selection", ignoreCase = true)) "Info" else if (msg.contains("Head of the Group", ignoreCase = true)) "Alert !" else "Alert"
             MembersAlertDialog(
                 title = titleText,
                 message = msg,

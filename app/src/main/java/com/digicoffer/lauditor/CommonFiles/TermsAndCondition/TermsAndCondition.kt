@@ -66,7 +66,7 @@ class TermsAndCondition(private val context: Context) : AsyncTaskCompleteListene
                     val result = JSONObject(httpResult.responseContent ?: "")
                     val msg = result.optString("msg", "Terms and Conditions accepted successfully.")
                     Log.d("Terms Accept", msg)
-                    AndroidUtils.showAlert("Terms and Conditions accepted successfully.", context as Activity)
+                    AndroidUtils.showAlert("Terms and Conditions accepted successfully.", context as Activity, "Success")
 
                     saveAcceptedTermsVersion(currentVersion)
                     Constants.requiresTermsAcceptance = false

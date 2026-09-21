@@ -5,7 +5,9 @@ import android.app.NotificationManager
 import android.app.PendingIntent
 import android.content.Context
 import android.content.Intent
+import android.graphics.BitmapFactory
 import android.graphics.Color
+import android.media.AudioAttributes
 import android.media.RingtoneManager
 import android.util.Log
 import android.view.View
@@ -31,7 +33,10 @@ class MyFirebaseMessagingService : FirebaseMessagingService(), AsyncTaskComplete
 
     override fun onMessageReceived(remoteMessage: RemoteMessage) {
         super.onMessageReceived(remoteMessage)
+        val startTime = System.currentTimeMillis()
+        Log.d("PUSH_DEBUG", "PUSH_DEBUG | onMessageReceived START | thread = ${Thread.currentThread().name} | timestamp = $startTime")
 
+        val parseStart = System.currentTimeMillis()
         var title = ""
         var body = ""
         var navigation = ""
@@ -46,23 +51,18 @@ class MyFirebaseMessagingService : FirebaseMessagingService(), AsyncTaskComplete
             remoteMessage.data["body"]?.let { body = it }
             remoteMessage.data["navigation"]?.let { navigation = it }
         }
-
-        try {
-            if (navigation.isNotEmpty()) {
-                val navJson = JSONObject(navigation)
-                val routeName = navJson.optString("route_name", "")
-                if ("message_client_inbox".equals(routeName, ignoreCase = true)) {
-                    Log.d(TAG, "onMessageReceived — chat notification suppressed")
-                    return
-                }
-            }
-        } catch (e: Exception) {
-            Log.e(TAG, "onMessageReceived — failed to parse navigation JSON: ${e.message}")
-        }
+        val parseDuration = System.currentTimeMillis() - parseStart
+        Log.d("PUSH_DEBUG", "PUSH_DEBUG | parsePayload END | duration = ${parseDuration}ms | title = $title | navigation = $navigation")
 
         if (title.isNotEmpty() || body.isNotEmpty()) {
+            val buildStart = System.currentTimeMillis()
             showNotification(title, body, navigation)
+            val buildDuration = System.currentTimeMillis() - buildStart
+            Log.d("PUSH_DEBUG", "PUSH_DEBUG | showNotification END | duration = ${buildDuration}ms")
         }
+
+        val totalDuration = System.currentTimeMillis() - startTime
+        Log.d("PUSH_DEBUG", "PUSH_DEBUG | onMessageReceived END | totalDuration = ${totalDuration}ms")
     }
 
     private fun showNotification(title: String, body: String, navigation: String?) {
@@ -86,31 +86,16 @@ class MyFirebaseMessagingService : FirebaseMessagingService(), AsyncTaskComplete
             PendingIntent.FLAG_ONE_SHOT or PendingIntent.FLAG_IMMUTABLE
         )
 
-        val soundUri = RingtoneManager.getDefaultUri(RingtoneManager.TYPE_NOTIFICATION)
-        val manager = getSystemService(Context.NOTIFICATION_SERVICE) as? NotificationManager
+        initNotificationChannel(this)
 
+        val manager = getSystemService(Context.NOTIFICATION_SERVICE) as? NotificationManager
         if (manager == null) {
             Log.e(TAG, "NotificationManager is null — cannot show notification")
             return
         }
 
-        val channel = NotificationChannel(
-            CHANNEL_ID,
-            CHANNEL_NAME,
-            NotificationManager.IMPORTANCE_HIGH
-        ).apply {
-            description = "Push notifications for Lex-Z Lawyers App"
-            enableLights(true)
-            lightColor = Color.GREEN
-            enableVibration(true)
-            vibrationPattern = longArrayOf(0, 500, 200, 500)
-            setShowBadge(true)
-            lockscreenVisibility = NotificationCompat.VISIBILITY_PUBLIC
-        }
-        manager.createNotificationChannel(channel)
-
         val builder = NotificationCompat.Builder(this, CHANNEL_ID)
-            .setSmallIcon(R.mipmap.ic_launcher)
+            .setSmallIcon(R.drawable.notification_sm_icon)
             .setContentTitle(title)
             .setContentText(body)
             .setStyle(
@@ -119,18 +104,13 @@ class MyFirebaseMessagingService : FirebaseMessagingService(), AsyncTaskComplete
                     .setBigContentTitle(title)
             )
             .setAutoCancel(true)
-            .setPriority(NotificationCompat.PRIORITY_HIGH)
+            .setPriority(NotificationCompat.PRIORITY_DEFAULT)
             .setVisibility(NotificationCompat.VISIBILITY_PUBLIC)
-            .setSound(soundUri)
-            .setDefaults(NotificationCompat.DEFAULT_VIBRATE)
-            .setLights(Color.GREEN, 1000, 500)
-            .setBadgeIconType(NotificationCompat.BADGE_ICON_SMALL)
             .setContentIntent(pendingIntent)
 
-        val notificationId = System.currentTimeMillis().toInt()
+        val notificationId = (System.currentTimeMillis() % 100000).toInt()
         manager.notify(notificationId, builder.build())
-
-        Log.d(TAG, "Notification displayed with ID: $notificationId")
+        Log.d(TAG, "Notification displayed with ID: $notificationId on channel: $CHANNEL_ID")
     }
 
     private fun saveTokenLocally(token: String) {
@@ -183,10 +163,45 @@ class MyFirebaseMessagingService : FirebaseMessagingService(), AsyncTaskComplete
 
     companion object {
         private const val TAG = "FCM_Service"
-        private const val CHANNEL_ID = "lauditor_channel"
+        const val CHANNEL_ID = "lauditor_notifications_v3"
         private const val CHANNEL_NAME = "Lauditor Notifications"
         private const val PREFS_NAME = "MyPrefs"
         private const val TOKEN_KEY = "fcm_token"
+
+        @JvmStatic
+        fun initNotificationChannel(context: Context) {
+            val manager = context.getSystemService(Context.NOTIFICATION_SERVICE) as? NotificationManager ?: return
+            try {
+                manager.deleteNotificationChannel("lauditor_channel")
+                manager.deleteNotificationChannel("lauditor_notifications_v2")
+            } catch (e: Exception) {
+                // ignore
+            }
+
+            if (manager.getNotificationChannel(CHANNEL_ID) == null) {
+                val soundUri = RingtoneManager.getDefaultUri(RingtoneManager.TYPE_NOTIFICATION)
+                val audioAttributes = AudioAttributes.Builder()
+                    .setContentType(AudioAttributes.CONTENT_TYPE_SONIFICATION)
+                    .setUsage(AudioAttributes.USAGE_NOTIFICATION)
+                    .build()
+
+                val channel = NotificationChannel(
+                    CHANNEL_ID,
+                    CHANNEL_NAME,
+                    NotificationManager.IMPORTANCE_DEFAULT
+                ).apply {
+                    description = "Push notifications for Lex-Z Lawyers App"
+                    enableLights(false)
+                    enableVibration(true)
+                    setSound(soundUri, audioAttributes)
+                    setShowBadge(true)
+                    lockscreenVisibility = NotificationCompat.VISIBILITY_PUBLIC
+                }
+                manager.createNotificationChannel(channel)
+                Log.d(TAG, "Notification channel created: $CHANNEL_ID ✅")
+            }
+        }
+
 
         @JvmStatic
         fun clearAllNotifications(context: Context) {

@@ -67,13 +67,15 @@ fun RelationshipCardItem(
     model: RelationshipsModel,
     onActionClick: (String, RelationshipsModel) -> Unit,
     onCardClick: (RelationshipsModel) -> Unit,
-    modifier: Modifier = Modifier
+    modifier: Modifier = Modifier,
+    currentRelType: String = ""
 ) {
     var expanded by remember { mutableStateOf(false) }
 
-    val isInactive = model.status?.lowercase() == "inactive"
-    val isPending = !isInactive && (model.status?.lowercase() == "pending" || !model.isAccepted)
-    val isClickable = !isInactive && !isPending && model.isAccepted
+    val isDeleted = currentRelType.lowercase() == "deleted" || model.status?.lowercase() == "deleted"
+    val isInactive = !isDeleted && model.status?.lowercase() == "inactive"
+    val isPending = !isDeleted && !isInactive && (model.status?.lowercase() == "pending" || !model.isAccepted)
+    val isClickable = !isDeleted && !isInactive && !isPending && model.isAccepted
 
     Card(
         modifier = modifier
@@ -123,20 +125,22 @@ fun RelationshipCardItem(
                         fontSize = 15.sp
                     )
 
-                    val (label, statusStyle) = when {
-                        isInactive -> Pair("Inactive", AppStatusStyle.ERROR)
-                        isPending -> Pair("Pending", AppStatusStyle.WARNING)
-                        else -> Pair("Active", AppStatusStyle.SUCCESS)
-                    }
+                    if (!isDeleted) {
+                        val (label, statusStyle) = when {
+                            isInactive -> Pair("Inactive", AppStatusStyle.ERROR)
+                            isPending -> Pair("Pending", AppStatusStyle.WARNING)
+                            else -> Pair("Active", AppStatusStyle.SUCCESS)
+                        }
 
-                    val badgeShape = if (isPending) RoundedCornerShape(20.dp) else RoundedCornerShape(15.dp)
-                    AppStatusBadge(
-                        text = label,
-                        style = statusStyle,
-                        shape = badgeShape,
-                        paddingHorizontal = 10.dp,
-                        paddingVertical = 4.dp
-                    )
+                        val badgeShape = if (isPending) RoundedCornerShape(20.dp) else RoundedCornerShape(15.dp)
+                        AppStatusBadge(
+                            text = label,
+                            style = statusStyle,
+                            shape = badgeShape,
+                            paddingHorizontal = 10.dp,
+                            paddingVertical = 4.dp
+                        )
+                    }
                 }
             }
 
@@ -159,13 +163,14 @@ fun RelationshipCardItem(
 
                 val isSolo = "solo" == com.digicoffer.lauditor.CommonFiles.GlobalFiles.Constants.CATEGORY
                 val isIndividual = model.clientType?.lowercase() == "consumer"
-                val isInactive = model.status?.lowercase() == "inactive"
-                val isPending = !isInactive && (model.status?.lowercase() == "pending" || !model.isAccepted)
-                val isActive = !isInactive && !isPending && model.isAccepted
+                val isActive = !isDeleted && !isInactive && !isPending && model.isAccepted
 
-                val actionsList = remember(model, isSolo, isIndividual, isActive, isInactive, isPending) {
+                val actionsList = remember(model, isSolo, isIndividual, isActive, isInactive, isPending, isDeleted) {
                     val actions = mutableListOf<String>()
-                    if (isInactive) {
+                    if (isDeleted) {
+                        actions.add("Restore Relationship")
+                        actions.add("Delete Relationship")
+                    } else if (isInactive) {
                         actions.add("Activate Relationship")
                         actions.add("Delete Relationship")
                     } else if (isPending) {

@@ -75,21 +75,17 @@ class GroupsViewModel(application: Application) : AndroidViewModel(application) 
                                 group_head_name = group_head_obj.optString("name")
                                 owner_name = group_head_obj.optString("name")
                             }
+                            val ts = jsonObject.opt("timestamp")
+                            timestamp = when (ts) {
+                                is Number -> ts.toLong()
+                                is String -> ts.toLongOrNull() ?: 0L
+                                else -> 0L
+                            }
                         }
                         parsedList.add(viewGroupModel)
                     }
-                    // Sort according to legacy sorting rules
-                    parsedList.sortWith(Comparator { a, b ->
-                        val nameA = a.name ?: ""
-                        val nameB = b.name ?: ""
-                        when {
-                            nameA.equals("AAM", ignoreCase = true) -> -1
-                            nameB.equals("AAM", ignoreCase = true) -> 1
-                            nameA.equals("SuperUser", ignoreCase = true) -> -1
-                            nameB.equals("SuperUser", ignoreCase = true) -> 1
-                            else -> nameA.compareTo(nameB, ignoreCase = true)
-                        }
-                    })
+                    // Sort descending by timestamp (latest created first). Old system groups without timestamp will naturally sit at the end.
+                    parsedList.sortWith(compareByDescending { it.timestamp })
                     _uiState.update { it.copy(groupsList = parsedList) }
                 } catch (e: Exception) {
                     _uiState.update { it.copy(toastMessage = "Failed to parse groups: ${e.localizedMessage}") }
@@ -214,6 +210,8 @@ class GroupsViewModel(application: Application) : AndroidViewModel(application) 
             _uiState.update { it.copy(isLoading = true) }
             val httpResult = repository.fetchAuditLogs(
                 id = event.id,
+                category = event.category,
+                client = event.client,
                 fromDate = event.fromDate,
                 toDate = event.toDate,
                 tm = event.tm,
@@ -223,13 +221,30 @@ class GroupsViewModel(application: Application) : AndroidViewModel(application) 
             if (httpResult.result == WebServiceHelper.ServiceCallStatus.Success) {
                 try {
                     val result = JSONObject(httpResult.responseContent ?: "")
-                    val data = result.getJSONArray("data")
+                    val data = result.optJSONArray("data") ?: JSONArray()
                     val list = ArrayList<SearchDo>()
                     for (i in 0 until data.length()) {
                         val json = data.getJSONObject(i)
                         val log = SearchDo().apply {
+                            category = json.optString("category")
                             msg = json.optString("msg")
-                            timestamp = json.optString("timestamp")
+                            val rawTs = json.optString("timestamp")
+                            timestamp = if (rawTs.isNotEmpty()) {
+                                try {
+                                    val date = AndroidUtils.stringToDateTimeDefault(rawTs, "yyyy-MM-dd'T'HH:mm:ss.SSS'Z'")
+                                        ?: AndroidUtils.stringToDateTimeDefault(rawTs, "yyyy-MM-dd'T'HH:mm:ss'Z'")
+                                        ?: AndroidUtils.stringToDateTimeDefault(rawTs, "yyyy-MM-dd'T'HH:mm:ss")
+                                    if (date != null) {
+                                        AndroidUtils.getDateToString(date, "MMM dd, yyyy hh:mm a")
+                                    } else {
+                                        rawTs
+                                    }
+                                } catch (e: Exception) {
+                                    rawTs
+                                }
+                            } else {
+                                ""
+                            }
                         }
                         list.add(log)
                     }

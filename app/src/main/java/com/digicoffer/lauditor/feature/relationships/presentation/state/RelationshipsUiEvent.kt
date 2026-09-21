@@ -87,4 +87,10 @@ sealed interface RelationshipsUiEvent {
         val id: String,
         val onResult: (Boolean, String) -> Unit
     ) : RelationshipsUiEvent
+
+    data class LoadInitialExchangeCounts(
+        val relId: String,
+        val isCorporate: Boolean,
+        val onResult: (Int, Int) -> Unit
+    ) : RelationshipsUiEvent
 }

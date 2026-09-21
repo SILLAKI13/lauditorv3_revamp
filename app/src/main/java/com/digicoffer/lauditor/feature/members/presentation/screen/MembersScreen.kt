@@ -82,6 +82,7 @@ fun MembersScreen(
 
     var screenMode by remember { mutableStateOf(MembersScreenMode.LISTING) }
     var searchQuery by remember { mutableStateOf("") }
+    var expandedMemberId by remember { mutableStateOf<String?>(null) }
     
     // Selection state trackers
     var selectedMemberForEdit by remember { mutableStateOf<MembersModel?>(null) }
@@ -92,8 +93,9 @@ fun MembersScreen(
     // Hoisted form state variables
     var formName by remember { mutableStateOf("") }
     var formDesignation by remember { mutableStateOf("") }
-    var formCurrency by remember { mutableStateOf("USDollar(USD)") }
+    var formCurrency by remember { mutableStateOf("IndianRupee(INR)") }
     var formRate by remember { mutableStateOf("") }
+    var formPhone by remember { mutableStateOf("") }
     var formEmail by remember { mutableStateOf("") }
     var formConfirmEmail by remember { mutableStateOf("") }
     var isAssignGroupsExpanded by remember { mutableStateOf(false) }
@@ -132,7 +134,8 @@ fun MembersScreen(
             formName = ""
             formDesignation = ""
             formRate = ""
-            formCurrency = "USDollar(USD)"
+            formCurrency = "IndianRupee(INR)"
+            formPhone = ""
             formEmail = ""
             formConfirmEmail = ""
             selectedGroupIdsForForm = emptyList()
@@ -143,7 +146,8 @@ fun MembersScreen(
                 formName = member.name.orEmpty()
                 formDesignation = member.designation.orEmpty()
                 formRate = member.defaultRate.orEmpty()
-                formCurrency = member.currency.orEmpty()
+                formCurrency = if (member.currency.isNullOrEmpty()) "IndianRupee(INR)" else member.currency.orEmpty()
+                formPhone = member.phone.orEmpty()
                 formEmail = member.email.orEmpty()
                 formConfirmEmail = member.email.orEmpty()
                 isAssignGroupsExpanded = false
@@ -280,19 +284,27 @@ fun MembersScreen(
                             .fillMaxWidth()
                             .weight(1f)
                     ) {
-                        items(filteredList) { member ->
+                        items(filteredList, key = { it.id ?: "" }) { member ->
                             MemberCardItem(
                                 member = member,
+                                isMenuExpanded = expandedMemberId == member.id,
+                                onMenuToggle = {
+                                    expandedMemberId = if (expandedMemberId == member.id) null else member.id
+                                },
+                                onDismissMenu = { expandedMemberId = null },
                                 onEditClick = {
+                                    expandedMemberId = null
                                     selectedMemberForEdit = member
                                     screenMode = MembersScreenMode.EDITING
                                 },
                                 onUpdateGroupAccessClick = {
+                                    expandedMemberId = null
                                     isUgaMode = true
                                     selectedMemberForUga = member
                                     screenMode = MembersScreenMode.GROUP_ASSIGNMENT
                                 },
                                 onResetPasswordClick = {
+                                    expandedMemberId = null
                                     confirmDialogMessage = context.getString(R.string.reset_password_tm) + member.name + "?"
                                     pendingConfirmAction = {
                                         viewModel.onEvent(MembersUiEvent.ResetPassword(member.id ?: "") {
@@ -301,6 +313,7 @@ fun MembersScreen(
                                     }
                                 },
                                 onDeleteClick = {
+                                    expandedMemberId = null
                                     confirmDialogMessage = context.getString(R.string.delete_team_member) + member.name + " ?"
                                     pendingConfirmAction = {
                                         viewModel.onEvent(MembersUiEvent.DeleteMember(member.id ?: "") {
@@ -309,6 +322,7 @@ fun MembersScreen(
                                     }
                                 },
                                 onUpgradeClick = {
+                                    expandedMemberId = null
                                     confirmDialogMessage = context.getString(R.string.upgrade_members) + " " + member.name + " " + "Practice Partner and provide Super User access ?"
                                     pendingConfirmAction = {
                                         viewModel.onEvent(MembersUiEvent.UpgradePracticePartner(member.id ?: "") {
@@ -342,6 +356,8 @@ fun MembersScreen(
                                 onCurrencyChange = { formCurrency = it },
                                 rate = formRate,
                                 onRateChange = { formRate = it },
+                                phone = formPhone,
+                                onPhoneChange = { formPhone = it },
                                 email = formEmail,
                                 onEmailChange = { formEmail = it },
                                 confirmEmail = formConfirmEmail,
@@ -356,6 +372,7 @@ fun MembersScreen(
                                                 designation = formDesignation,
                                                 defaultRate = formRate,
                                                 currency = formCurrency,
+                                                phone = formPhone,
                                                 email = formEmail,
                                                 emailConfirm = formConfirmEmail,
                                                 groups = selectedGroupIdsForForm,
@@ -386,6 +403,7 @@ fun MembersScreen(
                                                     designation = formDesignation,
                                                     defaultRate = formRate,
                                                     currency = formCurrency,
+                                                    phone = formPhone,
                                                     email = formEmail,
                                                     emailConfirm = formConfirmEmail,
                                                     groups = list,
@@ -449,6 +467,8 @@ fun MembersScreen(
                                     onCurrencyChange = { formCurrency = it },
                                     rate = formRate,
                                     onRateChange = { formRate = it },
+                                    phone = formPhone,
+                                    onPhoneChange = { formPhone = it },
                                     email = formEmail,
                                     onEmailChange = { formEmail = it },
                                     confirmEmail = formConfirmEmail,
@@ -463,6 +483,7 @@ fun MembersScreen(
                                                 designation = formDesignation,
                                                 defaultRate = formRate,
                                                 currency = formCurrency,
+                                                phone = formPhone,
                                                 email = formEmail,
                                                 emailConfirm = formConfirmEmail,
                                                 onSuccess = { screenMode = MembersScreenMode.LISTING }
@@ -490,6 +511,7 @@ fun MembersScreen(
                                                     designation = formDesignation,
                                                     defaultRate = formRate,
                                                     currency = formCurrency,
+                                                    phone = formPhone,
                                                     email = formEmail,
                                                     emailConfirm = formConfirmEmail,
                                                     onSuccess = {

@@ -17,6 +17,7 @@ class TaskModel {
     var Task_matter_id: String? = null
     var Task_name: String? = null
     var date: String? = null
+    var dayOfWeek: String? = null
     
     @get:JvmName("getIs_editable")
     @set:JvmName("setIs_editable")

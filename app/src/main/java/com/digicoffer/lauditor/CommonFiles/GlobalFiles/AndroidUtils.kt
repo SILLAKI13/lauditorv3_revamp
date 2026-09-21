@@ -484,7 +484,7 @@ class AndroidUtils {
                         frag.arguments = b
                         Constants.mainActivity?.navigation_items(frag)
                     }
-                    "relationship_individual_list", "relationship_shared_with_me_individual_list" -> {
+                    "relationship_individual_list", "relationship_shared_with_me_individual_list", "relationship_shared_with_me" -> {
                         Constants.Rel_Type = "Individual"
                         Constants.mainActivity?.navigation_items(ClientRelationship())
                     }

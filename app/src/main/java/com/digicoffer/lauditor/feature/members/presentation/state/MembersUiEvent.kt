@@ -10,6 +10,7 @@ sealed interface MembersUiEvent {
         val designation: String,
         val defaultRate: String,
         val currency: String,
+        val phone: String,
         val email: String,
         val emailConfirm: String,
         val groups: List<String>,
@@ -22,6 +23,7 @@ sealed interface MembersUiEvent {
         val designation: String,
         val defaultRate: String,
         val currency: String,
+        val phone: String,
         val email: String,
         val emailConfirm: String,
         val onSuccess: () -> Unit

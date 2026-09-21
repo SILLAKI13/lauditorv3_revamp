@@ -110,6 +110,8 @@ fun MemberFormCard(
     onCurrencyChange: (String) -> Unit,
     rate: String,
     onRateChange: (String) -> Unit,
+    phone: String,
+    onPhoneChange: (String) -> Unit,
     email: String,
     onEmailChange: (String) -> Unit,
     confirmEmail: String,
@@ -127,10 +129,9 @@ fun MemberFormCard(
     val cancelBgColor = Color(0xFFEEEEEE)
     val cancelBorderColor = Color(0xFFDDDDDE)
 
-    var isDropdownExpanded by remember { mutableStateOf(false) }
     var showValidationErrorAlert by remember { mutableStateOf(false) }
 
-    val currencies = AndroidUtils.getCurrency_list() ?: listOf("USDollar(USD)", "IndianRupee(INR)", "Euro(EUR)")
+    val displayCurrency = if (currency.isEmpty()) "IndianRupee(INR)" else currency
 
     Card(
         shape = RoundedCornerShape(8.dp),
@@ -173,7 +174,7 @@ fun MemberFormCard(
 
             Spacer(modifier = Modifier.height(16.dp))
 
-            // Currency & Rate row
+            // Currency & Rate row (Default Currency locked to INR)
             Row(modifier = Modifier.fillMaxWidth()) {
                 Column(modifier = Modifier.weight(1f)) {
                     Row(verticalAlignment = Alignment.CenterVertically) {
@@ -186,63 +187,17 @@ fun MemberFormCard(
                             .fillMaxWidth()
                             .background(inputBgColor, shape = RoundedCornerShape(6.dp))
                             .border(width = 0.5.dp, color = inputBorderColor, shape = RoundedCornerShape(6.dp))
-                            .clickable { isDropdownExpanded = true }
                             .padding(horizontal = 10.dp, vertical = 10.dp)
                     ) {
-                        Row(
-                            modifier = Modifier.fillMaxWidth(),
-                            horizontalArrangement = Arrangement.SpaceBetween,
-                            verticalAlignment = Alignment.CenterVertically
-                        ) {
-                            Text(
-                                text = if (currency.isEmpty()) "Select Currency" else currency,
-                                color = if (currency.isEmpty()) Color.Gray else Color.Black,
-                                fontFamily = FontFamily(Font(R.font.gill_sans_regular)),
-                                fontSize = 15.sp,
-                                maxLines = 1,
-                                overflow = androidx.compose.ui.text.style.TextOverflow.Ellipsis,
-                                modifier = Modifier.weight(1f)
-                            )
-                            if (currency.isNotEmpty()) {
-                                Image(
-                                    painter = painterResource(id = R.drawable.simple_cancel_blue),
-                                    contentDescription = "Clear",
-                                    modifier = Modifier
-                                        .size(20.dp)
-                                        .clickable { onCurrencyChange("") }
-                                )
-                            } else {
-                                Image(
-                                    painter = painterResource(id = R.drawable.drop_down_blue),
-                                    contentDescription = "Dropdown",
-                                    modifier = Modifier.size(16.dp)
-                                )
-                            }
-                        }
-                        DropdownMenu(
-                            expanded = isDropdownExpanded,
-                            onDismissRequest = { isDropdownExpanded = false },
-                            modifier = Modifier
-                                .background(Color.White)
-                                .fillMaxWidth(0.45f)
-                        ) {
-                            currencies.forEach { currencyItem ->
-                                DropdownMenuItem(
-                                    text = {
-                                        Text(
-                                            text = currencyItem,
-                                            fontFamily = FontFamily(Font(R.font.gill_sans_regular)),
-                                            fontSize = 15.sp,
-                                            color = Color.Black
-                                        )
-                                    },
-                                    onClick = {
-                                        onCurrencyChange(currencyItem)
-                                        isDropdownExpanded = false
-                                    }
-                                )
-                            }
-                        }
+                        Text(
+                            text = displayCurrency,
+                            color = Color.Black,
+                            fontFamily = FontFamily(Font(R.font.gill_sans_regular)),
+                            fontSize = 15.sp,
+                            maxLines = 1,
+                            overflow = androidx.compose.ui.text.style.TextOverflow.Ellipsis,
+                            modifier = Modifier.fillMaxWidth()
+                        )
                     }
                 }
                 Spacer(modifier = Modifier.width(12.dp))
@@ -260,6 +215,33 @@ fun MemberFormCard(
                         modifier = Modifier.fillMaxWidth()
                     )
                 }
+            }
+
+            Spacer(modifier = Modifier.height(16.dp))
+
+            // Phone Number *
+            Row(verticalAlignment = Alignment.CenterVertically) {
+                Text(text = "Phone Number", color = activeBlue, fontWeight = FontWeight.SemiBold, fontSize = 15.sp, fontFamily = FontFamily(Font(R.font.gill_sans_regular)))
+                Text(text = " *", color = Color.Red, fontWeight = FontWeight.Bold, fontSize = 15.sp)
+            }
+            Spacer(modifier = Modifier.height(6.dp))
+            CustomTextField(
+                value = phone,
+                onValueChange = { if (it.length <= 10 && it.all { char -> char.isDigit() }) onPhoneChange(it) },
+                placeholder = "Phone Number",
+                keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
+                modifier = Modifier.fillMaxWidth()
+            )
+
+            if (phone.isNotEmpty() && phone.length < 10) {
+                Spacer(modifier = Modifier.height(4.dp))
+                Text(
+                    text = "Please enter a 10 digit valid mobile number",
+                    color = Color(0xFF585858), // grey_medium (#585858)
+                    fontSize = 12.sp,
+                    fontFamily = FontFamily(Font(R.font.gill_sans_regular)),
+                    modifier = Modifier.padding(start = 4.dp)
+                )
             }
 
             Spacer(modifier = Modifier.height(16.dp))
@@ -339,7 +321,9 @@ fun MemberFormCard(
                     .border(width = 0.5.dp, color = inputBorderColor, shape = RoundedCornerShape(6.dp))
                     .clickable {
                         val isEmailValidCheck = android.util.Patterns.EMAIL_ADDRESS.matcher(email).matches()
+                        val isPhoneValidCheck = phone.length == 10 && phone.all { it.isDigit() }
                         if (name.isBlank() || designation.isBlank() || rate.isBlank() ||
+                            phone.isBlank() || !isPhoneValidCheck ||
                             email.isBlank() || confirmEmail.isBlank() ||
                             !isEmailValidCheck || email != confirmEmail) {
                             showValidationErrorAlert = true
@@ -399,10 +383,12 @@ fun MemberFormCard(
 
                     Button(
                         onClick = {
-                            val isEmailValid = android.util.Patterns.EMAIL_ADDRESS.matcher(email).matches()
+                            val isEmailValidCheck = android.util.Patterns.EMAIL_ADDRESS.matcher(email).matches()
+                            val isPhoneValidCheck = phone.length == 10 && phone.all { it.isDigit() }
                             if (name.isBlank() || designation.isBlank() || rate.isBlank() ||
+                                phone.isBlank() || !isPhoneValidCheck ||
                                 email.isBlank() || confirmEmail.isBlank() ||
-                                !isEmailValid || email != confirmEmail) {
+                                !isEmailValidCheck || email != confirmEmail) {
                                 showValidationErrorAlert = true
                             } else {
                                 onSaveClick()
@@ -431,7 +417,7 @@ fun MemberFormCard(
     if (showValidationErrorAlert) {
         MembersAlertDialog(
             title = "Alert !",
-            message = "Please check the Name, Designation, Default Rate, Email, Confirm Email",
+            message = "Please check the Name, Designation, Default Rate, Phone Number, Email, Confirm Email",
             onConfirm = { showValidationErrorAlert = false },
             onDismiss = { showValidationErrorAlert = false }
         )

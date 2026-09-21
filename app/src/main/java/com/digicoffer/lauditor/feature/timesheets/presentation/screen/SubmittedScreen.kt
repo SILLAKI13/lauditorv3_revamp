@@ -48,12 +48,26 @@ fun SubmittedScreen(
             }
 
             val dayLogs = uiState.timesheetsList.filter { log ->
-                val lDate = log.date ?: ""
-                lDate.startsWith(day) || (dateVal.isNotEmpty() && lDate.contains(dateVal))
+                log.dayOfWeek?.equals(day, ignoreCase = true) == true ||
+                    (log.dayOfWeek == null && (log.date?.startsWith(day) == true || (dateVal.isNotEmpty() && log.date?.contains(dateVal) == true)))
             }
 
             val totalMins = dayLogs.sumOf { (it.hours?.toIntOrNull() ?: 0) * 60 + (it.minutes?.toIntOrNull() ?: 0) }
-            val dailyTotalFormatted = "${totalMins / 60}:${String.format("%02d", totalMins % 60)} Hours"
+            val weekTotalForDay = when (day) {
+                "Mon" -> uiState.weekTotals?.Mon
+                "Tue" -> uiState.weekTotals?.Tue
+                "Wed" -> uiState.weekTotals?.Wed
+                "Thu" -> uiState.weekTotals?.Thu
+                "Fri" -> uiState.weekTotals?.Fri
+                "Sat" -> uiState.weekTotals?.Sat
+                "Sun" -> uiState.weekTotals?.Sun
+                else -> null
+            }
+            val dailyTotalFormatted = if (!weekTotalForDay.isNullOrBlank() && weekTotalForDay != "0" && weekTotalForDay != "00:00") {
+                "$weekTotalForDay Hours"
+            } else {
+                "${totalMins / 60}:${String.format("%02d", totalMins % 60)} Hours"
+            }
 
             val uiEntries = dayLogs.map { log ->
                 TimeSheetEntryUiModel(

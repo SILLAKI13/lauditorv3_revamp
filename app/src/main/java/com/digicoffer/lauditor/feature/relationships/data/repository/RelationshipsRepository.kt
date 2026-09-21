@@ -297,7 +297,6 @@ class RelationshipsRepository(private val context: Context) {
     }
 
     suspend fun deleteRelationship(id: String, isArchive: Boolean): HttpResultDo = suspendCancellableCoroutine { continuation ->
-        val json = JSONObject()
         val endpoint = if (isArchive) {
             "v2/relationship/$id/archive"
         } else {
@@ -314,7 +313,7 @@ class RelationshipsRepository(private val context: Context) {
             WebServiceHelper.RestMethodType.DELETE,
             endpoint,
             "Delete_Relationship",
-            json.toString()
+            ""
         )
     }
 

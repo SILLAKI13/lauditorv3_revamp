@@ -16,6 +16,7 @@ import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.async
 import org.json.JSONArray
 import org.json.JSONObject
 import kotlinx.coroutines.suspendCancellableCoroutine
@@ -104,6 +105,11 @@ class RelationshipsViewModel(application: Application) : AndroidViewModel(applic
                 event.id,
                 event.onResult
             )
+            is RelationshipsUiEvent.LoadInitialExchangeCounts -> loadInitialExchangeCounts(
+                event.relId,
+                event.isCorporate,
+                event.onResult
+            )
         }
     }
 
@@ -134,13 +140,20 @@ class RelationshipsViewModel(application: Application) : AndroidViewModel(applic
                     for (i in 0 until relationshipsArray.length()) {
                         val jsonObject = relationshipsArray.getJSONObject(i)
                         val model = RelationshipsModel().apply {
-                            id = jsonObject.optString("id")
+                            id = when {
+                                jsonObject.has("id") && jsonObject.optString("id").isNotEmpty() -> jsonObject.optString("id")
+                                jsonObject.has("rel_id") && jsonObject.optString("rel_id").isNotEmpty() -> jsonObject.optString("rel_id")
+                                jsonObject.has("relationship_id") && jsonObject.optString("relationship_id").isNotEmpty() -> jsonObject.optString("relationship_id")
+                                jsonObject.has("guid") && jsonObject.optString("guid").isNotEmpty() -> jsonObject.optString("guid")
+                                else -> jsonObject.optString("client_id")
+                            }
                             name = jsonObject.optString("name")
                             created = if (jsonObject.has("created_on")) jsonObject.optString("created_on") else jsonObject.optString("created")
                             status = jsonObject.optString("status")
                             client_id = jsonObject.optString("client_id")
                             clientType = if (jsonObject.has("clientType")) jsonObject.optString("clientType") else jsonObject.optString("client_type")
                             isAccepted = if (jsonObject.has("isAccepted")) jsonObject.optBoolean("isAccepted") else true
+                            deletedBy = if (jsonObject.has("deleted_by")) jsonObject.optString("deleted_by") else jsonObject.optString("deletedBy")
                             groups = jsonObject.optJSONArray("groups")
                             membersList = jsonObject.optJSONArray("members")
                         }
@@ -261,62 +274,103 @@ class RelationshipsViewModel(application: Application) : AndroidViewModel(applic
         }
     }
 
+    private fun parseSharedDocuments(responseContent: String?): List<SharedDocumentsDo> {
+        val parsedDocs = ArrayList<SharedDocumentsDo>()
+        if (responseContent.isNullOrEmpty()) return parsedDocs
+        try {
+            val result = JSONObject(responseContent)
+            val documentsObj = result.optJSONObject("documents")
+            if (documentsObj != null) {
+                val categories = listOf("general", "credential", "merged", "versioned", "identity", "personal")
+                for (category in categories) {
+                    val arr = documentsObj.optJSONArray(category)
+                    if (arr != null) {
+                        for (j in 0 until arr.length()) {
+                            val obj = arr.getJSONObject(j)
+                            val doc = SharedDocumentsDo().apply {
+                                id = obj.optString("id")
+                                name = obj.optString("name")
+                                description = obj.optString("description")
+                                created = obj.optString("created")
+                                content_type = obj.optString("content_type")
+                                expiration_date = obj.optString("expiration_date")
+                                filename = obj.optString("filename")
+                                is_disabled = obj.optBoolean("is_disabled")
+                                is_encrypted = obj.optBoolean("is_encrypted")
+                                added_encryption = obj.optBoolean("added_encryption")
+                                is_password = obj.optBoolean("is_password")
+                                uploaded_by = obj.optString("uploaded_by")
+                                val matterDetails = obj.optJSONArray("matter_details")
+                                if (matterDetails != null) {
+                                    val m = matterDetails.optJSONObject(0)
+                                    if (m != null) {
+                                        matter_details_name = m.optString("name")
+                                        matter_details_id = m.optString("id")
+                                        if (!matter_details_name.isNullOrEmpty()) {
+                                            has_Confidential = true
+                                        }
+                                    }
+                                } else {
+                                    has_Confidential = false
+                                }
+                            }
+                            parsedDocs.add(doc)
+                        }
+                    }
+                }
+            }
+        } catch (e: Exception) {
+            e.printStackTrace()
+        }
+        return parsedDocs
+    }
+
+    private fun loadInitialExchangeCounts(
+        relId: String,
+        isCorporate: Boolean,
+        onResult: (Int, Int) -> Unit
+    ) {
+        viewModelScope.launch {
+            try {
+                val withMeDeferred = async { repository.getSharedDocuments(relId, "withme", isCorporate) }
+                val byMeDeferred = async { repository.getSharedDocuments(relId, "byme", isCorporate) }
+
+                val withMeResult = withMeDeferred.await()
+                val byMeResult = byMeDeferred.await()
+
+                val withMeCount = parseSharedDocuments(withMeResult.responseContent).size
+                val byMeCount = parseSharedDocuments(byMeResult.responseContent).size
+
+                onResult(withMeCount, byMeCount)
+            } catch (e: Exception) {
+                e.printStackTrace()
+            }
+        }
+    }
+
     private fun loadSharedDocuments(relId: String, sharedTag: String, isCorporate: Boolean) {
         viewModelScope.launch {
             _uiState.update { it.copy(isLoading = true) }
             val httpResult = repository.getSharedDocuments(relId, sharedTag, isCorporate)
             _uiState.update { it.copy(isLoading = false) }
-            val parsedDocs = ArrayList<SharedDocumentsDo>()
-            if (httpResult.result == WebServiceHelper.ServiceCallStatus.Success) {
-                try {
-                    val result = JSONObject(httpResult.responseContent ?: "")
-                    val documentsObj = result.optJSONObject("documents")
-                    if (documentsObj != null) {
-                        val categories = listOf("general", "credential", "merged", "versioned", "identity", "personal")
-                        for (category in categories) {
-                            val arr = documentsObj.optJSONArray(category)
-                            if (arr != null) {
-                                for (j in 0 until arr.length()) {
-                                    val obj = arr.getJSONObject(j)
-                                    val doc = SharedDocumentsDo().apply {
-                                        id = obj.optString("id")
-                                        name = obj.optString("name")
-                                        description = obj.optString("description")
-                                        created = obj.optString("created")
-                                        content_type = obj.optString("content_type")
-                                        expiration_date = obj.optString("expiration_date")
-                                        filename = obj.optString("filename")
-                                        is_disabled = obj.optBoolean("is_disabled")
-                                        is_encrypted = obj.optBoolean("is_encrypted")
-                                        added_encryption = obj.optBoolean("added_encryption")
-                                        is_password = obj.optBoolean("is_password")
-                                        uploaded_by = obj.optString("uploaded_by")
-                                        val matterDetails = obj.optJSONArray("matter_details")
-                                        if (matterDetails != null) {
-                                            val m = matterDetails.optJSONObject(0)
-                                            if (m != null) {
-                                                matter_details_name = m.optString("name")
-                                                matter_details_id = m.optString("id")
-                                                if (!matter_details_name.isNullOrEmpty()) {
-                                                    has_Confidential = true
-                                                }
-                                            }
-                                        } else {
-                                            has_Confidential = false
-                                        }
-                                    }
-                                    parsedDocs.add(doc)
-                                }
-                            }
-                        }
-                    }
-                } catch (e: Exception) {
-                    e.printStackTrace()
-                }
+            val parsedDocs = if (httpResult.result == WebServiceHelper.ServiceCallStatus.Success) {
+                parseSharedDocuments(httpResult.responseContent)
+            } else {
+                emptyList()
             }
-
             _uiState.update { it.copy(sharedDocsList = parsedDocs) }
         }
+    }
+
+    private fun sanitizeErrorMessage(raw: String?, defaultMsg: String): String {
+        if (raw == null) return defaultMsg
+        if (raw.contains("timeout", ignoreCase = true) || raw.contains("SocketTimeoutException", ignoreCase = true)) {
+            return "Request timed out. Please check your connection and try again."
+        }
+        if (raw.startsWith("Exception:", ignoreCase = true) || raw.startsWith("java.", ignoreCase = true)) {
+            return defaultMsg
+        }
+        return raw
     }
 
     private fun shareDocuments(
@@ -333,7 +387,7 @@ class RelationshipsViewModel(application: Application) : AndroidViewModel(applic
             val msg = if (success) {
                 "Documents shared successfully."
             } else {
-                httpResult.errorMessage ?: "Failed to share documents."
+                sanitizeErrorMessage(httpResult.errorMessage ?: httpResult.responseContent, "Failed to share documents.")
             }
             onResult(success, msg)
         }
@@ -353,7 +407,7 @@ class RelationshipsViewModel(application: Application) : AndroidViewModel(applic
             val msg = if (success) {
                 "Documents unshared successfully."
             } else {
-                httpResult.errorMessage ?: "Failed to unshare documents."
+                sanitizeErrorMessage(httpResult.errorMessage ?: httpResult.responseContent, "Failed to unshare documents.")
             }
             onResult(success, msg)
         }
@@ -368,7 +422,7 @@ class RelationshipsViewModel(application: Application) : AndroidViewModel(applic
             val msg = if (success) {
                 "Client converted successfully."
             } else {
-                httpResult.errorMessage ?: "Failed to convert client."
+                sanitizeErrorMessage(httpResult.errorMessage ?: httpResult.responseContent, "Failed to convert client.")
             }
             onResult(success, msg)
         }
@@ -379,13 +433,20 @@ class RelationshipsViewModel(application: Application) : AndroidViewModel(applic
             _uiState.update { it.copy(isLoading = true) }
             val httpResult = repository.deleteRelationship(id, isArchive)
             _uiState.update { it.copy(isLoading = false) }
-            val success = httpResult.result == WebServiceHelper.ServiceCallStatus.Success
-            val msg = if (success) {
-                "Relationship deleted successfully."
+            if (httpResult.result == WebServiceHelper.ServiceCallStatus.Success) {
+                try {
+                    val resObj = JSONObject(httpResult.responseContent ?: "{}")
+                    val isError = resObj.optBoolean("error", false)
+                    val backendMsg = resObj.optString("msg", resObj.optString("message", ""))
+                    val finalMsg = if (backendMsg.isNotEmpty()) backendMsg else if (!isError) "Relationship deleted successfully." else "Failed to delete relationship."
+                    onResult(!isError, finalMsg)
+                } catch (e: Exception) {
+                    onResult(true, "Relationship deleted successfully.")
+                }
             } else {
-                httpResult.errorMessage ?: "Failed to delete relationship."
+                val errMsg = sanitizeErrorMessage(httpResult.errorMessage ?: httpResult.responseContent, "Failed to delete relationship.")
+                onResult(false, errMsg)
             }
-            onResult(success, msg)
         }
     }
 
@@ -398,7 +459,7 @@ class RelationshipsViewModel(application: Application) : AndroidViewModel(applic
             val msg = if (success) {
                 "Groups updated successfully."
             } else {
-                httpResult.errorMessage ?: "Failed to update groups."
+                sanitizeErrorMessage(httpResult.errorMessage ?: httpResult.responseContent, "Failed to update groups.")
             }
             onResult(success, msg)
         }
@@ -413,7 +474,7 @@ class RelationshipsViewModel(application: Application) : AndroidViewModel(applic
             val msg = if (success) {
                 "Members access updated successfully."
             } else {
-                httpResult.errorMessage ?: "Failed to update member access."
+                sanitizeErrorMessage(httpResult.errorMessage ?: httpResult.responseContent, "Failed to update member access.")
             }
             onResult(success, msg)
         }
@@ -537,10 +598,19 @@ class RelationshipsViewModel(application: Application) : AndroidViewModel(applic
             if (success) {
                 try {
                     val result = JSONObject(httpResult.responseContent ?: "")
-                    viewUrl = if (sharedTag == "withme" && !isCorporate) {
+                    viewUrl = if (result.has("url")) {
                         result.getString("url")
+                    } else if (result.has("data")) {
+                        val dataObj = result.get("data")
+                        if (dataObj is JSONObject) {
+                            dataObj.optString("url")
+                        } else if (dataObj is String) {
+                            dataObj
+                        } else {
+                            null
+                        }
                     } else {
-                        result.getJSONObject("data").getString("url")
+                        null
                     }
                 } catch (e: Exception) {
                     e.printStackTrace()
@@ -580,7 +650,20 @@ class RelationshipsViewModel(application: Application) : AndroidViewModel(applic
             if (success) {
                 try {
                     val result = JSONObject(httpResult.responseContent ?: "")
-                    decryptedUrl = result.getJSONObject("data").getString("url")
+                    decryptedUrl = if (result.has("data")) {
+                        val dataObj = result.get("data")
+                        if (dataObj is JSONObject) {
+                            dataObj.optString("url")
+                        } else if (dataObj is String) {
+                            dataObj
+                        } else {
+                            null
+                        }
+                    } else if (result.has("url")) {
+                        result.optString("url")
+                    } else {
+                        null
+                    }
                 } catch (e: Exception) {
                     e.printStackTrace()
                 }
@@ -649,7 +732,8 @@ class RelationshipsViewModel(application: Application) : AndroidViewModel(applic
                 val msg = json.optString("msg", json.optString("message", "Relationship restored successfully"))
                 onResult(!isError, msg)
             } else {
-                onResult(false, "Server call failed: ${httpResult.responseContent ?: "Unknown error"}")
+                val err = sanitizeErrorMessage(httpResult.errorMessage ?: httpResult.responseContent, "Operation failed. Please try again.")
+                onResult(false, err)
             }
         }
     }

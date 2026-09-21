@@ -35,6 +35,9 @@ sealed interface TimesheetsUiEvent {
     object SaveTimesheet : TimesheetsUiEvent
     data class EditTimesheet(val log: TaskModel) : TimesheetsUiEvent
     data class DeleteTimesheet(val log: TaskModel) : TimesheetsUiEvent
+    data class RequestDeleteTimesheet(val log: TaskModel) : TimesheetsUiEvent
+    object ConfirmDeleteTimesheet : TimesheetsUiEvent
+    object CancelDeleteTimesheet : TimesheetsUiEvent
     object SubmitTimesheets : TimesheetsUiEvent
 
     // 5. Aggregated - Projects selection filters

@@ -65,18 +65,21 @@ class MembersRepository(private val context: Context) {
         designation: String,
         defaultRate: String,
         currency: String,
+        phone: String,
         email: String,
         emailConfirm: String,
         groups: List<String>
     ): HttpResultDo = suspendCancellableCoroutine { continuation ->
         try {
+            val currencyValue = if (currency.isEmpty()) "IndianRupee(INR)" else currency
             val postData = JSONObject().apply {
-                put("name", name)
-                put("designation", designation)
-                put("defaultRate", defaultRate)
-                put("currency", currency)
-                put("email", email)
-                put("emailConfirm", emailConfirm)
+                put("name", name.trim())
+                put("designation", designation.trim())
+                put("defaultRate", defaultRate.trim())
+                put("currency", currencyValue)
+                put("mobile", phone.trim())
+                put("email", email.trim())
+                put("emailConfirm", emailConfirm.trim())
                 put("groups", JSONArray(groups))
             }
             WebServiceHelper.callHttpWebService(
@@ -107,17 +110,20 @@ class MembersRepository(private val context: Context) {
         designation: String,
         defaultRate: String,
         currency: String,
+        phone: String,
         email: String,
         emailConfirm: String
     ): HttpResultDo = suspendCancellableCoroutine { continuation ->
         try {
+            val currencyValue = if (currency.isEmpty()) "IndianRupee(INR)" else currency
             val postData = JSONObject().apply {
-                put("name", name)
-                put("designation", designation)
-                put("defaultRate", defaultRate)
-                put("currency", currency)
-                put("email", email)
-                put("emailConfirm", emailConfirm)
+                put("name", name.trim())
+                put("designation", designation.trim())
+                put("defaultRate", defaultRate.trim())
+                put("currency", currencyValue)
+                put("mobile", phone.trim())
+                put("email", email.trim())
+                put("emailConfirm", emailConfirm.trim())
             }
             WebServiceHelper.callHttpWebService(
                 object : AsyncTaskCompleteListener {

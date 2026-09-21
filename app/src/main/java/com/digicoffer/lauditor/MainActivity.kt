@@ -238,6 +238,7 @@ class MainActivity : AppCompatActivity(), Dashboard.MenuHighlightListener, Month
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+        MyFirebaseMessagingService.initNotificationChannel(this)
         Constants.is_active = true
         val wasColdStart = Constants.TOKEN.isNullOrEmpty()
         
@@ -271,11 +272,13 @@ class MainActivity : AppCompatActivity(), Dashboard.MenuHighlightListener, Month
             }
         }
         
+        WindowCompat.setDecorFitsSystemWindows(window, true)
         setContentView(R.layout.activity_main)
         
         window.statusBarColor = ContextCompat.getColor(this, R.color.Blue_text_color)
-        WindowCompat.getInsetsController(window, window.decorView)
-            .isAppearanceLightStatusBars = true
+        val insetsController = WindowCompat.getInsetsController(window, window.decorView)
+        insetsController.isAppearanceLightStatusBars = false
+        insetsController.isAppearanceLightNavigationBars = true
             
         COLOR_EXPANDED_BG = ContextCompat.getColor(this, R.color.lite_shaded_blue)
         COLOR_NORMAL_BG = ContextCompat.getColor(this, R.color.lite_grey)
@@ -598,7 +601,7 @@ class MainActivity : AppCompatActivity(), Dashboard.MenuHighlightListener, Month
             addSubItem(sm_timesheet, "My Timesheet") { v ->
                 setActiveSubItem(v as TextView)
                 Constants.Timesheet_Card = "Myts"
-                Constants.ts_card_clicked = false
+                Constants.ts_card_clicked = true
                 Constants.is_ts_submitted = false
                 navigateFromSub(sm_timesheet, TimeSheets())
             }
@@ -1273,7 +1276,7 @@ class MainActivity : AppCompatActivity(), Dashboard.MenuHighlightListener, Month
         supportFragmentManager.beginTransaction()
             .replace(R.id.id_framelayout, fragment)
             .addToBackStack("current_fragment")
-            .commit()
+            .commitAllowingStateLoss()
         dLayout.closeDrawers()
     }
 
@@ -1284,17 +1287,17 @@ class MainActivity : AppCompatActivity(), Dashboard.MenuHighlightListener, Month
         supportFragmentManager.beginTransaction()
             .replace(R.id.id_framelayout, fragment)
             .addToBackStack("current_fragment")
-            .commit()
+            .commitAllowingStateLoss()
         dLayout.closeDrawers()
     }
 
     fun Add_Page(fragment: Fragment) {
         supportFragmentManager.beginTransaction()
-            .add(R.id.id_framelayout, fragment).addToBackStack("current_fragment").commit()
+            .add(R.id.id_framelayout, fragment).addToBackStack("current_fragment").commitAllowingStateLoss()
     }
 
     fun Remove_Page(fragment: Fragment) {
-        supportFragmentManager.beginTransaction().remove(fragment).commit()
+        supportFragmentManager.beginTransaction().remove(fragment).commitAllowingStateLoss()
     }
 
     private fun navigateTocallDashboard() {
@@ -1306,7 +1309,7 @@ class MainActivity : AppCompatActivity(), Dashboard.MenuHighlightListener, Month
         menu_open.setImageDrawable(ContextCompat.getDrawable(applicationContext, R.drawable.menu_icon_img))
         supportFragmentManager.beginTransaction()
             .replace(R.id.id_framelayout, com.digicoffer.lauditor.Dashboard.NewRevampViewModels.Dashboard())
-            .addToBackStack("current_fragment").commit()
+            .addToBackStack("current_fragment").commitAllowingStateLoss()
         dLayout.closeDrawers()
     }
 
@@ -2027,7 +2030,7 @@ class MainActivity : AppCompatActivity(), Dashboard.MenuHighlightListener, Month
             addSubItem(sm_timesheet, "My Timesheet") { v ->
                 setActiveSubItem(v as TextView)
                 Constants.Timesheet_Card = "Myts"
-                Constants.ts_card_clicked = false
+                Constants.ts_card_clicked = true
                 Constants.is_ts_submitted = false
                 navigateFromSub(sm_timesheet, TimeSheets())
             }

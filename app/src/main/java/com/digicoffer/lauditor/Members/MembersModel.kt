@@ -7,6 +7,10 @@ class MembersModel {
     var defaultRate: String? = null
     var designation: String? = null
     var email: String? = null
+    var mobile: String? = null
+    var phone: String? = null
+    var contact_phone: String? = null
+    var phone_number: String? = null
     var id: String? = null
     var lastLogin: String? = null
     var name: String? = null

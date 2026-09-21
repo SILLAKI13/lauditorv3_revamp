@@ -42,38 +42,37 @@ class TimeSheets : Fragment() {
         viewModel = ViewModelProvider(this, factory).get(TimesheetsViewModel::class.java)
 
         mViewModel = ViewModelProvider(requireActivity()).get(NewModel::class.java)
-        val isAggregated = (Constants.Timesheet_Card == "Agts" && (Constants.ROLE == "SU" || Constants.ROLE == "GH")) || viewModel.uiState.value.mainTab == "Aggregated"
-        mViewModel?.setData(getString(if (isAggregated) R.string.aggregated_timesheets else R.string.time_sheets))
-
-        // Check if navigated from navigation bundle / dashboard card click
-        if (Constants.ts_card_clicked) {
-            if (Constants.Timesheet_Card == "Agts") {
-                if (Constants.ROLE == "SU" || Constants.ROLE == "GH") {
-                    viewModel.onEvent(TimesheetsUiEvent.MainTabSelected("Aggregated"))
-                    viewModel.onEvent(TimesheetsUiEvent.SubTabSelected("TM"))
-                } else {
-                    viewModel.onEvent(TimesheetsUiEvent.MainTabSelected("MyTimeSheets"))
-                    viewModel.onEvent(TimesheetsUiEvent.SubTabSelected("NS"))
-                }
-            } else {
-                viewModel.onEvent(TimesheetsUiEvent.MainTabSelected("MyTimeSheets"))
-                val sub = if (Constants.is_ts_submitted) "Submitted" else "NS"
-                viewModel.onEvent(TimesheetsUiEvent.SubTabSelected(sub))
-            }
-            Constants.ts_card_clicked = false
+        val isAggregated = Constants.Timesheet_Card == "Agts" && (Constants.ROLE == "SU" || Constants.ROLE == "GH")
+        
+        // Always properly configure the tabs based on the active navigation request
+        if (isAggregated) {
+            viewModel.onEvent(TimesheetsUiEvent.MainTabSelected("Aggregated"))
+            viewModel.onEvent(TimesheetsUiEvent.SubTabSelected("TM"))
+            mViewModel?.setData(getString(R.string.aggregated_timesheets))
         } else {
-            // Fetch initial data
-            viewModel.onEvent(TimesheetsUiEvent.LoadCurrentTabTimesheets)
+            viewModel.onEvent(TimesheetsUiEvent.MainTabSelected("MyTimeSheets"))
+            val sub = if (Constants.is_ts_submitted) "Submitted" else "NS"
+            viewModel.onEvent(TimesheetsUiEvent.SubTabSelected(sub))
+            mViewModel?.setData(getString(if (sub == "Submitted") R.string.time_submit else R.string.time_sheet_entry))
         }
+        Constants.ts_card_clicked = false
 
         val composeView = view.findViewById<ComposeView>(R.id.compose_parent_timesheets)
         val showAggregated = Constants.ROLE == "SU" || Constants.ROLE == "GH"
 
         composeView.setContent {
             val uiState by viewModel.uiState.collectAsState()
-            LaunchedEffect(uiState.mainTab) {
-                val isAggregatedTab = uiState.mainTab == "Aggregated"
-                mViewModel?.setData(getString(if (isAggregatedTab) R.string.aggregated_timesheets else R.string.time_sheets))
+            LaunchedEffect(uiState.mainTab, uiState.subTab) {
+                val title = if (uiState.mainTab == "Aggregated") {
+                    getString(R.string.aggregated_timesheets)
+                } else {
+                    if (uiState.subTab == "Submitted" || uiState.subTab == "SU") {
+                        getString(R.string.time_submit)
+                    } else {
+                        getString(R.string.time_sheet_entry)
+                    }
+                }
+                mViewModel?.setData(title)
             }
             LauditorTheme {
                 TimesheetsRoute(

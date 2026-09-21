@@ -125,7 +125,7 @@ fun <T> DropdownSelectorField(
             Column(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .height(if (showSearch) 200.dp else 150.dp) // height extension for search textfield
+                    .heightIn(max = if (showSearch) 220.dp else 160.dp)
                     .clip(RoundedCornerShape(cornerRadius))
                     .background(backgroundColor)
                     .border(0.5.dp, borderColor, RoundedCornerShape(cornerRadius))
@@ -153,7 +153,6 @@ fun <T> DropdownSelectorField(
                 Column(
                     modifier = Modifier
                         .fillMaxWidth()
-                        .weight(1f)
                         .verticalScroll(rememberScrollState())
                 ) {
                     filteredItems.forEach { item ->

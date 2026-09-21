@@ -679,7 +679,7 @@ class ChatConnection : ConnectionListener {
                 )
                     .setContentTitle(title_notification)
                     .setContentText(body_notification)
-                    .setSmallIcon(R.mipmap.trans_logo)
+                    .setSmallIcon(R.drawable.notification_sm_icon)
                     .setAutoCancel(true)
                     .setStyle(
                         Notification.BigTextStyle()
@@ -761,7 +761,7 @@ class ChatConnection : ConnectionListener {
             val notification = NotificationCompat.Builder(mApplicationContext!!)
                 .setContentTitle(title_notification)
                 .setContentText(body_notification)
-                .setSmallIcon(R.mipmap.trans_logo)
+                .setSmallIcon(R.drawable.notification_sm_icon)
                 .setContentIntent(penint)
                 .setStyle(
                     NotificationCompat.BigTextStyle()

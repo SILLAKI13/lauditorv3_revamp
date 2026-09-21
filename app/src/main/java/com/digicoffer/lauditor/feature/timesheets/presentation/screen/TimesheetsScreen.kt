@@ -27,6 +27,7 @@ import com.digicoffer.lauditor.core.ui.common.feedback.AppLoader
 import com.digicoffer.lauditor.core.ui.common.foundation.AppSpacer
 import com.digicoffer.lauditor.core.ui.common.foundation.AppText
 import com.digicoffer.lauditor.core.ui.common.search.AppSearchField
+import com.digicoffer.lauditor.feature.members.presentation.components.MembersAlertDialog
 import com.digicoffer.lauditor.feature.timesheets.presentation.state.TimesheetsUiEvent
 import com.digicoffer.lauditor.feature.timesheets.presentation.state.TimesheetsUiState
 import com.digicoffer.lauditor.feature.timesheets.presentation.viewmodel.TimesheetsViewModel
@@ -277,6 +278,37 @@ fun TimesheetsScreen(
                     SubmittedScreen(uiState = uiState)
                 }
             }
+        }
+
+        // Delete Confirmation Dialog
+        if (uiState.pendingDeleteLog != null) {
+            MembersAlertDialog(
+                title = "Confirmation",
+                message = "Do you want to delete this timesheet entry?",
+                confirmLabel = "Yes",
+                showCancel = true,
+                cancelLabel = "No",
+                onConfirm = { onEvent(TimesheetsUiEvent.ConfirmDeleteTimesheet) },
+                onCancel = { onEvent(TimesheetsUiEvent.CancelDeleteTimesheet) },
+                onDismiss = { onEvent(TimesheetsUiEvent.CancelDeleteTimesheet) }
+            )
+        }
+
+        // Alert and Success Dialogs
+        if (!uiState.alertMessage.isNullOrEmpty()) {
+            MembersAlertDialog(
+                title = uiState.alertTitle ?: "Alert !",
+                message = uiState.alertMessage,
+                onConfirm = { onEvent(TimesheetsUiEvent.DismissDialogs) },
+                onDismiss = { onEvent(TimesheetsUiEvent.DismissDialogs) }
+            )
+        } else if (!uiState.toastMessage.isNullOrEmpty()) {
+            MembersAlertDialog(
+                title = "Success",
+                message = uiState.toastMessage,
+                onConfirm = { onEvent(TimesheetsUiEvent.DismissDialogs) },
+                onDismiss = { onEvent(TimesheetsUiEvent.DismissDialogs) }
+            )
         }
 
         // Standard progress indicator loader overlays

@@ -26,6 +26,7 @@ data class TimesheetsUiState(
     val alertTitle: String? = null,
     val alertMessage: String? = null,
     val toastMessage: String? = null,
+    val pendingDeleteLog: TaskModel? = null,
 
     // 3. My Timesheets - General lists and totals
     val isFrozen: Boolean = false,

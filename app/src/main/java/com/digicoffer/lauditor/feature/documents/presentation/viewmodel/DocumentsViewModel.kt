@@ -53,6 +53,24 @@ class DocumentsViewModel(
         when (event) {
             is DocumentsUiEvent.SwitchTab -> switchTab(event.tabName)
             is DocumentsUiEvent.ToggleUploadMode -> {
+                if (event.upload) {
+                    when (_uiState.value.currentTab) {
+                        "matter" -> {
+                            val realMatters = _uiState.value.mattersList.filter { it.name != "All Matters" && it.title != "All Matters" && !(it.id ?: "").contains(",") }
+                            if (realMatters.isEmpty()) {
+                                _uiState.update { it.copy(alertTitle = "Alert", alertMessage = "Please create a matter to upload documents.") }
+                                return
+                            }
+                        }
+                        "client" -> {
+                            val realClients = _uiState.value.clientsList.filter { it.name != "All Clients" && !(it.id ?: "").contains(",") }
+                            if (realClients.isEmpty()) {
+                                _uiState.update { it.copy(alertTitle = "Alert", alertMessage = "Please create a client to upload documents.") }
+                                return
+                            }
+                        }
+                    }
+                }
                 _uiState.update {
                     it.copy(
                         isUploadMode = event.upload,
@@ -781,7 +799,7 @@ class DocumentsViewModel(
                 }
                 _uiState.update {
                     it.copy(
-                        alertTitle = "Alert !",
+                        alertTitle = "Success",
                         alertMessage = "Documents uploaded successfully.",
                         isUploadMode = false,
                         selectedUploadFiles = emptyList(),
@@ -1013,24 +1031,24 @@ class DocumentsViewModel(
             if (res.result == WebServiceHelper.ServiceCallStatus.Success) {
                 val json = JSONObject(res.responseContent ?: "{}")
                 val isError = json.optBoolean("error", false)
-                val rawMsg = if (json.has("msg") && json.optString("msg").isNotEmpty()) {
-                    json.optString("msg")
-                } else if (json.has("message") && json.optString("message").isNotEmpty()) {
-                    json.optString("message")
-                } else {
-                    when (type) {
-                        "encrypt" -> "encrypt added sucessfully!!"
-                        "decrypt" -> "Document decrypted successfully."
-                        "disabled", "enable_download" -> "Download enabled successfully."
-                        "enabled", "disable_download" -> "Download disabled successfully."
-                        "download" -> "Download started."
-                        "deleted" -> "Document permanently deleted."
-                        "restore" -> "Document restored successfully."
-                        else -> "Action completed successfully."
+                val rawMsg = when (type) {
+                    "encrypt" -> "Document encrypted successfully."
+                    "decrypt" -> "Document decrypted successfully."
+                    "disabled", "enable_download" -> "Download option has been successfully enabled."
+                    "enabled", "disable_download" -> "Download option has been successfully disabled."
+                    "download" -> "Download started."
+                    "deleted" -> "Document permanently deleted."
+                    "restore" -> "Document restored successfully."
+                    else -> if (json.has("msg") && json.optString("msg").isNotEmpty()) {
+                        json.optString("msg")
+                    } else if (json.has("message") && json.optString("message").isNotEmpty()) {
+                        json.optString("message")
+                    } else {
+                        "Action completed successfully."
                     }
                 }
                 if (!isError) {
-                    _uiState.update { it.copy(alertTitle = "Alert !", alertMessage = rawMsg) }
+                    _uiState.update { it.copy(alertTitle = "Success", alertMessage = rawMsg) }
                     refreshCurrentDocuments()
                 } else {
                     _uiState.update { it.copy(alertTitle = "Alert", alertMessage = rawMsg) }
@@ -1066,7 +1084,7 @@ class DocumentsViewModel(
                 } else {
                     "Metadata updated successfully."
                 }
-                _uiState.update { it.copy(alertTitle = "Alert !", alertMessage = msg) }
+                _uiState.update { it.copy(alertTitle = "Success", alertMessage = msg) }
                 refreshCurrentDocuments()
             } else {
                 val errorMsg = if (json1.has("msg") && json1.optString("msg").isNotEmpty()) {
@@ -1096,7 +1114,7 @@ class DocumentsViewModel(
                 } else {
                     "Tags updated successfully."
                 }
-                _uiState.update { it.copy(alertTitle = "Alert !", alertMessage = msg) }
+                _uiState.update { it.copy(alertTitle = "Success", alertMessage = msg) }
                 refreshCurrentDocuments()
             } else {
                 _uiState.update { it.copy(alertTitle = "Alert", alertMessage = "Tags update failed. Please try again.") }

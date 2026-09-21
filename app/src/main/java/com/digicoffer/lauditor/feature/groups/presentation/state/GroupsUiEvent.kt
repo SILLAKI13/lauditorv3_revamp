@@ -47,9 +47,11 @@ sealed interface GroupsUiEvent {
 
     data class FetchAuditLogs(
         val id: String,
-        val fromDate: String,
-        val toDate: String,
-        val tm: String,
-        val search: String
+        val category: String = "Groups",
+        val client: String = "",
+        val fromDate: String = "",
+        val toDate: String = "",
+        val tm: String = "",
+        val search: String = ""
     ) : GroupsUiEvent
 }

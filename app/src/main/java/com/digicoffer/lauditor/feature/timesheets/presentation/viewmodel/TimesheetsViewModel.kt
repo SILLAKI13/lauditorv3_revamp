@@ -48,11 +48,13 @@ class TimesheetsViewModel(
     fun onEvent(event: TimesheetsUiEvent) {
         when (event) {
             is TimesheetsUiEvent.MainTabSelected -> {
-                _uiState.update { it.copy(mainTab = event.tab, searchQuery = "") }
+                clearFormFields()
+                _uiState.update { it.copy(mainTab = event.tab, searchQuery = "", isFormVisible = false) }
                 loadCurrentTabTimesheets()
             }
             is TimesheetsUiEvent.SubTabSelected -> {
-                _uiState.update { it.copy(subTab = event.tab, searchQuery = "") }
+                clearFormFields()
+                _uiState.update { it.copy(subTab = event.tab, searchQuery = "", isFormVisible = false) }
                 loadCurrentTabTimesheets()
             }
             is TimesheetsUiEvent.DateRangeTypeChanged -> {
@@ -66,6 +68,7 @@ class TimesheetsViewModel(
                 } else {
                     calendarWeek.add(Calendar.WEEK_OF_YEAR, 1)
                 }
+                clearFormFields()
                 updateDateBounds()
                 loadCurrentTabTimesheets()
             }
@@ -75,6 +78,7 @@ class TimesheetsViewModel(
                 } else {
                     calendarWeek.add(Calendar.WEEK_OF_YEAR, -1)
                 }
+                clearFormFields()
                 updateDateBounds()
                 loadCurrentTabTimesheets()
             }
@@ -127,7 +131,19 @@ class TimesheetsViewModel(
                 populateFormForEdit(event.log)
             }
             is TimesheetsUiEvent.DeleteTimesheet -> {
-                deleteTimesheetLog(event.log)
+                _uiState.update { it.copy(pendingDeleteLog = event.log) }
+            }
+            is TimesheetsUiEvent.RequestDeleteTimesheet -> {
+                _uiState.update { it.copy(pendingDeleteLog = event.log) }
+            }
+            is TimesheetsUiEvent.ConfirmDeleteTimesheet -> {
+                val pending = _uiState.value.pendingDeleteLog
+                if (pending != null) {
+                    deleteTimesheetLog(pending)
+                }
+            }
+            is TimesheetsUiEvent.CancelDeleteTimesheet -> {
+                _uiState.update { it.copy(pendingDeleteLog = null) }
             }
             is TimesheetsUiEvent.SubmitTimesheets -> {
                 submitWeeklyTimesheets()
@@ -139,7 +155,7 @@ class TimesheetsViewModel(
                 _uiState.update { it.copy(selectedProjectTeamMember = event.tm) }
             }
             is TimesheetsUiEvent.DismissDialogs -> {
-                _uiState.update { it.copy(alertTitle = null, alertMessage = null, toastMessage = null) }
+                _uiState.update { it.copy(alertTitle = null, alertMessage = null, toastMessage = null, pendingDeleteLog = null) }
             }
             else -> {}
         }
@@ -152,6 +168,7 @@ class TimesheetsViewModel(
         calendarMonth.set(Calendar.YEAR, year)
         calendarMonth.set(Calendar.MONTH, month)
         calendarMonth.set(Calendar.DAY_OF_MONTH, day)
+        clearFormFields()
         updateDateBounds()
         loadCurrentTabTimesheets()
     }
@@ -306,6 +323,7 @@ class TimesheetsViewModel(
                                         is_editable = matter.iseditable
                                         Task_matter_id = matter.matterid
                                         isLinkedWithCalendar = dayObj.optBoolean("isLinkedWithCalendar", false)
+                                        this.dayOfWeek = day
                                         
                                         val weekDates = _uiState.value.weekDateInfo?.weekDates
                                         val dayIndex = days.indexOf(day)
@@ -386,22 +404,32 @@ class TimesheetsViewModel(
 
     private fun saveOrUpdateTimesheet() {
         val state = _uiState.value
-        if (state.selectedMatter == null) {
-            _uiState.update { it.copy(alertTitle = "Validation Error", alertMessage = "Please select a matter") }
-            return
-        }
-        if (state.selectedTask == null) {
-            _uiState.update { it.copy(alertTitle = "Validation Error", alertMessage = "Please select a task") }
-            return
-        }
-        if (state.selectedDate.isEmpty()) {
-            _uiState.update { it.copy(alertTitle = "Validation Error", alertMessage = "Please select a date") }
-            return
-        }
-        val hrs = state.hours.trim().toIntOrNull() ?: 0
-        val mins = state.minutes.trim()
-        if (hrs == 0 && (mins.isEmpty() || mins == "0")) {
-            _uiState.update { it.copy(alertTitle = "Validation Error", alertMessage = "Duration cannot be zero") }
+        val hasProject = state.selectedMatter != null && !state.selectedMatter?.mattername.isNullOrBlank()
+        val hasTask = state.selectedTask != null && !state.selectedTask?.displayValue.isNullOrBlank()
+        val hasStatus = state.selectedStatus.isNotBlank()
+        val hasDate = state.selectedDate.isNotBlank()
+        val hrsVal = state.hours.trim().toIntOrNull() ?: 0
+        val minsVal = state.minutes.trim().toIntOrNull() ?: 0
+        val hasHours = (hrsVal > 0 || minsVal > 0) && (state.hours.isNotBlank() || state.minutes.isNotBlank())
+
+        if (!hasProject || !hasTask || !hasStatus || !hasDate || !hasHours) {
+            var msg = "Please enter the"
+            if (!hasProject) {
+                msg += " Projects"
+            }
+            if (!hasTask) {
+                msg += if (msg == "Please enter the") " Task" else ", Task"
+            }
+            if (!hasStatus) {
+                msg += if (msg == "Please enter the") " Status" else ", Status"
+            }
+            if (!hasDate) {
+                msg += if (msg == "Please enter the") " Date" else ", Date"
+            }
+            if (!hasHours) {
+                msg += if (msg == "Please enter the") " Hours" else ", Hours"
+            }
+            _uiState.update { it.copy(alertTitle = "Alert !", alertMessage = msg) }
             return
         }
 
@@ -411,61 +439,89 @@ class TimesheetsViewModel(
             
             val normalizedDate = normalizeToApiDate(state.selectedDate)
             
-            android.util.Log.d(
-                "TIMESHEET_EDIT_DEBUG",
-                "isEdit=${state.isEditMode}, displayDate=${state.selectedDate}, rawDate=${state.selectedDate}, normalizedDate=$normalizedDate, entryId=${state.editingLogId}"
-            )
-            
-            val isMatterTypeExists = state.activeProjectsList.any { it.matter_type == state.selectedMatter.matter_type }
-            val matterTypeValue = if (isMatterTypeExists && !state.selectedMatter.matter_type.isNullOrEmpty()) {
-                state.selectedMatter.matter_type
+            val matterType = state.selectedMatter?.matter_type
+            val isMatterTypeExists = !matterType.isNullOrEmpty() && state.activeProjectsList.any { it.matter_type == matterType }
+            val matterTypeValue = if (isMatterTypeExists) {
+                matterType ?: ""
             } else {
-                state.selectedMatter.mattername ?: ""
+                state.selectedMatter?.mattername ?: ""
             }
             
+            val mins = state.minutes.trim()
+
             if (state.isEditMode) {
                 // Update PUT payload
                 data.put("id", state.editingLogId)
                 data.put("action", "hours")
                 data.put("billing", if (state.selectedStatus == "Billable") "billable" else "nonbillable")
                 data.put("date", normalizedDate)
-                data.put("duration_hours", hrs.toString())
+                data.put("duration_hours", hrsVal.toString())
                 data.put("duration_minutes", if (mins.isEmpty() || mins == "0") "00" else mins)
-                data.put("matter_id", state.selectedMatter.matterid)
+                data.put("matter_id", state.selectedMatter?.matterid)
                 data.put("timesheet_update_scope", "UPDATE_TIMESHEET_ONLY")
                 data.put("matter_type", matterTypeValue)
-                data.put("title", state.selectedTask.displayValue)
+                data.put("title", state.selectedTask?.displayValue)
                 
                 val result = repository.updateTimesheet(data)
                 _uiState.update { it.copy(isLoading = false) }
                 if (result.result == WebServiceHelper.ServiceCallStatus.Success) {
-                    val resObj = JSONObject(result.responseContent ?: "")
-                    _uiState.update { it.copy(toastMessage = resObj.optString("msg", "Timesheet updated successfully"), isFormVisible = false) }
-                    clearFormFields()
-                    loadCurrentTabTimesheets()
+                    val resObj = JSONObject(result.responseContent ?: "{}")
+                    val isError = resObj.optBoolean("error", false)
+                    val msg = if (resObj.has("msg") && resObj.optString("msg").isNotEmpty()) {
+                        resObj.optString("msg")
+                    } else if (resObj.has("message") && resObj.optString("message").isNotEmpty()) {
+                        resObj.optString("message")
+                    } else {
+                        "Timesheet updated successfully"
+                    }
+                    if (!isError) {
+                        _uiState.update { it.copy(alertTitle = "Success", alertMessage = msg, isFormVisible = false) }
+                        clearFormFields()
+                        loadCurrentTabTimesheets()
+                    } else {
+                        _uiState.update { it.copy(alertTitle = "Alert !", alertMessage = msg) }
+                    }
                 } else {
-                    _uiState.update { it.copy(alertTitle = "Error", alertMessage = result.responseContent) }
+                    val rawErr = result.errorMessage ?: result.responseContent
+                    val isTimeout = rawErr?.contains("timeout", ignoreCase = true) == true
+                    val msg = if (isTimeout) "Request timed out. Please check your connection and try again." else (rawErr ?: "Operation failed. Please try again.")
+                    _uiState.update { it.copy(alertTitle = "Alert !", alertMessage = msg) }
                 }
             } else {
                 // Save POST payload
                 data.put("action", "hours")
                 data.put("billing", if (state.selectedStatus == "Billable") "billable" else "nonbillable")
                 data.put("date", normalizedDate)
-                data.put("duration_hours", hrs.toString())
+                data.put("duration_hours", hrsVal.toString())
                 data.put("duration_minutes", if (mins.isEmpty() || mins == "0") "00" else mins)
-                data.put("matter_id", state.selectedMatter.matterid)
+                data.put("matter_id", state.selectedMatter?.matterid)
                 data.put("matter_type", matterTypeValue)
-                data.put("title", state.selectedTask.displayValue)
+                data.put("title", state.selectedTask?.displayValue)
                 
                 val result = repository.saveTimesheet(data)
                 _uiState.update { it.copy(isLoading = false) }
                 if (result.result == WebServiceHelper.ServiceCallStatus.Success) {
-                    val resObj = JSONObject(result.responseContent ?: "")
-                    _uiState.update { it.copy(toastMessage = resObj.optString("msg", "Timesheet saved successfully"), isFormVisible = false) }
-                    clearFormFields()
-                    loadCurrentTabTimesheets()
+                    val resObj = JSONObject(result.responseContent ?: "{}")
+                    val isError = resObj.optBoolean("error", false)
+                    val msg = if (resObj.has("msg") && resObj.optString("msg").isNotEmpty()) {
+                        resObj.optString("msg")
+                    } else if (resObj.has("message") && resObj.optString("message").isNotEmpty()) {
+                        resObj.optString("message")
+                    } else {
+                        "Timesheet saved successfully"
+                    }
+                    if (!isError) {
+                        _uiState.update { it.copy(alertTitle = "Success", alertMessage = msg, isFormVisible = false) }
+                        clearFormFields()
+                        loadCurrentTabTimesheets()
+                    } else {
+                        _uiState.update { it.copy(alertTitle = "Alert !", alertMessage = msg) }
+                    }
                 } else {
-                    _uiState.update { it.copy(alertTitle = "Error", alertMessage = result.responseContent) }
+                    val rawErr = result.errorMessage ?: result.responseContent
+                    val isTimeout = rawErr?.contains("timeout", ignoreCase = true) == true
+                    val msg = if (isTimeout) "Request timed out. Please check your connection and try again." else (rawErr ?: "Operation failed. Please try again.")
+                    _uiState.update { it.copy(alertTitle = "Alert !", alertMessage = msg) }
                 }
             }
         }
@@ -477,6 +533,8 @@ class TimesheetsViewModel(
 
         val possibleFormats = listOf(
             "dd-MM-yyyy",
+            "d-MM-yyyy",
+            "EEE dd-MM-yyyy",
             "MMM d, yyyy",
             "MMM dd, yyyy",
             "MMMM d, yyyy",
@@ -519,6 +577,16 @@ class TimesheetsViewModel(
             displayValue = log.Task_name
             returnValue = log.Task_name
         }
+
+        val datesList = state.weekDateInfo?.weekDates ?: emptyList()
+        val days = listOf("Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun")
+        val dayIdx = days.indexOfFirst { it.equals(log.dayOfWeek, ignoreCase = true) || log.date?.startsWith(it) == true }
+        val matchedDate = if (dayIdx in 0..6 && dayIdx < datesList.size) {
+            "${days[dayIdx]} ${datesList[dayIdx]}"
+        } else {
+            log.date ?: ""
+        }
+
         _uiState.update {
             it.copy(
                 isFormVisible = true,
@@ -527,9 +595,9 @@ class TimesheetsViewModel(
                 selectedMatter = matchedMatter,
                 selectedTask = matchedTask,
                 selectedStatus = if (log.Task_billing?.equals("billable", ignoreCase = true) == true) "Billable" else "Non-Billable",
-                selectedDate = log.date ?: "",
+                selectedDate = matchedDate,
                 hours = log.hours ?: "",
-                minutes = log.minutes ?: "",
+                minutes = if (log.minutes == "0" || log.minutes == "00") "" else (log.minutes ?: ""),
                 description = "",
                 isBillable = log.Task_billing?.equals("billable", ignoreCase = true) == true
             )
@@ -549,11 +617,26 @@ class TimesheetsViewModel(
             val result = repository.deleteTimesheet(data)
             _uiState.update { it.copy(isLoading = false) }
             if (result.result == WebServiceHelper.ServiceCallStatus.Success) {
-                val resObj = JSONObject(result.responseContent ?: "")
-                _uiState.update { it.copy(toastMessage = resObj.optString("msg", "Timesheet deleted successfully")) }
-                loadCurrentTabTimesheets()
+                val resObj = JSONObject(result.responseContent ?: "{}")
+                val isError = resObj.optBoolean("error", false)
+                val msg = if (resObj.has("msg") && resObj.optString("msg").isNotEmpty()) {
+                    resObj.optString("msg")
+                } else if (resObj.has("message") && resObj.optString("message").isNotEmpty()) {
+                    resObj.optString("message")
+                } else {
+                    "Timesheet deleted successfully"
+                }
+                if (!isError) {
+                    _uiState.update { it.copy(pendingDeleteLog = null, alertTitle = "Success", alertMessage = msg) }
+                    loadCurrentTabTimesheets()
+                } else {
+                    _uiState.update { it.copy(pendingDeleteLog = null, alertTitle = "Alert !", alertMessage = msg) }
+                }
             } else {
-                _uiState.update { it.copy(alertTitle = "Error", alertMessage = result.responseContent) }
+                val rawErr = result.errorMessage ?: result.responseContent
+                val isTimeout = rawErr?.contains("timeout", ignoreCase = true) == true
+                val msg = if (isTimeout) "Request timed out. Please check your connection and try again." else (rawErr ?: "Operation failed. Please try again.")
+                _uiState.update { it.copy(pendingDeleteLog = null, alertTitle = "Alert !", alertMessage = msg) }
             }
         }
     }
@@ -565,11 +648,26 @@ class TimesheetsViewModel(
             val result = repository.submitTimesheets(dateStr)
             _uiState.update { it.copy(isLoading = false) }
             if (result.result == WebServiceHelper.ServiceCallStatus.Success) {
-                val resObj = JSONObject(result.responseContent ?: "")
-                _uiState.update { it.copy(toastMessage = resObj.optString("msg", "Timesheets submitted successfully")) }
-                loadCurrentTabTimesheets()
+                val resObj = JSONObject(result.responseContent ?: "{}")
+                val isError = resObj.optBoolean("error", false)
+                val msg = if (resObj.has("msg") && resObj.optString("msg").isNotEmpty()) {
+                    resObj.optString("msg")
+                } else if (resObj.has("message") && resObj.optString("message").isNotEmpty()) {
+                    resObj.optString("message")
+                } else {
+                    "Timesheets submitted successfully"
+                }
+                if (!isError) {
+                    _uiState.update { it.copy(alertTitle = "Success", alertMessage = msg) }
+                    loadCurrentTabTimesheets()
+                } else {
+                    _uiState.update { it.copy(alertTitle = "Alert !", alertMessage = msg) }
+                }
             } else {
-                _uiState.update { it.copy(alertTitle = "Error", alertMessage = result.responseContent) }
+                val rawErr = result.errorMessage ?: result.responseContent
+                val isTimeout = rawErr?.contains("timeout", ignoreCase = true) == true
+                val msg = if (isTimeout) "Request timed out. Please check your connection and try again." else (rawErr ?: "Operation failed. Please try again.")
+                _uiState.update { it.copy(alertTitle = "Alert !", alertMessage = msg) }
             }
         }
     }

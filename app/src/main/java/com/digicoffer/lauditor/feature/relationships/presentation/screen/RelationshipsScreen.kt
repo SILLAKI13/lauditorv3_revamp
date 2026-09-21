@@ -55,6 +55,8 @@ import org.json.JSONObject
 
 import kotlinx.coroutines.launch
 import com.digicoffer.lauditor.CommonFiles.GlobalFiles.Constants
+import okhttp3.MediaType.Companion.toMediaTypeOrNull
+import okhttp3.RequestBody.Companion.toRequestBody
 
 enum class ScreenMode {
     LIST,
@@ -100,6 +102,7 @@ fun RelationshipsScreen(
 
     // Dialog state targets
     var activeRelationModel by remember { mutableStateOf<RelationshipsModel?>(null) }
+    var validationAlertTitle by remember { mutableStateOf("Alert !") }
     var validationAlertMessage by remember { mutableStateOf<String?>(null) }
 
     val coroutineScope = rememberCoroutineScope()
@@ -118,8 +121,6 @@ fun RelationshipsScreen(
 
     val handleViewDoc: (SharedDocumentsDo, String) -> Unit = { doc, sharedTag ->
         val effContentType = getEffectiveContentType(doc)
-        val isPdf = effContentType.equals("application/pdf", ignoreCase = true)
-        val isImg = effContentType.startsWith("image/", ignoreCase = true)
         val isEncrypted = doc.added_encryption || doc.is_encrypted
         if (isEncrypted) {
             viewModel.onEvent(
@@ -127,8 +128,11 @@ fun RelationshipsScreen(
                     docId = doc.id ?: "",
                     sharedDoc = (sharedTag == "withme")
                 ) { success, decryptedUrl ->
-                    if (success && decryptedUrl != null) {
+                    if (success && !decryptedUrl.isNullOrEmpty()) {
                         coroutineScope.launch {
+                            val lowerUrl = decryptedUrl.lowercase(java.util.Locale.getDefault())
+                            val isImg = effContentType.startsWith("image/", ignoreCase = true) || lowerUrl.contains(".png") || lowerUrl.contains(".jpg") || lowerUrl.contains(".jpeg") || lowerUrl.contains(".webp")
+                            val isPdf = effContentType.equals("application/pdf", ignoreCase = true) || lowerUrl.contains(".pdf") || lowerUrl.contains("application/pdf")
                             var finalUrl = decryptedUrl
                             if (!isPdf && !isImg) {
                                 viewModel.onEvent(RelationshipsUiEvent.SetLoading(true))
@@ -140,22 +144,26 @@ fun RelationshipsScreen(
                             }
                             displayDocument(context, doc, finalUrl)
                         }
+                    } else {
+                        validationAlertTitle = "Alert !"
+                        validationAlertMessage = "Failed to decrypt document. Please try again."
                     }
                 }
             )
         } else {
-            val effectiveTag = if (!isPdf && !isImg) "byme" else sharedTag
-
             activeRelationModel?.let { model ->
                 viewModel.onEvent(
                     RelationshipsUiEvent.ViewDocument(
                         docId = doc.id ?: "",
-                        sharedTag = effectiveTag,
+                        sharedTag = sharedTag,
                         relId = model.id ?: "",
                         isCorporate = (currentRelType == "Corporate" || currentRelType == "Entity")
                     ) { success, viewUrl ->
-                        if (success && viewUrl != null) {
+                        if (success && !viewUrl.isNullOrEmpty()) {
                             coroutineScope.launch {
+                                val lowerUrl = viewUrl.lowercase(java.util.Locale.getDefault())
+                                val isImg = effContentType.startsWith("image/", ignoreCase = true) || lowerUrl.contains(".png") || lowerUrl.contains(".jpg") || lowerUrl.contains(".jpeg") || lowerUrl.contains(".webp")
+                                val isPdf = effContentType.equals("application/pdf", ignoreCase = true) || lowerUrl.contains(".pdf") || lowerUrl.contains("application/pdf")
                                 var finalUrl = viewUrl
                                 if (!isPdf && !isImg) {
                                     viewModel.onEvent(RelationshipsUiEvent.SetLoading(true))
@@ -167,6 +175,9 @@ fun RelationshipsScreen(
                                 }
                                 displayDocument(context, doc, finalUrl)
                             }
+                        } else {
+                            validationAlertTitle = "Alert !"
+                            validationAlertMessage = "Failed to load document. Please try again."
                         }
                     }
                 )
@@ -314,6 +325,7 @@ fun RelationshipsScreen(
                             itemsIndexed(uiState.relationshipsList) { index, model ->
                                 RelationshipCardItem(
                                     model = model,
+                                    currentRelType = currentRelType,
                                     onActionClick = { action, targetModel ->
                                         activeRelationModel = targetModel
                                         when (action) {
@@ -344,10 +356,14 @@ fun RelationshipsScreen(
                                                 }
                                                 screenMode = ScreenMode.MEMBER_ASSIGNMENT
                                             }
-                                            "Delete Relationship" -> screenMode = ScreenMode.DELETE
-                                            "Activate Relationship" -> {
+                                             "Delete Relationship" -> {
+                                                 activeRelationModel = targetModel
+                                                 screenMode = ScreenMode.DELETE
+                                             }
+                                            "Restore Relationship", "Activate Relationship" -> {
                                                 viewModel.onEvent(RelationshipsUiEvent.ActivateRelationship(targetModel.id ?: "") { success, msg ->
-                                                    validationAlertMessage = msg
+                                                    validationAlertTitle = if (success) "Success" else "Alert !"
+                                                    validationAlertMessage = if (success) "Relationship restored successfully" else msg
                                                     if (success) {
                                                         viewModel.onEvent(RelationshipsUiEvent.FetchRelationships(currentRelType, "", appliedSearchQuery, ""))
                                                     }
@@ -499,6 +515,15 @@ fun RelationshipsScreen(
                                     )
                                 )
                             },
+                            onLoadInitialCounts = { onCountsResult ->
+                                viewModel.onEvent(
+                                    RelationshipsUiEvent.LoadInitialExchangeCounts(
+                                        relId = model.id ?: "",
+                                        isCorporate = (currentRelType == "Corporate" || currentRelType == "Entity"),
+                                        onResult = onCountsResult
+                                    )
+                                )
+                            },
                             onUnshareDocs = { payload ->
                                 viewModel.onEvent(
                                     RelationshipsUiEvent.UnshareDocuments(
@@ -506,6 +531,7 @@ fun RelationshipsScreen(
                                         relId = model.id ?: "",
                                         payload = payload
                                     ) { success, msg ->
+                                        validationAlertTitle = if (success) "Success" else "Alert !"
                                         validationAlertMessage = msg
                                         // Refresh list
                                         viewModel.onEvent(
@@ -536,6 +562,7 @@ fun RelationshipsScreen(
                                         relId = model.id ?: "",
                                         payload = payload
                                     ) { success, msg ->
+                                        validationAlertTitle = if (success) "Success" else "Alert !"
                                         validationAlertMessage = msg
                                         // Refresh list
                                         viewModel.onEvent(
@@ -577,6 +604,7 @@ fun RelationshipsScreen(
                                         payload = payload
                                     ) { success, msg ->
                                         screenMode = ScreenMode.EXCHANGE_INFO
+                                        validationAlertTitle = if (success) "Success" else "Alert !"
                                         validationAlertMessage = msg
                                     }
                                 )
@@ -719,6 +747,7 @@ fun RelationshipsScreen(
                                                 users = usersArray
                                             ) { success, msg ->
                                                 screenMode = ScreenMode.LIST
+                                                validationAlertTitle = if (success) "Success" else "Alert !"
                                                 validationAlertMessage = msg
                                                 // Refresh list
                                                 viewModel.onEvent(
@@ -735,7 +764,7 @@ fun RelationshipsScreen(
                                     colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF004D87)),
                                     shape = RoundedCornerShape(8.dp),
                                     modifier = Modifier.width(100.dp).height(40.dp)
-                                ) {
+                                 ) {
                                     Text(text = "Save", color = Color.White, fontFamily = GillSans, fontWeight = FontWeight.Bold, fontSize = 15.sp)
                                 }
                             }
@@ -870,6 +899,7 @@ fun RelationshipsScreen(
                                                 groups = groupsArray
                                             ) { success, msg ->
                                                 screenMode = ScreenMode.LIST
+                                                validationAlertTitle = if (success) "Success" else "Alert !"
                                                 validationAlertMessage = msg
                                                 // Refresh list
                                                 viewModel.onEvent(
@@ -912,22 +942,29 @@ fun RelationshipsScreen(
                     confirmText = "Yes",
                     dismissText = "No",
                     onConfirm = {
+                        val isPermanentInactivate = currentRelType.equals("Deleted", ignoreCase = true) ||
+                                currentRelType.equals("Corporate", ignoreCase = true) ||
+                                model.clientType?.lowercase() == "corporate"
+
                         viewModel.onEvent(
                             RelationshipsUiEvent.DeleteRelationship(
                                 id = model.id ?: "",
-                                isArchive = currentRelType == "Corporate"
+                                isArchive = isPermanentInactivate
                             ) { success, msg ->
                                 screenMode = ScreenMode.LIST
+                                validationAlertTitle = if (success) "Success" else "Alert !"
                                 validationAlertMessage = msg
-                                // Refresh directory
-                                viewModel.onEvent(
-                                    RelationshipsUiEvent.FetchRelationships(
-                                        tag = currentRelType,
-                                        navPosition = "",
-                                        searchQuery = appliedSearchQuery,
-                                        anchorId = ""
+                                if (success) {
+                                    // Refresh directory
+                                    viewModel.onEvent(
+                                        RelationshipsUiEvent.FetchRelationships(
+                                            tag = currentRelType,
+                                            navPosition = "",
+                                            searchQuery = appliedSearchQuery,
+                                            anchorId = ""
+                                        )
                                     )
-                                )
+                                }
                             }
                         )
                     },
@@ -940,7 +977,7 @@ fun RelationshipsScreen(
         // Standard Alert dialogue warning messages
         validationAlertMessage?.let { msg ->
             MembersAlertDialog(
-                title = "Alert !",
+                title = validationAlertTitle,
                 message = msg,
                 onConfirm = { validationAlertMessage = null },
                 onDismiss = { validationAlertMessage = null }
@@ -1039,48 +1076,41 @@ fun displayDocument(context: android.content.Context, doc: SharedDocumentsDo, ur
 
 suspend fun callDoc2PdfApi(fileUrl: String, context: android.content.Context): String? = kotlinx.coroutines.withContext(kotlinx.coroutines.Dispatchers.IO) {
     try {
-        val apiUrl = java.net.URL(com.digicoffer.lauditor.CommonFiles.GlobalFiles.Constants.doctopdfUrl)
-        val conn = apiUrl.openConnection() as java.net.HttpURLConnection
-        conn.requestMethod = "POST"
-        conn.setRequestProperty("Content-Type", "application/json")
-        conn.setRequestProperty("Authorization", "Bearer " + com.digicoffer.lauditor.CommonFiles.GlobalFiles.Constants.TOKEN)
-        conn.doOutput = true
-        conn.connectTimeout = 15000
-        conn.readTimeout = 60000
-
-        val body = org.json.JSONObject()
-        body.put("url", fileUrl)
-        val input = body.toString().toByteArray(charset("utf-8"))
-        conn.outputStream.write(input, 0, input.size)
-        conn.connect()
-
-        val code = conn.responseCode
-        val ctHdr = conn.contentType
-        if (code == 200) {
-            if (ctHdr != null && ctHdr.contains("application/pdf")) {
-                val pdfFile = java.io.File.createTempFile("doc2pdf_" + System.currentTimeMillis(), ".pdf", context.cacheDir)
-                java.io.BufferedInputStream(conn.inputStream).use { `in` ->
-                    java.io.FileOutputStream(pdfFile).use { fo ->
-                        val buf = ByteArray(4096)
-                        var n: Int
-                        while (`in`.read(buf).also { n = it } != -1) {
-                            fo.write(buf, 0, n)
+        val doctopdf = com.digicoffer.lauditor.CommonFiles.GlobalFiles.Constants.doctopdfUrl
+        if (doctopdf.isNullOrEmpty()) return@withContext null
+        val bodyJson = org.json.JSONObject().apply {
+            put("url", fileUrl)
+        }
+        val mediaType = "application/json; charset=utf-8".toMediaTypeOrNull()
+        val body = bodyJson.toString().toRequestBody(mediaType)
+        val request = okhttp3.Request.Builder()
+            .url(doctopdf)
+            .post(body)
+            .addHeader("Content-Type", "application/json")
+            .addHeader("Authorization", "Bearer ${com.digicoffer.lauditor.CommonFiles.GlobalFiles.Constants.TOKEN}")
+            .build()
+        val client = okhttp3.OkHttpClient.Builder()
+            .connectTimeout(15, java.util.concurrent.TimeUnit.SECONDS)
+            .readTimeout(60, java.util.concurrent.TimeUnit.SECONDS)
+            .build()
+        client.newCall(request).execute().use { response ->
+            if (response.isSuccessful) {
+                val ct = response.header("Content-Type") ?: ""
+                if (ct.contains("application/pdf")) {
+                    val tempFile = java.io.File.createTempFile("doc2pdf_" + System.currentTimeMillis(), ".pdf", context.cacheDir)
+                    response.body?.byteStream()?.use { input ->
+                        java.io.FileOutputStream(tempFile).use { output ->
+                            input.copyTo(output)
                         }
                     }
-                }
-                return@withContext "localfile://" + pdfFile.absolutePath
-            } else {
-                val reader = java.io.BufferedReader(java.io.InputStreamReader(conn.inputStream))
-                val sb = java.lang.StringBuilder()
-                var line: String?
-                while (reader.readLine().also { line = it } != null) {
-                    sb.append(line)
-                }
-                reader.close()
-                val resp = org.json.JSONObject(sb.toString())
-                if (!resp.optBoolean("error", true)) {
-                    val data = resp.optJSONObject("data")
-                    if (data != null) return@withContext data.optString("url")
+                    return@withContext "localfile://${tempFile.absolutePath}"
+                } else {
+                    val respString = response.body?.string() ?: ""
+                    val resp = org.json.JSONObject(respString)
+                    if (!resp.optBoolean("error", true)) {
+                        val data = resp.optJSONObject("data")
+                        if (data != null) return@withContext data.optString("url")
+                    }
                 }
             }
         }

@@ -19,12 +19,14 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.Font
 import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.window.Dialog
+import androidx.compose.ui.window.DialogProperties
 import com.digicoffer.lauditor.Groups.Models.GroupModel
 import com.digicoffer.lauditor.Groups.Models.SearchDo
 import com.digicoffer.lauditor.Groups.Models.ViewGroupModel
@@ -59,8 +61,6 @@ fun ActivityLogDialog(
     )
 
     var selectedCategory by remember { mutableStateOf("Groups") }
-    var isCategoryExpanded by remember { mutableStateOf(false) }
-
     var clientQuery by remember { mutableStateOf("") }
     var tmQuery by remember { mutableStateOf("") }
     var messageQuery by remember { mutableStateOf("") }
@@ -71,19 +71,27 @@ fun ActivityLogDialog(
 
     val calendar = Calendar.getInstance()
 
-    Dialog(onDismissRequest = onDismiss) {
+    // Auto-fetch audit logs on initial open
+    LaunchedEffect(Unit) {
+        onSearch(selectedCategory, "", "", "", "", "")
+    }
+
+    Dialog(
+        onDismissRequest = onDismiss,
+        properties = DialogProperties(usePlatformDefaultWidth = false)
+    ) {
         Card(
             shape = RoundedCornerShape(10.dp),
             colors = CardDefaults.cardColors(containerColor = Color.White),
             elevation = CardDefaults.cardElevation(defaultElevation = 4.dp),
             modifier = Modifier
-                .fillMaxWidth()
+                .fillMaxWidth(0.92f)
+                .fillMaxHeight(0.92f)
                 .padding(vertical = 12.dp)
         ) {
             Column(
                 modifier = Modifier
-                    .fillMaxWidth()
-                    .verticalScroll(rememberScrollState())
+                    .fillMaxSize()
                     .padding(16.dp)
             ) {
                 // Header row containing Category label and Close icon
@@ -116,102 +124,72 @@ fun ActivityLogDialog(
 
                 Spacer(modifier = Modifier.height(6.dp))
 
-                // Category dropdown selector
-                Box(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .background(Color(0xFFF9FAFB), shape = RoundedCornerShape(6.dp))
-                        .border(width = 0.5.dp, color = Color(0xFFC0C0C0), shape = RoundedCornerShape(6.dp))
-                        .clickable { isCategoryExpanded = true }
-                        .padding(10.dp)
-                ) {
-                    Row(
-                        modifier = Modifier.fillMaxWidth(),
-                        horizontalArrangement = Arrangement.SpaceBetween,
-                        verticalAlignment = Alignment.CenterVertically
-                    ) {
-                        Text(
-                            text = selectedCategory,
-                            color = Color.Black,
-                            fontSize = 15.sp,
-                            fontFamily = FontFamily(Font(R.font.gill_sans_regular))
-                        )
-                        Image(
-                            painter = painterResource(id = R.drawable.menu_down_icon),
-                            contentDescription = "Dropdown menu",
-                            modifier = Modifier.size(18.dp)
-                        )
-                    }
+                // Standardized Category dropdown selector using DropdownSelectorField
+                com.digicoffer.lauditor.core.ui.common.dropdowns.DropdownSelectorField(
+                    items = categories,
+                    selectedItem = selectedCategory,
+                    onItemSelected = { selectedCategory = it },
+                    itemToLabel = { it },
+                    placeholder = "Select Category",
+                    textStyle = TextStyle(
+                        fontSize = 15.sp,
+                        fontFamily = FontFamily(Font(R.font.gill_sans_regular)),
+                        color = Color.Black
+                    )
+                )
 
-                    DropdownMenu(
-                        expanded = isCategoryExpanded,
-                        onDismissRequest = { isCategoryExpanded = false },
-                        modifier = Modifier.fillMaxWidth(0.7f)
-                    ) {
-                        categories.forEach { cat ->
-                            DropdownMenuItem(
-                                text = { Text(cat) },
-                                onClick = {
-                                    selectedCategory = cat
-                                    isCategoryExpanded = false
-                                }
-                            )
-                        }
-                    }
-                }
-
-                Spacer(modifier = Modifier.height(14.dp))
+                Spacer(modifier = Modifier.height(10.dp))
 
                 // Client Input
                 Text(
                     text = "Client",
                     color = activeBlue,
                     fontWeight = FontWeight.SemiBold,
-                    fontSize = 15.sp,
+                    fontSize = 14.sp,
                     fontFamily = FontFamily(Font(R.font.gill_sans_regular))
                 )
-                Spacer(modifier = Modifier.height(6.dp))
+                Spacer(modifier = Modifier.height(4.dp))
                 CustomTextField(
                     value = clientQuery,
                     onValueChange = { clientQuery = it },
                     placeholder = "Client"
                 )
 
-                Spacer(modifier = Modifier.height(14.dp))
+                Spacer(modifier = Modifier.height(10.dp))
 
                 // Team Members Input
                 Text(
                     text = "Team Members",
                     color = activeBlue,
                     fontWeight = FontWeight.SemiBold,
-                    fontSize = 15.sp,
+                    fontSize = 14.sp,
                     fontFamily = FontFamily(Font(R.font.gill_sans_regular))
                 )
-                Spacer(modifier = Modifier.height(6.dp))
+                Spacer(modifier = Modifier.height(4.dp))
                 CustomTextField(
                     value = tmQuery,
                     onValueChange = { tmQuery = it },
                     placeholder = "Team Members"
                 )
 
-                Spacer(modifier = Modifier.height(14.dp))
+                Spacer(modifier = Modifier.height(10.dp))
 
                 // Search field Input
                 Text(
                     text = "Search",
                     color = activeBlue,
                     fontWeight = FontWeight.SemiBold,
-                    fontSize = 15.sp,
+                    fontSize = 14.sp,
                     fontFamily = FontFamily(Font(R.font.gill_sans_regular))
                 )
-                Spacer(modifier = Modifier.height(6.dp))
+                Spacer(modifier = Modifier.height(4.dp))
                 CustomTextField(
                     value = messageQuery,
                     onValueChange = { messageQuery = it },
                     placeholder = "Search"
                 )
 
-                Spacer(modifier = Modifier.height(14.dp))
+                Spacer(modifier = Modifier.height(10.dp))
 
                 // Date Fields (From / To side-by-side)
                 Row(
@@ -223,10 +201,10 @@ fun ActivityLogDialog(
                             text = "From",
                             color = activeBlue,
                             fontWeight = FontWeight.SemiBold,
-                            fontSize = 15.sp,
+                            fontSize = 14.sp,
                             fontFamily = FontFamily(Font(R.font.gill_sans_regular))
                         )
-                        Spacer(modifier = Modifier.height(6.dp))
+                        Spacer(modifier = Modifier.height(4.dp))
                         Row(
                             modifier = Modifier
                                 .fillMaxWidth()
@@ -254,13 +232,13 @@ fun ActivityLogDialog(
                             Text(
                                 text = fromDateStr,
                                 color = if (fromDateStr == "From") textGray else Color.Black,
-                                fontSize = 15.sp,
+                                fontSize = 14.sp,
                                 fontFamily = FontFamily(Font(R.font.gill_sans_regular))
                             )
                             Image(
-                                painter = painterResource(id = R.drawable.img_15), // Calendar Icon
+                                painter = painterResource(id = R.drawable.calendar_icon_xsmall), // Calendar Icon
                                 contentDescription = "Calendar From",
-                                modifier = Modifier.size(18.dp)
+                                modifier = Modifier.size(20.dp)
                             )
                         }
                     }
@@ -270,10 +248,10 @@ fun ActivityLogDialog(
                             text = "To",
                             color = activeBlue,
                             fontWeight = FontWeight.SemiBold,
-                            fontSize = 15.sp,
+                            fontSize = 14.sp,
                             fontFamily = FontFamily(Font(R.font.gill_sans_regular))
                         )
-                        Spacer(modifier = Modifier.height(6.dp))
+                        Spacer(modifier = Modifier.height(4.dp))
                         Row(
                             modifier = Modifier
                                 .fillMaxWidth()
@@ -301,19 +279,19 @@ fun ActivityLogDialog(
                             Text(
                                 text = toDateStr,
                                 color = if (toDateStr == "To") textGray else Color.Black,
-                                fontSize = 15.sp,
+                                fontSize = 14.sp,
                                 fontFamily = FontFamily(Font(R.font.gill_sans_regular))
                             )
                             Image(
-                                painter = painterResource(id = R.drawable.img_15), // Calendar Icon
+                                painter = painterResource(id = R.drawable.calendar_icon_xsmall), // Calendar Icon
                                 contentDescription = "Calendar To",
-                                modifier = Modifier.size(18.dp)
+                                modifier = Modifier.size(20.dp)
                             )
                         }
                     }
                 }
 
-                Spacer(modifier = Modifier.height(18.dp))
+                Spacer(modifier = Modifier.height(12.dp))
 
                 // Left-aligned Search button matching screenshot size
                 Button(
@@ -325,8 +303,7 @@ fun ActivityLogDialog(
                     colors = ButtonDefaults.buttonColors(containerColor = activeBlue),
                     shape = RoundedCornerShape(8.dp),
                     contentPadding = PaddingValues(horizontal = 24.dp, vertical = 0.dp),
-                    modifier = Modifier
-                        .height(38.dp)
+                    modifier = Modifier.height(36.dp)
                 ) {
                     Text(
                         text = "Search",
@@ -337,7 +314,7 @@ fun ActivityLogDialog(
                     )
                 }
 
-                Spacer(modifier = Modifier.height(18.dp))
+                Spacer(modifier = Modifier.height(12.dp))
 
                 // Search filter bar
                 AppSearchField(
@@ -347,41 +324,42 @@ fun ActivityLogDialog(
                     modifier = Modifier.fillMaxWidth()
                 )
 
-                Spacer(modifier = Modifier.height(14.dp))
+                Spacer(modifier = Modifier.height(10.dp))
 
-                // Results list scroll container
+                // Results list scroll container - LazyColumn takes remaining space and inner scrolls smoothly
                 val filteredLogs = auditLogs.filter {
                     logSearchQuery.isEmpty() || (it.msg ?: "").contains(logSearchQuery, ignoreCase = true)
                 }
 
-                Column(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .heightIn(max = 240.dp)
-                ) {
-                    if (filteredLogs.isEmpty()) {
-                        Box(
-                            modifier = Modifier
-                                .fillMaxWidth()
-                                .padding(vertical = 24.dp),
-                            contentAlignment = Alignment.Center
-                        ) {
-                            Text(
-                                text = "No records found",
-                                color = Color.Gray,
-                                fontSize = 14.sp,
-                                fontFamily = FontFamily(Font(R.font.gill_sans_regular))
-                            )
-                        }
-                    } else {
-                        // Display inside separate elevated cards exactly like the screenshot
-                        filteredLogs.forEach { log ->
+                if (filteredLogs.isEmpty()) {
+                    Box(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .weight(1f)
+                            .padding(vertical = 16.dp),
+                        contentAlignment = Alignment.Center
+                    ) {
+                        Text(
+                            text = "No records found",
+                            color = Color.Gray,
+                            fontSize = 14.sp,
+                            fontFamily = FontFamily(Font(R.font.gill_sans_regular))
+                        )
+                    }
+                } else {
+                    LazyColumn(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .weight(1f),
+                        verticalArrangement = Arrangement.spacedBy(8.dp),
+                        contentPadding = PaddingValues(bottom = 8.dp)
+                    ) {
+                        items(filteredLogs) { log ->
                             Card(
                                 shape = RoundedCornerShape(8.dp),
                                 colors = CardDefaults.cardColors(containerColor = Color.White),
                                 modifier = Modifier
                                     .fillMaxWidth()
-                                    .padding(vertical = 4.dp)
                                     .border(width = 0.5.dp, color = Color(0xFFC0C0C0), shape = RoundedCornerShape(8.dp))
                             ) {
                                 Column(

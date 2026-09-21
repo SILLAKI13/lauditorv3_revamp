@@ -1,17 +1,19 @@
 package com.digicoffer.lauditor.feature.groups.presentation.components
 
+import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
-import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.Font
 import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.font.FontWeight
@@ -30,16 +32,14 @@ fun ChooseGroupHeadCard(
     onCancel: () -> Unit,
     onValidationError: (String) -> Unit
 ) {
-    var selectedHeadId by remember { mutableStateOf(group.group_head_id ?: "") }
+    var selectedHeadId by remember { mutableStateOf("") }
     var searchQuery by remember { mutableStateOf("") }
     val activeBlue = Color(0xFF004D87)
 
-    // Wrap in verticalScroll to ensure full scrollability
     Column(
         modifier = Modifier
-            .fillMaxWidth()
-            .verticalScroll(rememberScrollState())
-            .padding(bottom = 24.dp)
+            .fillMaxSize()
+            .padding(bottom = 16.dp)
     ) {
         Card(
             shape = RoundedCornerShape(10.dp),
@@ -47,11 +47,12 @@ fun ChooseGroupHeadCard(
             elevation = CardDefaults.cardElevation(defaultElevation = 2.dp),
             modifier = Modifier
                 .fillMaxWidth()
-                .padding(16.dp)
+                .weight(1f)
+                .padding(horizontal = 16.dp)
         ) {
             Column(
                 modifier = Modifier
-                    .fillMaxWidth()
+                    .fillMaxSize()
                     .padding(16.dp)
             ) {
                 // "Select Head of the Group" title inside the Card above search field
@@ -74,6 +75,37 @@ fun ChooseGroupHeadCard(
 
                 Spacer(modifier = Modifier.height(12.dp))
 
+                // Current Group Head Banner Card with new_gh_icon
+                val currentHeadName = group.group_head_name.ifBlank {
+                    membersList.find { it.id == group.group_head_id }?.name.orEmpty()
+                }
+
+                if (currentHeadName.isNotBlank()) {
+                    Row(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .background(Color(0xFFF8F8F8), shape = RoundedCornerShape(6.dp))
+                            .border(width = 0.5.dp, color = Color(0xFFC0C0C0), shape = RoundedCornerShape(6.dp))
+                            .padding(horizontal = 12.dp, vertical = 10.dp),
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        Image(
+                            painter = painterResource(id = R.drawable.new_gh_icon),
+                            contentDescription = "Current Group Head Icon",
+                            modifier = Modifier.size(32.dp)
+                        )
+                        Spacer(modifier = Modifier.width(10.dp))
+                        Text(
+                            text = "$currentHeadName - Group Head",
+                            color = Color.Black,
+                            fontWeight = FontWeight.Bold,
+                            fontSize = 15.sp,
+                            fontFamily = FontFamily(Font(R.font.gill_sans_regular))
+                        )
+                    }
+                    Spacer(modifier = Modifier.height(10.dp))
+                }
+
                 val groupMemberIds = remember(group) {
                     val set = mutableSetOf<String>()
                     group.members?.let { array ->
@@ -95,15 +127,18 @@ fun ChooseGroupHeadCard(
 
                 val filteredList = membersList.filter {
                     (groupMemberIds.isEmpty() || groupMemberIds.contains(it.id)) &&
+                            it.id != group.group_head_id &&
                             it.name.contains(searchQuery, ignoreCase = true)
                 }
 
-                // Render checklist rows using Column + forEach for clean scroll flow
-                Column(
-                    modifier = Modifier.fillMaxWidth(),
+                // Render checklist rows inside LazyColumn
+                LazyColumn(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .weight(1f),
                     verticalArrangement = Arrangement.spacedBy(6.dp)
                 ) {
-                    filteredList.forEach { member ->
+                    items(filteredList, key = { it.id }) { member ->
                         val isChosen = selectedHeadId == member.id
 
                         Row(
@@ -125,10 +160,9 @@ fun ChooseGroupHeadCard(
                             )
                             Spacer(modifier = Modifier.width(8.dp))
 
-                            androidx.compose.runtime.CompositionLocalProvider(
+                            CompositionLocalProvider(
                                 LocalMinimumInteractiveComponentSize provides androidx.compose.ui.unit.Dp.Unspecified
                             ) {
-                                // Visually use Checkboxes instead of RadioButtons, set onCheckedChange = null to prevent double toggle!
                                 Checkbox(
                                     checked = isChosen,
                                     onCheckedChange = null,
@@ -140,9 +174,9 @@ fun ChooseGroupHeadCard(
                     }
                 }
 
-                Spacer(modifier = Modifier.height(24.dp))
+                Spacer(modifier = Modifier.height(16.dp))
 
-                // Action Buttons
+                // Fixed Action Buttons
                 Row(
                     modifier = Modifier.fillMaxWidth(),
                     horizontalArrangement = Arrangement.spacedBy(16.dp),

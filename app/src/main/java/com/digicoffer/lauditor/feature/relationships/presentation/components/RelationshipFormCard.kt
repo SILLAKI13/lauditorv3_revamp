@@ -38,6 +38,7 @@ import androidx.compose.ui.window.Popup
 import androidx.compose.ui.window.PopupProperties
 import androidx.compose.foundation.text.BasicTextField
 import androidx.compose.foundation.text.KeyboardOptions
+import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.graphics.SolidColor
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
@@ -235,8 +236,8 @@ fun RelationshipFormCard(
                                 isConfirmEmailVisible = true
                                 firstName = ""
                                 lastName = ""
-                                email = query.trim()
-                                confirmEmail = query.trim()
+                                email = ""
+                                confirmEmail = ""
                                 mobile = ""
                                 selectedCountry = null
                                 searchStatusMessage = "$query - not found. Please fill in the details below to send relationship invite."
@@ -943,8 +944,11 @@ fun RelationshipFormCard(
                             Spacer(modifier = Modifier.height(6.dp))
                             RelationshipCustomTextField(
                                 value = mobile,
-                                onValueChange = { mobile = it },
+                                onValueChange = { input ->
+                                    mobile = input.filter { it.isDigit() }.take(10)
+                                },
                                 placeholder = "Mobile",
+                                keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
                                 enabled = isFormEnabled && isFieldsEditable
                             )
                             Spacer(modifier = Modifier.height(10.dp))
@@ -1002,8 +1006,11 @@ fun RelationshipFormCard(
                             Spacer(modifier = Modifier.height(6.dp))
                             RelationshipCustomTextField(
                                 value = contactPhone,
-                                onValueChange = { contactPhone = it },
+                                onValueChange = { input ->
+                                    contactPhone = input.filter { it.isDigit() }.take(10)
+                                },
                                 placeholder = "Contact Phone Number",
+                                keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
                                 enabled = isFormEnabled && isFieldsEditable
                             )
                             Spacer(modifier = Modifier.height(10.dp))
@@ -1047,8 +1054,11 @@ fun RelationshipFormCard(
                             Spacer(modifier = Modifier.height(6.dp))
                             RelationshipCustomTextField(
                                 value = contactPhone,
-                                onValueChange = { contactPhone = it },
+                                onValueChange = { input ->
+                                    contactPhone = input.filter { it.isDigit() }.take(10)
+                                },
                                 placeholder = "Mobile",
+                                keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
                                 enabled = isFormEnabled && isFieldsEditable
                             )
                             Spacer(modifier = Modifier.height(10.dp))
@@ -1250,7 +1260,7 @@ fun RelationshipFormCard(
                     horizontalAlignment = Alignment.CenterHorizontally
                 ) {
                     Text(
-                        text = "Alert !",
+                        text = "Success",
                         color = Color.Black,
                         fontFamily = GillSans,
                         fontWeight = FontWeight.Bold,

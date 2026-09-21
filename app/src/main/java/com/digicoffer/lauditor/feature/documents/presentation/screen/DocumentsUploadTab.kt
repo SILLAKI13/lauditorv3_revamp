@@ -107,7 +107,7 @@ fun DocumentsUploadTab(
                     Text(
                         text = buildAnnotatedString {
                             withStyle(SpanStyle(color = Color(0xFF004D87), fontWeight = FontWeight.Normal, fontFamily = GillSans)) {
-                                append("Matters")
+                                append("Select Matter")
                             }
                             withStyle(SpanStyle(color = Color.Red, fontWeight = FontWeight.Normal)) {
                                 append(" *")

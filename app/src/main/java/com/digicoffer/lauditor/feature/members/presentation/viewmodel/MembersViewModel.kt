@@ -62,6 +62,15 @@ class MembersViewModel(private val repository: MembersRepository) : ViewModel() 
                             defaultRate = jsonObject.optString("defaultRate")
                             designation = jsonObject.optString("designation")
                             email = jsonObject.optString("email")
+                            val phoneVal = jsonObject.optString("mobile").ifEmpty {
+                                jsonObject.optString("phone_number").ifEmpty {
+                                    jsonObject.optString("phone").ifEmpty {
+                                        jsonObject.optString("contact_phone")
+                                    }
+                                }
+                            }
+                            phone = phoneVal
+                            mobile = phoneVal
                             lastLogin = jsonObject.optString("lastLogin")
                             groups = jsonObject.optJSONArray("groups") ?: JSONArray()
                         }
@@ -141,6 +150,7 @@ class MembersViewModel(private val repository: MembersRepository) : ViewModel() 
                 designation = event.designation,
                 defaultRate = event.defaultRate,
                 currency = event.currency,
+                phone = event.phone,
                 email = event.email,
                 emailConfirm = event.emailConfirm,
                 groups = event.groups
@@ -159,6 +169,7 @@ class MembersViewModel(private val repository: MembersRepository) : ViewModel() 
                 designation = event.designation,
                 defaultRate = event.defaultRate,
                 currency = event.currency,
+                phone = event.phone,
                 email = event.email,
                 emailConfirm = event.emailConfirm
             )

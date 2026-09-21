@@ -36,6 +36,9 @@ import java.util.Locale
 @Composable
 fun MemberCardItem(
     member: MembersModel,
+    isMenuExpanded: Boolean = false,
+    onMenuToggle: () -> Unit = {},
+    onDismissMenu: () -> Unit = {},
     onEditClick: () -> Unit,
     onUpdateGroupAccessClick: () -> Unit,
     onResetPasswordClick: () -> Unit,
@@ -45,7 +48,6 @@ fun MemberCardItem(
 ) {
     val activeBlue = Color(0xFF004D87)
     val textGray = Color(0xFF333333)
-    var showActionMenu by remember { mutableStateOf(false) }
 
     val symbol = getCurrencySymbol(member.currency)
     val formattedRate = if (member.defaultRate.isNullOrBlank()) "0" else "$symbol${member.defaultRate}"
@@ -82,7 +84,7 @@ fun MemberCardItem(
                         contentDescription = "Options menu",
                         modifier = Modifier
                             .size(30.dp)
-                            .clickable { showActionMenu = !showActionMenu }
+                            .clickable { onMenuToggle() }
                     )
                 }
 
@@ -120,7 +122,7 @@ fun MemberCardItem(
         }
 
         // Expanded actions menu dropdown overlay
-        if (showActionMenu) {
+        if (isMenuExpanded) {
             Box(
                 modifier = Modifier
                     .align(Alignment.TopEnd)
@@ -129,23 +131,23 @@ fun MemberCardItem(
                 MemberActionMenu(
                     member = member,
                     onEditClick = {
-                        showActionMenu = false
+                        onDismissMenu()
                         onEditClick()
                     },
                     onUpdateGroupAccessClick = {
-                        showActionMenu = false
+                        onDismissMenu()
                         onUpdateGroupAccessClick()
                     },
                     onResetPasswordClick = {
-                        showActionMenu = false
+                        onDismissMenu()
                         onResetPasswordClick()
                     },
                     onDeleteClick = {
-                        showActionMenu = false
+                        onDismissMenu()
                         onDeleteClick()
                     },
                     onUpgradeClick = {
-                        showActionMenu = false
+                        onDismissMenu()
                         onUpgradeClick()
                     }
                 )
@@ -174,5 +176,5 @@ private fun getCurrencySymbol(currencyString: String?): String {
         val code = currencyString.substring(start + 1, end).uppercase(Locale.getDefault())
         return currencySymbols[code] ?: code
     }
-    return currencyString
+    return currencySymbols[currencyString.uppercase(Locale.getDefault())] ?: currencyString
 }

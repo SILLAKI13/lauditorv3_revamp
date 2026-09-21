@@ -44,6 +44,7 @@ fun ExchangeInfoDialog(
     onDismiss: () -> Unit,
     onLoadProfile: ((JSONObject?) -> Unit) -> Unit,
     onLoadDocs: (String) -> Unit, // "withme" or "byme"
+    onLoadInitialCounts: (((Int, Int) -> Unit) -> Unit)? = null,
     onUnshareDocs: (JSONObject) -> Unit,
     onShareClick: (String) -> Unit,
     onSearchDocs: (JSONObject, (List<SharedDocumentsDo>) -> Unit) -> Unit,
@@ -55,10 +56,15 @@ fun ExchangeInfoDialog(
     var selectedSubTab by remember { mutableStateOf<String?>(null) } // "client" or "firm"
     var showDocPickerPopup by remember { mutableStateOf(false) }
     var pickerCategory by remember { mutableStateOf("client") }
+    var validationAlertTitle by remember { mutableStateOf("Alert !") }
     var validationAlertMessage by remember { mutableStateOf("") }
     var showUnshareConfirmDialog by remember { mutableStateOf(false) }
     var unshareTargetIds by remember { mutableStateOf<List<String>>(emptyList()) }
     var unshareMessage by remember { mutableStateOf("") }
+
+    // Dynamic folder counts
+    var withMeCount by remember { mutableStateOf<Int?>(null) }
+    var byMeCount by remember { mutableStateOf<Int?>(null) }
 
     // Store selected doc ids for unsharing
     val selectedDocIds = remember { mutableStateListOf<String>() }
@@ -73,12 +79,26 @@ fun ExchangeInfoDialog(
             isProfileLoading = false
             profileData = result
         }
+        onLoadInitialCounts?.invoke { withMe, byMe ->
+            withMeCount = withMe
+            byMeCount = byMe
+        }
     }
 
     // Load initial documents
     LaunchedEffect(selectedSharedTab) {
         onLoadDocs(selectedSharedTab)
         selectedDocIds.clear()
+    }
+
+    LaunchedEffect(selectedSharedTab, sharedDocs, isLoading) {
+        if (!isLoading) {
+            if (selectedSharedTab == "withme") {
+                withMeCount = sharedDocs.size
+            } else if (selectedSharedTab == "byme") {
+                byMeCount = sharedDocs.size
+            }
+        }
     }
 
     Box(
@@ -370,103 +390,105 @@ fun ExchangeInfoDialog(
                                          .fillMaxWidth()
                                          .height(40.dp)
                                  ) {
-                                     // Left Pill: Shared With Me
-                                     Box(
-                                         modifier = Modifier
-                                             .weight(1f)
-                                             .fillMaxHeight()
-                                             .clip(RoundedCornerShape(topStart = 20.dp, bottomStart = 20.dp))
-                                             .background(if (selectedSharedTab == "withme") Color(0xFF004D87) else Color(0xFFEEEEEE))
-                                             .clickable { 
-                                                 selectedSharedTab = "withme"
-                                                 selectedSubTab = null
-                                             },
-                                         contentAlignment = Alignment.Center
-                                     ) {
-                                         Text(
-                                             text = "Shared With Me",
-                                             color = if (selectedSharedTab == "withme") Color.White else Color.Black,
-                                             fontWeight = FontWeight.Bold,
-                                             fontFamily = GillSans,
-                                             fontSize = 15.sp
-                                         )
-                                     }
-
-                                     Spacer(modifier = Modifier.width(1.dp))
-
-                                     // Right Pill: Shared By Me
-                                     Box(
-                                         modifier = Modifier
-                                             .weight(1f)
-                                             .fillMaxHeight()
-                                             .clip(RoundedCornerShape(topEnd = 20.dp, bottomEnd = 20.dp))
-                                             .background(if (selectedSharedTab == "byme") Color(0xFF004D87) else Color(0xFFEEEEEE))
-                                             .clickable { 
-                                                 selectedSharedTab = "byme"
-                                                 selectedSubTab = null
-                                             },
-                                         contentAlignment = Alignment.Center
-                                     ) {
-                                         Text(
-                                             text = "Shared By Me",
-                                             color = if (selectedSharedTab == "byme") Color.White else Color.Black,
-                                             fontWeight = FontWeight.Bold,
-                                             fontFamily = GillSans,
-                                             fontSize = 15.sp
-                                         )
-                                     }
-                                 }
-
-                                  Spacer(modifier = Modifier.height(16.dp))
-
-                                  // Document listing or empty state
-                                  if (sharedDocs.isEmpty() && !isLoading) {
+                                      // Left Pill: Shared With Me
                                       Box(
-                                          modifier = Modifier.fillMaxWidth().height(100.dp),
+                                          modifier = Modifier
+                                              .weight(1f)
+                                              .fillMaxHeight()
+                                              .clip(RoundedCornerShape(topStart = 20.dp, bottomStart = 20.dp))
+                                              .background(if (selectedSharedTab == "withme") Color(0xFF004D87) else Color(0xFFEEEEEE))
+                                              .clickable { 
+                                                  selectedSharedTab = "withme"
+                                                  selectedSubTab = null
+                                              },
                                           contentAlignment = Alignment.Center
                                       ) {
+                                          val withMeText = if (withMeCount != null) "Shared With Me ($withMeCount)" else "Shared With Me"
                                           Text(
-                                              text = "No documents to show",
-                                              color = Color.Gray,
+                                              text = withMeText,
+                                              color = if (selectedSharedTab == "withme") Color.White else Color.Black,
+                                              fontWeight = FontWeight.Bold,
                                               fontFamily = GillSans,
                                               fontSize = 15.sp
                                           )
                                       }
-                                  } else if (sharedDocs.isNotEmpty()) {
-                                     Column(
-                                         modifier = Modifier.fillMaxWidth()
-                                     ) {
-                                         sharedDocs.forEach { doc ->
-                                             DocumentRow(
-                                                 doc = doc,
-                                                 sharedTag = selectedSharedTab,
-                                                 onViewDoc = { onViewDoc(doc, selectedSharedTab) },
-                                                 isSelected = selectedDocIds.contains(doc.id),
-                                                 onCheckedChange = if (selectedSharedTab == "byme") {
-                                                     { checked: Boolean ->
-                                                         if (checked) {
-                                                             if (!selectedDocIds.contains(doc.id)) {
-                                                                 selectedDocIds.add(doc.id ?: "")
-                                                             }
-                                                         } else {
-                                                             selectedDocIds.remove(doc.id)
-                                                         }
-                                                     }
-                                                 } else null,
-                                                 onRemoveClick = if (selectedSharedTab == "byme") {
-                                                     {
-                                                         unshareTargetIds = listOf(doc.id ?: "")
-                                                         unshareMessage = ""
-                                                         showUnshareConfirmDialog = true
-                                                     }
-                                                 } else null
-                                             )
-                                         }
-                                     }
+
+                                      Spacer(modifier = Modifier.width(1.dp))
+
+                                      // Right Pill: Shared By Me
+                                      Box(
+                                          modifier = Modifier
+                                              .weight(1f)
+                                              .fillMaxHeight()
+                                              .clip(RoundedCornerShape(topEnd = 20.dp, bottomEnd = 20.dp))
+                                              .background(if (selectedSharedTab == "byme") Color(0xFF004D87) else Color(0xFFEEEEEE))
+                                              .clickable { 
+                                                  selectedSharedTab = "byme"
+                                                  selectedSubTab = null
+                                              },
+                                          contentAlignment = Alignment.Center
+                                      ) {
+                                          val byMeText = if (byMeCount != null) "Shared By Me ($byMeCount)" else "Shared By Me"
+                                          Text(
+                                              text = byMeText,
+                                              color = if (selectedSharedTab == "byme") Color.White else Color.Black,
+                                              fontWeight = FontWeight.Bold,
+                                              fontFamily = GillSans,
+                                              fontSize = 15.sp
+                                          )
+                                      }
                                  }
 
-                                 // Batch Unshare Button Bar
-                                 if (selectedSharedTab == "byme") {
+                                   Spacer(modifier = Modifier.height(16.dp))
+
+                                   // Document listing or empty state
+                                   if (sharedDocs.isEmpty() && !isLoading) {
+                                       Box(
+                                           modifier = Modifier.fillMaxWidth().height(100.dp),
+                                           contentAlignment = Alignment.Center
+                                       ) {
+                                           Text(
+                                               text = "No documents to show",
+                                               color = Color.Gray,
+                                               fontFamily = GillSans,
+                                               fontSize = 15.sp
+                                           )
+                                       }
+                                   } else if (sharedDocs.isNotEmpty()) {
+                                      Column(
+                                          modifier = Modifier.fillMaxWidth()
+                                      ) {
+                                          sharedDocs.forEach { doc ->
+                                              DocumentRow(
+                                                  doc = doc,
+                                                  sharedTag = selectedSharedTab,
+                                                  onViewDoc = { onViewDoc(doc, selectedSharedTab) },
+                                                  isSelected = selectedDocIds.contains(doc.id),
+                                                  onCheckedChange = if (selectedSharedTab == "byme") {
+                                                      { checked: Boolean ->
+                                                          if (checked) {
+                                                              if (!selectedDocIds.contains(doc.id)) {
+                                                                  selectedDocIds.add(doc.id ?: "")
+                                                              }
+                                                          } else {
+                                                              selectedDocIds.remove(doc.id)
+                                                          }
+                                                      }
+                                                  } else null,
+                                                  onRemoveClick = if (selectedSharedTab == "byme") {
+                                                      {
+                                                          unshareTargetIds = listOf(doc.id ?: "")
+                                                          unshareMessage = ""
+                                                          showUnshareConfirmDialog = true
+                                                      }
+                                                  } else null
+                                              )
+                                          }
+                                      }
+                                  }
+
+                                  // Batch Unshare Button Bar
+                                  if (selectedSharedTab == "byme" && sharedDocs.isNotEmpty()) {
                                      Spacer(modifier = Modifier.height(16.dp))
                                      Row(
                                          modifier = Modifier.fillMaxWidth(),
@@ -680,7 +702,7 @@ fun ExchangeInfoDialog(
      if (validationAlertMessage.isNotEmpty()) {
          AlertDialog(
              onDismissRequest = { validationAlertMessage = "" },
-             title = { Text("Lauditor", fontFamily = GillSans, fontWeight = FontWeight.Bold) },
+             title = { Text(validationAlertTitle, fontFamily = GillSans, fontWeight = FontWeight.Bold) },
              text = { Text(validationAlertMessage, fontFamily = GillSans) },
              confirmButton = {
                  Button(
