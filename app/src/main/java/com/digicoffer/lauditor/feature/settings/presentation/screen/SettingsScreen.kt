@@ -18,6 +18,8 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.digicoffer.lauditor.CommonFiles.GlobalFiles.AndroidUtils
+import com.digicoffer.lauditor.CommonFiles.GlobalFiles.Constants
 import com.digicoffer.lauditor.core.ui.common.foundation.AppSpacer
 import com.digicoffer.lauditor.feature.settings.presentation.components.*
 import com.digicoffer.lauditor.feature.settings.presentation.state.SettingsUiEvent
@@ -134,17 +136,15 @@ fun SettingsScreen(
             isOpen = state.isExternalCheckoutBottomSheetOpen,
             onDismiss = { viewModel.onEvent(SettingsUiEvent.DismissExternalCheckoutBottomSheet) },
             onContinue = {
-                val url = state.checkoutUrl
+                val email = (Constants.FirmEmail?.ifEmpty { Constants.Email } ?: Constants.Email ?: "").lowercase(java.util.Locale.getDefault())
+                val fallbackUrl = "${Constants.paymentUrl}=$email&users=${Constants.User_Allowed}"
+                val url = if (!state.checkoutUrl.isNullOrBlank()) state.checkoutUrl else fallbackUrl
                 viewModel.onEvent(SettingsUiEvent.ConfirmOpenExternalCheckout)
                 if (!url.isNullOrBlank()) {
-                    try {
-                        val intent = Intent(Intent.ACTION_VIEW, Uri.parse(url)).apply {
-                            addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
-                        }
-                        context.startActivity(intent)
-                    } catch (ex: Exception) {
-                        Toast.makeText(context, "Unable to open browser: ${ex.message}", Toast.LENGTH_SHORT).show()
-                    }
+                    AndroidUtils.openUrlInChrome(context, url)
+                    android.os.Handler(android.os.Looper.getMainLooper()).postDelayed({
+                        Constants.mainActivity?.performLogout()
+                    }, 500)
                 }
             }
         )

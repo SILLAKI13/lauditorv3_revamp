@@ -1616,7 +1616,7 @@ class MainActivity : AppCompatActivity(), Dashboard.MenuHighlightListener, Month
         }
     }
 
-    private fun performLogout() {
+    fun performLogout() {
         MyFirebaseMessagingService.logoutToken(this, getStoredFCMToken())
         MyFirebaseMessagingService.clearAllNotifications(this)
         Constants.isClient_chat = true

@@ -357,33 +357,32 @@ class SettingsViewModel(application: Application) : AndroidViewModel(application
                             )
                         }
                     } else {
-                        val msg = responseJson.optString("msg", responseJson.optString("message", "Failed to initiate checkout."))
+                        val email = (Constants.FirmEmail?.ifEmpty { Constants.Email } ?: Constants.Email ?: "").lowercase(java.util.Locale.getDefault())
+                        val fallbackUrl = "${Constants.paymentUrl}=$email&users=${Constants.User_Allowed}"
                         _uiState.update {
                             it.copy(
-                                isInfoDialogOpen = true,
-                                dialogTitle = "Error",
-                                dialogMessage = msg,
-                                isSuccessMessage = false
+                                checkoutUrl = fallbackUrl,
+                                isExternalCheckoutBottomSheetOpen = true
                             )
                         }
                     }
                 } catch (e: Exception) {
+                    val email = (Constants.FirmEmail?.ifEmpty { Constants.Email } ?: Constants.Email ?: "").lowercase(java.util.Locale.getDefault())
+                    val fallbackUrl = "${Constants.paymentUrl}=$email&users=${Constants.User_Allowed}"
                     _uiState.update {
                         it.copy(
-                            isInfoDialogOpen = true,
-                            dialogTitle = "Error",
-                            dialogMessage = "Failed to generate checkout ticket.",
-                            isSuccessMessage = false
+                            checkoutUrl = fallbackUrl,
+                            isExternalCheckoutBottomSheetOpen = true
                         )
                     }
                 }
             } else {
+                val email = (Constants.FirmEmail?.ifEmpty { Constants.Email } ?: Constants.Email ?: "").lowercase(java.util.Locale.getDefault())
+                val fallbackUrl = "${Constants.paymentUrl}=$email&users=${Constants.User_Allowed}"
                 _uiState.update {
                     it.copy(
-                        isInfoDialogOpen = true,
-                        dialogTitle = "Error",
-                        dialogMessage = result.responseContent ?: Constants.NO_INTERNET_MSG,
-                        isSuccessMessage = false
+                        checkoutUrl = fallbackUrl,
+                        isExternalCheckoutBottomSheetOpen = true
                     )
                 }
             }
