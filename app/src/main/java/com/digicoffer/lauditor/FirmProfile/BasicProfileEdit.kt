@@ -2577,16 +2577,20 @@ class BasicProfileEdit(
         if (parent == null) return
         val row = inflater.inflate(R.layout.court_enrollment_item, parent, false)
 
+        val isSupreme = courtType.equals("supreme_court", ignoreCase = true) || courtType.equals("Supreme Court", ignoreCase = true)
+        val finalState = if (isSupreme && state.isBlank()) "Delhi" else state
+        val finalCity = if (isSupreme && city.isBlank()) "New Delhi" else city
+
         val llCourtType = row.findViewById<LinearLayout>(R.id.ll_court_type)
         val tvCt = llCourtType?.findViewById<TextView>(R.id.tv_spinner_view)
         tvCt?.text = convertApiToDisplayFormat(courtType)
 
         val llStateSpinner = row.findViewById<LinearLayout>(R.id.ll_state_spinner)
         val tvState = llStateSpinner?.findViewById<TextView>(R.id.tv_spinner_view)
-        tvState?.text = state
+        tvState?.text = finalState
 
         val etCitySearch = row.findViewById<TextInputEditText>(R.id.et_city_search)
-        etCitySearch?.setText(city)
+        etCitySearch?.setText(finalCity)
 
         val ivDelete = row.findViewById<ImageView>(R.id.iv_delete)
         ivDelete?.setOnClickListener {

@@ -1,0 +1,518 @@
+<?xml version="1.0" encoding="utf-8"?>
+<ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:background="@drawable/dialog_rounded_bg"
+    android:fillViewport="true">
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        android:padding="16dp">
+
+        <!-- Header -->
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:gravity="center_vertical"
+            android:orientation="horizontal">
+
+            <ImageView
+                android:layout_width="22dp"
+                android:layout_height="22dp"
+                android:src="@drawable/ic_bank"
+                app:tint="@color/blue" />
+
+            <TextView
+                android:id="@+id/tv_dialog_title"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_marginStart="8dp"
+                android:layout_weight="1"
+                android:text="Bank Account Details"
+                android:textColor="@color/black"
+                android:textSize="17sp"
+                android:fontFamily="@font/gill_sans_bold"/>
+
+            <ImageView
+                android:id="@+id/iv_close"
+                android:layout_width="20dp"
+                android:layout_height="20dp"
+                android:src="@drawable/cancel_black_icon"
+                app:tint="@color/grey_light" />
+        </LinearLayout>
+
+        <!-- Info banner -->
+        <LinearLayout
+            android:id="@+id/ll_info_banner"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="@dimen/ten_dp"
+            android:background="@color/light_blue_bg"
+            android:gravity="center_vertical"
+            android:visibility="gone"
+            android:orientation="horizontal"
+            android:padding="8dp">
+
+            <ImageView
+                android:layout_width="16dp"
+                android:layout_height="16dp"
+                android:src="@drawable/info_icon"
+                app:tint="@color/blue" />
+
+            <TextView
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_marginStart="6dp"
+                android:layout_weight="1"
+                android:text="These are your bank details used for payment settlements."
+                android:textColor="@color/blue"
+                android:fontFamily="@font/gill_sans"
+                android:textSize="12sp" />
+        </LinearLayout>
+
+        <!-- Verified badge (View mode only) -->
+        <LinearLayout
+            android:id="@+id/ll_verified_badge"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="@dimen/ten_dp"
+            android:gravity="center_vertical"
+            android:orientation="horizontal"
+            android:visibility="gone">
+
+            <ImageView
+                android:layout_width="16dp"
+                android:layout_height="16dp"
+                android:src="@drawable/ic_check_green"
+                app:tint="@color/green" />
+
+            <TextView
+                android:id="@+id/tv_verified_status"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginStart="@dimen/four_dp"
+                android:text="Verified"
+                android:textColor="@color/green"
+                android:textSize="13sp"
+                android:textStyle="bold" />
+
+            <TextView
+                android:id="@+id/tv_verified_date"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginStart="8dp"
+                android:text=""
+                android:textColor="@color/grey_light"
+                android:textSize="12sp" />
+        </LinearLayout>
+
+        <!-- Account Holder Name -->
+        <TextView
+            android:id="@+id/tv_label_account_holder"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="12dp"
+            android:textColor="@color/grey_light"
+            android:fontFamily="@font/gill_sans"
+            android:textSize="16sp" /> <!-- TEXT REMOVED FROM HERE -->
+
+        <EditText
+            android:id="@+id/et_account_holder_name"
+            android:layout_width="match_parent"
+            android:layout_height="44dp"
+            android:layout_marginTop="@dimen/four_dp"
+            android:background="@drawable/edittext_bg"
+            android:hint="Enter account holder name"
+            android:inputType="textPersonName|textCapWords"
+            android:maxLength="100"
+            android:fontFamily="@font/gill_sans"
+            android:paddingStart="@dimen/ten_dp"
+            android:paddingEnd="@dimen/ten_dp"
+            android:textColor="@color/black"
+            android:textSize="15sp" />
+
+        <TextView
+            android:id="@+id/tv_error_account_holder_name"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="Account holder name must be between 3 and 100 characters"
+            android:textColor="@color/red"
+            android:textSize="11sp"
+            android:visibility="gone" />
+
+        <!-- Bank Name -->
+        <TextView
+            android:id="@+id/tv_label_bank_name"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="12dp"
+            android:textColor="@color/grey_light"
+            android:fontFamily="@font/gill_sans"
+            android:textSize="16sp" /> <!-- TEXT REMOVED FROM HERE -->
+
+        <EditText
+            android:id="@+id/et_bank_name"
+            android:layout_width="match_parent"
+            android:layout_height="44dp"
+            android:layout_marginTop="@dimen/four_dp"
+            android:background="@drawable/edittext_bg"
+            android:hint="Enter bank name"
+            android:inputType="text"
+            android:fontFamily="@font/gill_sans"
+            android:paddingStart="@dimen/ten_dp"
+            android:paddingEnd="@dimen/ten_dp"
+            android:textColor="@color/black"
+            android:textSize="15sp" />
+
+        <TextView
+            android:id="@+id/tv_error_bank_name"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="Bank name is required"
+            android:textColor="@color/red"
+            android:textSize="11sp"
+            android:fontFamily="@font/gill_sans"
+            android:visibility="gone" />
+
+        <!-- Account Number -->
+        <!-- Account Number -->
+        <TextView
+            android:id="@+id/tv_label_account_number"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="12dp"
+            android:textColor="@color/grey_light"
+            android:fontFamily="@font/gill_sans"
+            android:textSize="16sp"/>
+
+        <FrameLayout
+            android:layout_width="match_parent"
+            android:layout_height="44dp"
+            android:layout_marginTop="@dimen/four_dp">
+
+            <EditText
+                android:id="@+id/et_account_number"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:background="@drawable/edittext_bg"
+                android:hint="Enter account number"
+                android:maxLength="18"
+                android:paddingStart="@dimen/ten_dp"
+                android:paddingEnd="40dp"
+                android:fontFamily="@font/gill_sans"
+                android:textColor="@color/black"
+                android:textSize="15sp" />
+
+            <ImageView
+                android:id="@+id/iv_toggle_account_number"
+                android:layout_width="20dp"
+                android:layout_height="20dp"
+                android:layout_gravity="center_vertical|end"
+                android:layout_marginEnd="@dimen/ten_dp"
+                android:src="@drawable/eye_open"
+                app:tint="@color/grey_light" />
+        </FrameLayout>
+        <TextView
+            android:id="@+id/tv_error_account_number"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="Account number must be 9 to 18 digits"
+            android:textColor="@color/red"
+            android:textSize="11sp"
+            android:fontFamily="@font/gill_sans"
+            android:visibility="gone" />
+
+        <!-- Confirm Account Number (hidden in view mode) -->
+        <!-- Confirm Account Number -->
+        <LinearLayout
+            android:id="@+id/ll_confirm_account_number"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical">
+
+            <TextView
+                android:id="@+id/tv_label_confirm_account_number"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="12dp"
+                android:textColor="@color/grey_light"
+                android:fontFamily="@font/gill_sans"
+                android:textSize="16sp"/>
+
+            <FrameLayout
+                android:layout_width="match_parent"
+                android:layout_height="44dp"
+                android:layout_marginTop="@dimen/four_dp">
+
+                <EditText
+                    android:id="@+id/et_confirm_account_number"
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent"
+                    android:background="@drawable/edittext_bg"
+                    android:hint="Re-enter account number"
+                    android:maxLength="18"
+                    android:fontFamily="@font/gill_sans"
+                    android:paddingStart="@dimen/ten_dp"
+                    android:paddingEnd="40dp"
+                    android:textColor="@color/black"
+                    android:textSize="15sp" />
+
+                <ImageView
+                    android:id="@+id/iv_toggle_confirm_account_number"
+                    android:layout_width="20dp"
+                    android:layout_height="20dp"
+                    android:layout_gravity="center_vertical|end"
+                    android:layout_marginEnd="@dimen/ten_dp"
+                    android:src="@drawable/eye_open"
+                    app:tint="@color/grey_light" />
+            </FrameLayout>
+
+            <TextView
+                android:id="@+id/tv_error_confirm_account_number"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="Account numbers do not match"
+                android:textColor="@color/red"
+                android:textSize="11sp"
+                android:fontFamily="@font/gill_sans"
+                android:visibility="gone" />
+        </LinearLayout>
+
+        <!-- IFSC Code -->
+        <TextView
+            android:id="@+id/tv_label_ifsc_code"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="12dp"
+            android:textColor="@color/grey_light"
+            android:fontFamily="@font/gill_sans"
+            android:textSize="16sp"/> <!-- TEXT REMOVED FROM HERE -->
+
+        <EditText
+            android:id="@+id/et_ifsc_code"
+            android:layout_width="match_parent"
+            android:layout_height="44dp"
+            android:layout_marginTop="@dimen/four_dp"
+            android:background="@drawable/edittext_bg"
+            android:hint="Enter IFSC code (eg: HDFC0001234)"
+            android:inputType="textCapCharacters"
+            android:maxLength="11"
+            android:fontFamily="@font/gill_sans"
+            android:paddingStart="@dimen/ten_dp"
+            android:paddingEnd="@dimen/ten_dp"
+            android:textColor="@color/black"
+            android:textSize="15sp" />
+
+        <TextView
+            android:id="@+id/tv_error_ifsc_code"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="Enter a valid IFSC code"
+            android:textColor="@color/red"
+            android:textSize="11sp"
+            android:fontFamily="@font/gill_sans"
+            android:visibility="gone" />
+
+        <!-- Branch Name (read-only always; edit icon appears only after
+             verification, and ONLY inside the field itself — never on
+             this label). No icon of any kind belongs on this TextView. -->
+        <TextView
+            android:id="@+id/tv_label_branch_name"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="12dp"
+            android:text="Branch Name"
+            android:drawableStart="@null"
+            android:drawableEnd="@null"
+            android:textColor="@color/grey_light"
+            android:fontFamily="@font/gill_sans"
+            android:textSize="16dp"/>
+
+        <FrameLayout
+            android:layout_width="match_parent"
+            android:layout_height="44dp"
+            android:layout_marginTop="@dimen/four_dp">
+
+            <EditText
+                android:id="@+id/et_branch_name"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:background="@drawable/edittext_bg_disabled"
+                android:enabled="false"
+                android:focusable="false"
+                android:fontFamily="@font/gill_sans"
+                android:hint="Will appear after verification"
+                android:paddingStart="@dimen/ten_dp"
+                android:paddingEnd="40dp"
+                android:textColor="@color/grey_light"
+                android:textSize="15sp" />
+
+            <!-- The ONLY icon that may appear anywhere near Branch Name.
+                 Lives inside the field (right-aligned), never next to the
+                 label above. Hidden by default; shown only after a
+                 successful IFSC verify, controlled entirely from Java
+                 (bindViews() forces it gone at bind time, applyModeUi()
+                 and the Verify_IFSC success callback are the only places
+                 that turn it back on). -->
+            <ImageView
+                android:id="@+id/iv_edit_branch_name"
+                android:layout_width="20dp"
+                android:layout_height="20dp"
+                android:layout_gravity="center_vertical|end"
+                android:layout_marginEnd="@dimen/ten_dp"
+                android:src="@drawable/edit__icon"
+                android:visibility="gone"
+                app:tint="@color/blue" />
+        </FrameLayout>
+
+        <!-- Verify button + Edit action, side by side (Edit switches the whole dialog into Edit Mode).
+             These two are mutually exclusive — exactly one is visible at a time, driven entirely by
+             applyModeUi() in Java based on isVerified. -->
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="12dp"
+            android:gravity="end|center_vertical"
+            android:orientation="horizontal">
+
+            <androidx.appcompat.widget.AppCompatButton
+                android:id="@+id/btn_verify"
+                android:layout_width="wrap_content"
+                android:layout_height="34dp"
+                android:background="@drawable/save_button_background"
+                android:drawableStart="@drawable/s"
+                android:drawablePadding="6dp"
+                android:drawableTint="@color/white"
+                android:fontFamily="@font/gill_sans"
+                android:paddingStart="16dp"
+                android:paddingEnd="16dp"
+                android:text="Verify"
+                android:textAllCaps="false"
+                android:textColor="@color/white"
+                android:textSize="13sp" />
+
+            <LinearLayout
+                android:id="@+id/ll_edit_bank_details"
+                android:layout_width="wrap_content"
+                android:layout_height="36dp"
+                android:layout_marginStart="12dp"
+                android:gravity="center_vertical"
+                android:orientation="horizontal"
+                android:paddingStart="8dp"
+                android:paddingEnd="8dp"
+                android:visibility="gone">
+
+                <ImageView
+                    android:id="@+id/iv_edit_bank_details"
+                    android:layout_width="16dp"
+                    android:layout_height="16dp"
+                    android:src="@drawable/edit__icon"
+                    app:tint="@color/blue" />
+
+                <TextView
+                    android:id="@+id/tv_edit_bank_details"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginStart="4dp"
+                    android:fontFamily="@font/gill_sans"
+                    android:text="Edit"
+                    android:textColor="@color/blue"
+                    android:textSize="13sp"
+                    android:textStyle="bold" />
+            </LinearLayout>
+        </LinearLayout>
+
+        <!-- Terms & Conditions (Add/Edit mode only) -->
+        <LinearLayout
+            android:id="@+id/ll_terms"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="12dp"
+            android:orientation="horizontal">
+
+            <CheckBox
+                android:id="@+id/cb_terms"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content" />
+
+            <TextView
+                android:id="@+id/tv_terms"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_gravity="center_vertical"
+                android:layout_weight="1"
+                android:fontFamily="@font/gill_sans_regular"
+                android:text="I have read and agree to the Terms &amp; Conditions and Privacy Policy, and authorize LexiZ.ai to securely verify, process and store the bank account details for payment settlements."
+                android:textColor="@color/grey_light"
+                android:textSize="11sp" />
+        </LinearLayout>
+
+        <!-- Action buttons: Add / Edit mode -->
+        <LinearLayout
+            android:id="@+id/ll_action_buttons_edit"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="16dp"
+            android:orientation="horizontal">
+
+            <androidx.appcompat.widget.AppCompatButton
+                android:id="@+id/btn_cancel"
+                android:layout_width="0dp"
+                android:layout_height="44dp"
+                android:layout_marginEnd="8dp"
+                android:layout_weight="1"
+                android:background="@drawable/edittext_bg"
+                android:text="Cancel"
+                android:fontFamily="@font/gill_sans"
+                android:textAllCaps="false"
+                android:textColor="@color/grey_light" />
+
+            <androidx.appcompat.widget.AppCompatButton
+                android:id="@+id/btn_submit"
+                android:layout_width="0dp"
+                android:layout_height="44dp"
+                android:layout_weight="1"
+                android:background="@drawable/save_button_background"
+                android:enabled="false"
+                android:text="Submit"
+                android:textAllCaps="false"
+                android:fontFamily="@font/gill_sans"
+                android:textColor="@color/white" />
+        </LinearLayout>
+
+        <!-- Action buttons: View mode -->
+        <LinearLayout
+            android:id="@+id/ll_action_buttons_view"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="16dp"
+            android:orientation="horizontal"
+            android:visibility="gone">
+
+            <androidx.appcompat.widget.AppCompatButton
+                android:id="@+id/btn_close"
+                android:layout_width="0dp"
+                android:layout_height="44dp"
+                android:layout_marginEnd="8dp"
+                android:layout_weight="1"
+                android:background="@drawable/edittext_bg"
+                android:text="Close"
+                android:textAllCaps="false"
+                android:textColor="@color/grey_light" />
+
+            <androidx.appcompat.widget.AppCompatButton
+                android:id="@+id/btn_edit"
+                android:layout_width="0dp"
+                android:layout_height="44dp"
+                android:layout_weight="1"
+                android:background="@drawable/save_button_background"
+                android:text="Edit Bank Details"
+                android:textAllCaps="false"
+                android:textColor="@color/white" />
+        </LinearLayout>
+
+    </LinearLayout>
+</ScrollView>

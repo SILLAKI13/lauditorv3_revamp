@@ -902,54 +902,19 @@ class PracticePartnerView : Fragment(), AsyncTaskCompleteListener, View.OnClickL
 
     fun Delete_Popup(activity: Activity?, name: String?, id: String) {
         try {
-            val dialogBuilder = AlertDialog.Builder(activity)
-            val inflater = activity!!.layoutInflater
-            val dialogLayout = inflater.inflate(R.layout.delete_relationship, null)
-            val header = dialogLayout.findViewById<TextView>(R.id.header_name)
-            header.setText(R.string.confirmation)
-            header.setTextColor(
-                ContextCompat.getColor(header.context, R.color.Primary_new)
-            )
-
-            val close = dialogLayout.findViewById<ImageView>(R.id.close_documents)
-            val msg = dialogLayout.findViewById<TextView>(R.id.tv_confirmation)
-            val btnYes = dialogLayout.findViewById<Button>(R.id.btn_yes)
-            val btnNo = dialogLayout.findViewById<Button>(R.id.btn_No)
-
-            btnYes.setBackgroundDrawable(
-                context?.resources?.getDrawable(R.drawable.yes_button_red_button)
-            )
-            btnNo.setBackgroundDrawable(
-                context?.resources?.getDrawable(R.drawable.no_button_green_button)
-            )
-
-            val confirmText = "Are you sure, Do you want to delete this $name ?"
-            val spannable = SpannableString(confirmText)
-            spannable.setSpan(
-                ForegroundColorSpan(context!!.getColor(R.color.black)),
-                0, confirmText.length, Spanned.SPAN_EXCLUSIVE_EXCLUSIVE
-            )
-            if (name != null && name.isNotEmpty()) {
-                val start = confirmText.indexOf(name)
-                if (start >= 0) {
-                    spannable.setSpan(
-                        StyleSpan(Typeface.BOLD),
-                        start, start + name.length, Spanned.SPAN_EXCLUSIVE_EXCLUSIVE
-                    )
+            val act = activity ?: return
+            AndroidUtils.showConfirmationDialog(
+                act,
+                getString(R.string.confirmation),
+                "Are you sure, Do you want to delete this $name ?",
+                name,
+                object : AndroidUtils.OnConfirmListener {
+                    override fun onSave() {
+                        callDeletePracticePartners(id)
+                    }
+                    override fun onCancel() {}
                 }
-            }
-            msg.text = spannable
-
-            val dialog = dialogBuilder.create()
-            btnNo.setOnClickListener { dialog.dismiss() }
-            close.setOnClickListener { dialog.dismiss() }
-            btnYes.setOnClickListener {
-                dialog.dismiss()
-                callDeletePracticePartners(id)
-            }
-            dialog.setView(dialogLayout)
-            dialog.setCanceledOnTouchOutside(false)
-            dialog.show()
+            )
         } catch (e: Exception) {
             e.printStackTrace()
         }

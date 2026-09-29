@@ -410,7 +410,16 @@ class OtpVerificationActivity : AppCompatActivity(), AsyncTaskCompleteListener, 
                     Constants.Firm_ids.add(firmId)
                     list.add(firmsDo)
                 }
-                Log.d("Groups_value", "" + Constants.isAdmin)
+                val myPrefs = getSharedPreferences("MyPrefs", Context.MODE_PRIVATE)
+                val loginPic = probizData.optString("profile_pic_url").ifEmpty {
+                    probizData.optString("profile_pic").ifEmpty {
+                        probizData.optString("imageUrl", "")
+                    }
+                }
+                if (loginPic.isNotEmpty()) {
+                    Constants.firm_image = loginPic
+                    myPrefs.edit().putString("firm_image", loginPic).apply()
+                }
 
                 BioMetricAccess()
                 Dashboard()

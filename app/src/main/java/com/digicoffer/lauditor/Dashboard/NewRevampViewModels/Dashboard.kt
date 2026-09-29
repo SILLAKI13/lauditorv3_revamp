@@ -10,9 +10,12 @@ import android.os.Bundle
 import android.os.Handler
 import android.os.Looper
 import android.util.Log
+import android.graphics.Color
+import android.graphics.drawable.ColorDrawable
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import android.view.Window
 import android.view.animation.DecelerateInterpolator
 import android.view.animation.OvershootInterpolator
 import androidx.fragment.app.Fragment
@@ -69,6 +72,9 @@ class Dashboard : Fragment(), AsyncTaskCompleteListener, View.OnClickListener {
     private var isDashboardApiComplete = false
     private var isChatListApiComplete = false
     private var isFirstLoad = true
+    private var hasRetriedDashboardStartup = false
+    private var isRetryingDashboard = false
+    private var dashboardRequestStartTime = 0L
 
     override fun onCreateView(
         inf: LayoutInflater,
@@ -91,6 +97,9 @@ class Dashboard : Fragment(), AsyncTaskCompleteListener, View.OnClickListener {
             Constants.dashboard_en = this
             Constants.recyclerView = rvOuter
 
+            hasRetriedDashboardStartup = false
+            isRetryingDashboard = false
+
             loadDashboard()
         } catch (e: Exception) {
             Log.e(TAG, "onViewCreated", e)
@@ -105,20 +114,32 @@ class Dashboard : Fragment(), AsyncTaskCompleteListener, View.OnClickListener {
 
     private fun showProgress() {
         try {
-            if (progressDialog == null && isFirstLoad) {
-                activity?.let { progressDialog = AndroidUtils.get_progress(it) }
+            val act = activity
+            if (progressDialog == null && isFirstLoad && act != null && !act.isFinishing && !act.isDestroyed) {
+                progressDialog = Dialog(act).apply {
+                    requestWindowFeature(Window.FEATURE_NO_TITLE)
+                    setContentView(R.layout.loading)
+                    window?.setBackgroundDrawable(ColorDrawable(Color.TRANSPARENT))
+                    setCancelable(false)
+                    setCanceledOnTouchOutside(false)
+                }
+                progressDialog?.show()
             }
-        } catch (ignored: Exception) {
+        } catch (e: Exception) {
+            Log.e(TAG, "showProgress error", e)
         }
     }
 
     private fun dismissProgress() {
         try {
-            if (progressDialog != null && progressDialog!!.isShowing) {
-                AndroidUtils.dismiss_dialog(progressDialog)
-                progressDialog = null
+            progressDialog?.let { dialog ->
+                if (dialog.isShowing) {
+                    dialog.dismiss()
+                }
             }
-        } catch (ignored: Exception) {
+            progressDialog = null
+        } catch (e: Exception) {
+            Log.e(TAG, "dismissProgress error", e)
         }
     }
 
@@ -138,6 +159,8 @@ class Dashboard : Fragment(), AsyncTaskCompleteListener, View.OnClickListener {
     private fun resetApiFlags() {
         isDashboardApiComplete = false
         isChatListApiComplete = false
+        hasRetriedDashboardStartup = false
+        isRetryingDashboard = false
     }
 
     private fun setupRecyclerView() {
@@ -212,6 +235,8 @@ class Dashboard : Fragment(), AsyncTaskCompleteListener, View.OnClickListener {
         if (isFirstLoad) {
             showProgress()
         }
+        dashboardRequestStartTime = System.currentTimeMillis()
+        Log.d("STARTUP_NETWORK_TRACE", "DASHBOARD_INITIAL_START (isFirstLoad=$isFirstLoad, hasRetried=$hasRetriedDashboardStartup)")
 
         try {
             WebServiceHelper.callHttpWebService(
@@ -229,6 +254,9 @@ class Dashboard : Fragment(), AsyncTaskCompleteListener, View.OnClickListener {
     }
 
     private fun loadDashboardWithSwipe() {
+        hasRetriedDashboardStartup = false
+        isRetryingDashboard = false
+        dashboardRequestStartTime = System.currentTimeMillis()
         try {
             WebServiceHelper.callHttpWebService(
                 this, requireContext(),
@@ -263,11 +291,65 @@ class Dashboard : Fragment(), AsyncTaskCompleteListener, View.OnClickListener {
     override fun onAsyncTaskComplete(httpResult: HttpResultDo) {
         runOnMain {
             if (!isAdded) return@runOnMain
+            val reqType = httpResult.requestType
+            val elapsed = System.currentTimeMillis() - dashboardRequestStartTime
+
             if (httpResult.result != WebServiceHelper.ServiceCallStatus.Success) {
                 Log.e(TAG, "API error: " + httpResult.result)
-                activity?.let { AndroidUtils.showAlert("Something went wrong, please try again.", it) }
 
-                val reqType = httpResult.requestType
+                // Check for explicit no-internet condition (Pre-flight network check failed)
+                val isNoInternet = (httpResult.result == WebServiceHelper.ServiceCallStatus.Exception) &&
+                        (httpResult.responseContent == Constants.NO_INTERNET_MSG || httpResult.responseContent.contains(Constants.NO_INTERNET_MSG, ignoreCase = true))
+
+                // Check for startup transport exception retry (INITIAL DASHBOARD_ALL only, status_code == 0 / Exception)
+                val isTransportException = (httpResult.result == WebServiceHelper.ServiceCallStatus.Exception) && (httpResult.status_code == 0)
+                if (REQ_DASHBOARD.equals(reqType, ignoreCase = true) && isFirstLoad && isTransportException && !hasRetriedDashboardStartup && !isNoInternet) {
+                    hasRetriedDashboardStartup = true
+                    isRetryingDashboard = true
+                    Log.d("STARTUP_NETWORK_TRACE", "DASHBOARD_INITIAL_FAILURE: status_code=${httpResult.status_code}, error=${httpResult.errorMessage}, elapsed=${elapsed}ms -> scheduling retry in 1200ms")
+
+                    mainHandler.postDelayed({
+                        if (isAdded && !isDetached) {
+                            Log.d("STARTUP_NETWORK_TRACE", "DASHBOARD_RETRY_START")
+                            dashboardRequestStartTime = System.currentTimeMillis()
+                            try {
+                                WebServiceHelper.callHttpWebService(
+                                    this@Dashboard, requireContext(),
+                                    WebServiceHelper.RestMethodType.GET,
+                                    Constants.dashboardAllEndpoint!!,
+                                    REQ_DASHBOARD,
+                                    JSONObject().toString()
+                                )
+                            } catch (e: Exception) {
+                                Log.e(TAG, "DASHBOARD_RETRY launch error", e)
+                                Log.d("STARTUP_NETWORK_TRACE", "DASHBOARD_RETRY_FAILURE (launch exception): ${e.message}")
+                                activity?.let { AndroidUtils.showAlert("Something went wrong, please try again.", it) }
+                                isDashboardApiComplete = true
+                                isRetryingDashboard = false
+                                checkAndDismissProgress()
+                            }
+                        }
+                    }, 1200L)
+                    return@runOnMain
+                }
+
+                if (isNoInternet) {
+                    Log.d("STARTUP_NETWORK_TRACE", "DASHBOARD_NO_INTERNET: status_code=${httpResult.status_code}, response=${httpResult.responseContent}, elapsed=${elapsed}ms -> SHOW_NO_INTERNET_ALERT")
+                } else if (REQ_DASHBOARD.equals(reqType, ignoreCase = true) && isRetryingDashboard) {
+                    Log.d("STARTUP_NETWORK_TRACE", "DASHBOARD_RETRY_FAILURE: status_code=${httpResult.status_code}, error=${httpResult.errorMessage}, elapsed=${elapsed}ms -> FINAL_ERROR_DIALOG")
+                    isRetryingDashboard = false
+                } else if (REQ_DASHBOARD.equals(reqType, ignoreCase = true)) {
+                    Log.d("STARTUP_NETWORK_TRACE", "FINAL_ERROR_DIALOG: reqType=$reqType, status_code=${httpResult.status_code}, error=${httpResult.errorMessage}, elapsed=${elapsed}ms")
+                }
+
+                val alertMessage = if (isNoInternet) {
+                    Constants.NO_INTERNET_MSG
+                } else {
+                    "Something went wrong, please try again."
+                }
+
+                activity?.let { AndroidUtils.showAlert(alertMessage, it) }
+
                 if (REQ_DASHBOARD.equals(reqType, ignoreCase = true)) {
                     isDashboardApiComplete = true
                 } else if ("CHAT_LIST".equals(reqType, ignoreCase = true)) {
@@ -277,9 +359,18 @@ class Dashboard : Fragment(), AsyncTaskCompleteListener, View.OnClickListener {
                 return@runOnMain
             }
 
+            // Success branch
+            if (REQ_DASHBOARD.equals(reqType, ignoreCase = true)) {
+                if (isRetryingDashboard) {
+                    Log.d("STARTUP_NETWORK_TRACE", "DASHBOARD_RETRY_SUCCESS (elapsed=${elapsed}ms)")
+                    isRetryingDashboard = false
+                } else {
+                    Log.d("STARTUP_NETWORK_TRACE", "DASHBOARD_SUCCESS (elapsed=${elapsed}ms)")
+                }
+            }
+
             try {
                 val result = JSONObject(httpResult.responseContent)
-                val reqType = httpResult.requestType
 
                 if ("CHAT_LIST".equals(reqType, ignoreCase = true)) {
                     handleChatList(result)
@@ -295,7 +386,6 @@ class Dashboard : Fragment(), AsyncTaskCompleteListener, View.OnClickListener {
                 Log.e(TAG, "JSON parse error", e)
                 activity?.let { AndroidUtils.showAlert("Something went wrong, please try again.", it) }
 
-                val reqType = httpResult.requestType
                 if (REQ_DASHBOARD.equals(reqType, ignoreCase = true)) {
                     isDashboardApiComplete = true
                 } else if ("CHAT_LIST".equals(reqType, ignoreCase = true)) {

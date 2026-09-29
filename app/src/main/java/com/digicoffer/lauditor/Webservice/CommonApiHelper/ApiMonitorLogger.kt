@@ -26,7 +26,9 @@ object ApiMonitorLogger {
         "api_key",
         "apikey",
         "client_secret",
-        "credentials"
+        "credentials",
+        "ticket",
+        "checkout_ticket"
     )
 
     private fun maskSensitiveData(input: String?): String {

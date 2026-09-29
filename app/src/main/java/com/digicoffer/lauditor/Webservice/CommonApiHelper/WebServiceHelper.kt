@@ -36,7 +36,8 @@ class WebServiceHelper {
             vararg formParams: String
         ): String {
             val requestId = ""
-            HttpExecuteTask(requestId, false, restMethodType, url, callback, activity, requestType).execute(*formParams)
+            HttpExecuteTask(requestId, false, restMethodType, url, callback, activity, requestType)
+                .executeOnExecutor(android.os.AsyncTask.THREAD_POOL_EXECUTOR, *formParams)
             return requestId
         }
 
@@ -65,7 +66,8 @@ class WebServiceHelper {
             vararg formParams: String
         ): String {
             val requestId = ""
-            UploadImageTask(file, false, restMethodType, url, callback, activity, requestType).execute(*formParams)
+            UploadImageTask(file, false, restMethodType, url, callback, activity, requestType)
+                .executeOnExecutor(android.os.AsyncTask.THREAD_POOL_EXECUTOR, *formParams)
             return requestId
         }
 

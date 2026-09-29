@@ -70,6 +70,7 @@ class AppImageCache {
 
             // No URL -> show only initial letter, hide image permanently
             if (url.isNullOrEmpty()) {
+                imageView.setImageDrawable(null)
                 imageView.visibility = View.GONE
                 applyFallback(fallbackTextView, name, true)
                 return

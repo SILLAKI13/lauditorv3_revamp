@@ -200,6 +200,19 @@ class biometric_page : AppCompatActivity() {
 
     private fun performLogout() {
         Constants.isClient_chat = true
+        Constants.firm_image = ""
+        Constants.dashboard_image = ""
+        Constants.NAME = ""
+        Constants.NAME_NEW = ""
+        Constants.FIRM_NAME = ""
+        Constants.ContactName = ""
+        Constants.firmProfileModel = null
+        com.digicoffer.lauditor.CommonFiles.CacheUtils.AppImageCache.clearAll()
+        try {
+            com.bumptech.glide.Glide.get(applicationContext).clearMemory()
+        } catch (e: Exception) {
+            e.printStackTrace()
+        }
         val sharedPreferences = getSharedPreferences("MyPrefs", Context.MODE_PRIVATE)
         sharedPreferences.edit().clear().apply()
         Constants.is_biometric = false

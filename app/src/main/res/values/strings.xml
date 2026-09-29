@@ -666,6 +666,7 @@
     <string name="account_activated_on">Account Activated On:</string>
     <string name="subscription_start_date">Subscription Start Date:</string>
     <string name="booking_settings">Booking Settings</string>
+    <string name="settings">Settings</string>
     <string name="excluded">Excluded :</string>
     <string name="contact_support"><u>Contact Support</u></string>
     <string name="for_more_information">For more information</string>

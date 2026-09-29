@@ -1,40 +1,25 @@
 package com.digicoffer.lauditor.core.ui.common.foundation
 
-import android.graphics.Bitmap
-import android.graphics.drawable.Drawable
-import androidx.compose.foundation.Image
-import androidx.compose.foundation.background
-import androidx.compose.foundation.layout.Box
+import android.graphics.Color as AndroidColor
+import android.util.TypedValue
+import android.view.Gravity
+import android.widget.FrameLayout
+import android.widget.ImageView
+import android.widget.TextView
 import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.shape.CircleShape
-import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.LaunchedEffect
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
-import androidx.compose.runtime.setValue
-import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.graphics.asImageBitmap
-import androidx.compose.ui.layout.ContentScale
-import androidx.compose.ui.platform.LocalContext
-import androidx.compose.ui.text.font.Font
-import androidx.compose.ui.text.font.FontFamily
-import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.graphics.toArgb
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.TextUnit
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import com.bumptech.glide.Glide
-import com.bumptech.glide.load.engine.DiskCacheStrategy
-import com.bumptech.glide.request.RequestOptions
-import com.bumptech.glide.request.target.CustomTarget
-import com.bumptech.glide.request.transition.Transition
+import androidx.compose.ui.viewinterop.AndroidView
+import androidx.core.content.ContextCompat
+import androidx.core.content.res.ResourcesCompat
+import com.digicoffer.lauditor.CommonFiles.GlobalFiles.AndroidUtils
 import com.digicoffer.lauditor.R
-import java.util.Locale
 
 @Composable
 fun AppProfileAvatar(
@@ -45,66 +30,51 @@ fun AppProfileAvatar(
     fontSize: TextUnit = 12.sp,
     fallbackBgColor: Color = Color(0xFF004D87)
 ) {
-    var bitmap by remember(imageUrl) { mutableStateOf<Bitmap?>(null) }
-    val context = LocalContext.current
-
-    LaunchedEffect(imageUrl) {
-        if (!imageUrl.isNullOrBlank()) {
-            Glide.with(context.applicationContext)
-                .asBitmap()
-                .load(imageUrl)
-                .apply(
-                    RequestOptions()
-                        .diskCacheStrategy(DiskCacheStrategy.DATA)
-                        .circleCrop()
-                        .dontAnimate()
+    AndroidView(
+        modifier = modifier.size(size),
+        factory = { ctx ->
+            val frameLayout = FrameLayout(ctx).apply {
+                layoutParams = FrameLayout.LayoutParams(
+                    FrameLayout.LayoutParams.MATCH_PARENT,
+                    FrameLayout.LayoutParams.MATCH_PARENT
                 )
-                .into(object : CustomTarget<Bitmap>() {
-                    override fun onResourceReady(resource: Bitmap, transition: Transition<in Bitmap>?) {
-                        bitmap = resource
-                    }
-
-                    override fun onLoadCleared(placeholder: Drawable?) {
-                        bitmap = null
-                    }
-
-                    override fun onLoadFailed(errorDrawable: Drawable?) {
-                        bitmap = null
-                    }
-                })
-        } else {
-            bitmap = null
-        }
-    }
-
-    if (bitmap != null) {
-        Image(
-            bitmap = bitmap!!.asImageBitmap(),
-            contentDescription = name,
-            contentScale = ContentScale.Crop,
-            modifier = modifier
-                .size(size)
-                .clip(CircleShape)
-        )
-    } else {
-        Box(
-            contentAlignment = Alignment.Center,
-            modifier = modifier
-                .size(size)
-                .background(fallbackBgColor, shape = CircleShape)
-        ) {
-            val initials = if (name.isNotEmpty()) {
-                name.take(1).uppercase(Locale.ROOT)
-            } else {
-                "P"
             }
-            Text(
-                text = initials,
-                color = Color.White,
-                fontSize = fontSize,
-                fontWeight = FontWeight.Bold,
-                fontFamily = FontFamily(Font(R.font.gill_sans_regular))
-            )
+
+            val fallbackTextView = TextView(ctx).apply {
+                layoutParams = FrameLayout.LayoutParams(
+                    FrameLayout.LayoutParams.MATCH_PARENT,
+                    FrameLayout.LayoutParams.MATCH_PARENT
+                )
+                gravity = Gravity.CENTER
+                setTextColor(AndroidColor.WHITE)
+                setTextSize(TypedValue.COMPLEX_UNIT_SP, fontSize.value)
+                typeface = ResourcesCompat.getFont(ctx, R.font.gill_sans_bold)
+                val bgDrawable = ContextCompat.getDrawable(ctx, R.drawable.blue_circular)?.mutate()?.apply {
+                    setTint(fallbackBgColor.toArgb())
+                }
+                background = bgDrawable
+            }
+
+            val imageView = ImageView(ctx).apply {
+                layoutParams = FrameLayout.LayoutParams(
+                    FrameLayout.LayoutParams.MATCH_PARENT,
+                    FrameLayout.LayoutParams.MATCH_PARENT
+                )
+                scaleType = ImageView.ScaleType.CENTER_CROP
+            }
+
+            frameLayout.addView(fallbackTextView)
+            frameLayout.addView(imageView)
+
+            AndroidUtils.loadProfileImage(ctx, imageUrl, imageView, fallbackTextView, name)
+            frameLayout
+        },
+        update = { frameLayout ->
+            val fallbackTextView = frameLayout.getChildAt(0) as? TextView
+            val imageView = frameLayout.getChildAt(1) as? ImageView
+            if (fallbackTextView != null && imageView != null) {
+                AndroidUtils.loadProfileImage(frameLayout.context, imageUrl, imageView, fallbackTextView, name)
+            }
         }
-    }
+    )
 }

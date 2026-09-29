@@ -15,7 +15,7 @@ fun AppText(
     text: String,
     modifier: Modifier = Modifier,
     style: TextStyle = LauditorTheme.typography.bodyRegular,
-    color: Color = LauditorTheme.colors.onBackground,
+    color: Color = Color.Unspecified,
     maxLines: Int = Int.MAX_VALUE,
     overflow: TextOverflow = TextOverflow.Clip,
     textAlign: TextAlign? = null

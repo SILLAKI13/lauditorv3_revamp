@@ -109,6 +109,9 @@ class LoginActivity : AppCompatActivity(), AsyncTaskCompleteListener, View.OnCli
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+        Constants.firm_image = ""
+        Constants.firmProfileModel = null
+        com.digicoffer.lauditor.CommonFiles.CacheUtils.AppImageCache.clearAll()
         MyFirebaseMessagingService.initNotificationChannel(this)
         Constants.loginActivity = this
 
@@ -839,6 +842,15 @@ class LoginActivity : AppCompatActivity(), AsyncTaskCompleteListener, View.OnCli
                 }
 
                 val myPrefs = getSharedPreferences("MyPrefs", Context.MODE_PRIVATE)
+                val loginPic = probizData.optString("profile_pic_url").ifEmpty {
+                    probizData.optString("profile_pic").ifEmpty {
+                        probizData.optString("imageUrl", "")
+                    }
+                }
+                if (loginPic.isNotEmpty()) {
+                    Constants.firm_image = loginPic
+                    myPrefs.edit().putString("firm_image", loginPic).apply()
+                }
                 myPrefs.edit()
                     .putString("firmNames", JSONArray(Constants.Firm_names).toString())
                     .putString("firmIds", JSONArray(Constants.Firm_ids).toString())

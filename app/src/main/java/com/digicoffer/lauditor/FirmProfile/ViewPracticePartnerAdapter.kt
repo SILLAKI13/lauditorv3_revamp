@@ -914,7 +914,25 @@ open class ViewPracticePartnerAdapter(
         val tvCourtState = row.findViewById<TextView>(R.id.tv_courtState)
         val tvCourtCity = row.findViewById<TextView>(R.id.tv_courtCity)
         val tvCourtName = row.findViewById<TextView>(R.id.tv_courtName)
-        var courtType1 = (ce.court_name ?: "")
+        val titledot = row.findViewById<View>(R.id.titledot)
+        val dot2 = row.findViewById<View>(R.id.dot2)
+
+        fun sanitizeLoc(loc: String?): String {
+            if (loc.isNullOrBlank() || loc.equals("null", ignoreCase = true) || loc.equals("states", ignoreCase = true)) return ""
+            val t = loc.trim()
+            if (t.startsWith("{") && t.contains("state")) {
+                try {
+                    val obj = org.json.JSONObject(t)
+                    val st = obj.optString("state", "")
+                    if (st.isNotBlank()) return st
+                } catch (_: Exception) {}
+                return ""
+            }
+            return t
+        }
+
+        val rawCourt = ce.court_name?.ifEmpty { ce.court_type } ?: ce.court_type ?: ""
+        var courtType1 = rawCourt
             .replace("_", " ")
             .lowercase(Locale.getDefault())
 
@@ -931,9 +949,33 @@ open class ViewPracticePartnerAdapter(
             courtType1 = result.toString().trim()
         }
 
+        val isSupreme = courtType1.equals("Supreme Court", ignoreCase = true)
+        val rawState = sanitizeLoc(ce.state)
+        val rawCity = sanitizeLoc(ce.city)
+
+        val finalState = if (rawState.isEmpty() && isSupreme) "Delhi" else rawState
+        val finalCity = if (rawCity.isEmpty() && isSupreme) "New Delhi" else rawCity
+
         tvCourtType?.text = courtType1
-        tvCourtState?.text = ce.state
-        tvCourtCity?.text = ce.city
+        tvCourtState?.text = finalState
+        tvCourtCity?.text = finalCity
+
+        if (finalState.isEmpty()) {
+            titledot?.visibility = View.GONE
+            tvCourtState?.visibility = View.GONE
+        } else {
+            titledot?.visibility = View.VISIBLE
+            tvCourtState?.visibility = View.VISIBLE
+        }
+
+        if (finalCity.isEmpty()) {
+            dot2?.visibility = View.GONE
+            tvCourtCity?.visibility = View.GONE
+        } else {
+            dot2?.visibility = View.VISIBLE
+            tvCourtCity?.visibility = View.VISIBLE
+        }
+
         parent.addView(row)
     }
 

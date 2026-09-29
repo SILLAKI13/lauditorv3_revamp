@@ -124,6 +124,8 @@ class TermsAndConditionsDialog private constructor() {
                 btnAccept?.setOnClickListener {
                     if (cbAgree?.isChecked == true) {
                         Log.d(TAG, "Accept button clicked")
+                        btnAccept?.isEnabled = false
+                        btnAccept?.alpha = 0.5f
                         listener?.onAccept(version)
                     } else {
                         Toast.makeText(context, "Please agree to the terms to continue", Toast.LENGTH_SHORT).show()
@@ -170,7 +172,7 @@ class TermsAndConditionsDialog private constructor() {
                                 ?.load()
                         }
                     }
-                    pdfLoader?.execute(pdfUrl)
+                    pdfLoader?.executeOnExecutor(android.os.AsyncTask.THREAD_POOL_EXECUTOR, pdfUrl)
                 } else {
                     Log.e(TAG, "PDF URL is null or empty")
                     showError("No PDF available")
@@ -294,7 +296,7 @@ class TermsAndConditionsDialog private constructor() {
                             .load()
                     }
                 }
-                pdfLoader?.execute(pdfUrl)
+                pdfLoader?.executeOnExecutor(android.os.AsyncTask.THREAD_POOL_EXECUTOR, pdfUrl)
             } else {
                 Log.e(TAG, "PDF URL is null or empty")
                 innerProgressBar.visibility = View.GONE
@@ -316,7 +318,7 @@ class TermsAndConditionsDialog private constructor() {
         }
     }
 
-    private fun updateAcceptButtonState() {
+    fun updateAcceptButtonState() {
         btnAccept?.let {
             val isChecked = cbAgree?.isChecked == true
             val isPdfVisible = pdfView?.visibility == View.VISIBLE

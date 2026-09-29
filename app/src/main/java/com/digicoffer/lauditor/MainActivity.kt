@@ -101,6 +101,7 @@ import com.digicoffer.lauditor.Members.Members
 import com.digicoffer.lauditor.Notifications.Models.Navigation
 import com.digicoffer.lauditor.Notifications.Notifications
 import com.digicoffer.lauditor.Relationships.ClientRelationship
+import com.digicoffer.lauditor.Settings.Settings
 import com.digicoffer.lauditor.TimeSheets.ViewModels.TimeSheets
 import com.digicoffer.lauditor.Webservice.AsyncTaskCompleteListener
 import com.digicoffer.lauditor.Webservice.CommonApiHelper.WebServiceHelper
@@ -186,6 +187,7 @@ class MainActivity : AppCompatActivity(), Dashboard.MenuHighlightListener, Month
     lateinit var sm_groups: View
     lateinit var sm_team_member: View
     lateinit var sm_invoice: View
+    lateinit var sm_settings: View
     lateinit var sm_logout: View
 
     private var currentActiveSubItem: TextView? = null
@@ -344,6 +346,7 @@ class MainActivity : AppCompatActivity(), Dashboard.MenuHighlightListener, Month
         sm_invoice = findViewById(R.id.sm_invoice)
         sm_email = findViewById(R.id.sm_email)
         sm_audit = findViewById(R.id.sm_audit)
+        sm_settings = findViewById(R.id.sm_settings)
         sm_logout = findViewById(R.id.sm_logout)
 
         val composeView = findViewById<ComposeView>(R.id.sidebar_compose_view)
@@ -473,6 +476,11 @@ class MainActivity : AppCompatActivity(), Dashboard.MenuHighlightListener, Month
             setActiveParent(sm_invoice)
             doNavigate(ViewInvoice())
         }
+        setRowClick(sm_settings) {
+            collapseAllSubMenus()
+            setActiveParent(sm_settings)
+            doNavigate(Settings())
+        }
         setRowClick(sm_logout) { performLogout() }
         
         val firmProfileTitle: String
@@ -506,6 +514,7 @@ class MainActivity : AppCompatActivity(), Dashboard.MenuHighlightListener, Month
         setupMenuRow(sm_groups, getString(R.string.groups), R.drawable.groups, false)
         setupMenuRow(sm_team_member, getString(R.string.members), R.drawable.members, false)
         setupMenuRow(sm_invoice, "Invoices", R.drawable.invoices, false)
+        setupMenuRow(sm_settings, getString(R.string.settings), R.drawable.ic_settings, false)
         setupMenuRow(sm_logout, getString(R.string.logout), R.drawable.logout, false)
         
         if ("SU" == Constants.ROLE && !isSolo) {
@@ -843,13 +852,14 @@ class MainActivity : AppCompatActivity(), Dashboard.MenuHighlightListener, Month
                 }
             }
             
+            val myPrefs = getSharedPreferences("MyPrefs", Context.MODE_PRIVATE)
+            if (Constants.firm_image.isNullOrEmpty()) {
+                Constants.firm_image = myPrefs.getString("firm_image", "")
+            }
+
             person_icon = findViewById(R.id.person_icon)
             iv_profile = findViewById(R.id.iv_profile)
-            person_icon.visibility = View.VISIBLE
-            iv_profile.visibility = View.GONE
-            
-            val n = Constants.NAME
-            person_icon.text = if (!n.isNullOrEmpty()) n.substring(0, 1) else "?"
+            updateTopBarProfile()
             
             profile()
             setMenuList()
@@ -1092,7 +1102,7 @@ class MainActivity : AppCompatActivity(), Dashboard.MenuHighlightListener, Month
             sm_firmProfile, sm_appointments, sm_matter, sm_documents,
             sm_docEditor, sm_relationships, sm_timesheet, sm_meetings,
             sm_email, sm_messages, sm_notification, sm_invoice,
-            sm_audit, sm_groups, sm_team_member, sm_logout
+            sm_audit, sm_groups, sm_team_member, sm_settings, sm_logout
         )
     }
 
@@ -1261,6 +1271,7 @@ class MainActivity : AppCompatActivity(), Dashboard.MenuHighlightListener, Month
         else if (fragment is Groups) sel = sm_groups
         else if (fragment is Members) sel = sm_team_member
         else if (fragment is ViewInvoice) sel = sm_invoice
+        else if (fragment is Settings) sel = sm_settings
         
         val keepSubItem = (currentActiveSubItem != null && sel != null && sel === currentActiveParentView)
         clearAllParentStyles()
@@ -1351,17 +1362,29 @@ class MainActivity : AppCompatActivity(), Dashboard.MenuHighlightListener, Month
         sm_audit.visibility = View.GONE
         sm_groups.visibility = View.GONE
         sm_team_member.visibility = View.GONE
+        sm_settings.visibility = View.GONE
         sm_logout.visibility = View.VISIBLE
     }
 
-    fun updateProfileInitial() {
+    fun updateTopBarProfile() {
         runOnUiThread {
-            val n = Constants.NAME
-            val initial = if (!n.isNullOrEmpty()) n.substring(0, 1).uppercase() else ""
-            if (Constants.mainActivity?.person_icon != null) {
-                Constants.mainActivity?.person_icon?.text = initial
+            if (::person_icon.isInitialized && ::iv_profile.isInitialized) {
+                val name = if (Constants.ROLE == "AAM") Constants.FIRM_NAME else Constants.NAME
+                val initial = if (!name.isNullOrEmpty()) name.substring(0, 1).uppercase() else "?"
+                person_icon.text = initial
+                if (Constants.firm_image.isNullOrEmpty()) {
+                    iv_profile.setImageDrawable(null)
+                    iv_profile.visibility = View.GONE
+                    person_icon.visibility = View.VISIBLE
+                } else {
+                    AndroidUtils.loadProfileImage(this, Constants.firm_image, iv_profile, person_icon, name)
+                }
             }
         }
+    }
+
+    fun updateProfileInitial() {
+        updateTopBarProfile()
     }
 
     private fun setDefaultMenuList() {
@@ -1428,6 +1451,7 @@ class MainActivity : AppCompatActivity(), Dashboard.MenuHighlightListener, Month
                 sm_notification.visibility = View.VISIBLE
             }
         }
+        sm_settings.visibility = View.VISIBLE
         updateSidebarUiState()
     }
 
@@ -1596,6 +1620,10 @@ class MainActivity : AppCompatActivity(), Dashboard.MenuHighlightListener, Month
         MyFirebaseMessagingService.logoutToken(this, getStoredFCMToken())
         MyFirebaseMessagingService.clearAllNotifications(this)
         Constants.isClient_chat = true
+        getSharedPreferences("MyPrefs", Context.MODE_PRIVATE).edit()
+            .remove("firm_image")
+            .remove("firmNames").remove("requiresTermsAcceptance")
+            .remove("termsVersion").remove("firmIds").apply()
         PreferenceManager.getDefaultSharedPreferences(applicationContext).edit()
             .remove("EXTRA_CONTACT_JID").remove("CURRENTCHAT_JID")
             .remove("firmNames").remove("requiresTermsAcceptance")
@@ -1605,6 +1633,24 @@ class MainActivity : AppCompatActivity(), Dashboard.MenuHighlightListener, Month
         Constants.Firm_ids.clear()
         Constants.Firm_names.clear()
         Constants.isClient_chat = true
+        Constants.firm_image = ""
+        Constants.dashboard_image = ""
+        Constants.NAME = ""
+        Constants.NAME_NEW = ""
+        Constants.FIRM_NAME = ""
+        Constants.ContactName = ""
+        Constants.firmProfileModel = null
+        AppImageCache.clearAll()
+        try {
+            com.bumptech.glide.Glide.get(applicationContext).clearMemory()
+            Thread {
+                try {
+                    com.bumptech.glide.Glide.get(applicationContext).clearDiskCache()
+                } catch (_: Exception) {}
+            }.start()
+        } catch (e: Exception) {
+            e.printStackTrace()
+        }
         getSharedPreferences("MyPrefs", Context.MODE_PRIVATE).edit().clear().apply()
         getSharedPreferences("BIO", Context.MODE_PRIVATE).edit().clear().apply()
         Constants.is_biometric = false
@@ -1675,11 +1721,9 @@ class MainActivity : AppCompatActivity(), Dashboard.MenuHighlightListener, Month
     }
 
     fun profile() {
-        progress_dialog = AndroidUtils.get_progress(this)
         try {
-            val URL = if (Constants.ROLE == "AAM") "v3/firm/profile/pic" else "v3/profile/pic"
             WebServiceHelper.callHttpWebService(
-                this, this, WebServiceHelper.RestMethodType.GET, URL, "Profile", JSONObject().toString()
+                this, this, WebServiceHelper.RestMethodType.GET, "v3/profile", "Profile", JSONObject().toString()
             )
         } catch (e: Exception) {
             e.fillInStackTrace()
@@ -1736,8 +1780,27 @@ class MainActivity : AppCompatActivity(), Dashboard.MenuHighlightListener, Month
                         if (!result.optBoolean("error")) {
                             val data = result.optJSONObject("data")
                             if (data != null) {
-                                Constants.firm_image = data.optString("imageUrl", "")
-                                AndroidUtils.loadProfileImage(this, Constants.firm_image, iv_profile, person_icon)
+                                val profile = data.optJSONObject("profile")
+                                val firm = profile?.optJSONObject("firm")
+                                val profilePic = profile?.optString("profile_pic_url", "")?.takeIf { it.isNotBlank() }
+                                    ?: firm?.optString("profile_pic_url", "")?.takeIf { it.isNotBlank() }
+                                    ?: data.optString("imageUrl", data.optString("url", data.optString("profile_pic_url", "")))
+
+                                Constants.firm_image = if (profilePic.isNullOrEmpty()) "" else profilePic
+                                val prefs = getSharedPreferences("MyPrefs", Context.MODE_PRIVATE)
+                                prefs.edit().putString("firm_image", Constants.firm_image).apply()
+
+                                val name = profile?.optString("name", "")
+                                if (!name.isNullOrEmpty()) {
+                                    Constants.NAME = name
+                                    Constants.ContactName = name
+                                }
+                                val firmName = firm?.optString("fullname", "")
+                                if (!firmName.isNullOrEmpty()) {
+                                    Constants.FIRM_NAME = firmName
+                                }
+
+                                updateTopBarProfile()
                             }
                             fetchNotificationCount()
                         }
@@ -1757,9 +1820,17 @@ class MainActivity : AppCompatActivity(), Dashboard.MenuHighlightListener, Month
             if ("SESSION_VALIDATE_COLD_START" == requestTypeSafe) {
                 Log.w("FCM_NAV", "Session validation ping failed (non-401) — dispatching pending navigation anyway")
                 dispatchPendingColdStartNavigation()
+            } else if ("Profile" == requestTypeSafe) {
+                Log.d("STARTUP_NETWORK_TRACE", "PROFILE_PIC_FAILURE (non-fatal): status_code=${httpResult.status_code}, error=${httpResult.errorMessage}")
             } else {
                 try {
-                    AndroidUtils.showErrorAlert(JSONObject(httpResult.responseContent).optString("msg"), this)
+                    val content = httpResult.responseContent
+                    if (!content.isNullOrBlank() && (content.startsWith("{") || content.startsWith("["))) {
+                        val msg = JSONObject(content).optString("msg")
+                        if (msg.isNotEmpty()) {
+                            AndroidUtils.showErrorAlert(msg, this)
+                        }
+                    }
                 } catch (e: Exception) {
                     e.fillInStackTrace()
                 }
@@ -1901,6 +1972,11 @@ class MainActivity : AppCompatActivity(), Dashboard.MenuHighlightListener, Month
             setActiveParent(sm_invoice)
             doNavigate(ViewInvoice())
         }
+        setRowClick(sm_settings) {
+            collapseAllSubMenus()
+            setActiveParent(sm_settings)
+            doNavigate(Settings())
+        }
         setRowClick(sm_logout) { performLogout() }
 
         val firmProfileTitle: String
@@ -1931,6 +2007,7 @@ class MainActivity : AppCompatActivity(), Dashboard.MenuHighlightListener, Month
         val hasMessagesSubMenu = "AAM" != Constants.ROLE && !isSolo
         setupMenuRow(sm_messages, getString(R.string.messages), R.drawable.messages, hasMessagesSubMenu)
         setupMenuRow(sm_notification, getString(R.string.notifications), R.drawable.notifications, false)
+        setupMenuRow(sm_settings, getString(R.string.settings), R.drawable.ic_settings, false)
         setupMenuRow(sm_audit, getString(R.string.audit_trails), R.drawable.audit_trails, false)
         setupMenuRow(sm_groups, getString(R.string.groups), R.drawable.groups, false)
         setupMenuRow(sm_team_member, getString(R.string.members), R.drawable.members, false)
@@ -2350,12 +2427,18 @@ class MainActivity : AppCompatActivity(), Dashboard.MenuHighlightListener, Month
             override fun onTermsAccepted() {
                 Log.d("TermsCheck", "Terms Accepted")
                 runOnUiThread {
+                    val currentFrag = supportFragmentManager.findFragmentById(R.id.id_framelayout)
+                    val isDashboard = currentFrag is com.digicoffer.lauditor.Dashboard.NewRevampViewModels.Dashboard
+
                     clearAllParentStyles()
                     clearActiveSubItem()
                     collapseAllSubMenus()
-                    supportFragmentManager.beginTransaction()
-                        .replace(R.id.id_framelayout, com.digicoffer.lauditor.Dashboard.NewRevampViewModels.Dashboard())
-                        .commit()
+
+                    if (currentFrag == null || !isDashboard) {
+                        supportFragmentManager.beginTransaction()
+                            .replace(R.id.id_framelayout, com.digicoffer.lauditor.Dashboard.NewRevampViewModels.Dashboard())
+                            .commit()
+                    }
                 }
             }
             override fun onTermsDeclined() {
@@ -2394,6 +2477,7 @@ class MainActivity : AppCompatActivity(), Dashboard.MenuHighlightListener, Month
 
     override fun onResume() {
         super.onResume()
+        updateTopBarProfile()
         if (!Constants.pendingFcmNavigation.isNullOrEmpty()) {
             val nav = Constants.pendingFcmNavigation
             Constants.pendingFcmNavigation = ""
@@ -2574,6 +2658,7 @@ class MainActivity : AppCompatActivity(), Dashboard.MenuHighlightListener, Month
         else if (fragment is Groups) parentView = sm_groups
         else if (fragment is Members) parentView = sm_team_member
         else if (fragment is ViewInvoice) parentView = sm_invoice
+        else if (fragment is Settings) parentView = sm_settings
 
         if (parentView != null) {
             val container = parentView.findViewById<LinearLayout>(R.id.submenu_container)
@@ -2694,7 +2779,7 @@ class MainActivity : AppCompatActivity(), Dashboard.MenuHighlightListener, Month
         val parentViews = arrayOf(
             sm_firmProfile, sm_appointments, sm_matter, sm_documents,
             sm_docEditor, sm_relationships, sm_timesheet, sm_meetings,
-            sm_email, sm_messages, sm_notification, sm_audit,
+            sm_email, sm_messages, sm_notification, sm_settings, sm_audit,
             sm_groups, sm_team_member, sm_invoice, sm_logout
         )
 
@@ -2714,6 +2799,7 @@ class MainActivity : AppCompatActivity(), Dashboard.MenuHighlightListener, Month
             R.id.sm_groups to R.drawable.groups,
             R.id.sm_team_member to R.drawable.members,
             R.id.sm_invoice to R.drawable.invoices,
+            R.id.sm_settings to R.drawable.ic_settings,
             R.id.sm_logout to R.drawable.logout
         )
 

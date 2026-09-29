@@ -21,7 +21,7 @@ class Filecosen(private val activity: Activity, private val callback: FileChoose
         fun openGallery()
     }
 
-    fun show() {
+    fun show(onDismiss: (() -> Unit)? = null) {
         val currentDialog = Dialog(activity)
         dialog = currentDialog
         currentDialog.setContentView(R.layout.dialog_file_chosen)
@@ -51,6 +51,10 @@ class Filecosen(private val activity: Activity, private val callback: FileChoose
         }
 
         tvCancel.setOnClickListener { currentDialog.dismiss() }
+
+        currentDialog.setOnDismissListener {
+            onDismiss?.invoke()
+        }
 
         currentDialog.show()
     }

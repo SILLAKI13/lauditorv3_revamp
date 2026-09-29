@@ -1662,6 +1662,32 @@ class AndroidUtils {
         }
 
         @JvmStatic
+        fun openUrlInChrome(context: Context, rawUrl: String?) {
+            if (rawUrl.isNullOrBlank()) return
+            val url = if (rawUrl.startsWith("http://") || rawUrl.startsWith("https://")) {
+                rawUrl.trim()
+            } else {
+                "https://${rawUrl.trim()}"
+            }
+            try {
+                val intent = Intent(Intent.ACTION_VIEW, Uri.parse(url)).apply {
+                    addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
+                    setPackage("com.android.chrome")
+                }
+                context.startActivity(intent)
+            } catch (e: Exception) {
+                try {
+                    val fallbackIntent = Intent(Intent.ACTION_VIEW, Uri.parse(url)).apply {
+                        addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
+                    }
+                    context.startActivity(fallbackIntent)
+                } catch (e2: Exception) {
+                    showToast("No browser available to open link", context)
+                }
+            }
+        }
+
+        @JvmStatic
         private fun getString(loginType: String, token: String, jid: String): String {
             val name = ((Constants.NAME ?: "") + " ").replace(" ", "%20")
             return "${Constants.AVChatUrl}?logintype=$loginType&token=$token&jid=$jid&name=$name&hideclient=${Constants.isAdmin}&plan=lauditor&category=${Constants.CATEGORY}"
@@ -2397,9 +2423,21 @@ class AndroidUtils {
 
         @JvmStatic
         fun dismiss_dialog(dialog: Dialog?) {
-            if (dialog != null && dialog.isShowing) {
-                dialog.dismiss()
+            try {
+                if (dialog != null && dialog.isShowing) {
+                    dialog.dismiss()
+                }
+            } catch (e: Exception) {
+                e.printStackTrace()
             }
+            try {
+                if (currentDialog != null && currentDialog!!.isShowing) {
+                    currentDialog!!.dismiss()
+                }
+            } catch (e: Exception) {
+                e.printStackTrace()
+            }
+            currentDialog = null
         }
 
         @JvmStatic

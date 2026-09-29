@@ -189,6 +189,7 @@ class FirmProfileModel {
         var validityDays: String? = null
         var nextBillingDate: String? = null
         var isCanUpgrade: Boolean = false
+        var isCanDowngrade: Boolean = false
         var isCanPayNow: Boolean = false
         var plan: Plan? = null
         var payment: Payment? = null

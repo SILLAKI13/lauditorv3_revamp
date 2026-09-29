@@ -466,6 +466,8 @@ object Constants {
                 }
             }
 
+            Constants.firm_image = prefs.getString("firm_image", "") ?: ""
+
             true
         } catch (e: Exception) {
             e.printStackTrace()
