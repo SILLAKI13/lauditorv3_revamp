@@ -225,10 +225,15 @@ class MembersRepository(private val context: Context) {
         }
     }
 
-    suspend fun upgradePracticePartner(id: String): HttpResultDo = suspendCancellableCoroutine { continuation ->
+    suspend fun upgradePracticePartner(id: String, email: String = ""): HttpResultDo = suspendCancellableCoroutine { continuation ->
         try {
             val postData = JSONObject().apply {
                 put("id", id)
+                put("member_id", id)
+                put("memberId", id)
+                if (email.isNotBlank()) {
+                    put("email", email)
+                }
             }
             WebServiceHelper.callHttpWebService(
                 object : AsyncTaskCompleteListener {

@@ -58,6 +58,20 @@ class DocumentsEn : Fragment(), BottomSheetUploadFile.OnPhotoSelectedListner {
                             bottommSheetUploadDocument.setOnPhotoSelectedListener(this@DocumentsEn)
                             bottommSheetUploadDocument.setTargetFragment(this@DocumentsEn, 1)
                             bottommSheetUploadDocument.show(parentFragmentManager, "BottomSheetUploadFile")
+                        },
+                        onNavigateToMatter = {
+                            com.digicoffer.lauditor.CommonFiles.GlobalFiles.Constants.create_matter = true
+                            com.digicoffer.lauditor.CommonFiles.GlobalFiles.Constants.MATTER_TYPE = "Legal"
+                            val mainAct = (activity as? com.digicoffer.lauditor.MainActivity)
+                                ?: com.digicoffer.lauditor.CommonFiles.GlobalFiles.Constants.mainActivity
+                            mainAct?.navigationToModules(com.digicoffer.lauditor.Matter.ViewModels.Matter())
+                        },
+                        onNavigateToClient = {
+                            com.digicoffer.lauditor.CommonFiles.GlobalFiles.Constants.Rel_Type = "Individual"
+                            com.digicoffer.lauditor.CommonFiles.GlobalFiles.Constants.create_relationship = true
+                            val mainAct = (activity as? com.digicoffer.lauditor.MainActivity)
+                                ?: com.digicoffer.lauditor.CommonFiles.GlobalFiles.Constants.mainActivity
+                            mainAct?.navigationToModules(com.digicoffer.lauditor.Relationships.ClientRelationship())
                         }
                     )
                 }

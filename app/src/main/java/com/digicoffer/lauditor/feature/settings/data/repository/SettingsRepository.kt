@@ -36,13 +36,15 @@ class SettingsRepository(private val context: Context) {
     }
 
     suspend fun changePassword(
-        currentPass: String,
+        currentPass: String?,
         newPass: String,
         confirmPass: String
     ): HttpResultDo = suspendCancellableCoroutine { continuation ->
         try {
             val payload = JSONObject().apply {
-                put("current_password", currentPass)
+                if (!currentPass.isNullOrEmpty()) {
+                    put("current_password", currentPass)
+                }
                 put("new_password", newPass)
                 put("confirm_password", confirmPass)
             }
@@ -56,7 +58,7 @@ class SettingsRepository(private val context: Context) {
                 context,
                 WebServiceHelper.RestMethodType.POST,
                 "v3/settings/change-password",
-                "CHANGE_PASSWORD",
+                if (currentPass.isNullOrEmpty()) "SET_PASSWORD" else "CHANGE_PASSWORD",
                 payload.toString()
             )
         } catch (e: Exception) {
@@ -67,6 +69,15 @@ class SettingsRepository(private val context: Context) {
             continuation.resume(failedResult)
         }
     }
+
+    suspend fun setPassword(
+        newPass: String,
+        confirmPass: String
+    ): HttpResultDo = changePassword(
+        currentPass = null,
+        newPass = newPass,
+        confirmPass = confirmPass
+    )
 
     suspend fun generateCheckoutTicket(): HttpResultDo = suspendCancellableCoroutine { continuation ->
         try {

@@ -14,6 +14,10 @@ import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.text.BasicTextField
+import androidx.compose.foundation.text.ClickableText
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Close
+import androidx.compose.ui.text.TextStyle
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.lazy.LazyColumn
@@ -88,7 +92,17 @@ private val GillSans = FontFamily(
 fun DocumentsScreen(
     viewModel: DocumentsViewModel,
     onTitleChanged: (String) -> Unit = {},
-    onBrowseClick: () -> Unit
+    onBrowseClick: () -> Unit,
+    onNavigateToMatter: () -> Unit = {
+        com.digicoffer.lauditor.CommonFiles.GlobalFiles.Constants.create_matter = true
+        com.digicoffer.lauditor.CommonFiles.GlobalFiles.Constants.MATTER_TYPE = "Legal"
+        com.digicoffer.lauditor.CommonFiles.GlobalFiles.Constants.mainActivity?.navigationToModules(com.digicoffer.lauditor.Matter.ViewModels.Matter())
+    },
+    onNavigateToClient: () -> Unit = {
+        com.digicoffer.lauditor.CommonFiles.GlobalFiles.Constants.Rel_Type = "Individual"
+        com.digicoffer.lauditor.CommonFiles.GlobalFiles.Constants.create_relationship = true
+        com.digicoffer.lauditor.CommonFiles.GlobalFiles.Constants.mainActivity?.navigationToModules(com.digicoffer.lauditor.Relationships.ClientRelationship())
+    }
 ) {
     val uiState by viewModel.uiState.collectAsState()
     var showDeletedBanner by rememberSaveable { mutableStateOf(true) }
@@ -101,6 +115,9 @@ fun DocumentsScreen(
         }
         onTitleChanged(title)
     }
+
+    val context = androidx.compose.ui.platform.LocalContext.current
+    val activity = context as? android.app.Activity
 
     Box(
         modifier = Modifier
@@ -120,7 +137,14 @@ fun DocumentsScreen(
                     AppHeaderButton(
                         text = if (uiState.isUploadMode) "Document View" else "Upload New",
                         iconRes = if (uiState.isUploadMode) R.drawable.eye_icon else R.drawable.simple_plus_icon,
-                        onClick = { viewModel.onEvent(DocumentsUiEvent.ToggleUploadMode(!uiState.isUploadMode)) }
+                        onClick = {
+                            if (!uiState.isUploadMode) {
+                                if (com.digicoffer.lauditor.CommonFiles.GlobalFiles.AndroidUtils.checkSubPlanValidation(activity, "client_doc_upload")) {
+                                    return@AppHeaderButton
+                                }
+                            }
+                            viewModel.onEvent(DocumentsUiEvent.ToggleUploadMode(!uiState.isUploadMode))
+                        }
                     )
                 }
             }
@@ -719,22 +743,160 @@ fun DocumentsScreen(
 
     // Alert dialogs
     if (uiState.alertMessage != null) {
-        AppDialog(
-            title = uiState.alertTitle ?: "Alert !",
-            onConfirm = { viewModel.onEvent(DocumentsUiEvent.DismissAlert) },
-            onDismiss = { viewModel.onEvent(DocumentsUiEvent.DismissAlert) },
-            confirmText = "OK",
-            dismissText = null,
-            content = {
-                Text(
-                    text = uiState.alertMessage ?: "",
-                    fontFamily = GillSans,
-                    fontSize = 15.sp,
-                    color = Color.Black,
-                    textAlign = TextAlign.Center
-                )
+        val msg = uiState.alertMessage ?: ""
+        val hasRedirectLink = uiState.alertRedirectionModule != null || msg.contains("Click here", ignoreCase = true)
+
+        if (hasRedirectLink) {
+            WebAlertRedirectionDialog(
+                title = uiState.alertTitle ?: "Alert",
+                message = msg,
+                onLinkClick = {
+                    val isMatter = uiState.alertRedirectionModule == "matter" || msg.contains("matter", ignoreCase = true)
+                    viewModel.onEvent(DocumentsUiEvent.DismissAlert)
+                    if (isMatter) {
+                        onNavigateToMatter()
+                    } else {
+                        onNavigateToClient()
+                    }
+                },
+                onDismiss = {
+                    viewModel.onEvent(DocumentsUiEvent.DismissAlert)
+                }
+            )
+        } else {
+            AppDialog(
+                title = uiState.alertTitle ?: "Alert !",
+                onConfirm = { viewModel.onEvent(DocumentsUiEvent.DismissAlert) },
+                onDismiss = { viewModel.onEvent(DocumentsUiEvent.DismissAlert) },
+                confirmText = "OK",
+                dismissText = null,
+                content = {
+                    Text(
+                        text = msg,
+                        fontFamily = GillSans,
+                        fontSize = 15.sp,
+                        color = Color.Black,
+                        textAlign = TextAlign.Center
+                    )
+                }
+            )
+        }
+    }
+}
+
+@Composable
+fun WebAlertRedirectionDialog(
+    title: String = "Alert",
+    message: String,
+    onLinkClick: () -> Unit,
+    onDismiss: () -> Unit
+) {
+    Dialog(
+        onDismissRequest = onDismiss,
+        properties = DialogProperties(usePlatformDefaultWidth = false)
+    ) {
+        Surface(
+            modifier = Modifier
+                .fillMaxWidth(0.85f)
+                .wrapContentHeight(),
+            shape = RoundedCornerShape(12.dp),
+            color = Color.White,
+            shadowElevation = 8.dp
+        ) {
+            Column(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(horizontal = 24.dp, vertical = 20.dp),
+                horizontalAlignment = Alignment.CenterHorizontally
+            ) {
+                // Header: Title centered + 'X' close button on top right
+                Box(
+                    modifier = Modifier.fillMaxWidth()
+                ) {
+                    Text(
+                        text = title,
+                        fontFamily = GillSans,
+                        fontWeight = FontWeight.Bold,
+                        fontSize = 18.sp,
+                        color = Color(0xFF004D87),
+                        modifier = Modifier.align(Alignment.Center)
+                    )
+
+                    IconButton(
+                        onClick = onDismiss,
+                        modifier = Modifier
+                            .size(24.dp)
+                            .align(Alignment.TopEnd)
+                    ) {
+                        Icon(
+                            imageVector = Icons.Default.Close,
+                            contentDescription = "Close",
+                            tint = Color.Black,
+                            modifier = Modifier.size(18.dp)
+                        )
+                    }
+                }
+
+                Spacer(modifier = Modifier.height(18.dp))
+
+                val clickHereText = "Click here"
+                if (message.contains(clickHereText, ignoreCase = true)) {
+                    val startIndex = message.indexOf(clickHereText, ignoreCase = true)
+                    val beforeText = message.substring(0, startIndex)
+                    val matchedClickHere = message.substring(startIndex, startIndex + clickHereText.length)
+                    val afterText = message.substring(startIndex + clickHereText.length)
+
+                    val annotatedString = buildAnnotatedString {
+                        append(beforeText)
+                        pushStringAnnotation(tag = "REDIRECT", annotation = "action")
+                        withStyle(
+                            style = SpanStyle(
+                                color = Color(0xFF004D87),
+                                textDecoration = TextDecoration.Underline,
+                                fontWeight = FontWeight.Bold
+                            )
+                        ) {
+                            append(matchedClickHere)
+                        }
+                        pop()
+                        append(afterText)
+                    }
+
+                    ClickableText(
+                        text = annotatedString,
+                        style = TextStyle(
+                            fontFamily = GillSans,
+                            fontSize = 15.sp,
+                            color = Color(0xFF222222),
+                            textAlign = TextAlign.Center,
+                            lineHeight = 22.sp
+                        ),
+                        onClick = { offset ->
+                            val annotations = annotatedString.getStringAnnotations(tag = "REDIRECT", start = offset, end = offset)
+                            if (annotations.isNotEmpty()) {
+                                onLinkClick()
+                            } else {
+                                val distance = if (offset < startIndex) (startIndex - offset) else (offset - (startIndex + clickHereText.length))
+                                if (distance <= 4) {
+                                    onLinkClick()
+                                }
+                            }
+                        }
+                    )
+                } else {
+                    Text(
+                        text = message,
+                        fontFamily = GillSans,
+                        fontSize = 15.sp,
+                        color = Color(0xFF222222),
+                        textAlign = TextAlign.Center,
+                        lineHeight = 22.sp
+                    )
+                }
+
+                Spacer(modifier = Modifier.height(8.dp))
             }
-        )
+        }
     }
 }
 
@@ -1499,9 +1661,17 @@ fun DocumentViewerDialog(
                 onDismiss()
             }
 
+            val docWebview = view.findViewById<android.webkit.WebView>(R.id.doc_webview)
+            docWebview?.visibility = android.view.View.GONE
+
             val lowerUrl = url.lowercase(java.util.Locale.getDefault())
             val cleanUrlPath = lowerUrl.substringBefore('?')
-            val isImage = contentType.startsWith("image/", ignoreCase = true) ||
+            val isExplicitPdf = contentType.contains("pdf", ignoreCase = true) ||
+                    cleanUrlPath.endsWith(".pdf") ||
+                    docName.endsWith(".pdf", ignoreCase = true) ||
+                    (url.startsWith("localfile://") && cleanUrlPath.endsWith(".pdf"))
+            val isImage = !isExplicitPdf && (
+                    contentType.startsWith("image/", ignoreCase = true) ||
                     contentType.contains("image", ignoreCase = true) ||
                     lowerUrl.contains("response-content-type=image") ||
                     lowerUrl.contains("image%2f") ||
@@ -1518,11 +1688,14 @@ fun DocumentViewerDialog(
                     docName.endsWith(".jpeg", ignoreCase = true) ||
                     docName.endsWith(".png", ignoreCase = true) ||
                     docName.endsWith(".gif", ignoreCase = true) ||
-                    docName.endsWith(".webp", ignoreCase = true)
+                    docName.endsWith(".webp", ignoreCase = true) ||
+                    (contentType.isEmpty() || contentType.equals("application/octet-stream", ignoreCase = true))
+            )
 
             if (isImage) {
                 iv_image.visibility = android.view.View.VISIBLE
-                progressBar.visibility = android.view.View.GONE
+                idPDFView.visibility = android.view.View.GONE
+                progressBar.visibility = android.view.View.VISIBLE
                 val loadTarget: Any = if (url.startsWith("localfile://")) {
                     File(url.replace("localfile://", ""))
                 } else {
@@ -1531,9 +1704,39 @@ fun DocumentViewerDialog(
                 com.bumptech.glide.Glide.with(context)
                     .load(loadTarget)
                     .placeholder(R.drawable.progress_animation)
+                    .listener(object : com.bumptech.glide.request.RequestListener<android.graphics.drawable.Drawable> {
+                        override fun onLoadFailed(
+                            e: com.bumptech.glide.load.engine.GlideException?,
+                            model: Any?,
+                            target: com.bumptech.glide.request.target.Target<android.graphics.drawable.Drawable>,
+                            isFirstResource: Boolean
+                        ): Boolean {
+                            progressBar.visibility = android.view.View.GONE
+                            if (!url.startsWith("localfile://")) {
+                                iv_image.visibility = android.view.View.GONE
+                                idPDFView.visibility = android.view.View.VISIBLE
+                                progressBar.visibility = android.view.View.VISIBLE
+                                pdfTask[0] = com.digicoffer.lauditor.CommonFiles.PdfUtils.RetrievePDFfromUrl(idPDFView, progressBar)
+                                pdfTask[0]?.execute(url)
+                            }
+                            return false
+                        }
+
+                        override fun onResourceReady(
+                            resource: android.graphics.drawable.Drawable,
+                            model: Any,
+                            target: com.bumptech.glide.request.target.Target<android.graphics.drawable.Drawable>?,
+                            dataSource: com.bumptech.glide.load.DataSource,
+                            isFirstResource: Boolean
+                        ): Boolean {
+                            progressBar.visibility = android.view.View.GONE
+                            return false
+                        }
+                    })
                     .fitCenter()
                     .into(iv_image)
             } else {
+                iv_image.visibility = android.view.View.GONE
                 idPDFView.visibility = android.view.View.VISIBLE
                 progressBar.visibility = android.view.View.VISIBLE
                 if (url.startsWith("localfile://")) {
@@ -1541,6 +1744,7 @@ fun DocumentViewerDialog(
                     val file = File(localPath)
                     idPDFView.fromFile(file)
                         .onLoad { progressBar.visibility = android.view.View.GONE }
+                        .onError { progressBar.visibility = android.view.View.GONE }
                         .load()
                 } else {
                     pdfTask[0] = com.digicoffer.lauditor.CommonFiles.PdfUtils.RetrievePDFfromUrl(idPDFView, progressBar)

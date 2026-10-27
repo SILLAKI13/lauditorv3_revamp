@@ -121,20 +121,24 @@ fun AppConfirmationDialog(
                         colors = ButtonDefaults.buttonColors(
                             containerColor = Color(0xFFECEFF1)
                         ),
+                        contentPadding = PaddingValues(horizontal = 14.dp, vertical = 6.dp),
                         modifier = Modifier
                             .height(40.dp)
-                            .width(100.dp)
+                            .defaultMinSize(minWidth = 90.dp)
+                            .wrapContentWidth()
+                            .padding(horizontal = 4.dp)
                     ) {
                         Text(
                             text = dismissText,
                             color = Color.Black,
-                            fontSize = 15.sp,
+                            fontSize = 14.sp,
                             fontWeight = FontWeight.Bold,
-                            fontFamily = FontFamily(Font(R.font.gill_sans_regular))
+                            fontFamily = FontFamily(Font(R.font.gill_sans_regular)),
+                            maxLines = 1
                         )
                     }
 
-                    Spacer(modifier = Modifier.width(20.dp))
+                    Spacer(modifier = Modifier.width(12.dp))
 
                     Button(
                         onClick = onConfirm,
@@ -142,16 +146,20 @@ fun AppConfirmationDialog(
                         colors = ButtonDefaults.buttonColors(
                             containerColor = Color(0xFF004D87)
                         ),
+                        contentPadding = PaddingValues(horizontal = 14.dp, vertical = 6.dp),
                         modifier = Modifier
                             .height(40.dp)
-                            .width(100.dp)
+                            .defaultMinSize(minWidth = 90.dp)
+                            .wrapContentWidth()
+                            .padding(horizontal = 4.dp)
                     ) {
                         Text(
                             text = confirmText,
                             color = Color.White,
-                            fontSize = 15.sp,
+                            fontSize = 14.sp,
                             fontWeight = FontWeight.Bold,
-                            fontFamily = FontFamily(Font(R.font.gill_sans_regular))
+                            fontFamily = FontFamily(Font(R.font.gill_sans_regular)),
+                            maxLines = 1
                         )
                     }
                 }

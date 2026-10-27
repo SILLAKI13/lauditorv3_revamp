@@ -42,10 +42,7 @@ object Constants {
     @JvmField var GeneratedMatterTitle: String? = ""
     @JvmField var DOCUMENT_TYPE: String? = "matter"
     @JvmField var User_Allowed = 0
-    @JvmStatic
-    var is_active: Boolean
-        get() = true
-        set(value) {}
+    @JvmField var is_active: Boolean = true
     @JvmField var isFromNotification = false
     @JvmField var notificationBundle = Bundle()
     @JvmField var issubscription = false
@@ -95,14 +92,44 @@ object Constants {
     }
 
     @JvmField var FEATURES = HashMap<String, Boolean>()
+    @JvmField var PLAN_NAME: String? = ""
+    @JvmField var SUB_MODEL: String? = ""
 
     @JvmStatic
     fun isFeatureEnabled(key: String): Boolean {
-        return if (FEATURES.containsKey(key)) {
-            java.lang.Boolean.TRUE == FEATURES[key]
-        } else {
-            true
+        if (FEATURES.containsKey(key)) {
+            return java.lang.Boolean.TRUE == FEATURES[key]
         }
+        val model = (SUB_MODEL ?: "").lowercase()
+        val isSolo = CATEGORY.equals("solo", ignoreCase = true)
+
+        if (model.contains("premium") || model.contains("three_month")) {
+            if (key == "doc_editor") return false
+            if (isSolo && (key == "team_chat" || key == "firm_doc_upload" || key == "groups" || key == "team_members" || key == "aggregated_timesheet")) {
+                return false
+            }
+            return true
+        }
+
+        if (model.contains("free")) {
+            return key == "extended_profile" || key == "profile_listing" || (!isSolo && key == "firm_profile")
+        }
+
+        if (model.contains("starter")) {
+            if (key == "extended_profile" || key == "profile_listing" || (!isSolo && key == "firm_profile") || key == "appointments") {
+                return true
+            }
+            return false
+        }
+
+        if (model.contains("professional")) {
+            if (key == "extended_profile" || key == "profile_listing" || (!isSolo && key == "firm_profile") || key == "appointments" || key == "instant_online_appointments") {
+                return true
+            }
+            return false
+        }
+
+        return true
     }
 
     @JvmField var firmProfileAdapter: ViewPracticePartnerAdapter? = null
@@ -182,7 +209,8 @@ object Constants {
     @JvmField var listid: String? = ""
     @JvmField var listid1: String? = ""
     @JvmField var part_id: String? = ""
-    @JvmField var create_matter = true
+    @JvmField var create_matter = false
+    @JvmField var create_relationship = false
     @JvmField var model = JSONArray()
     @JvmField var dashboardAllEndpoint: String? = "v3/dashboard"
     @JvmField var adminBaseURL: String? = "https://adminapi.dev2.digicoffer.com/"
@@ -454,7 +482,27 @@ object Constants {
 
             val sub = userJson.optJSONObject("subscription")
             if (sub != null) {
-                Constants.is_active = true
+                val status = sub.optString("status", "")
+                val isActiveStatus = status.equals("Active", ignoreCase = true) || sub.optBoolean("is_active_sub", false)
+                val model = sub.optString("sub_model").ifEmpty {
+                    sub.optString("model").ifEmpty {
+                        sub.optString("plan").ifEmpty {
+                            sub.optJSONObject("plan")?.optString("key") ?: ""
+                        }
+                    }
+                }
+                val planName = sub.optString("plan_name").ifEmpty {
+                    sub.optString("name").ifEmpty {
+                        sub.optJSONObject("plan")?.optString("name") ?: ""
+                    }
+                }
+                val isTrial = model.contains("three_month", ignoreCase = true) ||
+                              model.contains("three_months", ignoreCase = true) ||
+                              planName.contains("free trial", ignoreCase = true)
+
+                Constants.is_active = if (isTrial || isActiveStatus) true else sub.optBoolean("is_active", sub.optBoolean("isActive", true))
+                if (model.isNotEmpty()) Constants.SUB_MODEL = model
+                if (planName.isNotEmpty()) Constants.PLAN_NAME = planName
                 val feat = sub.optJSONObject("features")
                 if (feat != null) {
                     Constants.FEATURES.clear()

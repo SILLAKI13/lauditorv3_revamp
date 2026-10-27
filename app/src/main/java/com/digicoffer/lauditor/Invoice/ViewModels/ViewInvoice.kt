@@ -591,6 +591,9 @@ class ViewInvoice : Fragment(), AsyncTaskCompleteListener, ViewInvoiceAdapter.In
     private fun setupSwitchRow(root: View) {
         tv_switchView?.setOnClickListener {
             if (currentMode == MODE_LIST) {
+                if (AndroidUtils.checkSubPlanValidation(activity, "create_invoice")) {
+                    return@setOnClickListener
+                }
                 switchToMode(MODE_CREATE)
             } else {
                 switchToMode(MODE_LIST)
@@ -601,6 +604,9 @@ class ViewInvoice : Fragment(), AsyncTaskCompleteListener, ViewInvoiceAdapter.In
             getString(R.string.create_invoice),
             true, true, requireContext(), getString(R.string.view_invoice)
         ) {
+            if (AndroidUtils.checkSubPlanValidation(activity, "create_invoice")) {
+                return@setupModuleView
+            }
             switchToMode(MODE_CREATE)
         }
     }

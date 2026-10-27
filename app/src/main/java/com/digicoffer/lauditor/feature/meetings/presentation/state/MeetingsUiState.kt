@@ -29,7 +29,7 @@ data class MeetingsUiState(
     val weekDateRangeText: String = "",
     val weekDays: List<Day> = emptyList(),
     val selectedDayIndex: Int = 0,
-    val todayDayIndex: Int = 0,
+    val todayDayIndex: Int = -1,
 
     // Month Calendar state
     val currentMonthTitle: String = "",
@@ -44,6 +44,7 @@ data class MeetingsUiState(
     val matters: List<ViewMatterModel> = emptyList(),
     val teamMembers: List<TeamDo> = emptyList(),
     val clients: List<RelationshipsDO> = emptyList(),
+    val entityClients: List<RelationshipsDO> = emptyList(),
     val corporateClients: List<RelationshipsDO> = emptyList(),
     val corporateTeamMembers: List<RelationshipsDO> = emptyList(),
     val meetingRoomId: String? = null,
@@ -56,5 +57,12 @@ data class MeetingsUiState(
     val showRecurrenceChoiceDialog: Boolean = false,
     val recurrenceActionType: String? = null, // "EDIT" or "DELETE"
     val pendingRecurrenceEvent: Event_Details_DO? = null,
-    val showTimesheetDeleteConfirm: Boolean = false
+    val pendingRecurringChoice: String? = null,
+    val showTimesheetDeleteConfirm: Boolean = false,
+    val showNormalDeleteConfirm: Boolean = false,
+
+    // Document Viewer state
+    val viewingDocumentUrl: String? = null,
+    val viewingDocumentName: String = "",
+    val viewingDocumentContentType: String = ""
 )

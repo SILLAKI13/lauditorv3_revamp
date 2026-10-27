@@ -33,6 +33,7 @@ data class SettingsUiState(
     val checkoutTicket: String? = null,
     val checkoutUrl: String? = null,
     val checkoutLoading: Boolean = false,
+    val cancelSubscriptionLoading: Boolean = false,
 
     // Cancel Subscription Flow (Bottom Sheet)
     val isCancelSubscriptionBottomSheetOpen: Boolean = false,

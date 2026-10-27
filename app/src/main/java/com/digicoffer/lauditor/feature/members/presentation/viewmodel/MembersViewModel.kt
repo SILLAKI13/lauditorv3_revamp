@@ -54,24 +54,30 @@ class MembersViewModel(private val repository: MembersRepository) : ViewModel() 
                     val parsedMembers = ArrayList<MembersModel>()
                     for (i in 0 until users.length()) {
                         val jsonObject = users.getJSONObject(i)
+                        fun clean(key: String): String {
+                            if (jsonObject.isNull(key)) return ""
+                            val v = jsonObject.optString(key, "").trim()
+                            return if (v.equals("null", ignoreCase = true)) "" else v
+                        }
                         val member = MembersModel().apply {
-                            id = jsonObject.optString("id")
-                            name = jsonObject.optString("name")
+                            id = clean("id").ifEmpty { clean("_id") }
+                            name = clean("name")
                             isdisabled = jsonObject.optBoolean("isdisabled", false)
-                            currency = jsonObject.optString("currency")
-                            defaultRate = jsonObject.optString("defaultRate")
-                            designation = jsonObject.optString("designation")
-                            email = jsonObject.optString("email")
-                            val phoneVal = jsonObject.optString("mobile").ifEmpty {
-                                jsonObject.optString("phone_number").ifEmpty {
-                                    jsonObject.optString("phone").ifEmpty {
-                                        jsonObject.optString("contact_phone")
+                            val curr = clean("currency")
+                            currency = if (curr.isEmpty() || curr.equals("null", ignoreCase = true)) "IndianRupee(INR)" else curr
+                            defaultRate = clean("defaultRate")
+                            designation = clean("designation")
+                            email = clean("email")
+                            val phoneVal = clean("mobile").ifEmpty {
+                                clean("phone_number").ifEmpty {
+                                    clean("phone").ifEmpty {
+                                        clean("contact_phone")
                                     }
                                 }
                             }
                             phone = phoneVal
                             mobile = phoneVal
-                            lastLogin = jsonObject.optString("lastLogin")
+                            lastLogin = clean("lastLogin")
                             groups = jsonObject.optJSONArray("groups") ?: JSONArray()
                         }
                         parsedMembers.add(member)
@@ -156,7 +162,13 @@ class MembersViewModel(private val repository: MembersRepository) : ViewModel() 
                 groups = event.groups
             )
             _uiState.update { it.copy(isLoading = false) }
-            handleResponse(httpResult, event.onSuccess)
+            val memberName = event.name.trim()
+            val defaultMsg = if (memberName.isNotEmpty()) {
+                "You have successfully created member $memberName."
+            } else {
+                "Member created successfully."
+            }
+            handleResponse(httpResult, defaultMsg, event.onSuccess)
         }
     }
 
@@ -174,7 +186,13 @@ class MembersViewModel(private val repository: MembersRepository) : ViewModel() 
                 emailConfirm = event.emailConfirm
             )
             _uiState.update { it.copy(isLoading = false) }
-            handleResponse(httpResult, event.onSuccess)
+            val memberName = event.name.trim()
+            val defaultMsg = if (memberName.isNotEmpty()) {
+                "You have successfully updated member information for $memberName."
+            } else {
+                "You have successfully updated member information."
+            }
+            handleResponse(httpResult, defaultMsg, event.onSuccess)
         }
     }
 
@@ -183,7 +201,13 @@ class MembersViewModel(private val repository: MembersRepository) : ViewModel() 
             _uiState.update { it.copy(isLoading = true) }
             val httpResult = repository.updateGroupAccess(id = event.id, groups = event.groups)
             _uiState.update { it.copy(isLoading = false) }
-            handleResponse(httpResult, event.onSuccess)
+            val memberName = event.memberName.trim()
+            val defaultMsg = if (memberName.isNotEmpty()) {
+                "You have successfully updated group access for $memberName."
+            } else {
+                "You have successfully updated group access."
+            }
+            handleResponse(httpResult, defaultMsg, event.onSuccess)
         }
     }
 
@@ -192,7 +216,8 @@ class MembersViewModel(private val repository: MembersRepository) : ViewModel() 
             _uiState.update { it.copy(isLoading = true) }
             val httpResult = repository.resetPassword(memberId = event.memberId)
             _uiState.update { it.copy(isLoading = false) }
-            handleResponse(httpResult, event.onSuccess)
+            val defaultMsg = "Password reset email has been sent successfully."
+            handleResponse(httpResult, defaultMsg, event.onSuccess)
         }
     }
 
@@ -201,50 +226,104 @@ class MembersViewModel(private val repository: MembersRepository) : ViewModel() 
             _uiState.update { it.copy(isLoading = true) }
             val httpResult = repository.deleteMember(id = event.id)
             _uiState.update { it.copy(isLoading = false) }
-            handleResponse(httpResult, event.onSuccess)
+            val memberName = event.memberName.trim()
+            val defaultMsg = if (memberName.isNotEmpty()) {
+                "You have successfully deleted member $memberName."
+            } else {
+                "Member deleted successfully."
+            }
+            handleResponse(httpResult, defaultMsg, event.onSuccess)
         }
     }
 
     private fun upgradePracticePartner(event: MembersUiEvent.UpgradePracticePartner) {
         viewModelScope.launch {
             _uiState.update { it.copy(isLoading = true) }
-            val httpResult = repository.upgradePracticePartner(id = event.id)
+            val httpResult = repository.upgradePracticePartner(id = event.id, email = event.email)
             _uiState.update { it.copy(isLoading = false) }
-            handleResponse(httpResult, event.onSuccess)
+            val memberName = event.memberName.trim()
+            val defaultMsg = if (memberName.isNotEmpty()) {
+                "You have successfully upgraded $memberName to Practice Partner."
+            } else {
+                "Member upgraded to Practice Partner successfully."
+            }
+            handleResponse(httpResult, defaultMsg, event.onSuccess)
         }
     }
 
-    private fun handleResponse(httpResult: HttpResultDo, onSuccess: () -> Unit) {
+    private fun handleResponse(httpResult: HttpResultDo, defaultSuccessMsg: String, onSuccess: () -> Unit) {
         try {
-            val result = JSONObject(httpResult.responseContent ?: "")
-            var msg = result.optString("msg")
-            if (msg.isEmpty() && result.has("data")) {
+            val isSuccess = (httpResult.status_code in 200..299) ||
+                    (httpResult.status_code == 0 && httpResult.result == WebServiceHelper.ServiceCallStatus.Success)
+
+            val result = if (!httpResult.responseContent.isNullOrBlank()) {
+                try { JSONObject(httpResult.responseContent) } catch (e: Exception) { null }
+            } else null
+
+            var msg = result?.optString("msg", "")?.trim() ?: ""
+            if (msg.isEmpty() && result?.has("data") == true) {
                 val dataObj = result.optJSONObject("data")
                 if (dataObj != null) {
-                    msg = dataObj.optString("msg")
+                    msg = dataObj.optString("msg", "").trim()
                 }
             }
-            if (httpResult.requestType == "Reset Password" && msg.isEmpty()) {
-                msg = "Password reset email has been sent successfully."
-            }
-            if (httpResult.status_code == 200) {
-                _uiState.update { it.copy(toastMessage = msg) }
+
+            if (isSuccess) {
+                // If backend msg is generic, empty, or unhelpful, use action-specific Web message
+                val finalMsg = if (msg.isEmpty() ||
+                    msg.equals("Data updated successfully", ignoreCase = true) ||
+                    msg.equals("Member updated", ignoreCase = true) ||
+                    msg.equals("User updated successfully", ignoreCase = true) ||
+                    msg.equals("Member updated successfully", ignoreCase = true) ||
+                    msg.equals("Success", ignoreCase = true) ||
+                    msg.equals("Successful", ignoreCase = true)) {
+                    defaultSuccessMsg
+                } else {
+                    msg
+                }
+                _uiState.update { it.copy(toastMessage = finalMsg, isToastSuccess = true) }
                 onSuccess()
                 loadMembers()
             } else {
-                _uiState.update { it.copy(toastMessage = msg.ifEmpty { "Operation failed" }) }
+                val errorMsg = parseErrorMessage(httpResult.responseContent)
+                _uiState.update { it.copy(toastMessage = errorMsg, isToastSuccess = false) }
             }
         } catch (e: Exception) {
-            _uiState.update { it.copy(toastMessage = httpResult.responseContent ?: "Connection error") }
+            _uiState.update { it.copy(toastMessage = e.localizedMessage ?: "Connection error", isToastSuccess = false) }
         }
     }
 
     private fun parseErrorMessage(content: String?): String {
+        if (content.isNullOrBlank()) return "Operation failed"
         return try {
-            val obj = JSONObject(content ?: "")
-            obj.optString("msg", "Request failed")
+            val obj = JSONObject(content)
+            val errorsArray = obj.optJSONArray("errors")
+            if (errorsArray != null && errorsArray.length() > 0) {
+                val errorMessages = mutableListOf<String>()
+                for (i in 0 until errorsArray.length()) {
+                    val errObj = errorsArray.optJSONObject(i)
+                    if (errObj != null) {
+                        val field = errObj.optString("field", "")
+                        val m = errObj.optString("msg", "")
+                        if (field.isNotEmpty() && m.isNotEmpty()) {
+                            errorMessages.add("$field: $m")
+                        } else if (m.isNotEmpty()) {
+                            errorMessages.add(m)
+                        }
+                    }
+                }
+                if (errorMessages.isNotEmpty()) {
+                    return errorMessages.joinToString("\n")
+                }
+            }
+            val msg = obj.optString("msg", "").trim()
+            if (msg.isNotEmpty()) return msg
+            val message = obj.optString("message", "").trim()
+            if (message.isNotEmpty()) return message
+            content
         } catch (e: Exception) {
-            content ?: "Connection error"
+            content
         }
     }
 }
+

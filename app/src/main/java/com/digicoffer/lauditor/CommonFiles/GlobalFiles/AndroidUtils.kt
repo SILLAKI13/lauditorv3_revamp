@@ -103,6 +103,7 @@ import com.digicoffer.lauditor.CommonFiles.CacheUtils.AppImageCache
 import com.digicoffer.lauditor.CommonFiles.ValidationUtils.Validation
 import com.digicoffer.lauditor.CommonFiles.CommonAdapters.CommonSpinnerAdapter
 import com.digicoffer.lauditor.Email.Email
+import com.digicoffer.lauditor.MainActivity
 import com.google.android.material.switchmaterial.SwitchMaterial
 import com.google.android.material.textfield.TextInputEditText
 import org.json.JSONArray
@@ -1392,6 +1393,22 @@ class AndroidUtils {
                                 return errorList.joinToString(", ")
                             }
                         }
+                        val errorsArr = json.optJSONArray("errors")
+                        if (errorsArr != null && errorsArr.length() > 0) {
+                            val errorList = mutableListOf<String>()
+                            for (i in 0 until errorsArr.length()) {
+                                val item = errorsArr.opt(i)
+                                if (item is JSONObject) {
+                                    val msg = item.optString("msg").ifEmpty { item.optString("message") }
+                                    if (msg.isNotEmpty()) errorList.add(msg)
+                                } else if (item is String && item.isNotEmpty()) {
+                                    errorList.add(item)
+                                }
+                            }
+                            if (errorList.isNotEmpty()) {
+                                return errorList.joinToString(", ")
+                            }
+                        }
                     }
                 } catch (e: Exception) {
                     e.printStackTrace()
@@ -2363,7 +2380,51 @@ class AndroidUtils {
         }
 
         @JvmStatic
-        fun showRenewalPopup(activity: Activity) {}
+        fun showRenewalPopup(activity: Activity) {
+            val res = SubscriptionAccessManager.checkAccess("")
+            if (res is SubscriptionAccessResult.Allowed) {
+                // Subscription is active/trial; do not show expired popup
+                return
+            }
+            if (res is SubscriptionAccessResult.Restricted) {
+                SubscriptionAccessManager.showSubscriptionWarningDialog(activity, res)
+            } else {
+                SubscriptionAccessManager.showSubscriptionWarningDialog(
+                    activity,
+                    SubscriptionAccessResult.Restricted(
+                        title = "Subscription Expired",
+                        message = "Your subscription has expired. Renew now to keep your account active and access all features.",
+                        actionLabel = "Renew Now",
+                        isExpired = true
+                    )
+                )
+            }
+        }
+
+        @JvmStatic
+        @JvmOverloads
+        fun showUpgradePopup(activity: Activity, planName: String? = null) {
+            val res = SubscriptionAccessManager.checkAccess(planName ?: "")
+            if (res is SubscriptionAccessResult.Restricted) {
+                SubscriptionAccessManager.showSubscriptionWarningDialog(activity, res)
+            } else {
+                SubscriptionAccessManager.showSubscriptionWarningDialog(
+                    activity,
+                    SubscriptionAccessResult.Restricted(
+                        title = "Subscription Upgrade",
+                        message = "This option is unavailable on The ${planName ?: "Free"} Plan.\nClick here to upgrade.",
+                        actionLabel = "Upgrade",
+                        isExpired = false
+                    )
+                )
+            }
+        }
+
+        @JvmStatic
+        @JvmOverloads
+        fun checkSubPlanValidation(activity: Activity?, moduleName: String = ""): Boolean {
+            return SubscriptionAccessManager.checkAndShowPopup(activity, moduleName)
+        }
 
         @JvmStatic
         fun launchPaySubscriptionPage(activity: Activity?) {

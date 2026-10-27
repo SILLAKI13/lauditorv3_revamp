@@ -1,5 +1,6 @@
 package com.digicoffer.lauditor.Webservice.core
 
+import okhttp3.ConnectionPool
 import okhttp3.OkHttpClient
 import okhttp3.logging.HttpLoggingInterceptor
 import retrofit2.Retrofit
@@ -14,6 +15,8 @@ object RetrofitClient {
     fun getOkHttpClient(): OkHttpClient {
         if (okHttpClient == null) {
             val builder = OkHttpClient.Builder()
+                .retryOnConnectionFailure(true)
+                .connectionPool(ConnectionPool(5, 30, TimeUnit.SECONDS))
                 .connectTimeout(NetworkConfig.connectTimeoutSeconds, TimeUnit.SECONDS)
                 .readTimeout(NetworkConfig.readTimeoutSeconds, TimeUnit.SECONDS)
                 .writeTimeout(NetworkConfig.writeTimeoutSeconds, TimeUnit.SECONDS)

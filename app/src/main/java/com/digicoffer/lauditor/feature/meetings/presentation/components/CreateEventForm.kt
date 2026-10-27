@@ -47,6 +47,7 @@ import com.digicoffer.lauditor.Meetings.Models.DocumentsDo
 import com.digicoffer.lauditor.Meetings.Models.RelationshipsDO
 import com.digicoffer.lauditor.Meetings.Models.TeamDo
 import com.digicoffer.lauditor.R
+import com.digicoffer.lauditor.core.ui.common.dialogs.AppConfirmationDialog
 import com.digicoffer.lauditor.feature.meetings.presentation.state.MeetingsUiEvent
 import com.digicoffer.lauditor.feature.meetings.presentation.state.MeetingsUiState
 import com.digicoffer.lauditor.feature.meetings.presentation.viewmodel.MeetingsViewModel
@@ -85,7 +86,7 @@ private fun FormCustomTextField(
     enabled: Boolean = true,
     singleLine: Boolean = true,
     maxLines: Int = 1,
-    height: Dp = 44.dp,
+    height: Dp = 38.dp,
     keyboardOptions: KeyboardOptions = KeyboardOptions.Default,
     trailingIcon: @Composable (() -> Unit)? = null,
     modifier: Modifier = Modifier
@@ -93,7 +94,7 @@ private fun FormCustomTextField(
     val inputBorderColor = Color(0xFFC0C0C0)
     val inputBgColor = if (enabled) Color(0xFFF9FAFB) else Color(0xFFEEEEEE)
     val textStyle = TextStyle(
-        fontSize = 15.sp,
+        fontSize = 14.sp,
         fontFamily = GillSansFont,
         color = Color.Black
     )
@@ -116,7 +117,7 @@ private fun FormCustomTextField(
             Row(
                 modifier = Modifier
                     .fillMaxSize()
-                    .padding(horizontal = 10.dp, vertical = 8.dp),
+                    .padding(horizontal = 10.dp, vertical = 6.dp),
                 verticalAlignment = if (singleLine) Alignment.CenterVertically else Alignment.Top,
                 horizontalArrangement = Arrangement.SpaceBetween
             ) {
@@ -164,7 +165,7 @@ private fun FormCustomDropdown(
         Row(
             modifier = Modifier
                 .fillMaxWidth()
-                .height(44.dp)
+                .height(38.dp)
                 .background(inputBgColor, shape = RoundedCornerShape(6.dp))
                 .border(width = 0.5.dp, color = inputBorderColor, shape = RoundedCornerShape(6.dp))
                 .clickable(enabled = enabled) {
@@ -179,7 +180,7 @@ private fun FormCustomDropdown(
                 text = selectedText.ifEmpty { placeholder },
                 color = if (selectedText.isNotEmpty()) Color.Black else Color(0xFFA0A0A0),
                 fontFamily = GillSansFont,
-                fontSize = 15.sp,
+                fontSize = 14.sp,
                 maxLines = 1,
                 overflow = TextOverflow.Ellipsis,
                 modifier = Modifier.weight(1f)
@@ -330,7 +331,7 @@ private fun <T> AttendeesMultiSelectDropdown(
         Row(
             modifier = Modifier
                 .fillMaxWidth()
-                .height(44.dp)
+                .height(38.dp)
                 .background(Color(0xFFF9FAFB), shape = RoundedCornerShape(6.dp))
                 .border(width = 0.5.dp, color = inputBorderColor, shape = RoundedCornerShape(6.dp))
                 .clickable {
@@ -345,7 +346,7 @@ private fun <T> AttendeesMultiSelectDropdown(
                 text = placeholder,
                 color = Color(0xFFA0A0A0),
                 fontFamily = GillSansFont,
-                fontSize = 15.sp,
+                fontSize = 14.sp,
                 maxLines = 1,
                 overflow = TextOverflow.Ellipsis,
                 modifier = Modifier.weight(1f)
@@ -568,11 +569,40 @@ fun CreateEventForm(
         )
     }
 
+    val defaultTimes = remember {
+        val cal = Calendar.getInstance()
+        var hour = cal.get(Calendar.HOUR_OF_DAY)
+        var min = cal.get(Calendar.MINUTE)
+        min = ((min / 15) + 1) * 15
+        if (min == 60) {
+            min = 0
+            hour = (hour + 1) % 24
+        }
+        val startStr = String.format(Locale.US, "%02d:%02d", hour, min)
+        cal.set(Calendar.HOUR_OF_DAY, hour)
+        cal.set(Calendar.MINUTE, min)
+        cal.add(Calendar.MINUTE, 30)
+        val endStr = String.format(Locale.US, "%02d:%02d", cal.get(Calendar.HOUR_OF_DAY), cal.get(Calendar.MINUTE))
+        Pair(startStr, endStr)
+    }
+
     var selectedMatter by remember { mutableStateOf<ViewMatterModel?>(null) }
     var taskName by remember { mutableStateOf("") }
-    var selectedDate by remember { mutableStateOf(SimpleDateFormat("MMM dd, yyyy", Locale.US).format(Date())) }
-    var startTime by remember { mutableStateOf("10:00") }
-    var endTime by remember { mutableStateOf("10:30") }
+    val initialDateStr = remember(uiState.selectedDate) {
+        if (!uiState.selectedDate.isNullOrEmpty()) {
+            val parsed = AndroidUtils.stringToDateTimeDefault(uiState.selectedDate, "dd-MM-yyyy")
+            if (parsed != null) {
+                SimpleDateFormat("MMM dd, yyyy", Locale.US).format(parsed)
+            } else {
+                SimpleDateFormat("MMM dd, yyyy", Locale.US).format(Date())
+            }
+        } else {
+            SimpleDateFormat("MMM dd, yyyy", Locale.US).format(Date())
+        }
+    }
+    var selectedDate by remember(uiState.selectedDate) { mutableStateOf(initialDateStr) }
+    var startTime by remember { mutableStateOf(defaultTimes.first) }
+    var endTime by remember { mutableStateOf(defaultTimes.second) }
     var durationText by remember { mutableStateOf("Duration: 30 min") }
     var isAllDay by remember { mutableStateOf(false) }
     var selectedTimezone by remember { mutableStateOf<TimeZonesDO?>(null) }
@@ -587,6 +617,8 @@ fun CreateEventForm(
 
     // Attendees & Attachments selections
     var selectedTeamMembers by remember { mutableStateOf<List<TeamDo>>(emptyList()) }
+    var selectedCorporateClients by remember { mutableStateOf<List<RelationshipsDO>>(emptyList()) }
+    var selectedEntityClients by remember { mutableStateOf<List<RelationshipsDO>>(emptyList()) }
     var selectedIndividuals by remember { mutableStateOf<List<RelationshipsDO>>(emptyList()) }
     var selectedDocuments by remember { mutableStateOf<List<DocumentsDo>>(emptyList()) }
 
@@ -594,6 +626,8 @@ fun CreateEventForm(
     var notificationsList by remember { mutableStateOf(listOf(Pair("Minutes", "10"))) }
 
     var showEditRecurrenceDialog by remember { mutableStateOf(false) }
+    var showEditTimesheetDialog by remember { mutableStateOf(false) }
+    var pendingRecurringEditChoice by remember { mutableStateOf<String?>(null) }
 
     // Dynamic Meeting Link updater
     fun updateMeetingLink(roomId: String = meetingRoomId) {
@@ -661,6 +695,84 @@ fun CreateEventForm(
             location = editing.location.orEmpty()
             description = editing.description.orEmpty()
             isAddTimesheet = editing.timesheet_added || editing.is_linked_with_timesheet
+
+            // Pre-populate saved attendees for Edit
+            val tmList = mutableListOf<TeamDo>()
+            val tmArray = editing.team_name
+            if (tmArray != null) {
+                for (j in 0 until tmArray.length()) {
+                    val obj = tmArray.optJSONObject(j) ?: continue
+                    tmList.add(TeamDo().apply {
+                        id = obj.optString("id").ifEmpty { obj.optString("tmId") }
+                        name = obj.optString("name").ifEmpty { obj.optString("tmName") }
+                    })
+                }
+            }
+            selectedTeamMembers = tmList
+
+            val indList = mutableListOf<RelationshipsDO>()
+            val indArray = editing.consumer_external
+            if (indArray != null) {
+                for (j in 0 until indArray.length()) {
+                    val obj = indArray.optJSONObject(j) ?: continue
+                    indList.add(RelationshipsDO().apply {
+                        id = obj.optString("entityId").ifEmpty { obj.optString("id") }
+                        name = obj.optString("tmName").ifEmpty { obj.optString("name") }
+                        this.type = "consumer"
+                    })
+                }
+            }
+            selectedIndividuals = indList
+
+            val extList = mutableListOf<RelationshipsDO>()
+            val extArray = editing.tm_name
+            if (extArray != null) {
+                for (j in 0 until extArray.length()) {
+                    val obj = extArray.optJSONObject(j) ?: continue
+                    val entId = obj.optString("entityId").ifEmpty { obj.optString("id") }
+                    val tmId = obj.optString("tmId")
+                    val entName = obj.optString("entityName").ifEmpty { obj.optString("name") }
+                    val tmName = obj.optString("tmName")
+                    val displayName = if (entName.isNotEmpty() && tmName.isNotEmpty()) "$entName - $tmName" else tmName.ifEmpty { entName }
+                    val itemId = if (tmId.isNotEmpty() && entId.isNotEmpty() && !entId.contains("_")) "${entId}_$tmId" else entId
+                    extList.add(RelationshipsDO().apply {
+                        id = itemId
+                        name = displayName
+                        this.type = "entity"
+                    })
+                }
+            }
+            selectedEntityClients = extList
+
+            val corpList = mutableListOf<RelationshipsDO>()
+            val corpArray = editing.corporate
+            if (corpArray != null) {
+                for (j in 0 until corpArray.length()) {
+                    val obj = corpArray.optJSONObject(j) ?: continue
+                    val entId = obj.optString("entityId").ifEmpty { obj.optString("id") }
+                    val entName = obj.optString("entityName").ifEmpty { obj.optString("name", obj.optString("tmName")) }
+                    corpList.add(RelationshipsDO().apply {
+                        id = entId
+                        name = entName
+                        this.type = "corporate"
+                    })
+                }
+            }
+            selectedCorporateClients = corpList
+
+            val docList = mutableListOf<DocumentsDo>()
+            val docArray = editing.attachments
+            if (docArray != null) {
+                for (j in 0 until docArray.length()) {
+                    val obj = docArray.optJSONObject(j) ?: continue
+                    docList.add(DocumentsDo().apply {
+                        docid = obj.optString("docid")
+                        doctype = obj.optString("doctype")
+                        name = obj.optString("name")
+                    })
+                }
+            }
+            selectedDocuments = docList
 
             // Notifications
             val notifs = editing.notifications
@@ -775,14 +887,19 @@ fun CreateEventForm(
         val selectedTmsArray = JSONArray()
         selectedTeamMembers.forEach { selectedTmsArray.put(it.id) }
 
-        val selectedClientsArray = JSONArray()
-        val selectedCorpArray = JSONArray()
+        val selectedIndividualsArray = JSONArray()
         selectedIndividuals.forEach { ind ->
-            if (ind.type == "corporate" || ind.type == "corporate_tm") {
-                selectedCorpArray.put(ind.id)
-            } else {
-                selectedClientsArray.put(ind.id)
-            }
+            if (!ind.id.isNullOrEmpty()) selectedIndividualsArray.put(ind.id)
+        }
+
+        val selectedCorpArray = JSONArray()
+        selectedCorporateClients.forEach { corp ->
+            if (!corp.id.isNullOrEmpty()) selectedCorpArray.put(corp.id)
+        }
+
+        val selectedExternalArray = JSONArray()
+        selectedEntityClients.forEach { client ->
+            if (!client.id.isNullOrEmpty()) selectedExternalArray.put(client.id)
         }
 
         val attachmentsArray = JSONArray()
@@ -841,9 +958,9 @@ fun CreateEventForm(
 
         postData.put("date", finalDate)
         postData.put("invitees_internal", selectedTmsArray)
-        postData.put("invitees_external", selectedClientsArray)
+        postData.put("invitees_external", selectedExternalArray)
         postData.put("invitees_corporate", selectedCorpArray)
-        postData.put("invitees_consumer_external", selectedClientsArray)
+        postData.put("invitees_consumer_external", selectedIndividualsArray)
         postData.put("attachments", attachmentsArray)
         postData.put("notifications", notifArray)
         postData.put("timezone_location", tzLocation)
@@ -949,30 +1066,109 @@ fun CreateEventForm(
         }
     }
 
-    val availableIndividuals = remember(selectedMatter, eventType, uiState.clients, uiState.corporateClients) {
-        if (isMatterType && selectedMatter != null) {
-            val list = mutableListOf<RelationshipsDO>()
-            val clientsArray = selectedMatter?.clients ?: JSONArray()
-            for (i in 0 until clientsArray.length()) {
-                val obj = clientsArray.optJSONObject(i) ?: continue
-                list.add(RelationshipsDO().apply {
-                    id = obj.optString("id")
-                    name = obj.optString("name")
-                    type = obj.optString("type", "client")
-                })
-            }
+    val matterParsedAttendees = remember(selectedMatter, uiState.corporateClients, uiState.entityClients, uiState.clients) {
+        val corpList = mutableListOf<RelationshipsDO>()
+        val entityList = mutableListOf<RelationshipsDO>()
+        val indList = mutableListOf<RelationshipsDO>()
+
+        if (selectedMatter != null) {
+            // 1. Corporate array from matter
             val corpArray = selectedMatter?.corporate ?: JSONArray()
             for (i in 0 until corpArray.length()) {
                 val obj = corpArray.optJSONObject(i) ?: continue
-                list.add(RelationshipsDO().apply {
-                    id = obj.optString("id")
-                    name = obj.optString("name")
-                    type = obj.optString("type", "corporate")
-                })
+                val cId = obj.optString("id")
+                val cName = obj.optString("name")
+                if (cId.isNotEmpty()) {
+                    corpList.add(RelationshipsDO().apply {
+                        id = cId
+                        name = cName
+                        type = "corporate"
+                    })
+                }
             }
-            list
+
+            fun isCorporate(cId: String, cName: String, cType: String): Boolean {
+                if (cType == "corporate") return true
+                if (selectedMatter?.corp_has_value == true && selectedMatter?.CorpId?.isNotEmpty() == true && selectedMatter?.CorpId == cId) return true
+                if (uiState.corporateClients.any { it.id == cId }) return true
+                if (cName.isNotEmpty() && uiState.corporateClients.any { !it.name.isNullOrBlank() && it.name.equals(cName, ignoreCase = true) }) return true
+                val lower = cName.lowercase(Locale.ROOT)
+                if (lower.contains("corporate") || lower.contains("corp firm") || lower.contains("corp.") || lower.contains("stagcorporate")) return true
+                return false
+            }
+
+            fun isIndividual(cId: String, cName: String, cType: String): Boolean {
+                if (cType == "consumer" || cType == "individual") return true
+                if (uiState.clients.any { it.id == cId }) return true
+                if (cType.isEmpty() && uiState.clients.any { !it.name.isNullOrBlank() && it.name.equals(cName, ignoreCase = true) }) return true
+                return false
+            }
+
+            // 2. Clients array from matter
+            val clientsArray = selectedMatter?.clients ?: JSONArray()
+            for (i in 0 until clientsArray.length()) {
+                val obj = clientsArray.optJSONObject(i) ?: continue
+                val cId = obj.optString("id")
+                val cName = obj.optString("name")
+                val cType = obj.optString("type", "").lowercase(Locale.ROOT)
+
+                if (cId.isEmpty()) continue
+
+                if (isCorporate(cId, cName, cType)) {
+                    if (corpList.none { it.id == cId }) {
+                        corpList.add(RelationshipsDO().apply {
+                            id = cId
+                            name = cName
+                            type = "corporate"
+                        })
+                    }
+                } else if (isIndividual(cId, cName, cType)) {
+                    if (indList.none { it.id == cId }) {
+                        indList.add(RelationshipsDO().apply {
+                            id = cId
+                            name = cName
+                            type = "consumer"
+                        })
+                    }
+                } else {
+                    if (entityList.none { it.id == cId }) {
+                        entityList.add(RelationshipsDO().apply {
+                            id = cId
+                            name = cName
+                            type = if (cType.isNotEmpty()) cType else "client"
+                        })
+                    }
+                }
+            }
+        }
+        Triple(corpList, entityList, indList)
+    }
+
+    val availableCorporateClients = remember(selectedMatter, eventType, uiState.corporateClients, matterParsedAttendees) {
+        if (isMatterType && selectedMatter != null) {
+            matterParsedAttendees.first
         } else if (!isMatterType) {
-            uiState.clients + uiState.corporateClients
+            uiState.corporateClients
+        } else {
+            emptyList()
+        }
+    }
+
+    val availableEntityClients = remember(selectedMatter, eventType, uiState.entityClients, matterParsedAttendees) {
+        if (isMatterType && selectedMatter != null) {
+            matterParsedAttendees.second
+        } else if (!isMatterType) {
+            uiState.entityClients
+        } else {
+            emptyList()
+        }
+    }
+
+    val availableIndividuals = remember(selectedMatter, eventType, uiState.clients, matterParsedAttendees) {
+        if (isMatterType && selectedMatter != null) {
+            matterParsedAttendees.third
+        } else if (!isMatterType) {
+            uiState.clients
         } else {
             emptyList()
         }
@@ -1000,9 +1196,9 @@ fun CreateEventForm(
 
     // Attendees card visibility matching exact Java XML parity
     val isAttendeesCardVisible = if (isMatterType) {
-        isMatterSelected && (availableTeamMembers.isNotEmpty() || availableIndividuals.isNotEmpty())
+        isMatterSelected && (availableTeamMembers.isNotEmpty() || availableCorporateClients.isNotEmpty() || availableEntityClients.isNotEmpty() || availableIndividuals.isNotEmpty() || availableDocuments.isNotEmpty())
     } else {
-        isEventTypeSelected && (availableTeamMembers.isNotEmpty() || availableIndividuals.isNotEmpty())
+        isEventTypeSelected && (availableTeamMembers.isNotEmpty() || availableCorporateClients.isNotEmpty() || availableEntityClients.isNotEmpty() || availableIndividuals.isNotEmpty())
     }
 
     Column(
@@ -1044,6 +1240,8 @@ fun CreateEventForm(
                         selectedMatter = null
                         taskName = ""
                         selectedTeamMembers = emptyList()
+                        selectedCorporateClients = emptyList()
+                        selectedEntityClients = emptyList()
                         selectedIndividuals = emptyList()
                         selectedDocuments = emptyList()
                         if (selectedType == "Legal Matter") {
@@ -1057,6 +1255,8 @@ fun CreateEventForm(
                         selectedMatter = null
                         taskName = ""
                         selectedTeamMembers = emptyList()
+                        selectedCorporateClients = emptyList()
+                        selectedEntityClients = emptyList()
                         selectedIndividuals = emptyList()
                         selectedDocuments = emptyList()
                     }
@@ -1075,12 +1275,16 @@ fun CreateEventForm(
                         onSelect = { matterTitle ->
                             selectedMatter = uiState.matters.firstOrNull { it.title == matterTitle }
                             selectedTeamMembers = emptyList()
+                            selectedCorporateClients = emptyList()
+                            selectedEntityClients = emptyList()
                             selectedIndividuals = emptyList()
                             selectedDocuments = emptyList()
                         },
                         onClear = {
                             selectedMatter = null
                             selectedTeamMembers = emptyList()
+                            selectedCorporateClients = emptyList()
+                            selectedEntityClients = emptyList()
                             selectedIndividuals = emptyList()
                             selectedDocuments = emptyList()
                         }
@@ -1172,7 +1376,7 @@ fun CreateEventForm(
                 Row(
                     modifier = Modifier
                         .fillMaxWidth()
-                        .height(44.dp)
+                        .height(38.dp)
                         .background(Color(0xFFF9FAFB), shape = RoundedCornerShape(6.dp))
                         .border(width = 0.5.dp, color = inputBorderColor, shape = RoundedCornerShape(6.dp))
                         .clickable {
@@ -1195,15 +1399,14 @@ fun CreateEventForm(
                 ) {
                     Text(
                         text = selectedDate,
-                        fontSize = 15.sp,
+                        fontSize = 14.sp,
                         color = Color.Black,
                         fontFamily = GillSansFont
                     )
                     Image(
-                        painter = painterResource(id = R.drawable.ic_time_blue),
+                        painter = painterResource(id = R.drawable.calendar_icon),
                         contentDescription = "Select Date",
-                        modifier = Modifier.size(20.dp),
-                        colorFilter = ColorFilter.tint(activeBlue)
+                        modifier = Modifier.size(20.dp)
                     )
                 }
 
@@ -1217,7 +1420,7 @@ fun CreateEventForm(
                     Row(
                         modifier = Modifier
                             .weight(1f)
-                            .height(44.dp)
+                            .height(38.dp)
                             .background(if (!isAllDay) Color(0xFFF9FAFB) else Color(0xFFEEEEEE), shape = RoundedCornerShape(6.dp))
                             .border(width = 0.5.dp, color = inputBorderColor, shape = RoundedCornerShape(6.dp))
                             .clickable(enabled = !isAllDay) {
@@ -1248,15 +1451,14 @@ fun CreateEventForm(
                     ) {
                         Text(
                             text = startTime,
-                            fontSize = 15.sp,
+                            fontSize = 14.sp,
                             color = if (isAllDay) Color.Gray else Color.Black,
                             fontFamily = GillSansFont
                         )
                         Image(
-                            painter = painterResource(id = R.drawable.ic_time_blue),
+                            painter = painterResource(id = R.drawable.calendar_icon),
                             contentDescription = "Start Time",
-                            modifier = Modifier.size(20.dp),
-                            colorFilter = ColorFilter.tint(activeBlue)
+                            modifier = Modifier.size(20.dp)
                         )
                     }
 
@@ -1266,7 +1468,7 @@ fun CreateEventForm(
                     Row(
                         modifier = Modifier
                             .weight(1f)
-                            .height(44.dp)
+                            .height(38.dp)
                             .background(if (!isAllDay) Color(0xFFF9FAFB) else Color(0xFFEEEEEE), shape = RoundedCornerShape(6.dp))
                             .border(width = 0.5.dp, color = inputBorderColor, shape = RoundedCornerShape(6.dp))
                             .clickable(enabled = !isAllDay) {
@@ -1289,15 +1491,14 @@ fun CreateEventForm(
                     ) {
                         Text(
                             text = endTime,
-                            fontSize = 15.sp,
+                            fontSize = 14.sp,
                             color = if (isAllDay) Color.Gray else Color.Black,
                             fontFamily = GillSansFont
                         )
                         Image(
-                            painter = painterResource(id = R.drawable.ic_time_blue),
+                            painter = painterResource(id = R.drawable.calendar_icon),
                             contentDescription = "End Time",
-                            modifier = Modifier.size(20.dp),
-                            colorFilter = ColorFilter.tint(activeBlue)
+                            modifier = Modifier.size(20.dp)
                         )
                     }
                 }
@@ -1435,7 +1636,7 @@ fun CreateEventForm(
                         value = meetingLink,
                         onValueChange = { meetingLink = it },
                         placeholder = "Meeting Link",
-                        height = 44.dp
+                        height = 38.dp
                     )
 
                     Spacer(modifier = Modifier.height(14.dp))
@@ -1447,7 +1648,7 @@ fun CreateEventForm(
                         value = dialinNumber,
                         onValueChange = { dialinNumber = it },
                         placeholder = "Dial-in Number",
-                        height = 44.dp,
+                        height = 38.dp,
                         keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number)
                     )
 
@@ -1460,7 +1661,7 @@ fun CreateEventForm(
                         value = location,
                         onValueChange = { location = it },
                         placeholder = "Location",
-                        height = 44.dp
+                        height = 38.dp
                     )
 
                     Spacer(modifier = Modifier.height(14.dp))
@@ -1530,13 +1731,43 @@ fun CreateEventForm(
                         )
                     }
 
-                    // 2. Add Individuals
+                    // 2. Add Corporate
+                    if (Constants.ROLE != "AAM" && availableCorporateClients.isNotEmpty()) {
+                        Spacer(modifier = Modifier.height(16.dp))
+                        AttendeesMultiSelectDropdown(
+                            label = "Add Corporate",
+                            placeholder = "Select Corporate",
+                            searchPlaceholder = "Search Corporate",
+                            items = availableCorporateClients,
+                            selectedItems = selectedCorporateClients,
+                            itemLabel = { it.name.orEmpty() },
+                            itemId = { it.id.orEmpty() },
+                            onSelectionChanged = { selectedCorporateClients = it }
+                        )
+                    }
+
+                    // 3. Add Clients
+                    if (Constants.ROLE != "AAM" && availableEntityClients.isNotEmpty()) {
+                        Spacer(modifier = Modifier.height(16.dp))
+                        AttendeesMultiSelectDropdown(
+                            label = "Add Clients",
+                            placeholder = "Select Clients",
+                            searchPlaceholder = "Search Clients",
+                            items = availableEntityClients,
+                            selectedItems = selectedEntityClients,
+                            itemLabel = { it.name.orEmpty() },
+                            itemId = { it.id.orEmpty() },
+                            onSelectionChanged = { selectedEntityClients = it }
+                        )
+                    }
+
+                    // 4. Add Individual
                     if (Constants.ROLE != "AAM" && availableIndividuals.isNotEmpty()) {
                         Spacer(modifier = Modifier.height(16.dp))
                         AttendeesMultiSelectDropdown(
-                            label = "Add Individuals",
-                            placeholder = "Select Individuals",
-                            searchPlaceholder = "Search Individuals",
+                            label = "Add Individual",
+                            placeholder = "Select Individual",
+                            searchPlaceholder = "Search Individual",
                             items = availableIndividuals,
                             selectedItems = selectedIndividuals,
                             itemLabel = { it.name.orEmpty() },
@@ -1545,7 +1776,7 @@ fun CreateEventForm(
                         )
                     }
 
-                    // 3. Add Document(s) (Visible if Matter type and documents are available)
+                    // 5. Add Document(s) (Visible if Matter type and documents are available)
                     if (isMatterType && availableDocuments.isNotEmpty()) {
                         Spacer(modifier = Modifier.height(16.dp))
                         AttendeesMultiSelectDropdown(
@@ -1654,7 +1885,7 @@ fun CreateEventForm(
                                 }
                             },
                             placeholder = "10",
-                            height = 44.dp,
+                            height = 38.dp,
                             keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
                             modifier = Modifier.weight(0.8f)
                         )
@@ -1707,8 +1938,14 @@ fun CreateEventForm(
 
             Button(
                 onClick = {
-                    if (isEditMode && editing?.isRecurring == true) {
-                        showEditRecurrenceDialog = true
+                    if (isEditMode) {
+                        if (editing?.isRecurring == true) {
+                            showEditRecurrenceDialog = true
+                        } else if ((editing?.is_linked_with_timesheet == true || editing?.timesheet_added == true) && isAddTimesheet) {
+                            showEditTimesheetDialog = true
+                        } else {
+                            buildAndSubmitPayload(updateScope = "UPDATE_EVENT_ONLY")
+                        }
                     } else {
                         buildAndSubmitPayload()
                     }
@@ -1741,7 +1978,38 @@ fun CreateEventForm(
                     "This and following events" -> "following"
                     else -> "all"
                 }
-                buildAndSubmitPayload(recurringChoice = mappedChoice)
+                if ((editing?.is_linked_with_timesheet == true || editing?.timesheet_added == true) && isAddTimesheet) {
+                    pendingRecurringEditChoice = mappedChoice
+                    showEditTimesheetDialog = true
+                } else {
+                    buildAndSubmitPayload(recurringChoice = mappedChoice, updateScope = "UPDATE_EVENT_ONLY")
+                }
+            }
+        )
+    }
+
+    // Timesheet Update Scope Confirmation Dialog (Parity with Legacy AndroidUtils.showConfirmationDialog)
+    if (showEditTimesheetDialog) {
+        AppConfirmationDialog(
+            title = "Confirmation",
+            message = "This event has an associated timesheet entry. Do you want to update the timesheet too?",
+            confirmText = "Update Both",
+            dismissText = "Update Event Only",
+            onConfirm = {
+                showEditTimesheetDialog = false
+                val recChoice = pendingRecurringEditChoice
+                pendingRecurringEditChoice = null
+                buildAndSubmitPayload(recurringChoice = recChoice, updateScope = "UPDATE_BOTH")
+            },
+            onDismiss = {
+                showEditTimesheetDialog = false
+                val recChoice = pendingRecurringEditChoice
+                pendingRecurringEditChoice = null
+                buildAndSubmitPayload(recurringChoice = recChoice, updateScope = "UPDATE_EVENT_ONLY")
+            },
+            onClose = {
+                showEditTimesheetDialog = false
+                pendingRecurringEditChoice = null
             }
         )
     }

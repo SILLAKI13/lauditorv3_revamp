@@ -372,7 +372,7 @@ fun ProfilePaleBlueChip(
  * Multi-Select Dropdown with external navy label, compact input box,
  * animated toggle arrow, expandable options list with Checkboxes, and FlowRow pale blue chips below.
  */
-@OptIn(ExperimentalLayoutApi::class)
+@OptIn(ExperimentalLayoutApi::class, ExperimentalMaterial3Api::class)
 @Composable
 fun ProfileMultiSelectDropdown(
     label: String,
@@ -468,18 +468,23 @@ fun ProfileMultiSelectDropdown(
                             modifier = Modifier
                                 .fillMaxWidth()
                                 .clickable { onOptionToggled(option) }
-                                .padding(horizontal = 12.dp, vertical = 6.dp),
+                                .padding(horizontal = 12.dp, vertical = 7.dp),
                             verticalAlignment = Alignment.CenterVertically
                         ) {
-                            Checkbox(
-                                checked = isSelected,
-                                onCheckedChange = { onOptionToggled(option) },
-                                colors = CheckboxDefaults.colors(
-                                    checkedColor = ProfileNavy,
-                                    uncheckedColor = Color(0xFF757575)
+                            CompositionLocalProvider(
+                                LocalMinimumInteractiveComponentSize provides androidx.compose.ui.unit.Dp.Unspecified
+                            ) {
+                                Checkbox(
+                                    checked = isSelected,
+                                    onCheckedChange = { onOptionToggled(option) },
+                                    colors = CheckboxDefaults.colors(
+                                        checkedColor = ProfileNavy,
+                                        uncheckedColor = Color(0xFF757575)
+                                    ),
+                                    modifier = Modifier.size(20.dp)
                                 )
-                            )
-                            Spacer(modifier = Modifier.width(8.dp))
+                            }
+                            Spacer(modifier = Modifier.width(10.dp))
                             Text(
                                 text = option,
                                 fontSize = 13.sp,
@@ -579,7 +584,7 @@ fun ProfileConsultationFeeStepper(
                             )
                             .border(0.5.dp, Color(0xFFCCCCCC), RoundedCornerShape(4.dp))
                             .clickable(enabled = isMinusEnabled) {
-                                val newFee = (currentFee - 50).coerceAtLeast(500)
+                                val newFee = (currentFee - 100).coerceAtLeast(500)
                                 onFeeChange(newFee.toString())
                             },
                         contentAlignment = Alignment.Center
@@ -599,7 +604,7 @@ fun ProfileConsultationFeeStepper(
                             .background(Color(0xFFEBEBEB), RoundedCornerShape(4.dp))
                             .border(0.5.dp, Color(0xFFCCCCCC), RoundedCornerShape(4.dp))
                             .clickable {
-                                val newFee = currentFee + 50
+                                val newFee = currentFee + 100
                                 onFeeChange(newFee.toString())
                             },
                         contentAlignment = Alignment.Center

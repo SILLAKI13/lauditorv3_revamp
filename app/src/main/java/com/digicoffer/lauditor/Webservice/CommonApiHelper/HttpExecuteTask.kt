@@ -112,10 +112,7 @@ class HttpExecuteTask(
                 && typeString != "LOGIN_PASSWORD"
                 && typeString != "FORGET_PASSWORD"
                 && typeString != "VERIFY_TOKEN"
-                && typeString != "GET UNREAD COUNT"
                 && typeString != "REFRESH_TOKEN_INTERNAL"
-                && typeString != "RESET COUNT"
-                && typeString != "UPDATE COUNT"
             ) {
                 headers["Authorization"] = "Bearer " + Constants.TOKEN
                 Log.d("Token", ":Bearer " + Constants.TOKEN)
@@ -183,7 +180,18 @@ class HttpExecuteTask(
                 }
             }
 
-            val response: Response<ResponseBody> = call.execute()
+            var response: Response<ResponseBody>
+            try {
+                response = call.execute()
+            } catch (ioe: IOException) {
+                Log.w("HttpExecuteTask", "Network error on first attempt: ${ioe.message}. Retrying once...")
+                try {
+                    response = call.clone().execute()
+                } catch (retryE: Exception) {
+                    throw retryE
+                }
+            }
+
             val statusCode = response.code()
             Log.i("status_code:", statusCode.toString())
             httpResult.status_code = statusCode
@@ -212,11 +220,13 @@ class HttpExecuteTask(
 
         } catch (e: IOException) {
             httpResult.result = WebServiceHelper.ServiceCallStatus.Exception
-            httpResult.errorMessage = "Exception: " + e.message
+            httpResult.errorMessage = "Unable to connect to the server. Please check your internet connection and try again."
+            httpResult.responseContent = e.message ?: ""
             AndroidUtils.logMsg("WebServiceHelper.callWebService(): IO Exception " + e.message)
         } catch (e: Exception) {
             AndroidUtils.logMsg("HttpExecuteTask.doInBackground(): Exception " + e.message)
             httpResult.result = WebServiceHelper.ServiceCallStatus.Exception
+            httpResult.errorMessage = "Something went wrong. Please try again."
             httpResult.responseContent = e.message ?: ""
         }
         return httpResult

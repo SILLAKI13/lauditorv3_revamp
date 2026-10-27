@@ -207,7 +207,29 @@ fun ProfileViewCard(
                 AppSpacer(height = 12.dp)
 
                 // Profile Info Rows
-                if (isMyProfile) {
+                if (isSolo) {
+                    val soloName = (profile?.name ?: firm?.fullname).orEmpty()
+                    ProfileFieldRow(label = "Name", value = soloName)
+                    ProfileFieldRow(label = "Email", value = profile?.email ?: firm?.email)
+                    val country = firm?.address?.country ?: profile?.nationality ?: "India"
+                    ProfileFieldRow(label = "Country", value = country)
+                    ProfileFieldRow(label = "Phone Number", value = profile?.mobile ?: firm?.contact_phone)
+                    val dobFormatted = formatDobForDisplay(profile?.date_of_birth)
+                    if (dobFormatted.isNotBlank()) {
+                        ProfileFieldRow(label = "Date of Birth", value = dobFormatted)
+                    }
+                    if (!profile?.gender.isNullOrBlank()) {
+                        ProfileFieldRow(label = "Gender", value = formatGenderDisplay(profile.gender))
+                    }
+                    ProfileFieldRow(label = "Nationality", value = profile?.nationality ?: "Indian")
+                    if (!firm?.website.isNullOrBlank()) {
+                        ProfileFieldRow(label = "Website", value = firm?.website)
+                    }
+                    val bio = profile?.bio_description?.takeIf { it.isNotBlank() } ?: firm?.firm_description
+                    if (!bio.isNullOrBlank()) {
+                        ExpandableBioRow(label = "Bio", text = bio)
+                    }
+                } else if (isMyProfile) {
                     // Exact My Profile Field Order from Java/XML (Image 1)
                     if (!firm?.fullname.isNullOrBlank()) {
                         ProfileFieldRow(label = "Firm Name", value = firm?.fullname)
@@ -217,11 +239,12 @@ fun ProfileViewCard(
                     val country = firm?.address?.country ?: profile?.nationality ?: "India"
                     ProfileFieldRow(label = "Country", value = country)
                     ProfileFieldRow(label = "Phone Number", value = profile?.mobile)
-                    if (!profile?.date_of_birth.isNullOrBlank()) {
-                        ProfileFieldRow(label = "Date of Birth", value = profile?.date_of_birth)
+                    val dobFormatted = formatDobForDisplay(profile?.date_of_birth)
+                    if (dobFormatted.isNotBlank()) {
+                        ProfileFieldRow(label = "Date of Birth", value = dobFormatted)
                     }
                     if (!profile?.gender.isNullOrBlank()) {
-                        ProfileFieldRow(label = "Gender", value = profile?.gender)
+                        ProfileFieldRow(label = "Gender", value = formatGenderDisplay(profile.gender))
                     }
                     ProfileFieldRow(label = "Nationality", value = profile?.nationality ?: "Indian")
                     if (!firm?.website.isNullOrBlank()) {
@@ -589,7 +612,7 @@ private fun PracticeDetailsSubTab(
 
         // Languages Spoken Chips (2-Column Grid matching XML Image 3)
         val languagesArray = profile?.languages_spoken
-        val languagesList = parseJsonArray(languagesArray)
+        val languagesList = parseJsonArray(languagesArray).map { formatLanguageDisplay(it) }
 
         AppSpacer(height = 6.dp)
         Text(
@@ -652,7 +675,7 @@ private fun PracticeDetailsSubTab(
                     corrAddress.zipcode?.takeIf { it.isNotBlank() }
                 ).joinToString(", ")
 
-                ProfileFieldRow(label = "Correspondence Address", value = fullCorrAddress.ifEmpty { "Not specified" })
+                ProfileFieldRow(label = "Mailing Address", value = fullCorrAddress.ifEmpty { "Not specified" })
             }
         }
     }
@@ -1430,5 +1453,36 @@ private fun formatHours(h: Double): String {
     val hh = h.toInt()
     val mm = ((h - hh) * 60).toInt()
     return if (mm == 0) "$hh hours Available" else "${hh}h ${mm}m Available"
+}
+
+private fun formatLanguageDisplay(lang: String): String {
+    if (lang.isBlank()) return ""
+    return lang.trim().split(" ")
+        .filter { it.isNotBlank() }
+        .joinToString(" ") { word ->
+            word.replaceFirstChar { if (it.isLowerCase()) it.titlecase(Locale.ROOT) else it.toString() }
+        }
+}
+
+private fun formatDobForDisplay(rawDob: String?): String {
+    if (rawDob.isNullOrBlank()) return ""
+    val trimmed = rawDob.trim()
+    return try {
+        if (trimmed.matches(Regex("^\\d{2}-\\d{2}-\\d{4}$"))) {
+            trimmed
+        } else {
+            val inputFormat = SimpleDateFormat("yyyy-MM-dd", Locale.US)
+            val outputFormat = SimpleDateFormat("dd-MM-yyyy", Locale.US)
+            val date = inputFormat.parse(trimmed)
+            if (date != null) outputFormat.format(date) else trimmed
+        }
+    } catch (e: Exception) {
+        trimmed
+    }
+}
+
+private fun formatGenderDisplay(gender: String?): String {
+    if (gender.isNullOrBlank()) return ""
+    return gender.trim().replaceFirstChar { if (it.isLowerCase()) it.titlecase(Locale.ROOT) else it.toString() }
 }
 

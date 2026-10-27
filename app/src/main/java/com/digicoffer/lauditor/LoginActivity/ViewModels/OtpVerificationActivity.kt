@@ -33,6 +33,7 @@ import com.digicoffer.lauditor.CommonFiles.ChatService.ChatConnection
 import com.digicoffer.lauditor.CommonFiles.ChatService.ChatConnectionService
 import com.digicoffer.lauditor.CommonFiles.GlobalFiles.AndroidUtils
 import com.digicoffer.lauditor.CommonFiles.GlobalFiles.Constants
+import com.digicoffer.lauditor.CommonFiles.GlobalFiles.DeviceSyncManager
 import com.digicoffer.lauditor.CommonFiles.TermsAndCondition.TermsAndCondition
 import org.json.JSONArray
 import org.json.JSONObject
@@ -369,6 +370,32 @@ class OtpVerificationActivity : AppCompatActivity(), AsyncTaskCompleteListener, 
 
                 val subscription = probizData.optJSONObject("subscription")
                 if (subscription != null) {
+                    val status = subscription.optString("status", "")
+                    val isActiveStatus = status.equals("Active", ignoreCase = true) || subscription.optBoolean("is_active_sub", false)
+                    val model = subscription.optString("sub_model").ifEmpty {
+                        subscription.optString("model").ifEmpty {
+                            subscription.optString("plan").ifEmpty {
+                                subscription.optJSONObject("plan")?.optString("key") ?: ""
+                            }
+                        }
+                    }
+                    val planName = subscription.optString("plan_name").ifEmpty {
+                        subscription.optString("name").ifEmpty {
+                            subscription.optJSONObject("plan")?.optString("name") ?: ""
+                        }
+                    }
+                    val isTrial = model.contains("three_month", ignoreCase = true) ||
+                            model.contains("three_months", ignoreCase = true) ||
+                            planName.contains("free trial", ignoreCase = true)
+
+                    Constants.is_active = if (isTrial || isActiveStatus) true else subscription.optBoolean("is_active", subscription.optBoolean("isActive", true))
+                    if (model.isNotEmpty()) Constants.SUB_MODEL = model
+                    if (planName.isNotEmpty()) Constants.PLAN_NAME = planName
+                    com.digicoffer.lauditor.CommonFiles.GlobalFiles.SubscriptionAccessManager.updateSubscription(
+                        Constants.is_active,
+                        Constants.SUB_MODEL,
+                        Constants.PLAN_NAME
+                    )
                     val features = subscription.optJSONObject("features")
                     if (features != null) {
                         Constants.FEATURES.clear()
@@ -379,7 +406,6 @@ class OtpVerificationActivity : AppCompatActivity(), AsyncTaskCompleteListener, 
                             Constants.FEATURES[key] = value
                         }
                     }
-                    Constants.is_active = subscription.optBoolean("is_active")
                 }
 
                 Constants.User_Allowed = probizData.optInt("user_allowed")
@@ -589,7 +615,7 @@ class OtpVerificationActivity : AppCompatActivity(), AsyncTaskCompleteListener, 
 
             val dashboardArray = result.getJSONArray("cards")
             DashboardData(dashboardArray)
-            Constants.loginActivity?.syncDevice()
+            DeviceSyncManager.syncDevice(this)
             saveXmppPreferences()
             startActivity(Intent(this, MainActivity::class.java))
             android.os.Handler(android.os.Looper.getMainLooper()).postDelayed({
@@ -657,19 +683,24 @@ class OtpVerificationActivity : AppCompatActivity(), AsyncTaskCompleteListener, 
 
     private fun saveXmppPreferences() {
         val prefs = android.preference.PreferenceManager.getDefaultSharedPreferences(applicationContext)
-        var uid = Constants.UID
+        var uid = Constants.UID ?: ""
         if (!Constants.ROLE.equals("admin", ignoreCase = true)) {
-            uid = uid + "_" + Constants.USER_ID
+            val userId = Constants.USER_ID ?: ""
+            if (userId.isNotEmpty() && !uid.endsWith("_$userId")) {
+                uid = "${uid}_$userId"
+            }
         }
+        val token = Constants.TOKEN ?: ""
 
         prefs.edit()
             .putString("xmpp_jid", uid)
-            .putString("xmpp_password", Constants.TOKEN)
+            .putString("xmpp_password", token)
             .putBoolean("xmpp_logged_in", true)
             .apply()
 
         mConnection = ChatConnection(this)
         chatConnectionService = ChatConnectionService()
+        ChatConnection.loginUser(this, uid, token)
         JsonTask().execute(Constants.base_URL + "user/create/")
     }
 

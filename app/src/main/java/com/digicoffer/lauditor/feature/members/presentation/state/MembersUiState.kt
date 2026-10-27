@@ -6,6 +6,7 @@ import com.digicoffer.lauditor.Members.MembersModel
 data class MembersUiState(
     val isLoading: Boolean = false,
     val toastMessage: String? = null,
+    val isToastSuccess: Boolean = true,
     
     // License slot state
     val licenseTotal: String = "0",

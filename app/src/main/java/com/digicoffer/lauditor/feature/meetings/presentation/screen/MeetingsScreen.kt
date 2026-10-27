@@ -195,9 +195,8 @@ fun MeetingsScreen(
                         text = "Create Event",
                         iconRes = null,
                         onClick = {
-                            if (!Constants.is_active) {
-                                AndroidUtils.showRenewalPopup(context as? android.app.Activity ?: return@AppHeaderButton)
-                            } else {
+                            val activity = context as? android.app.Activity
+                            if (!AndroidUtils.checkSubPlanValidation(activity, "create_event")) {
                                 viewModel.onEvent(MeetingsUiEvent.OpenCreateEvent)
                             }
                         }
@@ -227,7 +226,7 @@ fun MeetingsScreen(
 
                         Card(
                             modifier = Modifier
-                                .width(220.dp)
+                                .wrapContentWidth()
                                 .clickable { filterDropdownExpanded = !filterDropdownExpanded },
                             shape = RoundedCornerShape(12.dp),
                             colors = CardDefaults.cardColors(containerColor = Color.White),
@@ -235,32 +234,26 @@ fun MeetingsScreen(
                         ) {
                             Row(
                                 modifier = Modifier
-                                    .fillMaxWidth()
-                                    .padding(horizontal = 14.dp, vertical = 10.dp),
+                                    .wrapContentWidth()
+                                    .padding(horizontal = 12.dp, vertical = 8.dp),
                                 verticalAlignment = Alignment.CenterVertically,
-                                horizontalArrangement = Arrangement.SpaceBetween
+                                horizontalArrangement = Arrangement.spacedBy(8.dp)
                             ) {
-                                Row(
-                                    verticalAlignment = Alignment.CenterVertically,
-                                    modifier = Modifier.weight(1f)
-                                ) {
-                                    Box(
-                                        modifier = Modifier
-                                            .size(12.dp)
-                                            .background(filterColor, CircleShape)
-                                    )
-                                    Spacer(modifier = Modifier.width(10.dp))
-                                    Text(
-                                        text = filterLabel,
-                                        fontSize = 14.sp,
-                                        fontFamily = FontFamily(Font(R.font.gill_sans_regular)),
-                                        color = Color.Black
-                                    )
-                                }
+                                Box(
+                                    modifier = Modifier
+                                        .size(10.dp)
+                                        .background(filterColor, CircleShape)
+                                )
+                                Text(
+                                    text = filterLabel,
+                                    fontSize = 14.sp,
+                                    fontFamily = FontFamily(Font(R.font.gill_sans_regular)),
+                                    color = Color.Black
+                                )
                                 Image(
                                     painter = painterResource(id = if (filterDropdownExpanded) R.drawable.up_arrow else R.drawable.down_arrow),
                                     contentDescription = "Dropdown filter",
-                                    modifier = Modifier.size(16.dp),
+                                    modifier = Modifier.size(14.dp),
                                     colorFilter = ColorFilter.tint(activeBlue)
                                 )
                             }
@@ -518,6 +511,9 @@ fun MeetingsScreen(
                                 },
                                 onMeetingLinkClick = { link ->
                                     AndroidUtils.openUrlInChrome(context, link)
+                                },
+                                onViewDocument = { docId, docName ->
+                                    viewModel.onEvent(MeetingsUiEvent.ViewDocument(docId, docName))
                                 }
                             )
                         }
@@ -534,33 +530,10 @@ fun MeetingsScreen(
 
     // Recurrence Delete Choice Dialog
     if (uiState.showRecurrenceChoiceDialog && uiState.pendingRecurrenceEvent != null) {
-        val pendingEvt = uiState.pendingRecurrenceEvent!!
         RecurrenceChoiceDialog(
             onDismiss = { viewModel.onEvent(MeetingsUiEvent.DismissRecurrenceDialog) },
             onConfirm = { choice ->
-                val mappedChoice = when (choice) {
-                    "Only this event" -> "this"
-                    "This and following events" -> "following"
-                    else -> "all"
-                }
-                viewModel.onEvent(MeetingsUiEvent.DismissRecurrenceDialog)
-                if (pendingEvt.is_linked_with_timesheet || pendingEvt.timesheet_added) {
-                    viewModel.onEvent(
-                        MeetingsUiEvent.ConfirmDeleteEvent(
-                            eventId = pendingEvt.id.orEmpty(),
-                            recurringChoice = mappedChoice,
-                            eventDeleteScope = "DELETE_BOTH"
-                        )
-                    )
-                } else {
-                    viewModel.onEvent(
-                        MeetingsUiEvent.ConfirmDeleteEvent(
-                            eventId = pendingEvt.id.orEmpty(),
-                            recurringChoice = mappedChoice,
-                            eventDeleteScope = "DELETE_EVENT_ONLY"
-                        )
-                    )
-                }
+                viewModel.onEvent(MeetingsUiEvent.RecurrenceDeleteChoiceSelected(choice))
             }
         )
     }
@@ -569,16 +542,17 @@ fun MeetingsScreen(
     if (uiState.showTimesheetDeleteConfirm && uiState.pendingRecurrenceEvent != null) {
         val pendingEvt = uiState.pendingRecurrenceEvent!!
         AppConfirmationDialog(
-            title = "Delete Timesheet Entry?",
+            title = "Delete Event",
             message = "This event has an associated timesheet entry. Do you want to update the timesheet too?",
             confirmText = "Delete Both",
             dismissText = "Delete Event Only",
+            onClose = { viewModel.onEvent(MeetingsUiEvent.DismissTimesheetConfirm) },
             onConfirm = {
                 viewModel.onEvent(MeetingsUiEvent.DismissTimesheetConfirm)
                 viewModel.onEvent(
                     MeetingsUiEvent.ConfirmDeleteEvent(
                         eventId = pendingEvt.id.orEmpty(),
-                        recurringChoice = null,
+                        recurringChoice = uiState.pendingRecurringChoice,
                         eventDeleteScope = "DELETE_BOTH"
                     )
                 )
@@ -588,10 +562,35 @@ fun MeetingsScreen(
                 viewModel.onEvent(
                     MeetingsUiEvent.ConfirmDeleteEvent(
                         eventId = pendingEvt.id.orEmpty(),
-                        recurringChoice = null,
+                        recurringChoice = uiState.pendingRecurringChoice,
                         eventDeleteScope = "DELETE_EVENT_ONLY"
                     )
                 )
+            }
+        )
+    }
+
+    // Normal Delete Confirmation Dialog
+    if (uiState.showNormalDeleteConfirm && uiState.pendingRecurrenceEvent != null) {
+        val pendingEvt = uiState.pendingRecurrenceEvent!!
+        AppConfirmationDialog(
+            title = "Delete Event",
+            message = "Are you sure you want to delete ${pendingEvt.title.orEmpty()}?",
+            confirmText = "Delete",
+            dismissText = "Cancel",
+            onClose = { viewModel.onEvent(MeetingsUiEvent.DismissDeleteConfirm) },
+            onConfirm = {
+                viewModel.onEvent(MeetingsUiEvent.DismissDeleteConfirm)
+                viewModel.onEvent(
+                    MeetingsUiEvent.ConfirmDeleteEvent(
+                        eventId = pendingEvt.id.orEmpty(),
+                        recurringChoice = uiState.pendingRecurringChoice,
+                        eventDeleteScope = "DELETE_EVENT_ONLY"
+                    )
+                )
+            },
+            onDismiss = {
+                viewModel.onEvent(MeetingsUiEvent.DismissDeleteConfirm)
             }
         )
     }
@@ -609,6 +608,19 @@ fun MeetingsScreen(
                     color = Color.Black,
                     fontFamily = FontFamily(Font(R.font.gill_sans_regular))
                 )
+            }
+        )
+    }
+
+    // Document Viewer Dialog
+    val viewingDocUrl = uiState.viewingDocumentUrl
+    if (!viewingDocUrl.isNullOrEmpty()) {
+        com.digicoffer.lauditor.feature.documents.presentation.screen.DocumentViewerDialog(
+            url = viewingDocUrl,
+            docName = uiState.viewingDocumentName,
+            contentType = uiState.viewingDocumentContentType,
+            onDismiss = {
+                viewModel.onEvent(MeetingsUiEvent.DismissDocumentViewer)
             }
         )
     }

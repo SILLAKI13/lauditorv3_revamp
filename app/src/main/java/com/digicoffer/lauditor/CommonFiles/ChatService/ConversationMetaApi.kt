@@ -44,8 +44,23 @@ class ConversationMetaApi {
         private fun fetchRaw(context: Context, chatJids: List<String>): String? {
             var conn: HttpURLConnection? = null
             try {
-                val currentUserJid = Constants.UID + "_" + Constants.USER_ID + Constants.VitacapeExtention
-                if (currentUserJid.isEmpty()) {
+                val pref = android.preference.PreferenceManager.getDefaultSharedPreferences(context)
+                var myJid = pref.getString("xmpp_jid", null)
+                if (myJid.isNullOrEmpty()) {
+                    var uid = Constants.UID ?: ""
+                    if (!Constants.ROLE.equals("admin", ignoreCase = true)) {
+                        val uId = Constants.USER_ID ?: ""
+                        if (uId.isNotEmpty() && !uid.endsWith("_$uId")) {
+                            uid = "${uid}_$uId"
+                        }
+                    }
+                    myJid = uid
+                }
+                val domain = Constants.XMPP_DOMAIN ?: "devchat.vitacape.com"
+                val bare = if (myJid.contains("@")) myJid.split("@")[0] else myJid
+                val currentUserJid = "$bare@$domain"
+
+                if (currentUserJid.isEmpty() || bare.isEmpty()) {
                     Log.e("ConversationMetaApi", "current user jid is empty, skipping meta fetch")
                     return null
                 }
@@ -53,7 +68,8 @@ class ConversationMetaApi {
                 val body = JSONObject()
                 val jidsArray = JSONArray()
                 for (jid in chatJids) {
-                    jidsArray.put(jid)
+                    val formattedJid = if (jid.contains("@")) jid else "$jid@$domain"
+                    jidsArray.put(formattedJid)
                 }
                 body.put("chat_jids", jidsArray)
                 body.put("user_jid", currentUserJid)
@@ -62,6 +78,8 @@ class ConversationMetaApi {
                 Log.d("ConversationMetaApi", "Request body: " + body.toString())
 
                 conn = URL(Constants.CONVERSATION_META_URL).openConnection() as HttpURLConnection
+                conn.connectTimeout = 5000
+                conn.readTimeout = 5000
                 conn.requestMethod = "POST"
                 conn.setRequestProperty("Authorization", "Bearer " + Constants.TOKEN)
                 conn.setRequestProperty("Content-Type", "application/json")
@@ -120,11 +138,21 @@ class ConversationMetaApi {
 
                     if (guid.isEmpty()) continue
 
-                    val preview = item.optString("last_message_preview", "")
+                    val preview = item.optString("last_message_preview", "").ifEmpty {
+                        item.optString("last_message", "").ifEmpty {
+                            item.optString("message", "")
+                        }
+                    }
                     val timestampMillis = parseIsoTimestamp(item.optString("last_message_timestamp", ""))
                     val unreadCount = item.optInt("unread_count", 0).toString()
 
-                    map[guid] = ConversationMeta(guid, preview, timestampMillis, unreadCount)
+                    val meta = ConversationMeta(guid, preview, timestampMillis, unreadCount)
+                    map[guid] = meta
+                    map[guid.lowercase()] = meta
+                    if (chatJid.isNotEmpty()) {
+                        map[chatJid] = meta
+                        map[chatJid.lowercase()] = meta
+                    }
                 }
             } catch (e: JSONException) {
                 Log.e("ConversationMetaApi", "Meta parse error: " + e.message)

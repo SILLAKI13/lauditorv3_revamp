@@ -70,6 +70,7 @@ val SettingsBlueIconBg = Color(0xFFEFF6FF)
 // ═════════════════════════════════════════════════════════════════════════════
 @Composable
 fun PasswordCard(
+    hasPassword: Boolean = true,
     onOpenChangePassword: () -> Unit,
     modifier: Modifier = Modifier
 ) {
@@ -136,7 +137,7 @@ fun PasswordCard(
                     contentAlignment = Alignment.Center
                 ) {
                     Text(
-                        text = "Change Password",
+                        text = if (hasPassword) "Change Password" else "Set Password",
                         color = SettingsNavy,
                         fontSize = 11.5.sp,
                         fontFamily = GillSansBold
@@ -156,6 +157,8 @@ fun UpdatePasswordDialog(
     onEvent: (SettingsUiEvent) -> Unit
 ) {
     if (!state.isChangePasswordOpen) return
+
+    val hasPassword = state.security?.hasPassword ?: true
 
     Dialog(
         onDismissRequest = {
@@ -194,7 +197,7 @@ fun UpdatePasswordDialog(
                         verticalAlignment = Alignment.CenterVertically
                     ) {
                         Text(
-                            text = "Update Password",
+                            text = if (hasPassword) "Change Password" else "Set Password",
                             color = SettingsNavy,
                             fontSize = 17.sp,
                             fontFamily = GillSansBold
@@ -233,18 +236,20 @@ fun UpdatePasswordDialog(
                         AppSpacer(height = 10.dp)
                     }
 
-                    // Field 1: Current Password
-                    PasswordInputField(
-                        label = "Current Password",
-                        value = state.currentPassword,
-                        onValueChange = { onEvent(SettingsUiEvent.UpdateCurrentPassword(it)) },
-                        placeholder = "Enter your current password",
-                        isVisible = state.currentPasswordVisible,
-                        onToggleVisibility = { onEvent(SettingsUiEvent.ToggleCurrentPasswordVisibility) },
-                        enabled = !state.changePasswordLoading
-                    )
+                    // Field 1: Current Password (only shown when account has an existing password)
+                    if (hasPassword) {
+                        PasswordInputField(
+                            label = "Current Password",
+                            value = state.currentPassword,
+                            onValueChange = { onEvent(SettingsUiEvent.UpdateCurrentPassword(it)) },
+                            placeholder = "Enter your current password",
+                            isVisible = state.currentPasswordVisible,
+                            onToggleVisibility = { onEvent(SettingsUiEvent.ToggleCurrentPasswordVisibility) },
+                            enabled = !state.changePasswordLoading
+                        )
 
-                    AppSpacer(height = 12.dp)
+                        AppSpacer(height = 12.dp)
+                    }
 
                     // Field 2: New Password
                     PasswordInputField(
@@ -420,6 +425,7 @@ fun SubscriptionSection(
     onInitiateChangePlan: () -> Unit,
     onCancelSubscription: () -> Unit,
     checkoutLoading: Boolean,
+    cancelSubscriptionLoading: Boolean = false,
     modifier: Modifier = Modifier
 ) {
     Surface(
@@ -447,32 +453,38 @@ fun SubscriptionSection(
                     fontFamily = GillSansBold
                 )
 
+                val isAnyLoading = checkoutLoading || cancelSubscriptionLoading
+
                 Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
                     // Change Plan / Subscribe Button
                     val planActionText = subscription?.actions?.primary?.label ?: "Change Plan"
                     Surface(
                         onClick = onInitiateChangePlan,
-                        enabled = !checkoutLoading,
+                        enabled = !isAnyLoading,
                         shape = RoundedCornerShape(8.dp),
                         color = SettingsNavy,
-                        modifier = Modifier.height(30.dp)
+                        modifier = Modifier
+                            .height(30.dp)
+                            .defaultMinSize(minWidth = 84.dp)
                     ) {
                         Box(
-                            modifier = Modifier.padding(horizontal = 10.dp, vertical = 3.dp),
+                            modifier = Modifier
+                                .defaultMinSize(minWidth = 84.dp)
+                                .padding(horizontal = 10.dp, vertical = 3.dp),
                             contentAlignment = Alignment.Center
                         ) {
+                            Text(
+                                text = planActionText,
+                                color = if (checkoutLoading) Color.Transparent else Color.White,
+                                fontSize = 12.sp,
+                                fontFamily = GillSansBold,
+                                maxLines = 1
+                            )
                             if (checkoutLoading) {
                                 CircularProgressIndicator(
                                     color = Color.White,
                                     modifier = Modifier.size(14.dp),
                                     strokeWidth = 2.dp
-                                )
-                            } else {
-                                Text(
-                                    text = planActionText,
-                                    color = Color.White,
-                                    fontSize = 12.sp,
-                                    fontFamily = GillSansBold
                                 )
                             }
                         }
@@ -485,21 +497,34 @@ fun SubscriptionSection(
                         val cancelText = secondaryAction?.label ?: "Cancel Subscription"
                         Surface(
                             onClick = onCancelSubscription,
+                            enabled = !isAnyLoading,
                             shape = RoundedCornerShape(8.dp),
                             color = Color.White,
                             border = BorderStroke(1.dp, SettingsRed),
-                            modifier = Modifier.height(30.dp)
+                            modifier = Modifier
+                                .height(30.dp)
+                                .defaultMinSize(minWidth = 110.dp)
                         ) {
                             Box(
-                                modifier = Modifier.padding(horizontal = 10.dp, vertical = 3.dp),
+                                modifier = Modifier
+                                    .defaultMinSize(minWidth = 110.dp)
+                                    .padding(horizontal = 10.dp, vertical = 3.dp),
                                 contentAlignment = Alignment.Center
                             ) {
                                 Text(
                                     text = cancelText,
-                                    color = SettingsRed,
+                                    color = if (cancelSubscriptionLoading) Color.Transparent else SettingsRed,
                                     fontSize = 12.sp,
-                                    fontFamily = GillSansBold
+                                    fontFamily = GillSansBold,
+                                    maxLines = 1
                                 )
+                                if (cancelSubscriptionLoading) {
+                                    CircularProgressIndicator(
+                                        color = SettingsRed,
+                                        modifier = Modifier.size(14.dp),
+                                        strokeWidth = 2.dp
+                                    )
+                                }
                             }
                         }
                     }
@@ -899,9 +924,12 @@ fun LoggedInDeviceCard(
 private fun getDeviceIconRes(name: String, type: String): Int {
     val combined = "$name $type".lowercase(Locale.ROOT)
     return when {
-        combined.contains("iphone") || combined.contains("ios") || combined.contains("android") || combined.contains("samsung") || combined.contains("vivo") || combined.contains("phone") -> R.drawable.ic_phone
-        combined.contains("windows") || combined.contains("mac") || combined.contains("desktop") -> R.drawable.ic_computer
-        combined.contains("linux") || combined.contains("chrome") || combined.contains("firefox") || combined.contains("safari") -> R.drawable.ic_globe
+        // Desktop platforms take precedence (e.g. "Chrome on Windows" has Windows -> computer icon as shown on iOS)
+        combined.contains("windows") || combined.contains("mac") || combined.contains("desktop") || combined.contains("pc") || combined.contains("laptop") -> R.drawable.ic_computer
+        // Mobile devices
+        combined.contains("iphone") || combined.contains("ios") || combined.contains("android") || combined.contains("samsung") || combined.contains("vivo") || combined.contains("phone") || combined.contains("mobile") || combined.contains("pixel") -> R.drawable.ic_phone
+        // Browser / Linux
+        combined.contains("linux") || combined.contains("chrome") || combined.contains("firefox") || combined.contains("safari") || combined.contains("edge") || combined.contains("browser") -> R.drawable.ic_globe
         else -> R.drawable.ic_computer
     }
 }

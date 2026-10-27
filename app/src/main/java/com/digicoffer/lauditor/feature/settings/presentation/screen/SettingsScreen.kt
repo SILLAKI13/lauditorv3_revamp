@@ -85,6 +85,7 @@ fun SettingsScreen(
             ) {
                 // 1. Password Section
                 PasswordCard(
+                    hasPassword = state.security?.hasPassword ?: true,
                     onOpenChangePassword = {
                         viewModel.onEvent(SettingsUiEvent.OpenChangePasswordDialog)
                     }
@@ -102,7 +103,8 @@ fun SettingsScreen(
                     onCancelSubscription = {
                         viewModel.onEvent(SettingsUiEvent.CancelSubscriptionClicked)
                     },
-                    checkoutLoading = state.checkoutLoading
+                    checkoutLoading = state.checkoutLoading,
+                    cancelSubscriptionLoading = state.cancelSubscriptionLoading
                 )
 
                 AppSpacer(height = 12.dp)
@@ -136,22 +138,12 @@ fun SettingsScreen(
             isOpen = state.isExternalCheckoutBottomSheetOpen,
             onDismiss = { viewModel.onEvent(SettingsUiEvent.DismissExternalCheckoutBottomSheet) },
             onContinue = {
-                val email = (Constants.FirmEmail?.ifEmpty { Constants.Email } ?: Constants.Email ?: "").lowercase(java.util.Locale.getDefault())
-                val fallbackUrl = "${Constants.paymentUrl}=$email&users=${Constants.User_Allowed}"
-                val url = if (!state.checkoutUrl.isNullOrBlank()) state.checkoutUrl else fallbackUrl
+                val url = state.checkoutUrl
                 viewModel.onEvent(SettingsUiEvent.ConfirmOpenExternalCheckout)
                 if (!url.isNullOrBlank()) {
                     AndroidUtils.openUrlInChrome(context, url)
-                    android.os.Handler(android.os.Looper.getMainLooper()).postDelayed({
-                        Constants.mainActivity?.performLogout()
-                    }, 500)
                 }
             }
-        )
-
-        CancelSubscriptionBottomSheet(
-            isOpen = state.isCancelSubscriptionBottomSheetOpen,
-            onDismiss = { viewModel.onEvent(SettingsUiEvent.DismissCancelSubscriptionBottomSheet) }
         )
 
         DeleteAccountConfirmationDialog(

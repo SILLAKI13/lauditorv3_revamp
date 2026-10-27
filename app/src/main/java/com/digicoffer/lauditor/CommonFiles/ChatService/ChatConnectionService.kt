@@ -161,11 +161,19 @@ class ChatConnectionService : Service {
 
         @JvmStatic
         fun getState(): ChatConnection.ConnectionState {
+            if (ChatConnection.mConnection != null && ChatConnection.mConnection!!.isAuthenticated) {
+                sConnectionState = ChatConnection.ConnectionState.CONNECTED
+                return ChatConnection.ConnectionState.CONNECTED
+            }
             return sConnectionState ?: ChatConnection.ConnectionState.DISCONNECTED
         }
 
         @JvmStatic
         fun getLoggedInState(): ChatConnection.LoggedInState {
+            if (ChatConnection.mConnection != null && ChatConnection.mConnection!!.isAuthenticated) {
+                sLoggedInState = ChatConnection.LoggedInState.LOGGED_IN
+                return ChatConnection.LoggedInState.LOGGED_IN
+            }
             return sLoggedInState ?: ChatConnection.LoggedInState.LOGGED_OUT
         }
     }

@@ -130,8 +130,9 @@ fun MemberFormCard(
     val cancelBorderColor = Color(0xFFDDDDDE)
 
     var showValidationErrorAlert by remember { mutableStateOf(false) }
+    var validationErrorMessage by remember { mutableStateOf("") }
 
-    val displayCurrency = if (currency.isEmpty()) "IndianRupee(INR)" else currency
+    val displayCurrency = if (currency.isEmpty() || currency.equals("null", ignoreCase = true)) "IndianRupee(INR)" else currency
 
     Card(
         shape = RoundedCornerShape(8.dp),
@@ -219,10 +220,9 @@ fun MemberFormCard(
 
             Spacer(modifier = Modifier.height(16.dp))
 
-            // Phone Number *
+            // Phone Number (Optional)
             Row(verticalAlignment = Alignment.CenterVertically) {
                 Text(text = "Phone Number", color = activeBlue, fontWeight = FontWeight.SemiBold, fontSize = 15.sp, fontFamily = FontFamily(Font(R.font.gill_sans_regular)))
-                Text(text = " *", color = Color.Red, fontWeight = FontWeight.Bold, fontSize = 15.sp)
             }
             Spacer(modifier = Modifier.height(6.dp))
             CustomTextField(
@@ -320,12 +320,32 @@ fun MemberFormCard(
                     .background(inputBgColor, shape = RoundedCornerShape(6.dp))
                     .border(width = 0.5.dp, color = inputBorderColor, shape = RoundedCornerShape(6.dp))
                     .clickable {
-                        val isEmailValidCheck = android.util.Patterns.EMAIL_ADDRESS.matcher(email).matches()
-                        val isPhoneValidCheck = phone.length == 10 && phone.all { it.isDigit() }
-                        if (name.isBlank() || designation.isBlank() || rate.isBlank() ||
-                            phone.isBlank() || !isPhoneValidCheck ||
-                            email.isBlank() || confirmEmail.isBlank() ||
-                            !isEmailValidCheck || email != confirmEmail) {
+                        val cleanName = name.trim()
+                        val cleanDesg = designation.trim()
+                        val cleanRate = rate.trim()
+                        val cleanPhone = phone.trim()
+                        val cleanEmail = email.trim()
+                        val cleanConfirm = confirmEmail.trim()
+
+                        val missingFields = mutableListOf<String>()
+                        if (cleanName.isEmpty()) missingFields.add("Name")
+                        if (cleanDesg.isEmpty()) missingFields.add("Designation")
+                        if (cleanRate.isEmpty()) missingFields.add("Default Rate")
+                        if (cleanEmail.isEmpty()) missingFields.add("Email")
+                        if (cleanConfirm.isEmpty()) missingFields.add("Confirm Email")
+
+                        if (missingFields.isNotEmpty()) {
+                            validationErrorMessage = "Please check the " + missingFields.joinToString(", ")
+                            showValidationErrorAlert = true
+                        } else if (!android.util.Patterns.EMAIL_ADDRESS.matcher(cleanEmail).matches() ||
+                            !android.util.Patterns.EMAIL_ADDRESS.matcher(cleanConfirm).matches()) {
+                            validationErrorMessage = "Please enter a valid email address"
+                            showValidationErrorAlert = true
+                        } else if (!cleanEmail.equals(cleanConfirm, ignoreCase = true)) {
+                            validationErrorMessage = "Email and Confirm Email do not match"
+                            showValidationErrorAlert = true
+                        } else if (cleanPhone.isNotEmpty() && (cleanPhone.length != 10 || !cleanPhone.all { it.isDigit() })) {
+                            validationErrorMessage = "Please enter a 10 digit valid mobile number"
                             showValidationErrorAlert = true
                         } else {
                             onAssignGroupsClick()
@@ -383,12 +403,32 @@ fun MemberFormCard(
 
                     Button(
                         onClick = {
-                            val isEmailValidCheck = android.util.Patterns.EMAIL_ADDRESS.matcher(email).matches()
-                            val isPhoneValidCheck = phone.length == 10 && phone.all { it.isDigit() }
-                            if (name.isBlank() || designation.isBlank() || rate.isBlank() ||
-                                phone.isBlank() || !isPhoneValidCheck ||
-                                email.isBlank() || confirmEmail.isBlank() ||
-                                !isEmailValidCheck || email != confirmEmail) {
+                            val cleanName = name.trim()
+                            val cleanDesg = designation.trim()
+                            val cleanRate = rate.trim()
+                            val cleanPhone = phone.trim()
+                            val cleanEmail = email.trim()
+                            val cleanConfirm = confirmEmail.trim()
+
+                            val missingFields = mutableListOf<String>()
+                            if (cleanName.isEmpty()) missingFields.add("Name")
+                            if (cleanDesg.isEmpty()) missingFields.add("Designation")
+                            if (cleanRate.isEmpty()) missingFields.add("Default Rate")
+                            if (cleanEmail.isEmpty()) missingFields.add("Email")
+                            if (cleanConfirm.isEmpty()) missingFields.add("Confirm Email")
+
+                            if (missingFields.isNotEmpty()) {
+                                validationErrorMessage = "Please check the " + missingFields.joinToString(", ")
+                                showValidationErrorAlert = true
+                            } else if (!android.util.Patterns.EMAIL_ADDRESS.matcher(cleanEmail).matches() ||
+                                !android.util.Patterns.EMAIL_ADDRESS.matcher(cleanConfirm).matches()) {
+                                validationErrorMessage = "Please enter a valid email address"
+                                showValidationErrorAlert = true
+                            } else if (!cleanEmail.equals(cleanConfirm, ignoreCase = true)) {
+                                validationErrorMessage = "Email and Confirm Email do not match"
+                                showValidationErrorAlert = true
+                            } else if (cleanPhone.isNotEmpty() && (cleanPhone.length != 10 || !cleanPhone.all { it.isDigit() })) {
+                                validationErrorMessage = "Please enter a 10 digit valid mobile number"
                                 showValidationErrorAlert = true
                             } else {
                                 onSaveClick()
@@ -417,9 +457,10 @@ fun MemberFormCard(
     if (showValidationErrorAlert) {
         MembersAlertDialog(
             title = "Alert !",
-            message = "Please check the Name, Designation, Default Rate, Phone Number, Email, Confirm Email",
+            message = validationErrorMessage,
             onConfirm = { showValidationErrorAlert = false },
             onDismiss = { showValidationErrorAlert = false }
         )
     }
 }
+

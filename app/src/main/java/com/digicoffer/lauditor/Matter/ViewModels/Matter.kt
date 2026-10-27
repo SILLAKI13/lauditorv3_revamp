@@ -114,21 +114,27 @@ class Matter : Fragment(), AsyncTaskCompleteListener, View.OnClickListener, Bott
 
         Constants.is_CreateMatter = Constants.isCreate
 
-        val filterType = Constants.matterFilterType
-        if (!filterType.isNullOrEmpty()) {
-            Constants.matterFilterType = ""
-            matter_arraylist.clear()
-            if (filterType.equals("General", ignoreCase = true)) {
+        if (Constants.create_matter) {
+            Constants.create_matter = false
+            Constants.Matter_CreateOrViewDetails = "Create"
+            loadCreateUI()
+        } else {
+            val filterType = Constants.matterFilterType
+            if (!filterType.isNullOrEmpty()) {
+                Constants.matterFilterType = ""
+                matter_arraylist.clear()
+                if (filterType.equals("General", ignoreCase = true)) {
+                    loadGeneralMatter()
+                } else {
+                    loadLegalMatter()
+                }
+            } else if (Constants.MATTER_TYPE == "General") {
+                matter_arraylist.clear()
                 loadGeneralMatter()
             } else {
+                matter_arraylist.clear()
                 loadLegalMatter()
             }
-        } else if (Constants.MATTER_TYPE == "General") {
-            matter_arraylist.clear()
-            loadGeneralMatter()
-        } else {
-            matter_arraylist.clear()
-            loadLegalMatter()
         }
 
         return ComposeView(requireContext()).apply {
@@ -180,16 +186,15 @@ class Matter : Fragment(), AsyncTaskCompleteListener, View.OnClickListener, Bott
                         text = "Create Matter",
                         iconRes = R.drawable.simple_plus_icon,
                         onClick = {
-                            if (!Constants.is_active) {
-                                AndroidUtils.showRenewalPopup(requireActivity())
-                            } else {
-                                Constants.Matter_id = ""
-                                Constants.upload_documents_list.clear()
-                                Constants.create_matter = true
-                                Constants.Matter_CreateOrViewDetails = "Create"
-                                matter_arraylist.clear()
-                                loadCreateUI()
+                            if (AndroidUtils.checkSubPlanValidation(activity, "matter")) {
+                                return@AppHeaderButton
                             }
+                            Constants.Matter_id = ""
+                            Constants.upload_documents_list.clear()
+                            Constants.create_matter = true
+                            Constants.Matter_CreateOrViewDetails = "Create"
+                            matter_arraylist.clear()
+                            loadCreateUI()
                         }
                     )
                 }

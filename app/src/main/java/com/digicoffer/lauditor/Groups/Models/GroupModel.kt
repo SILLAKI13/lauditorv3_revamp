@@ -9,4 +9,7 @@ class GroupModel {
     @get:JvmName("isIsenabled")
     @set:JvmName("setIsenabled")
     var isenabled: Boolean = false
+
+    var isRestricted: Boolean = false
+    var restrictedReason: String = ""
 }

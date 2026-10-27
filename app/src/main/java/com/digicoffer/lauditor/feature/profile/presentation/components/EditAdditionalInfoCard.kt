@@ -51,7 +51,16 @@ import java.util.*
 
 private val GillSans = FontFamily(Font(R.font.gill_sans))
 private val GillSansBold = FontFamily(Font(R.font.gill_sans_bold))
+private fun formatLanguageDisplay(lang: String): String {
+    if (lang.isBlank()) return ""
+    return lang.trim().split(" ")
+        .filter { it.isNotBlank() }
+        .joinToString(" ") { word ->
+            word.replaceFirstChar { if (it.isLowerCase()) it.titlecase(Locale.ROOT) else it.toString() }
+        }
+}
 
+@OptIn(ExperimentalLayoutApi::class, ExperimentalMaterial3Api::class)
 @Composable
 fun EditAdditionalInfoCard(
     isMyProfile: Boolean,
@@ -461,30 +470,12 @@ private fun PracticeDetailsEditSection(
                                             onEvent(ProfileUiEvent.AddService(srv))
                                         }
                                     }
-                                    .padding(horizontal = 14.dp, vertical = 9.dp),
-                                verticalAlignment = Alignment.CenterVertically,
-                                horizontalArrangement = Arrangement.SpaceBetween
+                                    .padding(horizontal = 12.dp, vertical = 7.dp),
+                                verticalAlignment = Alignment.CenterVertically
                             ) {
-                                Text(
-                                    text = srv,
-                                    fontSize = 13.sp,
-                                    fontFamily = GillSans,
-                                    color = if (isSelected) ProfileNavy else Color(0xFF1F2937),
-                                    modifier = Modifier.weight(1f)
-                                )
-
-                                Row(verticalAlignment = Alignment.CenterVertically) {
-                                    if (isSuggested) {
-                                        Icon(
-                                            painter = painterResource(R.drawable.suggest_magic_icon),
-                                            contentDescription = "Recommended",
-                                            tint = ProfileNavy,
-                                            modifier = Modifier
-                                                .padding(end = 8.dp)
-                                                .size(16.dp)
-                                        )
-                                    }
-
+                                CompositionLocalProvider(
+                                    LocalMinimumInteractiveComponentSize provides androidx.compose.ui.unit.Dp.Unspecified
+                                ) {
                                     Checkbox(
                                         checked = isSelected,
                                         onCheckedChange = { checked ->
@@ -496,9 +487,26 @@ private fun PracticeDetailsEditSection(
                                         },
                                         colors = CheckboxDefaults.colors(
                                             checkedColor = ProfileNavy,
-                                            uncheckedColor = Color(0xFF9CA3AF)
+                                            uncheckedColor = Color(0xFF757575)
                                         ),
                                         modifier = Modifier.size(20.dp)
+                                    )
+                                }
+                                Spacer(modifier = Modifier.width(10.dp))
+                                Text(
+                                    text = srv,
+                                    fontSize = 13.sp,
+                                    fontFamily = GillSans,
+                                    color = if (isSelected) ProfileNavy else Color(0xFF222222),
+                                    modifier = Modifier.weight(1f)
+                                )
+
+                                if (isSuggested) {
+                                    Icon(
+                                        painter = painterResource(R.drawable.suggest_magic_icon),
+                                        contentDescription = "Recommended",
+                                        tint = ProfileNavy,
+                                        modifier = Modifier.size(16.dp)
                                     )
                                 }
                             }
@@ -579,7 +587,10 @@ private fun PracticeDetailsEditSection(
                             color = ProfileNavy,
                             modifier = Modifier
                                 .clickable {
-                                    onEvent(ProfileUiEvent.AddLanguage(newLanguageText.trim().lowercase(Locale.ROOT)))
+                                    val formatted = formatLanguageDisplay(newLanguageText)
+                                    if (formatted.isNotBlank()) {
+                                        onEvent(ProfileUiEvent.AddLanguage(formatted))
+                                    }
                                     newLanguageText = ""
                                 }
                                 .padding(horizontal = 4.dp, vertical = 2.dp)
@@ -599,7 +610,7 @@ private fun PracticeDetailsEditSection(
                 ) {
                     state.languagesSpoken.forEach { lang ->
                         ProfilePaleBlueChip(
-                            text = lang,
+                            text = formatLanguageDisplay(lang),
                             onRemove = { onEvent(ProfileUiEvent.RemoveLanguage(lang)) }
                         )
                     }
@@ -1107,8 +1118,8 @@ private fun CourtPracticeCardItem(
                                             .fillMaxWidth()
                                             .clickable {
                                                 val isSupreme = formatted.equals("Supreme Court", ignoreCase = true)
-                                                val defState = if (isSupreme) "Delhi" else (statesList.firstOrNull() ?: "")
-                                                val defCity = if (isSupreme) "New Delhi" else (courtStatesMap[defState]?.firstOrNull() ?: "")
+                                                val defState = if (isSupreme) "Delhi" else ""
+                                                val defCity = if (isSupreme) "New Delhi" else ""
                                                 onEvent(
                                                     ProfileUiEvent.UpdateCourtRow(
                                                         courtItem.id,
@@ -1234,13 +1245,12 @@ private fun CourtPracticeCardItem(
                                         modifier = Modifier
                                             .fillMaxWidth()
                                             .clickable {
-                                                val defCity = courtStatesMap[st]?.firstOrNull() ?: ""
                                                 onEvent(
                                                     ProfileUiEvent.UpdateCourtRow(
                                                         courtItem.id,
                                                         courtItem.courtType,
                                                         st,
-                                                        defCity,
+                                                        "",
                                                         courtItem.courtName
                                                     )
                                                 )
@@ -1305,7 +1315,7 @@ private fun CourtPracticeCardItem(
                             decorationBox = { innerTextField ->
                                 if (cityText.isEmpty()) {
                                     Text(
-                                        text = "Search & Add City",
+                                        text = "Select City",
                                         fontSize = 13.5.sp,
                                         fontFamily = GillSans,
                                         color = Color(0xFF9CA3AF)
@@ -1317,7 +1327,7 @@ private fun CourtPracticeCardItem(
                         )
                     } else {
                         Text(
-                            text = if (isSupremeCourt) "New Delhi" else if (courtItem.city.isNotBlank()) courtItem.city else "Search & Add City",
+                            text = if (isSupremeCourt) "New Delhi" else if (courtItem.city.isNotBlank()) courtItem.city else "Select City",
                             fontSize = 13.5.sp,
                             fontFamily = GillSans,
                             color = if (isSupremeCourt || courtItem.city.isNotBlank()) Color(0xFF6B7280) else Color(0xFF9CA3AF),

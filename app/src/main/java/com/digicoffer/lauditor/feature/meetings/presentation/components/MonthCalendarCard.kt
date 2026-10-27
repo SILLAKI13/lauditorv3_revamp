@@ -158,15 +158,21 @@ fun MonthCalendarCard(
                                     .padding(horizontal = 2.dp)
                             )
                         } else {
-                            val backgroundModifier = if (day.isSelected) {
-                                Modifier.background(activeBlue, RoundedCornerShape(6.dp))
-                            } else {
-                                Modifier
+                            val backgroundModifier = when {
+                                day.isSelected -> Modifier.background(activeBlue, RoundedCornerShape(6.dp))
+                                day.isToday -> Modifier
+                                    .background(defaultBackground, RoundedCornerShape(6.dp))
+                                    .border(1.dp, activeBlue, RoundedCornerShape(6.dp))
+                                else -> Modifier
                                     .background(defaultBackground, RoundedCornerShape(6.dp))
                                     .border(0.5.dp, textAndBorderColor, RoundedCornerShape(6.dp))
                             }
 
-                            val textColor = if (day.isSelected) Color.White else Color.Black
+                            val textColor = when {
+                                day.isSelected -> Color.White
+                                day.isToday -> activeBlue
+                                else -> Color.Black
+                            }
 
                             Column(
                                 modifier = Modifier

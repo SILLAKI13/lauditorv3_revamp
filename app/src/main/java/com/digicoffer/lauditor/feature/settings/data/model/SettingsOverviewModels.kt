@@ -15,11 +15,11 @@ data class SettingsOverviewResponse(
     val data: SettingsOverviewData? = null
 ) {
     companion object {
-        fun fromJson(json: JSONObject): SettingsOverviewResponse {
+        fun fromJson(json: JSONObject, localDeviceId: String = ""): SettingsOverviewResponse {
             val error = json.optBoolean("error", false)
             val msg = json.optNullableString("msg") ?: json.optNullableString("message")
             val dataObj = json.optJSONObject("data")
-            val data = if (dataObj != null) SettingsOverviewData.fromJson(dataObj) else null
+            val data = if (dataObj != null) SettingsOverviewData.fromJson(dataObj, localDeviceId) else null
             return SettingsOverviewResponse(error = error, msg = msg, data = data)
         }
     }
@@ -33,29 +33,60 @@ data class SettingsOverviewData(
     val currentDevice: LoggedInDevice? = null
 ) {
     companion object {
-        fun fromJson(json: JSONObject): SettingsOverviewData {
+        fun fromJson(json: JSONObject, localDeviceId: String = ""): SettingsOverviewData {
             val secObj = json.optJSONObject("security")
             val subObj = json.optJSONObject("subscription")
             val termsObj = json.optJSONObject("terms")
             val devArr = json.optJSONArray("logged_in_devices")
+                ?: json.optJSONArray("loggedInDevices")
+                ?: json.optJSONArray("devices")
+                ?: json.optJSONArray("active_devices")
+                ?: json.optJSONArray("activeDevices")
+                ?: json.optJSONArray("sessions")
+                ?: secObj?.optJSONArray("logged_in_devices")
+                ?: secObj?.optJSONArray("devices")
             val curDevObj = json.optJSONObject("current_device")
+                ?: json.optJSONObject("currentDevice")
+                ?: secObj?.optJSONObject("current_device")
 
             val devicesList = mutableListOf<LoggedInDevice>()
             if (devArr != null) {
                 for (i in 0 until devArr.length()) {
                     val d = devArr.optJSONObject(i)
                     if (d != null) {
-                        devicesList.add(LoggedInDevice.fromJson(d))
+                        devicesList.add(LoggedInDevice.fromJson(d, localDeviceId))
                     }
                 }
             }
 
+            val parsedCurDev = if (curDevObj != null) LoggedInDevice.fromJson(curDevObj, localDeviceId).copy(isCurrent = true, currentDevice = true) else null
+            if (parsedCurDev != null) {
+                val existsIndex = devicesList.indexOfFirst {
+                    (it.deviceId.isNotEmpty() && it.deviceId == parsedCurDev.deviceId) ||
+                    (it.deviceName.isNotEmpty() && it.deviceName == parsedCurDev.deviceName && it.deviceType == parsedCurDev.deviceType)
+                }
+                if (existsIndex >= 0) {
+                    devicesList[existsIndex] = devicesList[existsIndex].copy(isCurrent = true, currentDevice = true)
+                } else {
+                    devicesList.add(0, parsedCurDev)
+                }
+            }
+
+            // Current device should be sorted first (iOS parity)
+            val sortedList = devicesList.sortedByDescending { it.isCurrent || it.currentDevice }
+
+            val securityInfo = if (secObj != null) {
+                SecurityInfo.fromJson(secObj)
+            } else if (json.has("has_password") || json.has("hasPassword") || json.has("password_set")) {
+                SecurityInfo.fromJson(json)
+            } else null
+
             return SettingsOverviewData(
-                security = if (secObj != null) SecurityInfo.fromJson(secObj) else null,
+                security = securityInfo,
                 subscription = if (subObj != null) SubscriptionInfo.fromJson(subObj) else null,
                 terms = if (termsObj != null) TermsInfo.fromJson(termsObj) else null,
-                loggedInDevices = devicesList,
-                currentDevice = if (curDevObj != null) LoggedInDevice.fromJson(curDevObj) else null
+                loggedInDevices = sortedList,
+                currentDevice = parsedCurDev
             )
         }
     }
@@ -69,11 +100,31 @@ data class SecurityInfo(
 ) {
     companion object {
         fun fromJson(json: JSONObject): SecurityInfo {
+            val flowVal = json.optNullableString("flow")
+                ?: json.optNullableString("action")
+                ?: json.optNullableString("status")
+
+            val hasPass = when {
+                json.has("has_password") -> json.optBoolean("has_password")
+                json.has("hasPassword") -> json.optBoolean("hasPassword")
+                json.has("password_set") -> json.optBoolean("password_set")
+                json.has("is_password_set") -> json.optBoolean("is_password_set")
+                flowVal?.equals("set", ignoreCase = true) == true || flowVal?.equals("setup", ignoreCase = true) == true -> false
+                flowVal?.equals("change", ignoreCase = true) == true -> true
+                else -> true
+            }
+
+            val resolvedFlow = when {
+                !flowVal.isNullOrBlank() -> flowVal
+                !hasPass -> "setup"
+                else -> "change"
+            }
+
             return SecurityInfo(
-                hasPassword = json.optBoolean("hasPassword", true),
-                flow = json.optNullableString("flow") ?: "change",
-                lastChangedOn = json.optNullableString("lastChangedOn"),
-                lastChangedAt = json.optNullableString("lastChangedAt")
+                hasPassword = hasPass,
+                flow = resolvedFlow,
+                lastChangedOn = json.optNullableString("lastChangedOn") ?: json.optNullableString("last_changed_on"),
+                lastChangedAt = json.optNullableString("lastChangedAt") ?: json.optNullableString("last_changed_at")
             )
         }
     }
@@ -273,15 +324,122 @@ data class LoggedInDevice(
     val currentDevice: Boolean = false
 ) {
     companion object {
-        fun fromJson(json: JSONObject): LoggedInDevice {
+        fun fromJson(json: JSONObject, localDeviceId: String = ""): LoggedInDevice {
+            val devId = json.optNullableString("device_id")
+                ?: json.optNullableString("deviceId")
+                ?: json.optNullableString("id")
+                ?: json.optNullableString("session_id")
+                ?: ""
+
+            val devName = json.optNullableString("device_name")
+                ?: json.optNullableString("deviceName")
+                ?: json.optNullableString("name")
+                ?: json.optNullableString("device")
+                ?: json.optNullableString("browser")
+                ?: json.optNullableString("model")
+                ?: json.optNullableString("client_name")
+                ?: "Unknown Device"
+
+            val os = json.optNullableString("os")
+                ?: json.optNullableString("platform")
+                ?: json.optNullableString("operating_system")
+            val osVersion = json.optNullableString("os_version")
+                ?: json.optNullableString("osVersion")
+                ?: json.optNullableString("version")
+            val rawType = json.optNullableString("device_type")
+                ?: json.optNullableString("deviceType")
+                ?: json.optNullableString("type")
+
+            val devType = when {
+                !os.isNullOrBlank() && !osVersion.isNullOrBlank() -> "$os $osVersion"
+                !os.isNullOrBlank() -> os
+                !rawType.isNullOrBlank() -> rawType
+                else -> ""
+            }
+
+            val rawLastActive = json.optNullableString("last_active")
+                ?: json.optNullableString("lastActive")
+                ?: json.optNullableString("last_activity")
+                ?: json.optNullableString("lastActivity")
+                ?: json.optNullableString("last_login")
+                ?: json.optNullableString("lastLogin")
+                ?: json.optNullableString("updated_at")
+                ?: json.optNullableString("timestamp")
+                ?: ""
+
+            val formattedLastActive = formatRelativeTime(rawLastActive)
+
+            val isCur = json.optBoolean("is_current", false)
+                || json.optBoolean("isCurrent", false)
+                || json.optBoolean("current_device", false)
+                || json.optBoolean("currentDevice", false)
+                || json.optBoolean("current", false)
+                || json.optBoolean("is_current_device", false)
+                || (localDeviceId.isNotBlank() && devId.isNotBlank() && devId.equals(localDeviceId, ignoreCase = true))
+
             return LoggedInDevice(
-                deviceId = json.optNullableString("device_id") ?: "",
-                deviceName = json.optNullableString("device_name") ?: "",
-                deviceType = json.optNullableString("device_type") ?: "",
-                lastActive = json.optNullableString("last_active") ?: "",
-                isCurrent = json.optBoolean("is_current", false),
-                currentDevice = json.optBoolean("current_device", false)
+                deviceId = devId,
+                deviceName = devName,
+                deviceType = devType,
+                lastActive = formattedLastActive,
+                isCurrent = isCur,
+                currentDevice = isCur
             )
+        }
+
+        fun formatRelativeTime(raw: String): String {
+            if (raw.isBlank()) return "Recently active"
+            if (raw.endsWith("ago", ignoreCase = true) || raw.endsWith("ago.", ignoreCase = true) || raw.equals("just now", ignoreCase = true)) {
+                return if (raw.endsWith(".")) raw else "$raw."
+            }
+            return try {
+                val patterns = listOf(
+                    "yyyy-MM-dd'T'HH:mm:ss.SSS'Z'",
+                    "yyyy-MM-dd'T'HH:mm:ss.SSSSSS'Z'",
+                    "yyyy-MM-dd'T'HH:mm:ss'Z'",
+                    "yyyy-MM-dd'T'HH:mm:ss",
+                    "yyyy-MM-dd HH:mm:ss",
+                    "yyyy-MM-dd"
+                )
+                var parsedDate: java.util.Date? = null
+                for (pattern in patterns) {
+                    try {
+                        val sdf = java.text.SimpleDateFormat(pattern, java.util.Locale.ROOT)
+                        sdf.timeZone = java.util.TimeZone.getTimeZone("UTC")
+                        parsedDate = sdf.parse(raw)
+                        if (parsedDate != null) break
+                    } catch (_: Exception) {}
+                }
+                if (parsedDate == null) {
+                    val epoch = raw.toLongOrNull()
+                    if (epoch != null) {
+                        parsedDate = if (epoch < 10000000000L) java.util.Date(epoch * 1000) else java.util.Date(epoch)
+                    }
+                }
+                if (parsedDate != null) {
+                    val diff = System.currentTimeMillis() - parsedDate.time
+                    val seconds = (diff / 1000).coerceAtLeast(0)
+                    val minutes = seconds / 60
+                    val hours = minutes / 60
+                    val days = hours / 24
+                    val weeks = days / 7
+                    when {
+                        seconds < 60 -> if (seconds <= 5) "4 seconds ago." else "$seconds seconds ago."
+                        minutes < 60 -> "$minutes min${if (minutes > 1) "s" else ""} ago."
+                        hours < 24 -> "$hours hour${if (hours > 1) "s" else ""} ago."
+                        days < 7 -> "$days day${if (days > 1) "s" else ""} ago."
+                        weeks < 5 -> "$weeks week${if (weeks > 1) "s" else ""} ago."
+                        else -> {
+                            val sdf = java.text.SimpleDateFormat("MMM dd, yyyy", java.util.Locale.ROOT)
+                            sdf.format(parsedDate)
+                        }
+                    }
+                } else {
+                    raw
+                }
+            } catch (e: Exception) {
+                raw
+            }
         }
     }
 }
@@ -299,10 +457,17 @@ data class CheckoutTicketResponse(
 ) {
     companion object {
         fun fromJson(json: JSONObject): CheckoutTicketResponse {
+            val error = json.optBoolean("error", false)
+            val msg = json.optNullableString("msg") ?: json.optNullableString("message")
+            val dataObj = json.optJSONObject("data")
+            val ticket = json.optNullableString("ticket")
+                ?: json.optNullableString("checkout_ticket")
+                ?: dataObj?.optNullableString("ticket")
+                ?: dataObj?.optNullableString("checkout_ticket")
             return CheckoutTicketResponse(
-                error = json.optBoolean("error", false),
-                msg = json.optNullableString("msg") ?: json.optNullableString("message"),
-                ticket = json.optNullableString("ticket")
+                error = error,
+                msg = msg,
+                ticket = ticket
             )
         }
     }

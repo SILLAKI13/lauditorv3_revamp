@@ -154,29 +154,59 @@ class MeetingsViewModel(
                         it.copy(
                             showRecurrenceChoiceDialog = true,
                             recurrenceActionType = "DELETE",
-                            pendingRecurrenceEvent = evt
+                            pendingRecurrenceEvent = evt,
+                            pendingRecurringChoice = null
                         )
                     }
                 } else if (evt.is_linked_with_timesheet || evt.timesheet_added) {
                     _uiState.update {
                         it.copy(
                             showTimesheetDeleteConfirm = true,
-                            pendingRecurrenceEvent = evt
+                            showNormalDeleteConfirm = false,
+                            pendingRecurrenceEvent = evt,
+                            pendingRecurringChoice = null
                         )
                     }
                 } else {
-                    deleteEvent(evt.id.orEmpty(), recurringChoice = null, eventDeleteScope = "DELETE_EVENT_ONLY")
+                    _uiState.update {
+                        it.copy(
+                            showNormalDeleteConfirm = true,
+                            showTimesheetDeleteConfirm = false,
+                            pendingRecurrenceEvent = evt,
+                            pendingRecurringChoice = null
+                        )
+                    }
                 }
             }
             is MeetingsUiEvent.ConfirmDeleteEvent -> {
                 deleteEvent(event.eventId, event.recurringChoice, event.eventDeleteScope)
+            }
+            is MeetingsUiEvent.RecurrenceDeleteChoiceSelected -> {
+                val evt = _uiState.value.pendingRecurrenceEvent
+                val mappedChoice = when (event.choice) {
+                    "Only this event" -> "this"
+                    "This and following events" -> "following"
+                    else -> "all"
+                }
+                if (evt != null && (evt.is_linked_with_timesheet || evt.timesheet_added)) {
+                    _uiState.update {
+                        it.copy(
+                            showRecurrenceChoiceDialog = false,
+                            showTimesheetDeleteConfirm = true,
+                            pendingRecurringChoice = mappedChoice
+                        )
+                    }
+                } else if (evt != null) {
+                    deleteEvent(evt.id.orEmpty(), recurringChoice = mappedChoice, eventDeleteScope = "DELETE_EVENT_ONLY")
+                }
             }
             is MeetingsUiEvent.DismissRecurrenceDialog -> {
                 _uiState.update {
                     it.copy(
                         showRecurrenceChoiceDialog = false,
                         recurrenceActionType = null,
-                        pendingRecurrenceEvent = null
+                        pendingRecurrenceEvent = null,
+                        pendingRecurringChoice = null
                     )
                 }
             }
@@ -184,7 +214,17 @@ class MeetingsViewModel(
                 _uiState.update {
                     it.copy(
                         showTimesheetDeleteConfirm = false,
-                        pendingRecurrenceEvent = null
+                        pendingRecurrenceEvent = null,
+                        pendingRecurringChoice = null
+                    )
+                }
+            }
+            is MeetingsUiEvent.DismissDeleteConfirm -> {
+                _uiState.update {
+                    it.copy(
+                        showNormalDeleteConfirm = false,
+                        pendingRecurrenceEvent = null,
+                        pendingRecurringChoice = null
                     )
                 }
             }
@@ -206,6 +246,12 @@ class MeetingsViewModel(
             is MeetingsUiEvent.DismissDialogs -> {
                 _uiState.update { it.copy(alertTitle = null, alertMessage = null, toastMessage = null) }
             }
+            is MeetingsUiEvent.ViewDocument -> {
+                viewDocument(event.docId, event.docName)
+            }
+            is MeetingsUiEvent.DismissDocumentViewer -> {
+                _uiState.update { it.copy(viewingDocumentUrl = null) }
+            }
         }
     }
 
@@ -224,7 +270,7 @@ class MeetingsViewModel(
         val fromDateStr = dateFormat.format(currentWeekCal.time)
 
         val daysList = mutableListOf<Day>()
-        var todayIdx = 0
+        var todayIdx = -1
         var selIdx = 0
 
         for (i in 0..6) {
@@ -562,17 +608,24 @@ class MeetingsViewModel(
                         if (!json.optBoolean("error", false)) {
                             val data = json.optJSONObject("data") ?: JSONObject()
                             val relArray = data.optJSONArray("relationships") ?: JSONArray()
-                            val list = mutableListOf<RelationshipsDO>()
+                            val indList = mutableListOf<RelationshipsDO>()
+                            val entityList = mutableListOf<RelationshipsDO>()
                             for (i in 0 until relArray.length()) {
                                 val obj = relArray.getJSONObject(i)
+                                val relType = obj.optString("type")
                                 val model = RelationshipsDO().apply {
                                     id = obj.optString("id")
                                     name = obj.optString("name")
-                                    type = obj.optString("type")
+                                    type = relType
                                 }
-                                list.add(model)
+                                if (relType == "consumer" || relType.isEmpty()) {
+                                    model.type = "consumer"
+                                    indList.add(model)
+                                } else {
+                                    entityList.add(model)
+                                }
                             }
-                            _uiState.update { it.copy(clients = list) }
+                            _uiState.update { it.copy(clients = indList, entityClients = entityList) }
                         }
                     } catch (e: Exception) {
                         e.printStackTrace()
@@ -592,7 +645,7 @@ class MeetingsViewModel(
                                 val model = RelationshipsDO().apply {
                                     id = obj.optString("id")
                                     name = obj.optString("name")
-                                    type = obj.optString("type")
+                                    type = "corporate"
                                 }
                                 list.add(model)
                             }
@@ -726,7 +779,22 @@ class MeetingsViewModel(
                     loadData()
                 }
             } else {
-                _uiState.update { it.copy(alertTitle = "Error", alertMessage = "Failed to create event. Please try again.") }
+                val errorMsg = if (!result.responseContent.isNullOrBlank()) {
+                    try {
+                        val errObj = JSONObject(result.responseContent)
+                        if (errObj.has("errors")) {
+                            val arr = errObj.getJSONArray("errors")
+                            arr.getJSONObject(0).optString("msg", "Failed to create event")
+                        } else {
+                            errObj.optString("msg", result.responseContent)
+                        }
+                    } catch (e: Exception) {
+                        result.responseContent
+                    }
+                } else {
+                    "Failed to create event. Please try again."
+                }
+                _uiState.update { it.copy(alertTitle = "Error", alertMessage = errorMsg) }
             }
         }
     }
@@ -737,15 +805,14 @@ class MeetingsViewModel(
         recurringChoice: String?,
         updateScope: String?
     ) {
-        val timezoneOffset = getTimezoneOffset()
+        val timezoneOffset = if (payload.has("timezone_offset")) payload.optLong("timezone_offset") else getTimezoneOffset()
         viewModelScope.launch {
             _uiState.update { it.copy(isLoading = true) }
             if (!recurringChoice.isNullOrEmpty()) {
                 payload.put("recurrent_edit_choice", recurringChoice)
             }
-            if (!updateScope.isNullOrEmpty()) {
-                payload.put("event_update_scope", updateScope)
-            }
+            val scope = if (!updateScope.isNullOrEmpty()) updateScope else "UPDATE_EVENT_ONLY"
+            payload.put("event_update_scope", scope)
             val result = repository.updateEvent(eventId, timezoneOffset, payload)
             _uiState.update { it.copy(isLoading = false) }
 
@@ -793,21 +860,88 @@ class MeetingsViewModel(
                     isLoading = false,
                     showRecurrenceChoiceDialog = false,
                     showTimesheetDeleteConfirm = false,
-                    pendingRecurrenceEvent = null
+                    showNormalDeleteConfirm = false,
+                    pendingRecurrenceEvent = null,
+                    pendingRecurringChoice = null
                 )
             }
 
             if (result.result == WebServiceHelper.ServiceCallStatus.Success) {
                 try {
                     val json = JSONObject(result.responseContent ?: "")
-                    val msg = json.optString("msg", "Event deleted successfully")
-                    _uiState.update { it.copy(toastMessage = msg) }
+                    if (json.has("errors")) {
+                        val errors = json.getJSONArray("errors")
+                        val firstError = errors.getJSONObject(0)
+                        val msg = firstError.optString("msg", "Validation error")
+                        _uiState.update { it.copy(alertTitle = "Error", alertMessage = msg) }
+                    } else if (json.optBoolean("error", false)) {
+                        val errMsg = json.optString("msg", "Failed to delete event.")
+                        _uiState.update { it.copy(alertTitle = "Error", alertMessage = errMsg) }
+                    } else {
+                        val msg = json.optString("msg", "Event deleted successfully")
+                        _uiState.update { it.copy(toastMessage = msg) }
+                        loadData()
+                    }
                 } catch (e: Exception) {
                     _uiState.update { it.copy(toastMessage = "Event deleted successfully") }
+                    loadData()
                 }
-                loadData()
             } else {
-                _uiState.update { it.copy(alertTitle = "Error", alertMessage = "Failed to delete event. Please try again.") }
+                val errMsg = if (!result.responseContent.isNullOrBlank()) {
+                    try {
+                        val errObj = JSONObject(result.responseContent)
+                        if (errObj.has("errors")) {
+                            val arr = errObj.getJSONArray("errors")
+                            arr.getJSONObject(0).optString("msg", "Failed to delete event")
+                        } else {
+                            errObj.optString("msg", result.responseContent)
+                        }
+                    } catch (e: Exception) {
+                        result.responseContent
+                    }
+                } else {
+                    "Failed to delete event. Please try again."
+                }
+                _uiState.update { it.copy(alertTitle = "Error", alertMessage = errMsg) }
+            }
+        }
+    }
+
+    private fun viewDocument(docId: String, docName: String) {
+        viewModelScope.launch {
+            _uiState.update { it.copy(isLoading = true) }
+            val result = repository.viewDocument(docId)
+            _uiState.update { it.copy(isLoading = false) }
+            if (result.result == WebServiceHelper.ServiceCallStatus.Success) {
+                try {
+                    val json = JSONObject(result.responseContent ?: "{}")
+                    val isError = json.optBoolean("error", false)
+                    if (isError) {
+                        _uiState.update { it.copy(alertTitle = "Alert", alertMessage = json.optString("msg", "Unable to view document")) }
+                        return@launch
+                    }
+                    val dataObj = json.optJSONObject("data")
+                    val rawUrl = dataObj?.optString("url") ?: json.optString("url")
+                    val rawContentType = dataObj?.optString("content_type") ?: ""
+                    val rawFilename = dataObj?.optString("filename")?.ifEmpty { docName } ?: docName
+
+                    if (!rawUrl.isNullOrEmpty()) {
+                        _uiState.update {
+                            it.copy(
+                                viewingDocumentUrl = rawUrl,
+                                viewingDocumentName = rawFilename,
+                                viewingDocumentContentType = rawContentType
+                            )
+                        }
+                    } else {
+                        _uiState.update { it.copy(alertTitle = "Alert", alertMessage = json.optString("msg", "Document preview link is not available.")) }
+                    }
+                } catch (e: Exception) {
+                    _uiState.update { it.copy(alertTitle = "Alert", alertMessage = "Failed to parse document details.") }
+                }
+            } else {
+                val msg = if (!result.responseContent.isNullOrBlank()) result.responseContent else "Failed to load document preview. Please try again."
+                _uiState.update { it.copy(alertTitle = "Alert", alertMessage = msg) }
             }
         }
     }

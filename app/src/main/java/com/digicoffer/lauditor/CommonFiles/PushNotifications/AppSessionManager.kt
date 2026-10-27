@@ -6,6 +6,7 @@ import android.content.SharedPreferences
 import android.preference.PreferenceManager
 import android.util.Log
 import com.digicoffer.lauditor.CommonFiles.GlobalFiles.Constants
+import com.digicoffer.lauditor.CommonFiles.GlobalFiles.SubscriptionAccessManager
 import com.google.firebase.messaging.FirebaseMessaging
 import org.json.JSONArray
 import org.json.JSONException
@@ -65,7 +66,30 @@ class AppSessionManager {
 
                 val subscription = userJson.optJSONObject("subscription")
                 if (subscription != null) {
-                    Constants.is_active = subscription.optBoolean("is_active")
+                    val status = subscription.optString("status", "")
+                    val isStatusActive = status.equals("Active", ignoreCase = true) || subscription.optBoolean("is_active_sub", false)
+                    val model = subscription.optString("sub_model").ifEmpty {
+                        subscription.optString("model").ifEmpty {
+                            subscription.optString("plan").ifEmpty {
+                                subscription.optJSONObject("plan")?.optString("key") ?: ""
+                            }
+                        }
+                    }
+                    val planName = subscription.optString("plan_name").ifEmpty {
+                        subscription.optString("name").ifEmpty {
+                            subscription.optJSONObject("plan")?.optString("name") ?: ""
+                        }
+                    }
+                    val isTrial = model.contains("three_month", ignoreCase = true) ||
+                                  model.contains("three_months", ignoreCase = true) ||
+                                  planName.contains("free trial", ignoreCase = true)
+
+                    val isActive = if (isTrial || isStatusActive) true else subscription.optBoolean("is_active", subscription.optBoolean("isActive", true))
+                    SubscriptionAccessManager.updateSubscription(
+                        isActive = isActive,
+                        subModel = model.ifEmpty { null },
+                        planName = planName.ifEmpty { null }
+                    )
                     val features = subscription.optJSONObject("features")
                     if (features != null) {
                         Constants.FEATURES.clear()

@@ -1,11 +1,13 @@
 package com.digicoffer.lauditor.feature.groups.presentation.components
 
 import androidx.compose.foundation.BorderStroke
+import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -17,6 +19,8 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.ColorFilter
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.Font
 import androidx.compose.ui.text.font.FontFamily
@@ -195,18 +199,14 @@ fun GroupFormCard(
 
                         Spacer(modifier = Modifier.height(16.dp))
 
-                        // Select Team member(s) Trigger Row with Name/Desc validation check
+                        // Select Team member(s) Trigger Row: Always clickable without prerequisites
                         Row(
                             modifier = Modifier
                                 .fillMaxWidth()
                                 .background(Color(0xFFF9FAFB), shape = RoundedCornerShape(6.dp))
                                 .border(width = 0.5.dp, color = Color(0xFFC0C0C0), shape = RoundedCornerShape(6.dp))
                                 .clickable {
-                                    if (name.isBlank() || description.isBlank()) {
-                                        onValidationError("Please enter Group Name and Description first.")
-                                    } else {
-                                        isChecklistVisible = true
-                                    }
+                                    isChecklistVisible = true
                                 }
                                 .padding(10.dp),
                             horizontalArrangement = Arrangement.SpaceBetween,
@@ -218,6 +218,49 @@ fun GroupFormCard(
                                 fontSize = 15.sp,
                                 fontFamily = FontFamily(Font(R.font.gill_sans_regular))
                             )
+                            Image(
+                                painter = painterResource(id = R.drawable.drop_down_blue),
+                                contentDescription = "Expand Member Selection",
+                                modifier = Modifier.size(16.dp)
+                            )
+                        }
+
+                        // Selected member chips if any
+                        if (selectedMemberIds.isNotEmpty()) {
+                            Spacer(modifier = Modifier.height(10.dp))
+                            val chosenMembers = membersList.filter { selectedMemberIds.contains(it.id) }
+                            LazyRow(
+                                modifier = Modifier.fillMaxWidth(),
+                                horizontalArrangement = Arrangement.spacedBy(6.dp)
+                            ) {
+                                items(chosenMembers, key = { it.id }) { mem ->
+                                    AssistChip(
+                                        onClick = {
+                                            if (selectedGroupHeadId == mem.id) selectedGroupHeadId = ""
+                                            selectedMemberIds = selectedMemberIds - mem.id
+                                        },
+                                        label = {
+                                            Text(
+                                                text = mem.name,
+                                                fontSize = 12.sp,
+                                                fontFamily = FontFamily(Font(R.font.gill_sans_regular)),
+                                                color = Color.Black
+                                            )
+                                        },
+                                        trailingIcon = {
+                                            Image(
+                                                painter = painterResource(id = R.drawable.delete_white_icon),
+                                                contentDescription = "Remove Member",
+                                                modifier = Modifier.size(14.dp),
+                                                colorFilter = ColorFilter.tint(Color.Red)
+                                            )
+                                        },
+                                        colors = AssistChipDefaults.assistChipColors(containerColor = Color(0xFFF3F3F3)),
+                                        border = BorderStroke(0.5.dp, Color(0xFFDDDDDE)),
+                                        shape = RoundedCornerShape(16.dp)
+                                    )
+                                }
+                            }
                         }
                     }
                 }
@@ -301,6 +344,49 @@ fun GroupFormCard(
                                 fontSize = 15.sp,
                                 fontFamily = FontFamily(Font(R.font.gill_sans_regular))
                             )
+                            Image(
+                                painter = painterResource(id = R.drawable.drop_down_blue),
+                                contentDescription = "Toggle Member Selection",
+                                modifier = Modifier.size(16.dp)
+                            )
+                        }
+
+                        // Selected member chips if any
+                        if (selectedMemberIds.isNotEmpty()) {
+                            Spacer(modifier = Modifier.height(10.dp))
+                            val chosenMembers = membersList.filter { selectedMemberIds.contains(it.id) }
+                            LazyRow(
+                                modifier = Modifier.fillMaxWidth(),
+                                horizontalArrangement = Arrangement.spacedBy(6.dp)
+                            ) {
+                                items(chosenMembers, key = { it.id }) { mem ->
+                                    AssistChip(
+                                        onClick = {
+                                            if (selectedGroupHeadId == mem.id) selectedGroupHeadId = ""
+                                            selectedMemberIds = selectedMemberIds - mem.id
+                                        },
+                                        label = {
+                                            Text(
+                                                text = mem.name,
+                                                fontSize = 12.sp,
+                                                fontFamily = FontFamily(Font(R.font.gill_sans_regular)),
+                                                color = Color.Black
+                                            )
+                                        },
+                                        trailingIcon = {
+                                            Image(
+                                                painter = painterResource(id = R.drawable.delete_white_icon),
+                                                contentDescription = "Remove Member",
+                                                modifier = Modifier.size(14.dp),
+                                                colorFilter = ColorFilter.tint(Color.Red)
+                                            )
+                                        },
+                                        colors = AssistChipDefaults.assistChipColors(containerColor = Color(0xFFF3F3F3)),
+                                        border = BorderStroke(0.5.dp, Color(0xFFDDDDDE)),
+                                        shape = RoundedCornerShape(16.dp)
+                                    )
+                                }
+                            }
                         }
                     }
                 }
@@ -364,8 +450,8 @@ fun GroupFormCard(
 
                 // Select All checkbox card
                 if (isAddTeamMemberTab) {
-                    val filteredMembersForSelectAll = membersList.filter { it.name.contains(searchQuery, ignoreCase = true) }
-                    val isAllSelected = filteredMembersForSelectAll.isNotEmpty() && filteredMembersForSelectAll.all { selectedMemberIds.contains(it.id) }
+                    val eligibleMembers = membersList.filter { !it.isRestricted && it.name.contains(searchQuery, ignoreCase = true) }
+                    val isAllSelected = eligibleMembers.isNotEmpty() && eligibleMembers.all { selectedMemberIds.contains(it.id) }
 
                     Row(
                         modifier = Modifier
@@ -380,7 +466,7 @@ fun GroupFormCard(
                             elevation = CardDefaults.cardElevation(defaultElevation = 1.dp),
                             border = BorderStroke(0.5.dp, Color(0xFFC0C0C0)),
                             modifier = Modifier.clickable {
-                                val list = filteredMembersForSelectAll.map { it.id }
+                                val list = eligibleMembers.map { it.id }
                                 selectedMemberIds = if (isAllSelected) {
                                     selectedMemberIds - list.toSet()
                                 } else {
@@ -472,55 +558,73 @@ fun GroupFormCard(
                             items(filteredList, key = { it.id }) { member ->
                                 val isChecked = selectedMemberIds.contains(member.id)
                                 val isChosenHead = selectedGroupHeadId == member.id
+                                val isBlocked = isAddTeamMemberTab && member.isRestricted
 
                                 Row(
                                     modifier = Modifier
                                         .fillMaxWidth()
-                                        .background(Color(0xFFF8F8F8), shape = RoundedCornerShape(6.dp))
-                                        .border(width = 0.5.dp, color = Color(0xFFC0C0C0), shape = RoundedCornerShape(6.dp))
-                                        .clickable {
-                                            if (isAddTeamMemberTab) {
+                                        .background(if (isBlocked) Color(0xFFF0F0F0) else Color(0xFFF8F8F8), shape = RoundedCornerShape(6.dp))
+                                        .border(width = 0.5.dp, color = if (isBlocked) Color(0xFFE0E0E0) else Color(0xFFC0C0C0), shape = RoundedCornerShape(6.dp))
+                                    .clickable {
+                                        if (isAddTeamMemberTab) {
+                                            if (member.isRestricted) {
+                                                onValidationError("System generated user - ${member.name} can only be assigned to Super User or AAM group.")
+                                            } else {
                                                 selectedMemberIds = if (isChecked) {
                                                     if (isChosenHead) selectedGroupHeadId = ""
                                                     selectedMemberIds - member.id
                                                 } else {
                                                     selectedMemberIds + member.id
                                                 }
-                                            } else {
-                                                selectedGroupHeadId = if (isChosenHead) "" else member.id
                                             }
+                                        } else {
+                                            selectedGroupHeadId = if (isChosenHead) "" else member.id
                                         }
-                                        .padding(start = 14.dp, end = 10.dp, top = 10.dp, bottom = 10.dp),
-                                    horizontalArrangement = Arrangement.SpaceBetween,
-                                    verticalAlignment = Alignment.CenterVertically
-                                ) {
+                                    }
+                                    .padding(start = 14.dp, end = 10.dp, top = 10.dp, bottom = 10.dp),
+                                horizontalArrangement = Arrangement.SpaceBetween,
+                                verticalAlignment = Alignment.CenterVertically
+                            ) {
+                                Column(modifier = Modifier.weight(1f)) {
                                     Text(
                                         text = member.name,
-                                        color = Color.Black,
+                                        color = if (isBlocked) Color.Gray else Color.Black,
                                         fontSize = 15.sp,
-                                        fontFamily = FontFamily(Font(R.font.gill_sans_regular)),
-                                        modifier = Modifier.weight(1f)
+                                        fontFamily = FontFamily(Font(R.font.gill_sans_regular))
                                     )
-                                    Spacer(modifier = Modifier.width(8.dp))
+                                    if (isBlocked) {
+                                        Text(
+                                            text = "Can only be assigned to Super User or AAM group",
+                                            color = Color(0xFF888888),
+                                            fontSize = 11.sp,
+                                            fontFamily = FontFamily(Font(R.font.gill_sans_regular))
+                                        )
+                                    }
+                                }
+                                Spacer(modifier = Modifier.width(8.dp))
 
-                                    CompositionLocalProvider(
-                                        LocalMinimumInteractiveComponentSize provides androidx.compose.ui.unit.Dp.Unspecified
-                                    ) {
-                                        if (isAddTeamMemberTab) {
-                                            Checkbox(
-                                                checked = isChecked,
-                                                onCheckedChange = null,
-                                                colors = CheckboxDefaults.colors(checkedColor = activeBlue),
-                                                modifier = Modifier.size(22.dp)
-                                            )
-                                        } else {
-                                            Checkbox(
-                                                checked = isChosenHead,
-                                                onCheckedChange = null,
-                                                colors = CheckboxDefaults.colors(checkedColor = activeBlue),
-                                                modifier = Modifier.size(22.dp)
-                                            )
-                                        }
+                                CompositionLocalProvider(
+                                    LocalMinimumInteractiveComponentSize provides androidx.compose.ui.unit.Dp.Unspecified
+                                ) {
+                                    if (isAddTeamMemberTab) {
+                                        Checkbox(
+                                            checked = isChecked,
+                                            onCheckedChange = null,
+                                            enabled = !member.isRestricted,
+                                            colors = CheckboxDefaults.colors(
+                                                checkedColor = activeBlue,
+                                                disabledCheckedColor = Color.LightGray,
+                                                disabledUncheckedColor = Color.LightGray
+                                            ),
+                                            modifier = Modifier.size(22.dp)
+                                        )
+                                    } else {
+                                        Checkbox(
+                                            checked = isChosenHead,
+                                            onCheckedChange = null,
+                                            colors = CheckboxDefaults.colors(checkedColor = activeBlue),
+                                            modifier = Modifier.size(22.dp)
+                                        )
                                     }
                                 }
                             }
@@ -529,69 +633,70 @@ fun GroupFormCard(
                 }
             }
         }
+    }
 
-        Spacer(modifier = Modifier.height(16.dp))
+    Spacer(modifier = Modifier.height(16.dp))
 
-        // Fixed Action Buttons Row at bottom
-        Row(
+    // Fixed Action Buttons Row at bottom
+    Row(
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(horizontal = 16.dp),
+        horizontalArrangement = Arrangement.spacedBy(16.dp),
+        verticalAlignment = Alignment.CenterVertically
+    ) {
+        Button(
+            onClick = onCancel,
+            colors = ButtonDefaults.buttonColors(containerColor = Color(0xFFEEEEEE)),
+            border = BorderStroke(1.dp, Color(0xFFDDDDDE)),
+            shape = RoundedCornerShape(10.dp),
+            contentPadding = PaddingValues(0.dp),
             modifier = Modifier
-                .fillMaxWidth()
-                .padding(horizontal = 16.dp),
-            horizontalArrangement = Arrangement.spacedBy(16.dp),
-            verticalAlignment = Alignment.CenterVertically
+                .weight(1f)
+                .height(40.dp)
         ) {
-            Button(
-                onClick = onCancel,
-                colors = ButtonDefaults.buttonColors(containerColor = Color(0xFFEEEEEE)),
-                border = BorderStroke(1.dp, Color(0xFFDDDDDE)),
-                shape = RoundedCornerShape(10.dp),
-                contentPadding = PaddingValues(0.dp),
-                modifier = Modifier
-                    .weight(1f)
-                    .height(40.dp)
-            ) {
-                Text(
-                    text = "Cancel",
-                    color = Color.Black,
-                    fontWeight = FontWeight.Medium,
-                    fontSize = 14.sp,
-                    fontFamily = FontFamily(Font(R.font.gill_sans_regular))
-                )
-            }
+            Text(
+                text = "Cancel",
+                color = Color.Black,
+                fontWeight = FontWeight.Medium,
+                fontSize = 14.sp,
+                fontFamily = FontFamily(Font(R.font.gill_sans_regular))
+            )
+        }
 
-            Button(
-                onClick = {
-                    if (name.isBlank()) {
-                        onValidationError("Please check Name")
-                    } else if (description.isBlank()) {
-                        onValidationError("Please check Description")
-                    } else if (selectedMemberIds.isEmpty()) {
-                        onValidationError("Please check the member selection")
-                    } else if (isAddTeamMemberTab) {
-                        // Switch automatically to Add Group Head tab when valid
-                        onTabChange(false)
-                    } else if (selectedGroupHeadId.isEmpty()) {
-                        // Alert missing group head on Add Group Head tab
-                        onValidationError("Please select Head of the Group")
-                    } else {
-                        onSave(name, description, selectedGroupHeadId, selectedMemberIds.toList())
-                    }
-                },
-                colors = ButtonDefaults.buttonColors(containerColor = activeBlue),
-                shape = RoundedCornerShape(10.dp),
-                contentPadding = PaddingValues(0.dp),
-                modifier = Modifier
-                    .weight(1f)
-                    .height(40.dp)
-            ) {
-                Text(
-                    text = "Save",
-                    color = Color.White,
-                    fontWeight = FontWeight.Medium,
-                    fontSize = 14.sp,
-                    fontFamily = FontFamily(Font(R.font.gill_sans_regular))
-                )
-            }
+        Button(
+            onClick = {
+                if (name.isBlank()) {
+                    onValidationError("Please check Name")
+                } else if (description.isBlank()) {
+                    onValidationError("Please check Description")
+                } else if (selectedMemberIds.isNotEmpty() && isAddTeamMemberTab) {
+                    // If team members are selected and user is currently on Add Team Member tab, prompt/advance to choose Head
+                    onTabChange(false)
+                } else if (selectedMemberIds.isNotEmpty() && selectedGroupHeadId.isEmpty()) {
+                    // If team members are selected, group head is required
+                    onValidationError("Please select Head of the Group")
+                } else {
+                    // If no team members are selected, groupHead is empty string (""), member list is empty
+                    val head = if (selectedMemberIds.isEmpty()) "" else selectedGroupHeadId
+                    onSave(name, description, head, selectedMemberIds.toList())
+                }
+            },
+            colors = ButtonDefaults.buttonColors(containerColor = activeBlue),
+            shape = RoundedCornerShape(10.dp),
+            contentPadding = PaddingValues(0.dp),
+            modifier = Modifier
+                .weight(1f)
+                .height(40.dp)
+        ) {
+            Text(
+                text = "Save",
+                color = Color.White,
+                fontWeight = FontWeight.Medium,
+                fontSize = 14.sp,
+                fontFamily = FontFamily(Font(R.font.gill_sans_regular))
+            )
         }
     }
+}
 }

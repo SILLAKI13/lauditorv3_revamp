@@ -58,14 +58,26 @@ class DocumentsViewModel(
                         "matter" -> {
                             val realMatters = _uiState.value.mattersList.filter { it.name != "All Matters" && it.title != "All Matters" && !(it.id ?: "").contains(",") }
                             if (realMatters.isEmpty()) {
-                                _uiState.update { it.copy(alertTitle = "Alert", alertMessage = "Please create a matter to upload documents.") }
+                                _uiState.update { 
+                                    it.copy(
+                                        alertTitle = "Alert", 
+                                        alertMessage = "Please create a matter to upload documents. Click here to create matter.",
+                                        alertRedirectionModule = "matter"
+                                    ) 
+                                }
                                 return
                             }
                         }
                         "client" -> {
                             val realClients = _uiState.value.clientsList.filter { it.name != "All Clients" && !(it.id ?: "").contains(",") }
                             if (realClients.isEmpty()) {
-                                _uiState.update { it.copy(alertTitle = "Alert", alertMessage = "Please create a client to upload documents.") }
+                                _uiState.update { 
+                                    it.copy(
+                                        alertTitle = "Alert", 
+                                        alertMessage = "Please create a client to upload documents. Click here to create client.",
+                                        alertRedirectionModule = "client"
+                                    ) 
+                                }
                                 return
                             }
                         }
@@ -144,7 +156,7 @@ class DocumentsViewModel(
             is DocumentsUiEvent.CloseUpdateTags -> _uiState.update { it.copy(tagsDocModel = null) }
             is DocumentsUiEvent.SaveTags -> saveTags(event.docId, event.name, event.tags)
             is DocumentsUiEvent.ClosePreview -> _uiState.update { it.copy(previewDocUrl = null, previewDocModel = null) }
-            is DocumentsUiEvent.DismissAlert -> _uiState.update { it.copy(alertTitle = null, alertMessage = null) }
+            is DocumentsUiEvent.DismissAlert -> _uiState.update { it.copy(alertTitle = null, alertMessage = null, alertRedirectionModule = null) }
             is DocumentsUiEvent.DismissToast -> _uiState.update { it.copy(toastMessage = null) }
             is DocumentsUiEvent.SelectPage -> _uiState.update { it.copy(currentPage = event.page) }
             is DocumentsUiEvent.PagePrev -> {

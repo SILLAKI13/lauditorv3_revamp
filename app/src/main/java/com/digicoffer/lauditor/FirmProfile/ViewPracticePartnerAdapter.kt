@@ -704,10 +704,6 @@ open class ViewPracticePartnerAdapter(
         // ── "Complete Now" click — precise field-level navigation ─────────
         val finalModel = model
         holder.tvCompleteNow?.setOnClickListener {
-            if (!Constants.is_active) {
-                AndroidUtils.showRenewalPopup(activity)
-                return@setOnClickListener
-            }
             navigateToExactField(finalModel)
         }
 
@@ -2155,11 +2151,7 @@ open class ViewPracticePartnerAdapter(
     private fun dispatchAction(action: String?, model: MemberProfileModel) {
         when (action) {
             "Edit" -> {
-                if (!Constants.is_active) {
-                    AndroidUtils.showRenewalPopup(activity)
-                } else {
-                    eventListener.EditPracticePartners(model)
-                }
+                eventListener.EditPracticePartners(model)
             }
             "Delete" -> {
                 eventListener.DeletePracticePartners(model)
@@ -2369,24 +2361,16 @@ open class ViewPracticePartnerAdapter(
                 applyTabletLayout(ll_basicprofile!!, ll_additional_inform!!)
 
                 iv_edit?.setOnClickListener { v ->
-                    if (!Constants.is_active) {
-                        AndroidUtils.showRenewalPopup(activity)
-                    } else {
-                        Constants.TARGET_FIELD = ""
-                        Constants.PROFILE_EDIT_TAB = ""
-                        eventListener.EditProfile(true, false)
-                    }
+                    Constants.TARGET_FIELD = ""
+                    Constants.PROFILE_EDIT_TAB = ""
+                    eventListener.EditProfile(true, false)
                 }
                 iv_edit_addinfo?.setOnClickListener { v ->
-                    if (!Constants.is_active) {
-                        AndroidUtils.showRenewalPopup(activity)
-                    } else {
-                        Constants.TARGET_FIELD = ""
-                        if (TextUtils.isEmpty(Constants.PROFILE_EDIT_TAB)) {
-                            Constants.PROFILE_EDIT_TAB = "practice_details"
-                        }
-                        eventListener.EditProfile(false, true)
+                    Constants.TARGET_FIELD = ""
+                    if (TextUtils.isEmpty(Constants.PROFILE_EDIT_TAB)) {
+                        Constants.PROFILE_EDIT_TAB = "practice_details"
                     }
+                    eventListener.EditProfile(false, true)
                 }
                 tv_BasicProfile = itemView.findViewById(R.id.tv_BasicProfile)
                 FirmName = itemView.findViewById(R.id.FirmName)

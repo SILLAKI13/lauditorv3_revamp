@@ -131,25 +131,23 @@ fun MembersScreen(
         }
 
         if (screenMode == MembersScreenMode.CREATION) {
-            formName = ""
-            formDesignation = ""
-            formRate = ""
-            formCurrency = "IndianRupee(INR)"
-            formPhone = ""
-            formEmail = ""
-            formConfirmEmail = ""
-            selectedGroupIdsForForm = emptyList()
-            isAssignGroupsExpanded = false
+            // Screen title handled above; form reset is done on entering CREATION mode from listing
         } else if (screenMode == MembersScreenMode.EDITING) {
             val member = selectedMemberForEdit
             if (member != null) {
-                formName = member.name.orEmpty()
-                formDesignation = member.designation.orEmpty()
-                formRate = member.defaultRate.orEmpty()
-                formCurrency = if (member.currency.isNullOrEmpty()) "IndianRupee(INR)" else member.currency.orEmpty()
-                formPhone = member.phone.orEmpty()
-                formEmail = member.email.orEmpty()
-                formConfirmEmail = member.email.orEmpty()
+                fun cleanVal(v: String?): String {
+                    if (v == null) return ""
+                    val t = v.trim()
+                    return if (t.equals("null", ignoreCase = true)) "" else t
+                }
+                formName = cleanVal(member.name)
+                formDesignation = cleanVal(member.designation)
+                formRate = cleanVal(member.defaultRate)
+                val curr = cleanVal(member.currency)
+                formCurrency = if (curr.isEmpty()) "IndianRupee(INR)" else curr
+                formPhone = cleanVal(member.phone)
+                formEmail = cleanVal(member.email)
+                formConfirmEmail = cleanVal(member.email)
                 isAssignGroupsExpanded = false
             }
         }
@@ -164,19 +162,7 @@ fun MembersScreen(
     // Display toast/alerts from viewmodel state (Uses custom Compose MembersAlertDialog)
     LaunchedEffect(state.toastMessage) {
         state.toastMessage?.let {
-            infoAlertTitle = if (it.contains("success", ignoreCase = true) || 
-                                it.contains("successfully", ignoreCase = true) || 
-                                it.contains("sent", ignoreCase = true) ||
-                                it.contains("created", ignoreCase = true) ||
-                                it.contains("updated", ignoreCase = true) ||
-                                it.contains("deleted", ignoreCase = true) ||
-                                it.contains("removed", ignoreCase = true) ||
-                                it.contains("upgraded", ignoreCase = true) ||
-                                it.contains("converted", ignoreCase = true)) {
-                "Success"
-            } else {
-                "Alert !"
-            }
+            infoAlertTitle = if (state.isToastSuccess) "Success" else "Alert !"
             infoAlertMessage = it
             viewModel.onEvent(MembersUiEvent.DismissToast)
         }
@@ -198,7 +184,7 @@ fun MembersScreen(
                 verticalAlignment = Alignment.CenterVertically
             ) {
                 val subHeaderTitle = when (screenMode) {
-                    MembersScreenMode.LISTING -> "List Of Members"
+                    MembersScreenMode.LISTING -> "List of Members"
                     MembersScreenMode.CREATION -> "Create Members"
                     MembersScreenMode.EDITING -> "View Members"
                     MembersScreenMode.GROUP_ASSIGNMENT -> "Assign Group(s)"
@@ -219,12 +205,17 @@ fun MembersScreen(
                             text = "Create Members",
                             iconRes = 0, // draws '+'
                             onClick = {
-                                if (!Constants.is_active) {
-                                    (context as? android.app.Activity)?.let {
-                                        AndroidUtils.showRenewalPopup(it)
-                                    }
-                                } else {
+                                val activity = context as? android.app.Activity
+                                if (!AndroidUtils.checkSubPlanValidation(activity, "team_members")) {
+                                    formName = ""
+                                    formDesignation = ""
+                                    formRate = ""
+                                    formCurrency = "IndianRupee(INR)"
+                                    formPhone = ""
+                                    formEmail = ""
+                                    formConfirmEmail = ""
                                     selectedGroupIdsForForm = emptyList()
+                                    isAssignGroupsExpanded = false
                                     screenMode = MembersScreenMode.CREATION
                                 }
                             }
@@ -305,27 +296,34 @@ fun MembersScreen(
                                 },
                                 onResetPasswordClick = {
                                     expandedMemberId = null
-                                    confirmDialogMessage = context.getString(R.string.reset_password_tm) + member.name + "?"
+                                    val mName = member.name.orEmpty()
+                                    confirmDialogMessage = context.getString(R.string.reset_password_tm) + mName + "?"
                                     pendingConfirmAction = {
-                                        viewModel.onEvent(MembersUiEvent.ResetPassword(member.id ?: "") {
+                                        viewModel.onEvent(MembersUiEvent.ResetPassword(member.id ?: "", memberName = mName) {
                                             confirmDialogMessage = null
                                         })
                                     }
                                 },
                                 onDeleteClick = {
                                     expandedMemberId = null
-                                    confirmDialogMessage = context.getString(R.string.delete_team_member) + member.name + " ?"
+                                    val mName = member.name.orEmpty()
+                                    confirmDialogMessage = context.getString(R.string.delete_team_member) + mName + " ?"
                                     pendingConfirmAction = {
-                                        viewModel.onEvent(MembersUiEvent.DeleteMember(member.id ?: "") {
+                                        viewModel.onEvent(MembersUiEvent.DeleteMember(member.id ?: "", memberName = mName) {
                                             confirmDialogMessage = null
                                         })
                                     }
                                 },
                                 onUpgradeClick = {
                                     expandedMemberId = null
-                                    confirmDialogMessage = context.getString(R.string.upgrade_members) + " " + member.name + " " + "Practice Partner and provide Super User access ?"
+                                    val mName = member.name.orEmpty()
+                                    confirmDialogMessage = context.getString(R.string.upgrade_members) + " " + mName + " " + "Practice Partner and provide Super User access ?"
                                     pendingConfirmAction = {
-                                        viewModel.onEvent(MembersUiEvent.UpgradePracticePartner(member.id ?: "") {
+                                        viewModel.onEvent(MembersUiEvent.UpgradePracticePartner(
+                                            id = member.id ?: "",
+                                            memberName = mName,
+                                            email = member.email.orEmpty()
+                                        ) {
                                             confirmDialogMessage = null
                                         })
                                     }
@@ -368,13 +366,13 @@ fun MembersScreen(
                                     if (!isLimitReached) {
                                         viewModel.onEvent(
                                             MembersUiEvent.CreateMember(
-                                                name = formName,
-                                                designation = formDesignation,
-                                                defaultRate = formRate,
-                                                currency = formCurrency,
-                                                phone = formPhone,
-                                                email = formEmail,
-                                                emailConfirm = formConfirmEmail,
+                                                name = formName.trim(),
+                                                designation = formDesignation.trim(),
+                                                defaultRate = formRate.trim(),
+                                                currency = formCurrency.trim(),
+                                                phone = formPhone.trim(),
+                                                email = formEmail.trim(),
+                                                emailConfirm = formConfirmEmail.trim(),
                                                 groups = selectedGroupIdsForForm,
                                                 onSuccess = { screenMode = MembersScreenMode.LISTING }
                                             )
@@ -396,21 +394,7 @@ fun MembersScreen(
                                     },
                                     onSaveClick = { list ->
                                         selectedGroupIdsForForm = list
-                                        if (!isLimitReached) {
-                                            viewModel.onEvent(
-                                                MembersUiEvent.CreateMember(
-                                                    name = formName,
-                                                    designation = formDesignation,
-                                                    defaultRate = formRate,
-                                                    currency = formCurrency,
-                                                    phone = formPhone,
-                                                    email = formEmail,
-                                                    emailConfirm = formConfirmEmail,
-                                                    groups = list,
-                                                    onSuccess = { screenMode = MembersScreenMode.LISTING }
-                                                )
-                                            )
-                                        }
+                                        isAssignGroupsExpanded = false
                                     }
                                 )
                             }
@@ -479,13 +463,13 @@ fun MembersScreen(
                                         viewModel.onEvent(
                                             MembersUiEvent.UpdateMember(
                                                 id = member.id ?: "",
-                                                name = formName,
-                                                designation = formDesignation,
-                                                defaultRate = formRate,
-                                                currency = formCurrency,
-                                                phone = formPhone,
-                                                email = formEmail,
-                                                emailConfirm = formConfirmEmail,
+                                                name = formName.trim(),
+                                                designation = formDesignation.trim(),
+                                                defaultRate = formRate.trim(),
+                                                currency = formCurrency.trim(),
+                                                phone = formPhone.trim(),
+                                                email = formEmail.trim(),
+                                                emailConfirm = formConfirmEmail.trim(),
                                                 onSuccess = { screenMode = MembersScreenMode.LISTING }
                                             )
                                         )
@@ -507,18 +491,19 @@ fun MembersScreen(
                                             viewModel.onEvent(
                                                 MembersUiEvent.UpdateMember(
                                                     id = member.id ?: "",
-                                                    name = formName,
-                                                    designation = formDesignation,
-                                                    defaultRate = formRate,
-                                                    currency = formCurrency,
-                                                    phone = formPhone,
-                                                    email = formEmail,
-                                                    emailConfirm = formConfirmEmail,
+                                                    name = formName.trim(),
+                                                    designation = formDesignation.trim(),
+                                                    defaultRate = formRate.trim(),
+                                                    currency = formCurrency.trim(),
+                                                    phone = formPhone.trim(),
+                                                    email = formEmail.trim(),
+                                                    emailConfirm = formConfirmEmail.trim(),
                                                     onSuccess = {
                                                         viewModel.onEvent(
                                                             MembersUiEvent.UpdateGroupAccess(
                                                                 id = member.id ?: "",
                                                                 groups = list,
+                                                                memberName = member.name.orEmpty(),
                                                                 onSuccess = { screenMode = MembersScreenMode.LISTING }
                                                             )
                                                         )
@@ -563,6 +548,7 @@ fun MembersScreen(
                                         MembersUiEvent.UpdateGroupAccess(
                                             id = member.id ?: "",
                                             groups = list,
+                                            memberName = member.name.orEmpty(),
                                             onSuccess = { screenMode = MembersScreenMode.LISTING }
                                         )
                                     )

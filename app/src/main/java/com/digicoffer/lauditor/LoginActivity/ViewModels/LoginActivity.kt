@@ -28,9 +28,11 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.core.content.ContextCompat
 import androidx.core.view.WindowCompat
+import com.digicoffer.lauditor.CommonFiles.ChatService.ChatConnection
 import com.digicoffer.lauditor.CommonFiles.CommonAdapters.CommonSpinnerAdapter
 import com.digicoffer.lauditor.CommonFiles.GlobalFiles.AndroidUtils
 import com.digicoffer.lauditor.CommonFiles.GlobalFiles.Constants
+import com.digicoffer.lauditor.CommonFiles.GlobalFiles.DeviceSyncManager
 import com.digicoffer.lauditor.CommonFiles.GlobalFiles.DynamicUtils
 import com.digicoffer.lauditor.CommonFiles.GlobalFiles.FirebaseInitHelper
 import com.digicoffer.lauditor.CommonFiles.PushNotifications.MyFirebaseMessagingService
@@ -409,7 +411,27 @@ class LoginActivity : AppCompatActivity(), AsyncTaskCompleteListener, View.OnCli
 
                 val sub = userJson.optJSONObject("subscription")
                 if (sub != null) {
-                    Constants.is_active = sub.optBoolean("is_active", true)
+                    val status = sub.optString("status", "")
+                    val isActiveStatus = status.equals("Active", ignoreCase = true) || sub.optBoolean("is_active_sub", false)
+                    val model = sub.optString("sub_model").ifEmpty {
+                        sub.optString("model").ifEmpty {
+                            sub.optString("plan").ifEmpty {
+                                sub.optJSONObject("plan")?.optString("key") ?: ""
+                            }
+                        }
+                    }
+                    val planName = sub.optString("plan_name").ifEmpty {
+                        sub.optString("name").ifEmpty {
+                            sub.optJSONObject("plan")?.optString("name") ?: ""
+                        }
+                    }
+                    val isTrial = model.contains("three_month", ignoreCase = true) ||
+                                  model.contains("three_months", ignoreCase = true) ||
+                                  planName.contains("free trial", ignoreCase = true)
+
+                    Constants.is_active = if (isTrial || isActiveStatus) true else sub.optBoolean("is_active", sub.optBoolean("isActive", true))
+                    if (model.isNotEmpty()) Constants.SUB_MODEL = model
+                    if (planName.isNotEmpty()) Constants.PLAN_NAME = planName
                     val feat = sub.optJSONObject("features")
                     if (feat != null) {
                         Constants.FEATURES.clear()
@@ -806,6 +828,27 @@ class LoginActivity : AppCompatActivity(), AsyncTaskCompleteListener, View.OnCli
 
                 val subscription = probizData.optJSONObject("subscription")
                 if (subscription != null) {
+                    val status = subscription.optString("status", "")
+                    val isActiveStatus = status.equals("Active", ignoreCase = true) || subscription.optBoolean("is_active_sub", false)
+                    val model = subscription.optString("sub_model").ifEmpty {
+                        subscription.optString("model").ifEmpty {
+                            subscription.optString("plan").ifEmpty {
+                                subscription.optJSONObject("plan")?.optString("key") ?: ""
+                            }
+                        }
+                    }
+                    val planName = subscription.optString("plan_name").ifEmpty {
+                        subscription.optString("name").ifEmpty {
+                            subscription.optJSONObject("plan")?.optString("name") ?: ""
+                        }
+                    }
+                    val isTrial = model.contains("three_month", ignoreCase = true) ||
+                                  model.contains("three_months", ignoreCase = true) ||
+                                  planName.contains("free trial", ignoreCase = true)
+
+                    Constants.is_active = if (isTrial || isActiveStatus) true else subscription.optBoolean("is_active", subscription.optBoolean("isActive", true))
+                    if (model.isNotEmpty()) Constants.SUB_MODEL = model
+                    if (planName.isNotEmpty()) Constants.PLAN_NAME = planName
                     val features = subscription.optJSONObject("features")
                     if (features != null) {
                         Constants.FEATURES.clear()
@@ -816,7 +859,6 @@ class LoginActivity : AppCompatActivity(), AsyncTaskCompleteListener, View.OnCli
                             Constants.FEATURES[key] = value
                         }
                     }
-                    Constants.is_active = subscription.optBoolean("is_active", true)
                 }
 
                 Constants.User_Allowed = probizData.optInt("user_allowed")
@@ -863,6 +905,20 @@ class LoginActivity : AppCompatActivity(), AsyncTaskCompleteListener, View.OnCli
                 if ("reset" == Constants.PASSWORD_MODE) {
                     return
                 }
+
+                var xmppUid = Constants.UID ?: ""
+                if (!Constants.ROLE.equals("admin", ignoreCase = true)) {
+                    val userId = Constants.USER_ID ?: ""
+                    if (userId.isNotEmpty() && !xmppUid.endsWith("_$userId")) {
+                        xmppUid = "${xmppUid}_$userId"
+                    }
+                }
+                prefs.edit()
+                    .putString("xmpp_jid", xmppUid)
+                    .putString("xmpp_password", Constants.TOKEN)
+                    .putBoolean("xmpp_logged_in", true)
+                    .apply()
+                ChatConnection.loginUser(applicationContext, xmppUid, Constants.TOKEN)
 
                 registerFCMTokenWithServer()
                 Bio_metric_access()
@@ -1036,9 +1092,11 @@ class LoginActivity : AppCompatActivity(), AsyncTaskCompleteListener, View.OnCli
 
     fun syncDevice() {
         Log.d("LOGIN_AUDIT", "syncDevice called")
+        DeviceSyncManager.syncDevice(this)
     }
 
     fun Dashboard() {
+        syncDevice()
         startActivity(Intent(this, MainActivity::class.java))
         finish()
     }

@@ -166,6 +166,14 @@ public class BankAccountDialog implements AsyncTaskCompleteListener {
         etIfscCode = view.findViewById(R.id.et_ifsc_code);
         etBranchName = view.findViewById(R.id.et_branch_name);
 
+        int hintColor = ContextCompat.getColor(activity, R.color.grey_text);
+        etAccountHolderName.setHintTextColor(hintColor);
+        etBankName.setHintTextColor(hintColor);
+        etAccountNumber.setHintTextColor(hintColor);
+        etConfirmAccountNumber.setHintTextColor(hintColor);
+        etIfscCode.setHintTextColor(hintColor);
+        etBranchName.setHintTextColor(hintColor);
+
         tvErrorAccountHolderName = view.findViewById(R.id.tv_error_account_holder_name);
         tvErrorBankName = view.findViewById(R.id.tv_error_bank_name);
         tvErrorAccountNumber = view.findViewById(R.id.tv_error_account_number);
@@ -1056,22 +1064,30 @@ public class BankAccountDialog implements AsyncTaskCompleteListener {
                     tvVerifiedStatus.setText("Verified");
                     tvVerifiedDate.setText("");
                     applyModeUi();
-                    AndroidUtils.showAlert(result.optString("msg", "IFSC verified successfully"), activity);
+                    String ifscMsg = result.optString("msg", "");
+                    if (TextUtils.isEmpty(ifscMsg) || ifscMsg.toLowerCase().contains("bank account")) {
+                        ifscMsg = "IFSC verified successfully.";
+                    }
+                    AndroidUtils.showAlert(ifscMsg, activity, "Success");
                 } else {
                     isVerified = false;
                     applyModeUi();
                     AndroidUtils.showAlert(result.optString("msg",
-                            "Unable to verify IFSC code. Please check and try again."), activity);
+                            "Unable to verify IFSC code. Please check and try again."), activity, "Alert");
                 }
             }
             else if ("Save_Bank_Account".equals(type)) {
                 if (!err) {
-                    AndroidUtils.showAlert(result.optString("msg", "Bank account details saved successfully"), activity);
+                    String saveMsg = result.optString("msg", "");
+                    if (TextUtils.isEmpty(saveMsg)) {
+                        saveMsg = "Bank account verified successfully.";
+                    }
+                    AndroidUtils.showAlert(saveMsg, activity, "Success");
                     dismiss();
                     if (listener != null) listener.onBankAccountSaved();
                 } else {
                     AndroidUtils.showAlert(result.optString("msg",
-                            "Unable to save bank account details. Please try again."), activity);
+                            "Unable to save bank account details. Please try again."), activity, "Alert");
                 }
             }
         } catch (Exception e) {

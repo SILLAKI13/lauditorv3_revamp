@@ -238,24 +238,31 @@ class NotificationsViewModel(
 
             if (result.result == WebServiceHelper.ServiceCallStatus.Success) {
                 val rootJson = JSONObject(result.responseContent ?: "")
-                _uiState.update {
-                    it.copy(
-                        selectedNotificationIds = emptySet(),
-                        isAllSelected = false,
-                        hasSelection = false,
-                        alertTitle = "Alert",
-                        alertMessage = rootJson.getString("msg")
-                    )
-                }
-                if (!rootJson.getBoolean("error")) {
+                if (!rootJson.optBoolean("error", false)) {
+                    _uiState.update {
+                        it.copy(
+                            selectedNotificationIds = emptySet(),
+                            isAllSelected = false,
+                            hasSelection = false,
+                            alertTitle = "Success",
+                            alertMessage = rootJson.optString("msg", "Notification deleted successfully.")
+                        )
+                    }
                     loadNotifications()
                     countApi.fetchNotificationCount()
+                } else {
+                    _uiState.update {
+                        it.copy(
+                            alertTitle = "Error",
+                            alertMessage = rootJson.optString("msg", "Failed to delete notification.")
+                        )
+                    }
                 }
             } else {
                 _uiState.update {
                     it.copy(
-                        alertTitle = "Alert",
-                        alertMessage = result.responseContent ?: "Connection Error"
+                        alertTitle = "Error",
+                        alertMessage = result.errorMessage ?: result.responseContent ?: "Connection Error"
                     )
                 }
             }

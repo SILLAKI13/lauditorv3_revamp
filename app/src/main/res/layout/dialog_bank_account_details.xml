@@ -132,6 +132,7 @@
             android:paddingStart="@dimen/ten_dp"
             android:paddingEnd="@dimen/ten_dp"
             android:textColor="@color/black"
+            android:textColorHint="@color/grey_text"
             android:textSize="15sp" />
 
         <TextView
@@ -165,6 +166,7 @@
             android:paddingStart="@dimen/ten_dp"
             android:paddingEnd="@dimen/ten_dp"
             android:textColor="@color/black"
+            android:textColorHint="@color/grey_text"
             android:textSize="15sp" />
 
         <TextView
@@ -204,6 +206,7 @@
                 android:paddingEnd="40dp"
                 android:fontFamily="@font/gill_sans"
                 android:textColor="@color/black"
+                android:textColorHint="@color/grey_text"
                 android:textSize="15sp" />
 
             <ImageView
@@ -258,6 +261,7 @@
                     android:paddingStart="@dimen/ten_dp"
                     android:paddingEnd="40dp"
                     android:textColor="@color/black"
+                    android:textColorHint="@color/grey_text"
                     android:textSize="15sp" />
 
                 <ImageView
@@ -304,6 +308,7 @@
             android:paddingStart="@dimen/ten_dp"
             android:paddingEnd="@dimen/ten_dp"
             android:textColor="@color/black"
+            android:textColorHint="@color/grey_text"
             android:textSize="15sp" />
 
         <TextView
@@ -348,6 +353,7 @@
                 android:paddingStart="@dimen/ten_dp"
                 android:paddingEnd="40dp"
                 android:textColor="@color/grey_light"
+                android:textColorHint="@color/grey_text"
                 android:textSize="15sp" />
 
             <!-- The ONLY icon that may appear anywhere near Branch Name.

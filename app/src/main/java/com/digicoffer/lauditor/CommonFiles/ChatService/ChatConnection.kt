@@ -89,18 +89,30 @@ class ChatConnection : ConnectionListener {
         this.context = context
         Log.d(TAG, "RoosterConnection Constructor called.")
         mApplicationContext = context.applicationContext
-        val jid = PreferenceManager.getDefaultSharedPreferences(mApplicationContext)
-            .getString("xmpp_jid", null)
-        mPassword = PreferenceManager.getDefaultSharedPreferences(mApplicationContext)
-            .getString("xmpp_password", null)
+        val prefs = PreferenceManager.getDefaultSharedPreferences(mApplicationContext)
+        var jid = prefs.getString("xmpp_jid", null)
+        var pass = prefs.getString("xmpp_password", null)
 
-        if (jid != null) {
-            mUsername = jid + "@" + (Constants.XMPP_DOMAIN ?: "")
-            mServiceName = Constants.XMPP_DOMAIN ?: ""
+        if (jid.isNullOrEmpty()) {
+            var uid = Constants.UID ?: ""
+            if (!Constants.ROLE.equals("admin", ignoreCase = true)) {
+                uid = uid + "_" + (Constants.USER_ID ?: "")
+            }
+            jid = uid
+        }
+        if (pass.isNullOrEmpty()) {
+            pass = Constants.TOKEN
+        }
+
+        if (!jid.isNullOrEmpty()) {
+            val bare = if (jid.contains("@")) jid.split("@")[0] else jid
+            mUsername = bare
+            mServiceName = Constants.XMPP_DOMAIN ?: "devchat.vitacape.com"
         } else {
             mUsername = ""
             mServiceName = ""
         }
+        mPassword = pass
     }
 
     fun createContext(): SSLContext? {
@@ -116,12 +128,39 @@ class ChatConnection : ConnectionListener {
 
     @Throws(IOException::class, XMPPException::class, SmackException::class)
     fun connect() {
-        Log.d(TAG, "Connecting to server $mServiceName as $mUsername")
+        val prefs = PreferenceManager.getDefaultSharedPreferences(mApplicationContext ?: context.applicationContext)
+        var jid = prefs.getString("xmpp_jid", null)
+        if (jid.isNullOrEmpty()) {
+            if (mUsername.isNotEmpty()) {
+                jid = mUsername
+            } else {
+                var uid = Constants.UID ?: ""
+                if (!Constants.ROLE.equals("admin", ignoreCase = true)) {
+                    val uId = Constants.USER_ID ?: ""
+                    if (uId.isNotEmpty() && !uid.endsWith("_$uId")) {
+                        uid = "${uid}_$uId"
+                    }
+                }
+                jid = uid
+            }
+        }
+        var pass = prefs.getString("xmpp_password", null)
+        if (pass.isNullOrEmpty()) {
+            if (!mPassword.isNullOrEmpty()) {
+                pass = mPassword
+            } else {
+                pass = Constants.TOKEN ?: ""
+            }
+        }
 
-        if (mUsername.isEmpty() || mPassword.isNullOrEmpty()) {
+        val bareUser = if (jid.contains("@")) jid.split("@")[0] else jid
+        val domain = Constants.XMPP_DOMAIN ?: "devchat.vitacape.com"
+
+        Log.d(TAG, "Connecting to server $domain as $bareUser")
+
+        if (bareUser.isEmpty() || pass.isEmpty()) {
             Log.e(
-                TAG, "connect() aborted — xmpp_jid or xmpp_password is null/empty in SharedPreferences. " +
-                        "Ensure saveXmppPreferences() in LoginActivity has run before connect() is called."
+                TAG, "connect() aborted — xmpp_jid or xmpp_password is null/empty."
             )
             ChatConnectionService.sConnectionState = ConnectionState.DISCONNECTED
             return
@@ -130,24 +169,40 @@ class ChatConnection : ConnectionListener {
         try {
             val sslContext = createContext()
             val conf = XMPPTCPConnectionConfiguration.builder()
-                .setXmppDomain(Constants.XMPP_DOMAIN)
-                .setHost(Constants.XMPP_DOMAIN)
+                .setUsernameAndPassword(bareUser, pass)
+                .setXmppDomain(domain)
+                .setHost(domain)
                 .setSecurityMode(ConnectionConfiguration.SecurityMode.required)
                 .setCustomSSLContext(sslContext)
                 .setSendPresence(true)
                 .setCompressionEnabled(true)
                 .build()
 
-            setupUiThreadBroadCastMessageReceiver()
-
-            if (mConnection != null && (mConnection!!.isConnected || mConnection!!.isAuthenticated)) {
-                Log.d(TAG, "connect() — mConnection already connected/authenticated, skipping reconnect.")
-                ChatConnectionService.sConnectionState = ConnectionState.CONNECTED
-                return
+            val currentAuthedUser = try {
+                val u = mConnection?.user?.toString() ?: ""
+                val bare = if (u.contains("/")) u.split("/")[0] else u
+                if (bare.contains("@")) bare.split("@")[0] else bare
+            } catch (e: Exception) {
+                ""
             }
 
-            if (mConnection != null && !mConnection!!.isConnected) {
-                Log.d(TAG, "connect() — mConnection exists but is disconnected. Resetting for fresh connect.")
+            if (mConnection != null && mConnection!!.isConnected && mConnection!!.isAuthenticated) {
+                if (currentAuthedUser.isNotEmpty() && currentAuthedUser.equals(bareUser, ignoreCase = true)) {
+                    Log.d(TAG, "connect() — mConnection already connected and authenticated as $bareUser, skipping reconnect.")
+                    ChatConnectionService.sConnectionState = ConnectionState.CONNECTED
+                    ChatConnectionService.sLoggedInState = LoggedInState.LOGGED_IN
+                    setupUiThreadBroadCastMessageReceiver()
+                    return
+                } else {
+                    Log.d(TAG, "connect() — authenticated as '$currentAuthedUser' but switching to '$bareUser'. Resetting.")
+                    try {
+                        mConnection!!.disconnect()
+                    } catch (ignored: Exception) {}
+                    mConnection = null
+                }
+            }
+
+            if (mConnection != null && (!mConnection!!.isConnected || !mConnection!!.isAuthenticated)) {
                 try {
                     mConnection!!.disconnect()
                 } catch (ignored: Exception) {
@@ -164,10 +219,18 @@ class ChatConnection : ConnectionListener {
             ChatConnectionService.sConnectionState = ConnectionState.CONNECTING
             Log.d(TAG, "connect() — state set to CONNECTING")
 
-            mConnection!!.connect()
-            mConnection!!.login(mUsername, mPassword)
+            if (!mConnection!!.isConnected) {
+                mConnection!!.connect()
+            }
+            if (!mConnection!!.isAuthenticated) {
+                mConnection!!.login(bareUser, pass)
+            }
 
-            Log.d(TAG, "connect() — login succeeded for $mUsername")
+            ChatConnectionService.sConnectionState = ConnectionState.CONNECTED
+            ChatConnectionService.sLoggedInState = LoggedInState.LOGGED_IN
+
+            Log.d(TAG, "connect() — login succeeded for $bareUser")
+            setupUiThreadBroadCastMessageReceiver()
 
             val presence = Presence(Presence.Type.available)
             presence.status = "online"
@@ -355,6 +418,18 @@ class ChatConnection : ConnectionListener {
                 instance!!.disconnect()
                 instance = null
             }
+            if (mConnection != null) {
+                try {
+                    if (incomingListener != null) {
+                        ChatManager.getInstanceFor(mConnection).removeIncomingListener(incomingListener)
+                        incomingListener = null
+                    }
+                    mConnection!!.disconnect()
+                } catch (ignored: Exception) {}
+                mConnection = null
+            }
+            ChatConnectionService.sConnectionState = ConnectionState.DISCONNECTED
+            ChatConnectionService.sLoggedInState = LoggedInState.LOGGED_OUT
         }
 
         @JvmStatic
@@ -365,15 +440,74 @@ class ChatConnection : ConnectionListener {
 
             Thread {
                 try {
+                    val prefs = PreferenceManager.getDefaultSharedPreferences(context.applicationContext)
+                    var userToUse = username
+                    if (userToUse.isNullOrEmpty()) {
+                        userToUse = prefs.getString("xmpp_jid", null)
+                        if (userToUse.isNullOrEmpty()) {
+                            var uid = Constants.UID ?: ""
+                            if (!Constants.ROLE.equals("admin", ignoreCase = true)) {
+                                val userId = Constants.USER_ID ?: ""
+                                if (userId.isNotEmpty() && !uid.endsWith("_$userId")) {
+                                    uid = "${uid}_$userId"
+                                }
+                            }
+                            userToUse = uid
+                        }
+                    }
+                    var passToUse = password
+                    if (passToUse.isNullOrEmpty()) {
+                        passToUse = prefs.getString("xmpp_password", null)
+                        if (passToUse.isNullOrEmpty()) {
+                            passToUse = Constants.TOKEN ?: ""
+                        }
+                    }
+
+                    val bareUser = if (userToUse != null && userToUse.contains("@")) userToUse.split("@")[0] else userToUse
+                    val pass = passToUse
+
+                    if (bareUser.isNullOrEmpty() || pass.isNullOrEmpty()) {
+                        Log.e(TAG, "loginUser() aborted — missing bareUser or pass")
+                        ChatConnectionService.sConnectionState = ConnectionState.DISCONNECTED
+                        return@Thread
+                    }
+
                     val sslContext = instance!!.createContext()
                     val conf = XMPPTCPConnectionConfiguration.builder()
-                        .setXmppDomain(Constants.XMPP_DOMAIN)
-                        .setHost(Constants.XMPP_DOMAIN)
+                        .setUsernameAndPassword(bareUser, pass)
+                        .setXmppDomain(Constants.XMPP_DOMAIN ?: "devchat.vitacape.com")
+                        .setHost(Constants.XMPP_DOMAIN ?: "devchat.vitacape.com")
                         .setSecurityMode(ConnectionConfiguration.SecurityMode.required)
                         .setCustomSSLContext(sslContext)
                         .setSendPresence(true)
                         .setCompressionEnabled(true)
                         .build()
+
+                    val currentAuthedUser = try {
+                        val u = mConnection?.user?.toString() ?: ""
+                        val bare = if (u.contains("/")) u.split("/")[0] else u
+                        if (bare.contains("@")) bare.split("@")[0] else bare
+                    } catch (e: Exception) {
+                        ""
+                    }
+
+                    if (mConnection != null && mConnection!!.isConnected && mConnection!!.isAuthenticated) {
+                        if (currentAuthedUser.isNotEmpty() && currentAuthedUser.equals(bareUser, ignoreCase = true)) {
+                            Log.d(TAG, "loginUser() — already connected and authenticated as $bareUser")
+                            ChatConnectionService.sConnectionState = ConnectionState.CONNECTED
+                            return@Thread
+                        } else {
+                            Log.d(TAG, "loginUser() — authenticated as '$currentAuthedUser' but switching to '$bareUser'. Disconnecting old connection.")
+                            try {
+                                if (incomingListener != null) {
+                                    ChatManager.getInstanceFor(mConnection).removeIncomingListener(incomingListener)
+                                    incomingListener = null
+                                }
+                                mConnection!!.disconnect()
+                            } catch (ignored: Exception) {}
+                            mConnection = null
+                        }
+                    }
 
                     if (mConnection != null && !mConnection!!.isConnected) {
                         Log.d(TAG, "loginUser() — mConnection exists but disconnected. Resetting.")
@@ -389,14 +523,26 @@ class ChatConnection : ConnectionListener {
                         mConnection!!.addConnectionListener(instance)
                     }
 
-                    if (mConnection!!.isConnected) mConnection!!.disconnect()
+                    if (mConnection!!.isConnected && !mConnection!!.isAuthenticated) {
+                        try {
+                            mConnection!!.disconnect()
+                        } catch (ignored: Exception) {
+                        }
+                    }
 
                     ChatConnectionService.sConnectionState = ConnectionState.CONNECTING
 
-                    mConnection!!.connect()
-                    mConnection!!.login(username, password)
+                    if (!mConnection!!.isConnected) {
+                        mConnection!!.connect()
+                    }
+                    if (!mConnection!!.isAuthenticated) {
+                        mConnection!!.login(bareUser, pass)
+                    }
 
-                    Log.d(TAG, "loginUser() — login succeeded for $username")
+                    ChatConnectionService.sConnectionState = ConnectionState.CONNECTED
+                    ChatConnectionService.sLoggedInState = LoggedInState.LOGGED_IN
+
+                    Log.d(TAG, "loginUser() — login succeeded for $bareUser")
 
                     setupUiThreadBroadCastMessageReceiver()
                     val presence = Presence(Presence.Type.available)
@@ -520,10 +666,26 @@ class ChatConnection : ConnectionListener {
         }
 
         @JvmStatic
-        private fun sendMessage(body: String?, toJid: String?, subject: String?) {
-            if (toJid.isNullOrEmpty()) return
+        fun sendMessage(body: String?, toJid: String?, subject: String?) {
+            if (toJid.isNullOrEmpty() || body.isNullOrEmpty()) return
             try {
-                val jid = JidCreate.entityBareFrom(toJid + "@" + (Constants.XMPP_DOMAIN ?: ""))
+                if (mConnection == null || !mConnection!!.isAuthenticated) {
+                    Log.w(TAG, "sendMessage() connection null or unauthenticated — trying to auto-connect...")
+                    if (mApplicationContext != null) {
+                        try {
+                            getInstance(mApplicationContext!!).connect()
+                        } catch (e: Exception) {
+                            Log.e(TAG, "sendMessage auto-connect failed: ${e.message}")
+                        }
+                    }
+                }
+                if (mConnection == null || !mConnection!!.isAuthenticated) {
+                    Log.e(TAG, "sendMessage() aborted: mConnection is null or not authenticated")
+                    return
+                }
+                val bareTo = if (toJid.contains("@")) toJid.split("@")[0] else toJid
+                val domain = Constants.XMPP_DOMAIN ?: "devchat.vitacape.com"
+                val jid = JidCreate.entityBareFrom("$bareTo@$domain")
                 val chat = ChatManager.getInstanceFor(mConnection).chatWith(jid)
                 val message = Message(jid, Message.Type.chat)
 
@@ -541,6 +703,7 @@ class ChatConnection : ConnectionListener {
                 chat.send(message)
                 Log.d(TAG, "sendMessage() — sent id=$stanzaId to=$toJid")
             } catch (e: Exception) {
+                Log.e(TAG, "sendMessage() error: ${e.message}", e)
                 e.printStackTrace()
             }
         }

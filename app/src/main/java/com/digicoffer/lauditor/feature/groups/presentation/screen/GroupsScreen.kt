@@ -51,6 +51,7 @@ fun GroupsScreen(
     onBack: () -> Unit
 ) {
     val uiState by viewModel.uiState.collectAsState()
+    val context = androidx.compose.ui.platform.LocalContext.current
     var screenMode by remember { mutableStateOf(ScreenMode.LIST) }
     var selectedGroup by remember { mutableStateOf<ViewGroupModel?>(null) }
 
@@ -114,7 +115,7 @@ fun GroupsScreen(
                     ScreenMode.UPDATE_MEMBERS -> "Team Members"
                     ScreenMode.UPDATE_GROUP_HEAD -> "Update Group Head"
                     ScreenMode.ACTIVITY_LOG -> "Activity Log"
-                    ScreenMode.DELETE -> "Assign Group"
+                    ScreenMode.DELETE -> "Delete Group"
                 }
 
                 Text(
@@ -131,8 +132,11 @@ fun GroupsScreen(
                         text = "Create Group",
                         iconRes = null, // draws '+'
                         onClick = {
-                            isAddTeamMemberTab = true
-                            screenMode = ScreenMode.CREATE
+                            val activity = context as? android.app.Activity
+                            if (!com.digicoffer.lauditor.CommonFiles.GlobalFiles.AndroidUtils.checkSubPlanValidation(activity, "groups")) {
+                                isAddTeamMemberTab = true
+                                screenMode = ScreenMode.CREATE
+                            }
                         }
                     )
                 } else if (screenMode != ScreenMode.UPDATE_MEMBERS) {
@@ -382,10 +386,12 @@ fun GroupsScreen(
                             var selectedMemberIds by remember(group) { mutableStateOf(initialMemberSet) }
                             var memSearchQuery by remember(group) { mutableStateOf("") }
 
+                            val isSystemGroup = group.name.equals("AAM", ignoreCase = true) || group.name.equals("SuperUser", ignoreCase = true)
                             val filteredMembers = uiState.membersList.filter {
                                 it.id != group.group_head_id && it.name.contains(memSearchQuery, ignoreCase = true)
                             }
-                            val isAllSelected = filteredMembers.isNotEmpty() && filteredMembers.all { selectedMemberIds.contains(it.id) }
+                            val eligibleMembers = filteredMembers.filter { isSystemGroup || !it.isRestricted }
+                            val isAllSelected = eligibleMembers.isNotEmpty() && eligibleMembers.all { selectedMemberIds.contains(it.id) }
 
                             Column(
                                 modifier = Modifier
@@ -406,7 +412,7 @@ fun GroupsScreen(
                                         elevation = CardDefaults.cardElevation(defaultElevation = 1.dp),
                                         border = androidx.compose.foundation.BorderStroke(0.5.dp, Color(0xFFC0C0C0)),
                                         modifier = Modifier.clickable {
-                                            val list = filteredMembers.map { it.id }
+                                            val list = eligibleMembers.map { it.id }
                                             selectedMemberIds = if (isAllSelected) {
                                                 selectedMemberIds - list.toSet()
                                             } else {
@@ -507,29 +513,44 @@ fun GroupsScreen(
                                         ) {
                                             items(filteredMembers, key = { it.id }) { member ->
                                                 val isChecked = selectedMemberIds.contains(member.id)
+                                                val isBlocked = !isSystemGroup && member.isRestricted
+
                                                 Row(
                                                     modifier = Modifier
                                                         .fillMaxWidth()
-                                                        .background(Color(0xFFF8F8F8), shape = RoundedCornerShape(6.dp))
-                                                        .border(width = 0.5.dp, color = Color(0xFFC0C0C0), shape = RoundedCornerShape(6.dp))
+                                                        .background(if (isBlocked) Color(0xFFF0F0F0) else Color(0xFFF8F8F8), shape = RoundedCornerShape(6.dp))
+                                                        .border(width = 0.5.dp, color = if (isBlocked) Color(0xFFE0E0E0) else Color(0xFFC0C0C0), shape = RoundedCornerShape(6.dp))
                                                         .clickable {
-                                                            selectedMemberIds = if (isChecked) {
-                                                                selectedMemberIds - member.id
+                                                            if (isBlocked) {
+                                                                alertMessage = "System generated user - ${member.name} can only be assigned to Super User or AAM group."
                                                             } else {
-                                                                selectedMemberIds + member.id
+                                                                selectedMemberIds = if (isChecked) {
+                                                                    selectedMemberIds - member.id
+                                                                } else {
+                                                                    selectedMemberIds + member.id
+                                                                }
                                                             }
                                                         }
                                                         .padding(start = 14.dp, end = 10.dp, top = 10.dp, bottom = 10.dp),
                                                     horizontalArrangement = Arrangement.SpaceBetween,
                                                     verticalAlignment = Alignment.CenterVertically
                                                 ) {
-                                                    Text(
-                                                        text = member.name,
-                                                        color = Color.Black,
-                                                        fontSize = 15.sp,
-                                                        fontFamily = FontFamily(Font(R.font.gill_sans_regular)),
-                                                        modifier = Modifier.weight(1f)
-                                                    )
+                                                    Column(modifier = Modifier.weight(1f)) {
+                                                        Text(
+                                                            text = member.name,
+                                                            color = if (isBlocked) Color.Gray else Color.Black,
+                                                            fontSize = 15.sp,
+                                                            fontFamily = FontFamily(Font(R.font.gill_sans_regular))
+                                                        )
+                                                        if (isBlocked) {
+                                                            Text(
+                                                                text = "Can only be assigned to Super User or AAM group",
+                                                                color = Color(0xFF888888),
+                                                                fontSize = 11.sp,
+                                                                fontFamily = FontFamily(Font(R.font.gill_sans_regular))
+                                                            )
+                                                        }
+                                                    }
                                                     Spacer(modifier = Modifier.width(8.dp))
 
                                                     CompositionLocalProvider(
@@ -538,7 +559,12 @@ fun GroupsScreen(
                                                         Checkbox(
                                                             checked = isChecked,
                                                             onCheckedChange = null,
-                                                            colors = CheckboxDefaults.colors(checkedColor = activeBlue),
+                                                            enabled = !isBlocked,
+                                                            colors = CheckboxDefaults.colors(
+                                                                checkedColor = activeBlue,
+                                                                disabledCheckedColor = Color.LightGray,
+                                                                disabledUncheckedColor = Color.LightGray
+                                                            ),
                                                             modifier = Modifier.size(22.dp)
                                                         )
                                                     }
@@ -575,7 +601,11 @@ fun GroupsScreen(
                                                         .filter { it.isNotBlank() }
                                                         .distinct()
                                                     viewModel.onEvent(
-                                                        GroupsUiEvent.UpdateGroupMembers(group.id, finalMembers.toList()) {
+                                                        GroupsUiEvent.UpdateGroupMembers(
+                                                            id = group.id,
+                                                            members = finalMembers.toList(),
+                                                            groupName = group.name ?: ""
+                                                        ) {
                                                             screenMode = ScreenMode.LIST
                                                         }
                                                     )
@@ -890,7 +920,11 @@ fun GroupsScreen(
                                                 onClick = {
                                                     // Triggers deletion API reassign call
                                                     viewModel.onEvent(
-                                                        GroupsUiEvent.DeleteGroup(group.id, reassignedGroupId) {
+                                                        GroupsUiEvent.DeleteGroup(
+                                                            id = group.id,
+                                                            groupHead = reassignedGroupId,
+                                                            groupName = group.name ?: ""
+                                                        ) {
                                                             screenMode = ScreenMode.LIST
                                                         }
                                                     )

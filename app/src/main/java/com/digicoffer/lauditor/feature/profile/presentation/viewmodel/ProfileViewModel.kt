@@ -141,16 +141,20 @@ class ProfileViewModel(application: Application) : AndroidViewModel(application)
 
             is ProfileUiEvent.OpenEditAddInfo -> {
                 populateAdditionalInfoForm()
+                val currentSubTab = _uiState.value.subTab.ifEmpty { "practice_details" }
                 _uiState.update {
                     it.copy(
                         isEditingAdditionalInfo = true,
                         isEditingProfileInfo = false,
-                        editSubTab = if (it.isMyProfile) "practice_details" else "practice_details"
+                        editSubTab = currentSubTab
                     )
+                }
+                if (currentSubTab == "courts_cases") {
+                    fetchCourtSuggestionsForCurrentPractice()
                 }
             }
             is ProfileUiEvent.CancelEditAddInfo -> {
-                _uiState.update { it.copy(isEditingAdditionalInfo = false) }
+                _uiState.update { it.copy(isEditingAdditionalInfo = false, subTab = it.editSubTab) }
             }
             is ProfileUiEvent.SaveEditAddInfo -> {
                 saveAdditionalInfo()
@@ -330,8 +334,8 @@ class ProfileViewModel(application: Application) : AndroidViewModel(application)
             is ProfileUiEvent.AddCourtWithSuggestion -> {
                 val current = _uiState.value.courtsCasesForm.courtEnrollments
                 val isSupreme = event.courtType.equals("Supreme Court", ignoreCase = true)
-                val defState = if (isSupreme) "Delhi" else (_uiState.value.courtStatesList.firstOrNull() ?: "")
-                val defCity = if (isSupreme) "New Delhi" else (_uiState.value.courtStatesMap[defState]?.firstOrNull() ?: "")
+                val defState = if (isSupreme) "Delhi" else ""
+                val defCity = if (isSupreme) "New Delhi" else ""
                 val newRow = CourtEnrollmentItemState(
                     courtType = event.courtType,
                     state = defState,
@@ -353,8 +357,6 @@ class ProfileViewModel(application: Application) : AndroidViewModel(application)
                     ""
                 } else if (isSupreme) {
                     "Delhi"
-                } else if (event.state.isBlank()) {
-                    _uiState.value.courtStatesList.firstOrNull() ?: ""
                 } else {
                     event.state
                 }
@@ -363,8 +365,6 @@ class ProfileViewModel(application: Application) : AndroidViewModel(application)
                     ""
                 } else if (isSupreme) {
                     "New Delhi"
-                } else if (event.city.isBlank() && finalState.isNotBlank()) {
-                    _uiState.value.courtStatesMap[finalState]?.firstOrNull() ?: ""
                 } else {
                     event.city
                 }
@@ -592,7 +592,12 @@ class ProfileViewModel(application: Application) : AndroidViewModel(application)
                     val root = JSONObject(result.responseContent ?: "{}")
                     val isError = root.optBoolean("error", false)
                     if (!isError) {
-                        val arr = root.optJSONArray("data")
+                        val arr = root.optJSONArray("data") ?: root.optJSONObject("data")?.let { dataObj ->
+                            dataObj.optJSONArray("partners")
+                                ?: dataObj.optJSONArray("users")
+                                ?: dataObj.optJSONArray("practice_partners")
+                                ?: dataObj.optJSONArray("members")
+                        }
                         val list = mutableListOf<PracticePartnerItem>()
                         if (arr != null) {
                             for (i in 0 until arr.length()) {
@@ -602,14 +607,26 @@ class ProfileViewModel(application: Application) : AndroidViewModel(application)
                                     val v = obj.optString(key, "").trim()
                                     return if (v.equals("null", ignoreCase = true)) "" else v
                                 }
+                                val id = clean("id").ifEmpty { clean("_id") }
+                                val fullName = clean("name")
+                                    .ifEmpty { "${clean("first_name")} ${clean("last_name")}".trim() }
+                                    .ifEmpty { clean("fullname") }
+                                val specialist = clean("practice")
+                                    .ifEmpty { clean("specialist") }
+                                    .ifEmpty { clean("practice_area") }
+                                val phone = clean("phone")
+                                    .ifEmpty { clean("mobile") }
+                                    .ifEmpty { clean("phone_number") }
+                                    .ifEmpty { clean("contact_phone") }
+
                                 list.add(
                                     PracticePartnerItem(
-                                        id = clean("id"),
-                                        name = clean("name"),
+                                        id = id,
+                                        name = fullName,
                                         designation = clean("designation"),
-                                        specialist = clean("practice"),
+                                        specialist = specialist,
                                         email = clean("email"),
-                                        phone = clean("phone")
+                                        phone = phone
                                     )
                                 )
                             }
@@ -1790,6 +1807,10 @@ class ProfileViewModel(application: Application) : AndroidViewModel(application)
                             }
                         }
                         updateCachedUserData(Constants.NAME ?: "", Constants.FIRM_NAME ?: "")
+                        _uiState.value.firmProfileModel?.data?.profile?.let { prof ->
+                            if (form.dob.isNotBlank()) prof.date_of_birth = formatDobForApi(form.dob)
+                            if (form.gender.isNotBlank()) prof.gender = form.gender
+                        }
 
                         val successMsg = resJson.optString("msg", resJson.optString("message", "Profile updated successfully"))
                         _uiState.update { it.copy(isEditingProfileInfo = false, toastMessage = if (successMsg.isNotBlank()) successMsg else "Profile updated successfully") }
@@ -2072,7 +2093,7 @@ class ProfileViewModel(application: Application) : AndroidViewModel(application)
                     val isError = resJson.optBoolean("error", false)
                     if (!isError) {
                         val successMsg = resJson.optString("msg", resJson.optString("message", "Additional Information updated successfully"))
-                        _uiState.update { it.copy(isEditingAdditionalInfo = false, toastMessage = if (successMsg.isNotBlank()) successMsg else "Additional Information updated successfully") }
+                        _uiState.update { it.copy(isEditingAdditionalInfo = false, subTab = it.editSubTab, toastMessage = if (successMsg.isNotBlank()) successMsg else "Additional Information updated successfully") }
                         loadProfile()
                     } else {
                         val errMsg = resJson.optString("msg", resJson.optString("message", "Failed to update additional information"))
@@ -2416,8 +2437,8 @@ class ProfileViewModel(application: Application) : AndroidViewModel(application)
             profile.email = profileObj.optString("email")
             profile.mobile = profileObj.optString("mobile")
             profile.nationality = profileObj.optString("nationality")
-            profile.date_of_birth = profileObj.optString("date_of_birth")
-            profile.gender = profileObj.optString("gender")
+            profile.date_of_birth = profileObj.optString("date_of_birth").ifEmpty { profileObj.optString("dob", "") }.ifEmpty { dataObj.optString("date_of_birth", dataObj.optString("dob", "")) }
+            profile.gender = profileObj.optString("gender").ifEmpty { dataObj.optString("gender", "") }
             profile.bio_description = profileObj.optString("bio_description")
             profile.profile_pic_url = profileObj.optString("profile_pic_url", "")
             profile.bar_council_id = profileObj.optString("bar_council_id")
@@ -2452,8 +2473,25 @@ class ProfileViewModel(application: Application) : AndroidViewModel(application)
             if (subObj != null) {
                 val sub = FirmProfileModel.Subscription()
                 sub.activatedOn = subObj.optString("activatedOn", subObj.optString("activated_on", ""))
-                sub.model = subObj.optString("model", "")
-                sub.isActive = subObj.optBoolean("isActive", subObj.optBoolean("is_active", false))
+                sub.model = subObj.optString("model", subObj.optString("sub_model", ""))
+                val statusStr = subObj.optString("status", "")
+                val isStatusActive = statusStr.equals("Active", ignoreCase = true) || subObj.optBoolean("is_active_sub", false)
+                val planKey = subObj.optJSONObject("plan")?.optString("key", "") ?: ""
+                val planNameStr = subObj.optJSONObject("plan")?.optString("name", "") ?: subObj.optString("plan_name", "")
+                val isTrial = (sub.model?.contains("three_month", ignoreCase = true) == true) ||
+                        (sub.model?.contains("three_months", ignoreCase = true) == true) ||
+                        planKey.contains("three_month", ignoreCase = true) ||
+                        planNameStr.contains("free trial", ignoreCase = true)
+                sub.isActive = if (isTrial || isStatusActive) true else subObj.optBoolean("isActive", subObj.optBoolean("is_active", false))
+                if (isTrial || isStatusActive || sub.isActive) {
+                    com.digicoffer.lauditor.CommonFiles.GlobalFiles.Constants.is_active = true
+                    val activeModel = if (!sub.model.isNullOrEmpty()) sub.model else planKey
+                    com.digicoffer.lauditor.CommonFiles.GlobalFiles.SubscriptionAccessManager.updateSubscription(
+                        true,
+                        activeModel,
+                        planNameStr
+                    )
+                }
                 sub.startDate = subObj.optString("startDate", subObj.optString("start_date", ""))
                 sub.endDate = subObj.optString("endDate", subObj.optString("end_date", ""))
                 sub.validityDays = subObj.optString("validityDays", subObj.optString("validity_days", ""))

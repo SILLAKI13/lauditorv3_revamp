@@ -382,17 +382,21 @@ class PracticePartnerView : Fragment(), AsyncTaskCompleteListener, View.OnClickL
                 val jsonObject = jsonArray.getJSONObject(i)
                 val model = MemberProfileModel()
 
-                val fullName = jsonObject.optString("name")
+                val fullName = jsonObject.optString("name").ifEmpty {
+                    val fn = jsonObject.optString("first_name")
+                    val ln = jsonObject.optString("last_name")
+                    "$fn $ln".trim().ifEmpty { jsonObject.optString("fullname") }
+                }
                 if (fullName.isNotEmpty()) {
                     val parts = fullName.split(" ", limit = 2)
                     model.first_name = parts[0]
                     model.last_name = if (parts.size > 1) parts[1] else ""
                 }
-                model.id = jsonObject.optString("id")
+                model.id = jsonObject.optString("id").ifEmpty { jsonObject.optString("_id") }
                 model.email = jsonObject.optString("email")
-                model.practice = jsonObject.optString("practice")
+                model.practice = jsonObject.optString("practice").ifEmpty { jsonObject.optString("specialist") }
                 model.designation = jsonObject.optString("designation")
-                model.phone = jsonObject.optString("phone")
+                model.phone = jsonObject.optString("phone").ifEmpty { jsonObject.optString("mobile") }
                 membersviewlist.add(model)
             }
 
@@ -438,7 +442,12 @@ class PracticePartnerView : Fragment(), AsyncTaskCompleteListener, View.OnClickL
                 if (httpResult.requestType == "View_Pp") {
                     val isError = result.optBoolean("error")
                     if (!isError) {
-                        val members = result.optJSONArray("data")
+                        val members = result.optJSONArray("data") ?: result.optJSONObject("data")?.let { dataObj ->
+                            dataObj.optJSONArray("partners")
+                                ?: dataObj.optJSONArray("users")
+                                ?: dataObj.optJSONArray("practice_partners")
+                                ?: dataObj.optJSONArray("members")
+                        }
                         if (members != null) loadmembersviewlist(members)
                     }
                 } else if (httpResult.requestType == "View_Bp") {

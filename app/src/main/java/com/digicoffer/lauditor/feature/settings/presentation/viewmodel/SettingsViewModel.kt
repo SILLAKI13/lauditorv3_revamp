@@ -6,7 +6,10 @@ import android.content.Intent
 import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.viewModelScope
 import com.digicoffer.lauditor.CommonFiles.CacheUtils.AppImageCache
+import com.digicoffer.lauditor.CommonFiles.GlobalFiles.AndroidUtils
 import com.digicoffer.lauditor.CommonFiles.GlobalFiles.Constants
+import com.digicoffer.lauditor.CommonFiles.GlobalFiles.DeviceSyncManager
+import com.digicoffer.lauditor.CommonFiles.GlobalFiles.SubscriptionAccessManager
 import com.digicoffer.lauditor.LoginActivity.ViewModels.LoginActivity
 import com.digicoffer.lauditor.Webservice.CommonApiHelper.WebServiceHelper
 import com.digicoffer.lauditor.feature.settings.data.model.*
@@ -73,10 +76,8 @@ class SettingsViewModel(application: Application) : AndroidViewModel(application
             }
             is SettingsUiEvent.SubmitChangePassword -> submitChangePassword()
 
-            is SettingsUiEvent.InitiateChangePlan -> initiateCheckout()
-            is SettingsUiEvent.CancelSubscriptionClicked -> {
-                _uiState.update { it.copy(isCancelSubscriptionBottomSheetOpen = true) }
-            }
+            is SettingsUiEvent.InitiateChangePlan -> initiateCheckout(isCancel = false)
+            is SettingsUiEvent.CancelSubscriptionClicked -> initiateCheckout(isCancel = true)
             is SettingsUiEvent.DismissExternalCheckoutBottomSheet -> {
                 _uiState.update { it.copy(isExternalCheckoutBottomSheetOpen = false, checkoutTicket = null, checkoutUrl = null) }
             }
@@ -162,7 +163,7 @@ class SettingsViewModel(application: Application) : AndroidViewModel(application
         }
     }
 
-    private fun loadOverview(isRefresh: Boolean) {
+    fun loadOverview(isRefresh: Boolean = false) {
         viewModelScope.launch {
             if (isRefresh) {
                 _uiState.update { it.copy(isRefreshing = true, errorMessage = null) }
@@ -170,24 +171,32 @@ class SettingsViewModel(application: Application) : AndroidViewModel(application
                 _uiState.update { it.copy(isLoading = true, errorMessage = null) }
             }
 
+            // Ensure Android session is synced with backend
+            DeviceSyncManager.syncDevice(getApplication())
+
             val result = repository.fetchSettingsOverview()
             if (result.result == WebServiceHelper.ServiceCallStatus.Success) {
                 try {
                     val responseJson = JSONObject(result.responseContent ?: "{}")
                     val isError = responseJson.optBoolean("error", false)
                     if (!isError) {
-                        val parsed = SettingsOverviewResponse.fromJson(responseJson)
+                        val localDeviceId = DeviceSyncManager.getDeviceId(getApplication())
+                        val parsed = SettingsOverviewResponse.fromJson(responseJson, localDeviceId)
                         val data = parsed.data
 
-                        // Process logged in devices: ensure the first device is marked as current if none is explicitly marked
                         val devices: List<LoggedInDevice> = data?.loggedInDevices ?: emptyList()
-                        val hasExplicitCurrent = devices.any { it.isCurrent || it.currentDevice }
-                        val updatedDevices = devices.mapIndexed { index: Int, dev: LoggedInDevice ->
-                            if (index == 0 && !hasExplicitCurrent) {
-                                dev.copy(isCurrent = true)
-                            } else {
-                                dev
-                            }
+
+                        // Update centralized subscription manager and Constants
+                        data?.subscription?.let { sub ->
+                            val isActive = sub.status.equals("Active", ignoreCase = true)
+                            val subModel = sub.plan?.key?.ifEmpty { sub.plan.planId } ?: ""
+                            val planName = sub.plan?.name ?: ""
+                            SubscriptionAccessManager.updateSubscription(
+                                isActive = isActive,
+                                subModel = subModel,
+                                planName = planName,
+                                context = getApplication()
+                            )
                         }
 
                         _uiState.update {
@@ -198,7 +207,7 @@ class SettingsViewModel(application: Application) : AndroidViewModel(application
                                 security = data?.security,
                                 subscription = data?.subscription,
                                 terms = data?.terms,
-                                loggedInDevices = updatedDevices
+                                loggedInDevices = devices
                             )
                         }
                     } else {
@@ -243,11 +252,12 @@ class SettingsViewModel(application: Application) : AndroidViewModel(application
     }
 
     private fun submitChangePassword() {
+        val hasPassword = _uiState.value.security?.hasPassword ?: true
         val current = _uiState.value.currentPassword.trim()
         val newPass = _uiState.value.newPassword.trim()
         val confirm = _uiState.value.confirmPassword.trim()
 
-        if (current.isEmpty()) {
+        if (hasPassword && current.isEmpty()) {
             _uiState.update { it.copy(changePasswordError = "Please enter your current password.") }
             return
         }
@@ -267,14 +277,18 @@ class SettingsViewModel(application: Application) : AndroidViewModel(application
             _uiState.update { it.copy(changePasswordError = "Confirm password mismatch.") }
             return
         }
-        if (newPass == current) {
+        if (hasPassword && newPass == current) {
             _uiState.update { it.copy(changePasswordError = "New password must be different from current password.") }
             return
         }
 
         viewModelScope.launch {
             _uiState.update { it.copy(changePasswordLoading = true, changePasswordError = null) }
-            val result = repository.changePassword(current, newPass, confirm)
+            val result = if (hasPassword) {
+                repository.changePassword(current, newPass, confirm)
+            } else {
+                repository.setPassword(newPass, confirm)
+            }
             _uiState.update { it.copy(changePasswordLoading = false) }
 
             if (result.result == WebServiceHelper.ServiceCallStatus.Success) {
@@ -282,7 +296,7 @@ class SettingsViewModel(application: Application) : AndroidViewModel(application
                     val responseJson = JSONObject(result.responseContent ?: "{}")
                     val isError = responseJson.optBoolean("error", false)
                     if (!isError) {
-                        val msg = responseJson.optString("msg", responseJson.optString("message", "Password updated successfully."))
+                        val msg = responseJson.optString("msg", responseJson.optString("message", if (hasPassword) "Password updated successfully." else "Password set successfully."))
                         _uiState.update {
                             it.copy(
                                 isChangePasswordOpen = false,
@@ -293,17 +307,14 @@ class SettingsViewModel(application: Application) : AndroidViewModel(application
                                 isInfoDialogOpen = true,
                                 dialogTitle = "Success",
                                 dialogMessage = msg,
-                                isSuccessMessage = true
+                                isSuccessMessage = true,
+                                security = it.security?.copy(hasPassword = true, flow = "change")
                             )
                         }
+                        // Refresh overview to sync security state
+                        loadOverview(isRefresh = true)
                     } else {
-                        val errorsArr = responseJson.optJSONArray("errors")
-                        val errorMsg = if (errorsArr != null && errorsArr.length() > 0) {
-                            val firstErr = errorsArr.optJSONObject(0)
-                            firstErr?.optString("msg", firstErr.optString("message", "Failed to update password.")) ?: "Failed to update password."
-                        } else {
-                            responseJson.optString("msg", responseJson.optString("message", "Failed to update password."))
-                        }
+                        val errorMsg = AndroidUtils.extractCleanErrorMessage(result.responseContent)
                         _uiState.update { it.copy(changePasswordError = errorMsg) }
                     }
                 } catch (e: Exception) {
@@ -311,18 +322,7 @@ class SettingsViewModel(application: Application) : AndroidViewModel(application
                 }
             } else {
                 val errorMsg = if (!result.responseContent.isNullOrBlank()) {
-                    try {
-                        val responseJson = JSONObject(result.responseContent)
-                        val errorsArr = responseJson.optJSONArray("errors")
-                        if (errorsArr != null && errorsArr.length() > 0) {
-                            val firstErr = errorsArr.optJSONObject(0)
-                            firstErr?.optString("msg", firstErr.optString("message", "Failed to update password.")) ?: "Failed to update password."
-                        } else {
-                            responseJson.optString("msg", responseJson.optString("message", "Failed to update password."))
-                        }
-                    } catch (e: Exception) {
-                        result.responseContent ?: "Failed to update password."
-                    }
+                    AndroidUtils.extractCleanErrorMessage(result.responseContent)
                 } else {
                     Constants.NO_INTERNET_MSG
                 }
@@ -331,24 +331,37 @@ class SettingsViewModel(application: Application) : AndroidViewModel(application
         }
     }
 
-    private fun initiateCheckout() {
+    private fun initiateCheckout(isCancel: Boolean = false) {
         viewModelScope.launch {
-            _uiState.update { it.copy(checkoutLoading = true) }
+            if (isCancel) {
+                _uiState.update { it.copy(cancelSubscriptionLoading = true) }
+            } else {
+                _uiState.update { it.copy(checkoutLoading = true) }
+            }
             val result = repository.generateCheckoutTicket()
-            _uiState.update { it.copy(checkoutLoading = false) }
+            _uiState.update { it.copy(checkoutLoading = false, cancelSubscriptionLoading = false) }
 
             if (result.result == WebServiceHelper.ServiceCallStatus.Success) {
                 try {
                     val responseJson = JSONObject(result.responseContent ?: "{}")
                     val isError = responseJson.optBoolean("error", false)
-                    val ticket = responseJson.optString("ticket", "")
+                    val dataObj = responseJson.optJSONObject("data")
+                    val ticket = responseJson.optString("ticket").ifEmpty {
+                        responseJson.optString("checkout_ticket").ifEmpty {
+                            dataObj?.optString("ticket")?.ifEmpty {
+                                dataObj?.optString("checkout_ticket")
+                            } ?: ""
+                        }
+                    }
+
                     if (!isError && ticket.isNotBlank()) {
                         val baseUrl = when {
                             Constants.ISPRODUCTION -> "https://payment.lexiz.ai/plans?ticket="
                             Constants.IS_STAGING -> "https://staging2.payment.lexiz.ai/plans?ticket="
                             else -> "https://dev2.payment.lexiz.ai/plans?ticket="
                         }
-                        val fullUrl = "$baseUrl$ticket"
+                        val encodedTicket = java.net.URLEncoder.encode(ticket, "UTF-8")
+                        val fullUrl = "$baseUrl$encodedTicket"
                         _uiState.update {
                             it.copy(
                                 checkoutTicket = ticket,
@@ -357,32 +370,43 @@ class SettingsViewModel(application: Application) : AndroidViewModel(application
                             )
                         }
                     } else {
-                        val email = (Constants.FirmEmail?.ifEmpty { Constants.Email } ?: Constants.Email ?: "").lowercase(java.util.Locale.getDefault())
-                        val fallbackUrl = "${Constants.paymentUrl}=$email&users=${Constants.User_Allowed}"
+                        val errorMsg = responseJson.optString("msg", responseJson.optString("message", "Unable to generate checkout ticket. Please try again."))
                         _uiState.update {
                             it.copy(
-                                checkoutUrl = fallbackUrl,
-                                isExternalCheckoutBottomSheetOpen = true
+                                isInfoDialogOpen = true,
+                                dialogTitle = "Subscription Checkout",
+                                dialogMessage = errorMsg,
+                                isSuccessMessage = false
                             )
                         }
                     }
                 } catch (e: Exception) {
-                    val email = (Constants.FirmEmail?.ifEmpty { Constants.Email } ?: Constants.Email ?: "").lowercase(java.util.Locale.getDefault())
-                    val fallbackUrl = "${Constants.paymentUrl}=$email&users=${Constants.User_Allowed}"
                     _uiState.update {
                         it.copy(
-                            checkoutUrl = fallbackUrl,
-                            isExternalCheckoutBottomSheetOpen = true
+                            isInfoDialogOpen = true,
+                            dialogTitle = "Subscription Checkout",
+                            dialogMessage = "Failed to process checkout response.",
+                            isSuccessMessage = false
                         )
                     }
                 }
             } else {
-                val email = (Constants.FirmEmail?.ifEmpty { Constants.Email } ?: Constants.Email ?: "").lowercase(java.util.Locale.getDefault())
-                val fallbackUrl = "${Constants.paymentUrl}=$email&users=${Constants.User_Allowed}"
+                val errorMsg = if (!result.responseContent.isNullOrBlank()) {
+                    try {
+                        val j = JSONObject(result.responseContent)
+                        j.optString("msg", j.optString("message", "Unable to connect to payment service."))
+                    } catch (e: Exception) {
+                        result.responseContent ?: "Unable to connect to payment service."
+                    }
+                } else {
+                    Constants.NO_INTERNET_MSG
+                }
                 _uiState.update {
                     it.copy(
-                        checkoutUrl = fallbackUrl,
-                        isExternalCheckoutBottomSheetOpen = true
+                        isInfoDialogOpen = true,
+                        dialogTitle = "Subscription Checkout",
+                        dialogMessage = errorMsg,
+                        isSuccessMessage = false
                     )
                 }
             }
@@ -392,11 +416,20 @@ class SettingsViewModel(application: Application) : AndroidViewModel(application
     private fun submitDeleteAccount() {
         val email = _uiState.value.deleteAccountConfirmationEmail.trim()
         if (email.isEmpty()) {
-            _uiState.update { it.copy(deleteAccountError = "Please enter your email to confirm.") }
+            _uiState.update { it.copy(deleteAccountError = "Please type in your email to confirm.") }
             return
         }
         if (!android.util.Patterns.EMAIL_ADDRESS.matcher(email).matches()) {
             _uiState.update { it.copy(deleteAccountError = "Please enter a valid email address.") }
+            return
+        }
+
+        val registeredEmail = (Constants.Email?.ifEmpty { null }
+            ?: getApplication<Application>().getSharedPreferences("MyPrefs", Context.MODE_PRIVATE).getString("email", null)
+            ?: "").trim().lowercase(java.util.Locale.getDefault())
+
+        if (registeredEmail.isNotEmpty() && !email.equals(registeredEmail, ignoreCase = true)) {
+            _uiState.update { it.copy(deleteAccountError = "Entered email does not match your account email.") }
             return
         }
 
@@ -421,7 +454,7 @@ class SettingsViewModel(application: Application) : AndroidViewModel(application
                     _uiState.update {
                         it.copy(
                             isInfoDialogOpen = true,
-                            dialogTitle = "Success",
+                            dialogTitle = if (!isError) "Success" else "Error",
                             dialogMessage = msg,
                             isSuccessMessage = !isError,
                             shouldLogoutOnDismiss = !isError

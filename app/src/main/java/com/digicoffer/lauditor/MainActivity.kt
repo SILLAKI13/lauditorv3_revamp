@@ -76,8 +76,10 @@ import com.digicoffer.lauditor.CommonFiles.GlobalFiles.AndroidUtils
 import com.digicoffer.lauditor.CommonFiles.GlobalFiles.Constants
 import com.digicoffer.lauditor.CommonFiles.GlobalFiles.Constants.KPICARDS
 import com.digicoffer.lauditor.CommonFiles.GlobalFiles.Constants.MYDAYCARDS
+import com.digicoffer.lauditor.CommonFiles.GlobalFiles.DeviceSyncManager
 import com.digicoffer.lauditor.CommonFiles.GlobalFiles.DynamicUtils
 import com.digicoffer.lauditor.CommonFiles.GlobalFiles.NewModel
+import com.digicoffer.lauditor.CommonFiles.GlobalFiles.SubscriptionAccessManager
 import com.digicoffer.lauditor.CommonFiles.PushNotifications.MyFirebaseMessagingService
 import com.digicoffer.lauditor.CommonFiles.TermsAndCondition.TermsAndCondition
 import com.digicoffer.lauditor.Dashboard.DahboardModels.MenuModels
@@ -241,7 +243,6 @@ class MainActivity : AppCompatActivity(), Dashboard.MenuHighlightListener, Month
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         MyFirebaseMessagingService.initNotificationChannel(this)
-        Constants.is_active = true
         val wasColdStart = Constants.TOKEN.isNullOrEmpty()
         
         if (wasColdStart) {
@@ -261,6 +262,10 @@ class MainActivity : AppCompatActivity(), Dashboard.MenuHighlightListener, Month
         Constants.check_url()
         Constants.base_URL = Constants.PROF_URL
         Constants.PROBIZ_TYPE = "PROFESSIONAL"
+        if (!Constants.TOKEN.isNullOrEmpty()) {
+            saveXmppPreferences()
+            DeviceSyncManager.syncDevice(this)
+        }
         
         var coldStartNav = intent?.getStringExtra("fcm_navigation")
         if (coldStartNav == null) coldStartNav = intent?.getStringExtra("navigation")
@@ -1167,7 +1172,36 @@ class MainActivity : AppCompatActivity(), Dashboard.MenuHighlightListener, Month
         }
     }
 
+    fun checkPlanAccess(fragment: Fragment): Boolean {
+        val moduleName = when (fragment) {
+            is Matter -> "matter"
+            is DocumentsEn -> "documents"
+            is DocEditor -> "doc_editor"
+            is ClientRelationship -> "relationships"
+            is TimeSheets -> "timesheet"
+            is Meetings, is MonthlyCalendar, is WeeklyCalendar -> "meetings"
+            is Appointments -> "appointments"
+            is Chat, is MessagesList -> "messages"
+            is Groups -> "groups"
+            is Members -> "team_members"
+            is ViewInvoice -> "invoice"
+            is Email -> "email"
+            is AuditTrails -> "audit"
+            is FirmProfile, is Settings -> "profile"
+            else -> null
+        }
+        if (moduleName != null) {
+            val isRestricted = SubscriptionAccessManager.checkAndShowPopup(this, moduleName)
+            if (isRestricted) {
+                dLayout.closeDrawers()
+                return false
+            }
+        }
+        return true
+    }
+
     private fun navigateFromSub(parentView: View, fragment: Fragment) {
+        if (!checkPlanAccess(fragment)) return
         setActiveParent(parentView)
         Constants.isCreate = false
         if (currentActiveSubItem != null) {
@@ -1209,10 +1243,6 @@ class MainActivity : AppCompatActivity(), Dashboard.MenuHighlightListener, Month
                 else if ("Practice Partner" == subText) Constants.Profile_View = "Pp"
             }
         }
-//        if (!Constants.is_active) {
-//            AndroidUtils.showRenewalPopup(this)
-//            return
-//        }
         supportFragmentManager.beginTransaction()
             .replace(R.id.id_framelayout, fragment)
             .addToBackStack("current_fragment")
@@ -1221,6 +1251,7 @@ class MainActivity : AppCompatActivity(), Dashboard.MenuHighlightListener, Month
     }
 
     private fun doNavigate(fragment: Fragment) {
+        if (!checkPlanAccess(fragment)) return
         Constants.isCreate = false
         supportFragmentManager.beginTransaction()
             .replace(R.id.id_framelayout, fragment)
@@ -1281,6 +1312,7 @@ class MainActivity : AppCompatActivity(), Dashboard.MenuHighlightListener, Month
     }
 
     fun navigation_items(fragment: Fragment) {
+        if (!checkPlanAccess(fragment)) return
         Constants.isCreate = false
         checkMenuByFragment(fragment)
         ensureSubMenuExpansionForFragment(fragment)
@@ -1291,7 +1323,16 @@ class MainActivity : AppCompatActivity(), Dashboard.MenuHighlightListener, Month
         dLayout.closeDrawers()
     }
 
+    fun navigateToSettings() {
+        collapseAllSubMenus()
+        if (::sm_settings.isInitialized) {
+            setActiveParent(sm_settings)
+        }
+        navigation_items(Settings())
+    }
+
     fun navigationToModules(fragment: Fragment) {
+        if (!checkPlanAccess(fragment)) return
         Constants.isCreate = true
         checkMenuByFragment(fragment)
         ensureSubMenuExpansionForFragment(fragment)
@@ -1619,15 +1660,13 @@ class MainActivity : AppCompatActivity(), Dashboard.MenuHighlightListener, Month
     fun performLogout() {
         MyFirebaseMessagingService.logoutToken(this, getStoredFCMToken())
         MyFirebaseMessagingService.clearAllNotifications(this)
+        ChatConnection.resetInstance()
+        chatConnectionService?.stopSelf()
+        chatConnectionService = null
         Constants.isClient_chat = true
-        getSharedPreferences("MyPrefs", Context.MODE_PRIVATE).edit()
-            .remove("firm_image")
-            .remove("firmNames").remove("requiresTermsAcceptance")
-            .remove("termsVersion").remove("firmIds").apply()
-        PreferenceManager.getDefaultSharedPreferences(applicationContext).edit()
-            .remove("EXTRA_CONTACT_JID").remove("CURRENTCHAT_JID")
-            .remove("firmNames").remove("requiresTermsAcceptance")
-            .remove("termsVersion").remove("firmIds").apply()
+        getSharedPreferences("MyPrefs", Context.MODE_PRIVATE).edit().clear().apply()
+        getSharedPreferences("BIO", Context.MODE_PRIVATE).edit().clear().apply()
+        PreferenceManager.getDefaultSharedPreferences(applicationContext).edit().clear().apply()
         Constants.Chat_id = ""
         Constants.fromjid = ""
         Constants.Firm_ids.clear()
@@ -1638,8 +1677,12 @@ class MainActivity : AppCompatActivity(), Dashboard.MenuHighlightListener, Month
         Constants.NAME = ""
         Constants.NAME_NEW = ""
         Constants.FIRM_NAME = ""
+        Constants.UID = ""
+        Constants.USER_ID = ""
+        Constants.TOKEN = ""
         Constants.ContactName = ""
         Constants.firmProfileModel = null
+        Constants.is_biometric = false
         AppImageCache.clearAll()
         try {
             com.bumptech.glide.Glide.get(applicationContext).clearMemory()
@@ -1651,9 +1694,6 @@ class MainActivity : AppCompatActivity(), Dashboard.MenuHighlightListener, Month
         } catch (e: Exception) {
             e.printStackTrace()
         }
-        getSharedPreferences("MyPrefs", Context.MODE_PRIVATE).edit().clear().apply()
-        getSharedPreferences("BIO", Context.MODE_PRIVATE).edit().clear().apply()
-        Constants.is_biometric = false
         startActivity(Intent(this@MainActivity, LoginActivity::class.java))
         finish()
     }
@@ -1894,17 +1934,39 @@ class MainActivity : AppCompatActivity(), Dashboard.MenuHighlightListener, Month
             setActiveParent(sm_appointments)
             doNavigate(Appointments())
         }
-        setRowClick(sm_matter) { toggleSubMenu(sm_matter) }
-        setRowClick(sm_documents) { toggleSubMenu(sm_documents) }
+        setRowClick(sm_matter) {
+            if (SubscriptionAccessManager.checkAndShowPopup(this, "matter")) {
+                dLayout.closeDrawers()
+                return@setRowClick
+            }
+            toggleSubMenu(sm_matter)
+        }
+        setRowClick(sm_documents) {
+            if (SubscriptionAccessManager.checkAndShowPopup(this, "documents")) {
+                dLayout.closeDrawers()
+                return@setRowClick
+            }
+            toggleSubMenu(sm_documents)
+        }
         setRowClick(sm_docEditor) {
             collapseAllSubMenus()
             setActiveParent(sm_docEditor)
             doNavigate(DocEditor())
         }
-        setRowClick(sm_relationships) { toggleSubMenu(sm_relationships) }
+        setRowClick(sm_relationships) {
+            if (SubscriptionAccessManager.checkAndShowPopup(this, "relationships")) {
+                dLayout.closeDrawers()
+                return@setRowClick
+            }
+            toggleSubMenu(sm_relationships)
+        }
 
         if (isSolo) {
             setRowClick(sm_timesheet) {
+                if (SubscriptionAccessManager.checkAndShowPopup(this, "timesheet")) {
+                    dLayout.closeDrawers()
+                    return@setRowClick
+                }
                 collapseAllSubMenus()
                 setActiveParent(sm_timesheet)
                 Constants.Timesheet_Card = "Myts"
@@ -1913,7 +1975,13 @@ class MainActivity : AppCompatActivity(), Dashboard.MenuHighlightListener, Month
                 doNavigate(TimeSheets())
             }
         } else {
-            setRowClick(sm_timesheet) { toggleSubMenu(sm_timesheet) }
+            setRowClick(sm_timesheet) {
+                if (SubscriptionAccessManager.checkAndShowPopup(this, "timesheet")) {
+                    dLayout.closeDrawers()
+                    return@setRowClick
+                }
+                toggleSubMenu(sm_timesheet)
+            }
         }
 
         setRowClick(sm_meetings) {
@@ -1931,6 +1999,10 @@ class MainActivity : AppCompatActivity(), Dashboard.MenuHighlightListener, Month
 
         if ("AAM" == Constants.ROLE) {
             setRowClick(sm_messages) {
+                if (SubscriptionAccessManager.checkAndShowPopup(this, "messages")) {
+                    dLayout.closeDrawers()
+                    return@setRowClick
+                }
                 collapseAllSubMenus()
                 setActiveParent(sm_messages)
                 Constants.isClient_chat = false
@@ -1938,13 +2010,23 @@ class MainActivity : AppCompatActivity(), Dashboard.MenuHighlightListener, Month
             }
         } else if (isSolo) {
             setRowClick(sm_messages) {
+                if (SubscriptionAccessManager.checkAndShowPopup(this, "messages")) {
+                    dLayout.closeDrawers()
+                    return@setRowClick
+                }
                 collapseAllSubMenus()
                 setActiveParent(sm_messages)
                 Constants.isClient_chat = true
                 doNavigate(Chat())
             }
         } else {
-            setRowClick(sm_messages) { toggleSubMenu(sm_messages) }
+            setRowClick(sm_messages) {
+                if (SubscriptionAccessManager.checkAndShowPopup(this, "messages")) {
+                    dLayout.closeDrawers()
+                    return@setRowClick
+                }
+                toggleSubMenu(sm_messages)
+            }
         }
 
         setRowClick(sm_notification) {
@@ -2192,14 +2274,21 @@ class MainActivity : AppCompatActivity(), Dashboard.MenuHighlightListener, Month
     }
 
     private fun saveXmppPreferences() {
-        var uid = Constants.UID
-        if (!Constants.ROLE.equals("admin", ignoreCase = true)) uid = uid + "_" + Constants.USER_ID
+        var uid = Constants.UID ?: ""
+        if (!Constants.ROLE.equals("admin", ignoreCase = true)) {
+            val userId = Constants.USER_ID ?: ""
+            if (userId.isNotEmpty() && !uid.endsWith("_$userId")) {
+                uid = "${uid}_$userId"
+            }
+        }
+        val token = Constants.TOKEN ?: ""
         PreferenceManager.getDefaultSharedPreferences(applicationContext).edit()
             .putString("xmpp_jid", uid)
-            .putString("xmpp_password", Constants.TOKEN)
+            .putString("xmpp_password", token)
             .putBoolean("xmpp_logged_in", true).apply()
         mConnection = ChatConnection(this)
         chatConnectionService = ChatConnectionService()
+        ChatConnection.loginUser(this, uid, token)
         JsonTask().execute(Constants.base_URL + "user/create/")
     }
 
@@ -2342,6 +2431,9 @@ class MainActivity : AppCompatActivity(), Dashboard.MenuHighlightListener, Month
             Constants.TOKEN = d.optString("access_token")
             val sub = d.optJSONObject("subscription")
             if (sub != null) {
+                Constants.is_active = sub.optBoolean("is_active", true)
+                Constants.SUB_MODEL = sub.optString("sub_model").ifEmpty { sub.optString("plan").ifEmpty { sub.optJSONObject("plan")?.optString("key") ?: "" } }
+                Constants.PLAN_NAME = sub.optString("plan_name").ifEmpty { sub.optString("name").ifEmpty { sub.optJSONObject("plan")?.optString("name") ?: "" } }
                 val feat = sub.optJSONObject("features")
                 if (feat != null) {
                     Constants.FEATURES.clear()
@@ -2351,7 +2443,6 @@ class MainActivity : AppCompatActivity(), Dashboard.MenuHighlightListener, Month
                         Constants.FEATURES[key] = feat.optBoolean(key, false)
                     }
                 }
-                Constants.is_active = true
             }
             Constants.User_Allowed = d.optInt("user_allowed")
             Constants.isAdmin = Constants.ROLE == "AAM" || (Constants.Groups.length() == 1 && Constants.Groups.getString(0) == "AAM")
@@ -2478,6 +2569,9 @@ class MainActivity : AppCompatActivity(), Dashboard.MenuHighlightListener, Month
     override fun onResume() {
         super.onResume()
         updateTopBarProfile()
+        if (!Constants.TOKEN.isNullOrEmpty() && (ChatConnection.mConnection == null || !ChatConnection.mConnection!!.isAuthenticated)) {
+            saveXmppPreferences()
+        }
         if (!Constants.pendingFcmNavigation.isNullOrEmpty()) {
             val nav = Constants.pendingFcmNavigation
             Constants.pendingFcmNavigation = ""

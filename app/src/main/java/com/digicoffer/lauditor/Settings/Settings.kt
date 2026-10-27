@@ -63,4 +63,11 @@ class Settings : Fragment() {
             }
         }
     }
+
+    override fun onResume() {
+        super.onResume()
+        if (::viewModel.isInitialized) {
+            viewModel.loadOverview(isRefresh = true)
+        }
+    }
 }

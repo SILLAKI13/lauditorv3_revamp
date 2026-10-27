@@ -18,24 +18,52 @@ open class RetrievePDFfromUrl(
     private var isCancelled = false
 
     override fun doInBackground(vararg strings: String): InputStream? {
-        var inputStream: InputStream? = null
+        if (strings.isEmpty() || strings[0].isNullOrEmpty()) return null
+        var currentUrl = strings[0]
+        var redirectCount = 0
         try {
-            val url = URL(strings[0])
-            val urlConnection = url.openConnection() as HttpsURLConnection
-            if (urlConnection.responseCode == 200) {
-                inputStream = BufferedInputStream(urlConnection.inputStream)
+            while (redirectCount < 5 && !isCancelled) {
+                val url = URL(currentUrl)
+                val conn = url.openConnection() as? java.net.HttpURLConnection ?: return null
+                conn.instanceFollowRedirects = true
+                conn.connectTimeout = 15000
+                conn.readTimeout = 30000
+                val code = conn.responseCode
+                if (code == java.net.HttpURLConnection.HTTP_MOVED_PERM ||
+                    code == java.net.HttpURLConnection.HTTP_MOVED_TEMP ||
+                    code == 307 || code == 308
+                ) {
+                    val location = conn.getHeaderField("Location") ?: break
+                    currentUrl = location
+                    redirectCount++
+                    conn.disconnect()
+                } else if (code == java.net.HttpURLConnection.HTTP_OK) {
+                    return BufferedInputStream(conn.inputStream)
+                } else {
+                    break
+                }
             }
-        } catch (e: IOException) {
+        } catch (e: Exception) {
             e.fillInStackTrace()
             return null
         }
-        return inputStream
+        return null
     }
 
     override fun onPostExecute(inputStream: InputStream?) {
-        pdfView?.fromStream(inputStream)?.load()
-        progressBar?.visibility = View.GONE
-        pdfView?.visibility = View.VISIBLE
+        try {
+            if (inputStream != null && pdfView != null && !isCancelled) {
+                pdfView?.fromStream(inputStream)
+                    ?.onLoad { progressBar?.visibility = View.GONE }
+                    ?.onError { progressBar?.visibility = View.GONE }
+                    ?.load()
+                pdfView?.visibility = View.VISIBLE
+            }
+        } catch (e: Exception) {
+            e.printStackTrace()
+        } finally {
+            progressBar?.visibility = View.GONE
+        }
     }
 
     fun cancelLoading() {

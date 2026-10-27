@@ -238,12 +238,10 @@ class MeetingsRepository(private val context: Context) {
     suspend fun deleteEvent(eventId: String, recurringChoice: String?, eventDeleteScope: String?): HttpResultDo = suspendCancellableCoroutine { continuation ->
         try {
             val postData = JSONObject().apply {
-                if (!recurringChoice.isNullOrEmpty()) {
-                    put("choice", recurringChoice)
-                }
-                if (!eventDeleteScope.isNullOrEmpty()) {
-                    put("event_delete_scope", eventDeleteScope)
-                }
+                val choice = if (!recurringChoice.isNullOrEmpty()) recurringChoice else "this"
+                put("choice", choice)
+                val scope = if (!eventDeleteScope.isNullOrEmpty()) eventDeleteScope else "DELETE_EVENT_ONLY"
+                put("event_delete_scope", scope)
             }
             WebServiceHelper.callHttpWebService(
                 object : AsyncTaskCompleteListener {
@@ -434,6 +432,30 @@ class MeetingsRepository(private val context: Context) {
                 WebServiceHelper.RestMethodType.GET,
                 meetingLinkUrl,
                 "CREATE_MEETING_LINK",
+                JSONObject().toString()
+            )
+        } catch (e: Exception) {
+            val failedResult = HttpResultDo().apply {
+                result = WebServiceHelper.ServiceCallStatus.Exception
+                responseContent = e.message ?: ""
+            }
+            continuation.resume(failedResult)
+        }
+    }
+
+    suspend fun viewDocument(docId: String): HttpResultDo = suspendCancellableCoroutine { continuation ->
+        try {
+            WebServiceHelper.callHttpWebService(
+                object : AsyncTaskCompleteListener {
+                    override fun onAsyncTaskComplete(httpResult: HttpResultDo) {
+                        continuation.resume(httpResult)
+                    }
+                    override fun onClick(view: View) {}
+                },
+                context,
+                WebServiceHelper.RestMethodType.GET,
+                "v3/document/$docId/view",
+                "Display Documents",
                 JSONObject().toString()
             )
         } catch (e: Exception) {

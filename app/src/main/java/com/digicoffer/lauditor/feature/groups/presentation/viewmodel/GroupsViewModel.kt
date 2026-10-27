@@ -104,15 +104,31 @@ class GroupsViewModel(application: Application) : AndroidViewModel(application) 
             if (httpResult.result == WebServiceHelper.ServiceCallStatus.Success) {
                 try {
                     val result = JSONObject(httpResult.responseContent ?: "")
-                    val data = result.getJSONObject("data")
-                    val users = data.getJSONArray("users")
+                    val data = result.optJSONObject("data")
+                    val users = data?.optJSONArray("users") ?: result.optJSONArray("users") ?: JSONArray()
                     val parsedList = ArrayList<GroupModel>()
                     for (i in 0 until users.length()) {
-                        val jsonObject = users.getJSONObject(i)
+                        val jsonObject = users.optJSONObject(i) ?: continue
+                        val memberGroups = jsonObject.optJSONArray("groups")
+                        var isSystemRestricted = false
+                        var reason = ""
+                        if (memberGroups != null) {
+                            for (g in 0 until memberGroups.length()) {
+                                val gObj = memberGroups.optJSONObject(g)
+                                val gName = gObj?.optString("name").orEmpty()
+                                if (gName.equals("AAM", ignoreCase = true) || gName.equals("SuperUser", ignoreCase = true)) {
+                                    isSystemRestricted = true
+                                    reason = "System generated user - $gName"
+                                    break
+                                }
+                            }
+                        }
                         val groupModel = GroupModel().apply {
-                            id = jsonObject.getString("id")
-                            name = jsonObject.getString("name")
+                            id = jsonObject.optString("id")
+                            name = jsonObject.optString("name")
                             isenabled = true
+                            isRestricted = isSystemRestricted
+                            restrictedReason = reason
                         }
                         parsedList.add(groupModel)
                     }
@@ -140,7 +156,11 @@ class GroupsViewModel(application: Application) : AndroidViewModel(application) 
                 members = membersArray
             )
             _uiState.update { it.copy(isLoading = false) }
-            handleResponse(httpResult, event.onSuccess)
+            handleResponse(
+                httpResult = httpResult,
+                defaultSuccessMsg = "You have successfully created ${event.name}.",
+                onSuccess = event.onSuccess
+            )
         }
     }
 
@@ -149,7 +169,11 @@ class GroupsViewModel(application: Application) : AndroidViewModel(application) 
             _uiState.update { it.copy(isLoading = true) }
             val httpResult = repository.deleteGroup(id = event.id, groupHead = event.groupHead)
             _uiState.update { it.copy(isLoading = false) }
-            handleResponse(httpResult, event.onSuccess)
+            handleResponse(
+                httpResult = httpResult,
+                defaultSuccessMsg = "You have successfully deleted the group.",
+                onSuccess = event.onSuccess
+            )
         }
     }
 
@@ -158,7 +182,11 @@ class GroupsViewModel(application: Application) : AndroidViewModel(application) 
             _uiState.update { it.copy(isLoading = true) }
             val httpResult = repository.updateGroup(id = event.id, name = event.name, description = event.description)
             _uiState.update { it.copy(isLoading = false) }
-            handleResponse(httpResult, event.onSuccess)
+            handleResponse(
+                httpResult = httpResult,
+                defaultSuccessMsg = "You have successfully updated the group information.",
+                onSuccess = event.onSuccess
+            )
         }
     }
 
@@ -170,7 +198,16 @@ class GroupsViewModel(application: Application) : AndroidViewModel(application) 
             }
             val httpResult = repository.updateGroupMembers(id = event.id, members = membersArray)
             _uiState.update { it.copy(isLoading = false) }
-            handleResponse(httpResult, event.onSuccess)
+            val successMsg = if (event.groupName.isNotBlank()) {
+                "Congratulations!!\nYou have successfully updated group members list of ${event.groupName} group."
+            } else {
+                "You have successfully updated group members list."
+            }
+            handleResponse(
+                httpResult = httpResult,
+                defaultSuccessMsg = successMsg,
+                onSuccess = event.onSuccess
+            )
         }
     }
 
@@ -179,7 +216,11 @@ class GroupsViewModel(application: Application) : AndroidViewModel(application) 
             _uiState.update { it.copy(isLoading = true) }
             val httpResult = repository.updateGroupHead(id = event.id, groupHead = event.groupHead)
             _uiState.update { it.copy(isLoading = false) }
-            handleResponse(httpResult, event.onSuccess)
+            handleResponse(
+                httpResult = httpResult,
+                defaultSuccessMsg = "You have successfully updated the group head.",
+                onSuccess = event.onSuccess
+            )
         }
     }
 
@@ -258,17 +299,32 @@ class GroupsViewModel(application: Application) : AndroidViewModel(application) 
         }
     }
 
-    private fun handleResponse(httpResult: HttpResultDo, onSuccess: () -> Unit) {
+    private fun handleResponse(
+        httpResult: HttpResultDo,
+        defaultSuccessMsg: String = "Operation completed successfully",
+        onSuccess: () -> Unit
+    ) {
         try {
-            if (httpResult.result == WebServiceHelper.ServiceCallStatus.Success) {
-                val result = JSONObject(httpResult.responseContent ?: "")
+            val statusCode = httpResult.status_code
+            val isSuccessStatus = (statusCode in 200..299) || (statusCode == 0 && httpResult.result == WebServiceHelper.ServiceCallStatus.Success)
+
+            if (isSuccessStatus) {
+                val result = JSONObject(httpResult.responseContent ?: "{}")
                 if (result.has("errors")) {
                     val jsonArray = result.getJSONArray("errors")
                     val iserror = jsonArray.getJSONObject(0)
                     val msg = iserror.getString("msg")
                     _uiState.update { it.copy(toastMessage = msg) }
+                } else if (result.optBoolean("error", false)) {
+                    val msg = result.optString("msg").ifEmpty { "Operation failed" }
+                    _uiState.update { it.copy(toastMessage = msg) }
                 } else {
-                    val msg = result.optString("msg").ifEmpty { "Operation completed successfully" }
+                    val serverMsg = result.optString("msg")
+                    val msg = if (defaultSuccessMsg != "Operation completed successfully") {
+                        defaultSuccessMsg
+                    } else {
+                        serverMsg.ifEmpty { defaultSuccessMsg }
+                    }
                     _uiState.update { it.copy(toastMessage = msg) }
                     onSuccess()
                     loadGroups()
@@ -278,16 +334,29 @@ class GroupsViewModel(application: Application) : AndroidViewModel(application) 
                 _uiState.update { it.copy(toastMessage = errMsg) }
             }
         } catch (e: Exception) {
-            _uiState.update { it.copy(toastMessage = e.message ?: "Connection error") }
+            _uiState.update { it.copy(toastMessage = parseErrorMessage(httpResult.responseContent)) }
         }
     }
 
     private fun parseErrorMessage(content: String?): String {
         return try {
-            val obj = JSONObject(content ?: "")
-            obj.optString("msg", "Request failed")
+            val trimmed = content?.trim().orEmpty()
+            if (trimmed.startsWith("{")) {
+                val obj = JSONObject(trimmed)
+                if (obj.has("errors")) {
+                    val arr = obj.optJSONArray("errors")
+                    if (arr != null && arr.length() > 0) {
+                        return arr.getJSONObject(0).optString("msg", "Request failed")
+                    }
+                }
+                obj.optString("msg", "Request failed")
+            } else if (trimmed.isNotEmpty()) {
+                trimmed
+            } else {
+                "Request failed"
+            }
         } catch (e: Exception) {
-            content ?: "Connection error"
+            content?.takeIf { it.isNotBlank() } ?: "Connection error"
         }
     }
 }

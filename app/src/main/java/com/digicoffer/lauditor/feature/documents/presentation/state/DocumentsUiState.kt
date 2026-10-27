@@ -39,6 +39,7 @@ data class DocumentsUiState(
     val isUploading: Boolean = false,
     val alertTitle: String? = null,
     val alertMessage: String? = null,
+    val alertRedirectionModule: String? = null,
     val toastMessage: String? = null,
 
     // Dialog controllers

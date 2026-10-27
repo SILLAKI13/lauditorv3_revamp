@@ -15,8 +15,7 @@ class NetworkUtils {
                 if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
                     val activeNetwork = cm.activeNetwork ?: return false
                     val capabilities = cm.getNetworkCapabilities(activeNetwork) ?: return false
-                    capabilities.hasCapability(NetworkCapabilities.NET_CAPABILITY_INTERNET) &&
-                            capabilities.hasCapability(NetworkCapabilities.NET_CAPABILITY_VALIDATED)
+                    capabilities.hasCapability(NetworkCapabilities.NET_CAPABILITY_INTERNET)
                 } else {
                     @Suppress("DEPRECATION")
                     val activeNetworkInfo = cm.activeNetworkInfo

@@ -18,6 +18,7 @@ sealed interface GroupsUiEvent {
     data class DeleteGroup(
         val id: String,
         val groupHead: String,
+        val groupName: String = "",
         val onSuccess: () -> Unit
     ) : GroupsUiEvent
 
@@ -31,6 +32,7 @@ sealed interface GroupsUiEvent {
     data class UpdateGroupMembers(
         val id: String,
         val members: List<String>,
+        val groupName: String = "",
         val onSuccess: () -> Unit
     ) : GroupsUiEvent
 

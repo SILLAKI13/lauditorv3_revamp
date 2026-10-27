@@ -45,6 +45,7 @@ fun NonSubmittedScreen(
     modifier: Modifier = Modifier
 ) {
     val datesList = uiState.weekDateInfo?.weekDates ?: emptyList()
+    val context = androidx.compose.ui.platform.LocalContext.current
     val daysOfWeek = listOf("Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun")
 
     val dailyGroups = daysOfWeek.mapIndexed { idx, day ->
@@ -341,7 +342,12 @@ fun NonSubmittedScreen(
                         // Save Button
                         AppButton(
                             text = "Save",
-                            onClick = { onEvent(TimesheetsUiEvent.SaveTimesheet) },
+                            onClick = {
+                                val activity = context as? android.app.Activity
+                                if (!AndroidUtils.checkSubPlanValidation(activity, "timesheet")) {
+                                    onEvent(TimesheetsUiEvent.SaveTimesheet)
+                                }
+                            },
                             enabled = isFormEnabled,
                             containerColor = Color(0xFF004D87),
                             contentColor = Color.White,
@@ -405,7 +411,12 @@ fun NonSubmittedScreen(
                     ) {
                         AppButton(
                             text = stringResource(id = R.string.submit),
-                            onClick = { onEvent(TimesheetsUiEvent.SubmitTimesheets) },
+                            onClick = {
+                                val activity = context as? android.app.Activity
+                                if (!AndroidUtils.checkSubPlanValidation(activity, "timesheet")) {
+                                    onEvent(TimesheetsUiEvent.SubmitTimesheets)
+                                }
+                            },
                             containerColor = Color(0xFF004D87),
                             contentColor = Color.White,
                             shape = RoundedCornerShape(8.dp),

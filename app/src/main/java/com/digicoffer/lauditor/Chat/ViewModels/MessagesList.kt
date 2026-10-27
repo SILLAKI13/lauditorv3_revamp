@@ -193,11 +193,31 @@ class MessagesList(
             if (ChatConnectionService.getState() == ChatConnection.ConnectionState.CONNECTED) {
                 Log.d("MessagesList", "Sending message: $text")
 
+                var uid = Constants.UID ?: ""
+                if (!Constants.ROLE.equals("admin", ignoreCase = true)) {
+                    val userId = Constants.USER_ID ?: ""
+                    if (userId.isNotEmpty() && !uid.endsWith("_$userId")) {
+                        uid = "${uid}_$userId"
+                    }
+                }
+                if (uid.isNotEmpty()) {
+                    currentJid = if (uid.contains("@")) uid.split("@")[0] else uid
+                }
+
+                val firmName = Constants.FIRM_NAME ?: ""
+                val constName = Constants.NAME ?: ""
+                val constNameNew = Constants.NAME_NEW ?: ""
+                val name = if (Constants.USER_ID == "admin") {
+                    firmName.ifEmpty { "Admin" }
+                } else {
+                    val currentName = constName.ifEmpty { constNameNew }
+                    currentName.ifEmpty { firmName.ifEmpty { "User" } }
+                }
+                val subject = "$name ##$currentJid## #N#$name#N#"
+
                 val intent = Intent(ChatConnectionService.SEND_MESSAGE).apply {
                     putExtra(ChatConnectionService.BUNDLE_MESSAGE_BODY, text)
                     putExtra(ChatConnectionService.BUNDLE_TO, contactJid)
-                    val name = if (Constants.USER_ID == "admin") Constants.FIRM_NAME else Constants.NAME
-                    val subject = "$name ##$currentJid## #N#$name#N#"
                     putExtra(ChatConnectionService.BUNDLE_MESSAGE_SUBJECT, subject)
                 }
                 activity?.sendBroadcast(intent)
@@ -235,8 +255,15 @@ class MessagesList(
             contact_type = bundle.getString("EXTRA_CONTACT_TYPE") ?: ""
         }
 
+        var uid = Constants.UID ?: ""
+        if (!Constants.ROLE.equals("admin", ignoreCase = true)) {
+            val userId = Constants.USER_ID ?: ""
+            if (userId.isNotEmpty() && !uid.endsWith("_$userId")) {
+                uid = "${uid}_$userId"
+            }
+        }
         val pref = PreferenceManager.getDefaultSharedPreferences(requireContext())
-        currentJid = pref.getString("xmpp_jid", null) ?: ""
+        currentJid = if (uid.isNotEmpty()) uid else (pref.getString("xmpp_jid", null) ?: "")
         pref.edit().putString("CURRENTCHAT_JID", contactJid).apply()
 
         Log.d("IDS..", "contactJid=$contactJid currentJid=$currentJid")

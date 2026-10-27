@@ -76,7 +76,8 @@ class MatterEditViewModel(application: Application) : AndroidViewModel(applicati
         _uiState.update {
             it.copy(
                 showSuccessDialog = false,
-                successMessage = ""
+                successMessage = "",
+                toastMessage = null
             )
         }
     }
@@ -221,13 +222,25 @@ class MatterEditViewModel(application: Application) : AndroidViewModel(applicati
                         val jsonObject = docsArr.optJSONObject(i) ?: continue
                         val doc = com.digicoffer.lauditor.Documents.Models.DocumentsModel()
                         doc.docid = jsonObject.optString("docid")
-                        doc.name = jsonObject.optString("name")
+                        doc.name = jsonObject.optString("name").ifEmpty { jsonObject.optString("filename") }
                         doc.description = jsonObject.optString("description")
                         doc.user_id = jsonObject.optString("user_id")
                         doc.doctype = jsonObject.optString("doctype")
                         doc.tags_list = jsonObject.optJSONObject("tags") ?: JSONObject()
-                        doc.contentType = jsonObject.optString("contentType")
-                        doc.filename = jsonObject.optString("filename")
+                        val rawCt = jsonObject.optString("content_type").ifEmpty { jsonObject.optString("contentType") }
+                        doc.filename = jsonObject.optString("filename").ifEmpty { jsonObject.optString("name") }
+                        if (rawCt.isEmpty() || rawCt.equals("application/octet-stream", ignoreCase = true)) {
+                            val ext = doc.filename.substringAfterLast('.', "").lowercase(Locale.ROOT)
+                            doc.contentType = if (listOf("jpg", "jpeg", "png", "gif", "webp", "bmp", "svg", "apng", "avif").contains(ext)) {
+                                if (ext == "jpg") "image/jpeg" else "image/$ext"
+                            } else if (ext == "pdf") {
+                                "application/pdf"
+                            } else {
+                                rawCt
+                            }
+                        } else {
+                            doc.contentType = rawCt
+                        }
                         doc.viewUrl = jsonObject.optString("viewUrl")
                         doc.isIs_encrypted = jsonObject.optBoolean("is_encrypted")
                         doc.isIs_password = jsonObject.optBoolean("is_password")
@@ -511,11 +524,24 @@ class MatterEditViewModel(application: Application) : AndroidViewModel(applicati
             val jsonObject = docsArr.optJSONObject(i) ?: continue
             val doc = com.digicoffer.lauditor.Documents.Models.DocumentsModel()
             doc.docid = jsonObject.optString("docid")
-            doc.name = jsonObject.optString("name")
+            doc.name = jsonObject.optString("name").ifEmpty { jsonObject.optString("filename") }
+            doc.filename = jsonObject.optString("filename").ifEmpty { jsonObject.optString("name") }
             doc.user_id = jsonObject.optString("user_id")
             doc.doctype = jsonObject.optString("doctype")
             doc.tags_list = jsonObject.optJSONObject("tags") ?: JSONObject()
-            doc.contentType = jsonObject.optString("contentType")
+            val rawCt = jsonObject.optString("content_type").ifEmpty { jsonObject.optString("contentType") }
+            if (rawCt.isEmpty() || rawCt.equals("application/octet-stream", ignoreCase = true)) {
+                val ext = doc.filename.substringAfterLast('.', "").lowercase(Locale.ROOT)
+                doc.contentType = if (listOf("jpg", "jpeg", "png", "gif", "webp", "bmp", "svg", "apng", "avif").contains(ext)) {
+                    if (ext == "jpg") "image/jpeg" else "image/$ext"
+                } else if (ext == "pdf") {
+                    "application/pdf"
+                } else {
+                    rawCt
+                }
+            } else {
+                doc.contentType = rawCt
+            }
             doc.viewUrl = jsonObject.optString("viewUrl")
             doc.isIs_encrypted = jsonObject.optBoolean("is_encrypted")
             doc.isIs_password = jsonObject.optBoolean("is_password")
@@ -823,11 +849,15 @@ class MatterEditViewModel(application: Application) : AndroidViewModel(applicati
                         var createdId = _uiState.value.createdMatterId
                         if (isInitialCreate) {
                             val newId = saveJson.optString("matter_id").ifEmpty {
-                                saveJson.optJSONObject("data")?.optString("id") ?: ""
+                                saveJson.optString("id").ifEmpty {
+                                    saveJson.optJSONObject("data")?.optString("id")
+                                        ?: saveJson.optJSONObject("matter")?.optString("id") ?: ""
+                                }
                             }
                             if (newId.isNotEmpty()) {
                                 createdId = newId
                                 Constants.Matter_id = newId
+                                Constants.MATTER_TYPE = _uiState.value.matterType
                             }
                         }
 
@@ -1160,34 +1190,57 @@ class MatterEditViewModel(application: Application) : AndroidViewModel(applicati
                 val result = searchEntityApi(query)
                 if (result.result == WebServiceHelper.ServiceCallStatus.Success) {
                     val json = JSONObject(result.responseContent ?: "")
-                    val clientsJson = json.optJSONArray("clients") ?: JSONArray()
-                    val list = mutableListOf<ClientsModel>()
-                    for (i in 0 until clientsJson.length()) {
-                        val obj = clientsJson.optJSONObject(i) ?: continue
-                        val model = ClientsModel()
-                        model.client_id = obj.optString("client_id")
-                        model.client_name = obj.optString("client_name")
-                        model.client_type = obj.optString("type")
-                        list.add(model)
-                    }
-                    if (list.isEmpty()) {
-                        _uiState.update { 
-                            it.copy(
-                                searchResults = emptyList(), 
-                                isSearchingClient = false,
-                                clientNotFoundQuery = query,
-                                isAddClientFormVisible = true
-                            ) 
+                    if (!json.optBoolean("error", false)) {
+                        val clientsJson = json.optJSONArray("clients") ?: JSONArray()
+                        val list = mutableListOf<ClientsModel>()
+                        for (i in 0 until clientsJson.length()) {
+                            val obj = clientsJson.optJSONObject(i) ?: continue
+                            val id = obj.optString("client_id").ifEmpty {
+                                obj.optString("id").ifEmpty {
+                                    obj.optString("_id")
+                                }
+                            }
+                            val name = obj.optString("client_name").ifEmpty {
+                                obj.optString("name").ifEmpty {
+                                    obj.optString("fullname")
+                                }
+                            }
+                            val type = obj.optString("type").ifEmpty {
+                                obj.optString("client_type", "consumer")
+                            }
+                            val sendRequest = obj.optBoolean("send_request", false)
+
+                            val model = ClientsModel().apply {
+                                this.client_id = id
+                                this.client_name = name
+                                this.client_type = type
+                                this.send_request = sendRequest
+                            }
+                            list.add(model)
+                        }
+                        if (list.isEmpty()) {
+                            _uiState.update { 
+                                it.copy(
+                                    searchResults = emptyList(), 
+                                    isSearchingClient = false,
+                                    clientNotFoundQuery = query,
+                                    isAddClientFormVisible = true
+                                ) 
+                            }
+                        } else {
+                            _uiState.update { 
+                                it.copy(
+                                    searchResults = list, 
+                                    isSearchingClient = false,
+                                    clientNotFoundQuery = null,
+                                    isAddClientFormVisible = false
+                                ) 
+                            }
                         }
                     } else {
-                        _uiState.update { 
-                            it.copy(
-                                searchResults = list, 
-                                isSearchingClient = false,
-                                clientNotFoundQuery = null,
-                                isAddClientFormVisible = false
-                            ) 
-                        }
+                        val errMsg = json.optString("msg", "Search failed")
+                        _uiState.update { it.copy(isSearchingClient = false) }
+                        AndroidUtils.showToast(errMsg, getApplication())
                     }
                 } else {
                     _uiState.update { it.copy(isSearchingClient = false) }
@@ -1451,6 +1504,46 @@ class MatterEditViewModel(application: Application) : AndroidViewModel(applicati
 
     fun addClient(client: ClientsModel) {
         val currentSelected = _uiState.value.selectedClients.toMutableList()
+        val newClientType = client.client_type ?: "consumer"
+        val corporateAlreadySelected = currentSelected.any { "corporate".equals(it.client_type, ignoreCase = true) }
+        val otherClientsAlreadySelected = currentSelected.any { !"corporate".equals(it.client_type, ignoreCase = true) }
+
+        if ("corporate".equals(newClientType, ignoreCase = true) && corporateAlreadySelected) {
+            _uiState.update {
+                it.copy(
+                    alertTitle = "Alert !",
+                    alertMessage = "Multi Corporate Client Selection Not Allowed",
+                    searchQuery = "",
+                    searchResults = emptyList()
+                )
+            }
+            return
+        }
+
+        if (!"corporate".equals(newClientType, ignoreCase = true) && corporateAlreadySelected) {
+            _uiState.update {
+                it.copy(
+                    alertTitle = "Alert !",
+                    alertMessage = "This action is not allowed: corporate clients cannot be grouped with other clients.",
+                    searchQuery = "",
+                    searchResults = emptyList()
+                )
+            }
+            return
+        }
+
+        if ("corporate".equals(newClientType, ignoreCase = true) && otherClientsAlreadySelected) {
+            _uiState.update {
+                it.copy(
+                    alertTitle = "Alert !",
+                    alertMessage = "Corporate client can NOT be added when other clients are already selected",
+                    searchQuery = "",
+                    searchResults = emptyList()
+                )
+            }
+            return
+        }
+
         if (currentSelected.none { it.client_id == client.client_id }) {
             currentSelected.add(client)
             _uiState.update {
@@ -1521,14 +1614,15 @@ class MatterEditViewModel(application: Application) : AndroidViewModel(applicati
                 val clients = JSONArray()
                 var corpClientId = ""
                 for (c in _uiState.value.selectedClients) {
-                    if (c.client_type == "corporate") {
-                        corpClientId = c.client_id ?: ""
-                    } else {
-                        val obj = JSONObject()
-                        obj.put("id", c.client_id)
-                        obj.put("type", c.client_type ?: "consumer")
-                        clients.put(obj)
+                    val cid = c.client_id ?: ""
+                    val ctype = (c.client_type ?: "consumer").lowercase(Locale.ROOT)
+                    if (ctype == "corporate") {
+                        corpClientId = cid
                     }
+                    val obj = JSONObject()
+                    obj.put("id", cid)
+                    obj.put("type", ctype)
+                    clients.put(obj)
                 }
 
                 val members = JSONArray()
@@ -1547,6 +1641,9 @@ class MatterEditViewModel(application: Application) : AndroidViewModel(applicati
                     if (!json.optBoolean("error", false)) {
                         val msg = json.optString("msg")
                         
+                        Constants.clientList = clients
+                        Constants.corpclientList = if (corpClientId.isNotEmpty()) JSONArray().apply { put(corpClientId) } else JSONArray()
+
                         val infoEn = Constants.matterInformation_en
                         if (infoEn != null) {
                             val list = infoEn.matterArraylist
@@ -1581,21 +1678,110 @@ class MatterEditViewModel(application: Application) : AndroidViewModel(applicati
                             }
                         }
 
+                        callClientCheckRequests()
+
                         if (msg.isNotEmpty()) {
                             _uiState.update { it.copy(toastMessage = msg) }
                         }
 
                         onNavigate()
                     } else {
-                        val msg = json.optString("msg")
-                        _uiState.update { it.copy(errorMessage = msg, alertTitle = "Error", alertMessage = msg) }
+                        val errorMsg = if (json.has("errors")) {
+                            val errorsArr = json.optJSONArray("errors")
+                            val sb = StringBuilder()
+                            if (errorsArr != null) {
+                                for (i in 0 until errorsArr.length()) {
+                                    val err = errorsArr.optJSONObject(i)
+                                    val m = err?.optString("msg") ?: ""
+                                    if (m.isNotEmpty()) {
+                                        if (sb.isNotEmpty()) sb.append("\n")
+                                        sb.append(m)
+                                    }
+                                }
+                            }
+                            sb.toString().ifEmpty { json.optString("msg", "Failed to Update Legal Matter.") }
+                        } else {
+                            json.optString("msg").ifEmpty {
+                                json.optString("message", if (result.errorMessage.isNullOrEmpty()) "Failed to Update Legal Matter." else result.errorMessage)
+                            }
+                        }
+                        _uiState.update { it.copy(errorMessage = errorMsg, alertTitle = "Error", alertMessage = errorMsg) }
                     }
                 } else {
-                    _uiState.update { it.copy(errorMessage = "Save operation failed, try again") }
+                    val failMsg = result.errorMessage ?: result.responseContent ?: "Save operation failed, try again"
+                    _uiState.update { it.copy(errorMessage = failMsg, alertTitle = "Error", alertMessage = failMsg) }
                 }
             } catch (e: Exception) {
                 android.util.Log.e("MatterEditViewModel", "Error in saveClientsAndMembers", e)
-                _uiState.update { it.copy(isLoading = false, errorMessage = "Error saving: ${e.message}") }
+                val exMsg = "Error saving: ${e.message}"
+                _uiState.update { it.copy(isLoading = false, errorMessage = exMsg, alertTitle = "Error", alertMessage = exMsg) }
+            }
+        }
+    }
+
+    private fun callClientCheckRequests() {
+        for (model in _uiState.value.selectedClients) {
+            if (model.send_request == true) {
+                callClientRequests(model)
+            }
+        }
+    }
+
+    private fun callClientRequests(selectedClient: ClientsModel) {
+        val clientId = selectedClient.client_id ?: return
+        val clientType = selectedClient.client_type ?: "consumer"
+        val postdata = JSONObject()
+        viewModelScope.launch {
+            try {
+                when {
+                    "corporate".equals(clientType, ignoreCase = true) -> {
+                        postdata.put("entityId", clientId)
+                        postdata.put("description", "Description")
+                        WebServiceHelper.callHttpWebService(
+                            object : AsyncTaskCompleteListener {
+                                override fun onAsyncTaskComplete(httpResult: HttpResultDo) {}
+                                override fun onClick(view: View) {}
+                            },
+                            getApplication(),
+                            WebServiceHelper.RestMethodType.POST,
+                            "v3/corporate",
+                            "Send Entity Request",
+                            postdata.toString()
+                        )
+                    }
+                    "entity".equals(clientType, ignoreCase = true) -> {
+                        postdata.put("entityId", clientId)
+                        postdata.put("description", "Description")
+                        WebServiceHelper.callHttpWebService(
+                            object : AsyncTaskCompleteListener {
+                                override fun onAsyncTaskComplete(httpResult: HttpResultDo) {}
+                                override fun onClick(view: View) {}
+                            },
+                            getApplication(),
+                            WebServiceHelper.RestMethodType.POST,
+                            "v2/relationship/request/entity",
+                            "Send Entity Request",
+                            postdata.toString()
+                        )
+                    }
+                    else -> {
+                        postdata.put("consumerId", clientId)
+                        postdata.put("description", "Description")
+                        WebServiceHelper.callHttpWebService(
+                            object : AsyncTaskCompleteListener {
+                                override fun onAsyncTaskComplete(httpResult: HttpResultDo) {}
+                                override fun onClick(view: View) {}
+                            },
+                            getApplication(),
+                            WebServiceHelper.RestMethodType.POST,
+                            "v2/relationship/request/consumer",
+                            "Send Entity Request",
+                            postdata.toString()
+                        )
+                    }
+                }
+            } catch (e: Exception) {
+                android.util.Log.e("MatterEditViewModel", "Error sending client request", e)
             }
         }
     }
@@ -1646,8 +1832,18 @@ class MatterEditViewModel(application: Application) : AndroidViewModel(applicati
         postdata.put("members", members)
         postdata.put("corporate", corpClientId)
         
-        val matterType = (Constants.MATTER_TYPE ?: "").lowercase(Locale.ROOT)
-        val matterId = (Constants.Matter_id ?: "")
+        val matterType = _uiState.value.matterType.lowercase(Locale.ROOT).ifEmpty {
+            (Constants.MATTER_TYPE ?: "legal").lowercase(Locale.ROOT)
+        }
+        val matterId = (Constants.Matter_id ?: "").ifEmpty {
+            _uiState.value.createdMatterId ?: ""
+        }
+        if (Constants.Matter_id.isNullOrEmpty() && matterId.isNotEmpty()) {
+            Constants.Matter_id = matterId
+        }
+        if (Constants.MATTER_TYPE.isNullOrEmpty() && matterType.isNotEmpty()) {
+            Constants.MATTER_TYPE = matterType
+        }
         
         WebServiceHelper.callHttpWebService(
             object : AsyncTaskCompleteListener {
@@ -1667,8 +1863,29 @@ class MatterEditViewModel(application: Application) : AndroidViewModel(applicati
     // Step 3 (Documents) Methods
     fun addUploadFile(file: File, name: String = file.name) {
         val baseName = name.substringBeforeLast('.', missingDelimiterValue = name)
+        val ext = file.extension.lowercase(Locale.ROOT)
+        val detectedContentType = when (ext) {
+            "jpg", "jpeg" -> "image/jpeg"
+            "png" -> "image/png"
+            "webp" -> "image/webp"
+            "gif" -> "image/gif"
+            "svg" -> "image/svg+xml"
+            "pdf" -> "application/pdf"
+            "xls" -> "application/vnd.ms-excel"
+            "xlsx" -> "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
+            "doc" -> "application/msword"
+            "docx" -> "application/vnd.openxmlformats-officedocument.wordprocessingml.document"
+            "ppt" -> "application/vnd.ms-powerpoint"
+            "pptx" -> "application/vnd.openxmlformats-officedocument.presentationml.presentation"
+            "txt" -> "text/plain"
+            "csv" -> "text/csv"
+            else -> if (ext.isNotEmpty()) "application/$ext" else ""
+        }
         val docModel = com.digicoffer.lauditor.Documents.Models.DocumentsModel().apply {
             this.name = baseName
+            this.filename = file.name
+            this.contentType = detectedContentType
+            this.content_type = detectedContentType
             this.description = baseName
             this.expiration_date = ""
             this.file = file
@@ -1705,8 +1922,34 @@ class MatterEditViewModel(application: Application) : AndroidViewModel(applicati
                 }
 
                 val baseName = displayName.substringBeforeLast('.', missingDelimiterValue = displayName)
+                val ext = displayName.substringAfterLast('.', "").lowercase(Locale.ROOT)
+                val mime = contentResolver.getType(uri) ?: ""
+                val detectedContentType = if (mime.isNotEmpty()) {
+                    mime
+                } else {
+                    when (ext) {
+                        "jpg", "jpeg" -> "image/jpeg"
+                        "png" -> "image/png"
+                        "webp" -> "image/webp"
+                        "gif" -> "image/gif"
+                        "svg" -> "image/svg+xml"
+                        "pdf" -> "application/pdf"
+                        "xls" -> "application/vnd.ms-excel"
+                        "xlsx" -> "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
+                        "doc" -> "application/msword"
+                        "docx" -> "application/vnd.openxmlformats-officedocument.wordprocessingml.document"
+                        "ppt" -> "application/vnd.ms-powerpoint"
+                        "pptx" -> "application/vnd.openxmlformats-officedocument.presentationml.presentation"
+                        "txt" -> "text/plain"
+                        "csv" -> "text/csv"
+                        else -> if (ext.isNotEmpty()) "application/$ext" else ""
+                    }
+                }
                 val docModel = com.digicoffer.lauditor.Documents.Models.DocumentsModel().apply {
                     this.name = baseName
+                    this.filename = displayName
+                    this.contentType = detectedContentType
+                    this.content_type = detectedContentType
                     this.description = baseName
                     this.expiration_date = ""
                     this.file = tempFile
@@ -1770,9 +2013,21 @@ class MatterEditViewModel(application: Application) : AndroidViewModel(applicati
     fun viewDocument(doc: com.digicoffer.lauditor.Documents.Models.DocumentsModel) {
         val docFile = doc.file
         if (docFile != null && docFile.exists()) {
+            val effContentType = doc.content_type?.ifEmpty { null }
+                ?: doc.contentType?.ifEmpty { null }
+                ?: when (docFile.extension.lowercase(Locale.ROOT)) {
+                    "jpg", "jpeg" -> "image/jpeg"
+                    "png" -> "image/png"
+                    "webp" -> "image/webp"
+                    "gif" -> "image/gif"
+                    "svg" -> "image/svg+xml"
+                    "pdf" -> "application/pdf"
+                    else -> ""
+                }
             val viewDoc = com.digicoffer.lauditor.Documents.Models.ViewDocumentsModel().apply {
                 this.name = doc.name
-                this.content_type = doc.content_type ?: ""
+                this.filename = doc.filename.ifEmpty { docFile.name }
+                this.content_type = effContentType
             }
             _uiState.update { it.copy(previewDocUrl = "localfile://${docFile.absolutePath}", previewDocModel = viewDoc) }
             return
@@ -1804,8 +2059,20 @@ class MatterEditViewModel(application: Application) : AndroidViewModel(applicati
 
                     val dataObj = json.optJSONObject("data")
                     val rawUrl = dataObj?.optString("url") ?: json.optString("url")
-                    val rawContentType = dataObj?.optString("content_type")?.ifEmpty { doc.content_type } ?: doc.content_type ?: ""
-                    val rawFilename = dataObj?.optString("filename")?.ifEmpty { doc.name } ?: doc.name ?: ""
+                    var rawContentType = dataObj?.optString("content_type")?.ifEmpty { null }
+                        ?: dataObj?.optString("contentType")?.ifEmpty { null }
+                        ?: json.optString("content_type")?.ifEmpty { null }
+                        ?: json.optString("contentType")?.ifEmpty { null }
+                        ?: doc.content_type?.ifEmpty { null }
+                        ?: doc.contentType?.ifEmpty { null }
+                        ?: ""
+                    var rawFilename = dataObj?.optString("filename")?.ifEmpty { null }
+                        ?: dataObj?.optString("name")?.ifEmpty { null }
+                        ?: json.optString("filename")?.ifEmpty { null }
+                        ?: json.optString("name")?.ifEmpty { null }
+                        ?: doc.filename.ifEmpty { null }
+                        ?: doc.name
+                        ?: ""
 
                     if (isEncrypted) {
                         // 2️⃣ Encrypted document flow: Call Decrypt Doc API (Java/XML parity: POST v3/decrypt)
@@ -1816,14 +2083,28 @@ class MatterEditViewModel(application: Application) : AndroidViewModel(applicati
                             if (!isDecryptError) {
                                 val decryptData = decryptJson.optJSONObject("data")
                                 val decryptedUrl = decryptData?.optString("url") ?: decryptJson.optString("url")
-                                val decryptedFilename = decryptData?.optString("filename") ?: rawFilename
+                                val decryptedFilename = decryptData?.optString("filename")?.ifEmpty { null }
+                                    ?: decryptData?.optString("name")?.ifEmpty { null }
+                                    ?: rawFilename
+                                var decryptedContentType = decryptData?.optString("content_type")?.ifEmpty { null }
+                                    ?: decryptData?.optString("contentType")?.ifEmpty { null }
+                                    ?: rawContentType
 
                                 if (!decryptedUrl.isNullOrEmpty()) {
-                                    val lowerExt = (decryptedFilename.ifEmpty { doc.name ?: "" }).substringAfterLast('.', "").lowercase(Locale.ROOT)
-                                    val isImg = listOf("jpg", "jpeg", "png", "gif", "webp", "bmp", "svg", "apng", "avif").contains(lowerExt)
-                                    val isPdf = lowerExt == "pdf"
+                                    val lowerExt = decryptedFilename.substringAfterLast('.', "").lowercase(Locale.ROOT)
+                                    if (decryptedContentType.isEmpty() || decryptedContentType.equals("application/octet-stream", ignoreCase = true)) {
+                                        if (listOf("jpg", "jpeg", "png", "gif", "webp", "bmp", "svg", "apng", "avif").contains(lowerExt)) {
+                                            decryptedContentType = if (lowerExt == "jpg") "image/jpeg" else "image/$lowerExt"
+                                        } else if (lowerExt == "pdf") {
+                                            decryptedContentType = "application/pdf"
+                                        }
+                                    }
+
+                                    val isImg = decryptedContentType.startsWith("image/", ignoreCase = true) ||
+                                            listOf("jpg", "jpeg", "png", "gif", "webp", "bmp", "svg", "apng", "avif").contains(lowerExt)
+                                    val isPdf = decryptedContentType == "application/pdf" || lowerExt == "pdf"
                                     var finalUrl = decryptedUrl
-                                    var finalContentType = if (isImg) "image/$lowerExt" else "application/pdf"
+                                    var finalContentType = if (isImg) (if (decryptedContentType.startsWith("image/")) decryptedContentType else "image/$lowerExt") else "application/pdf"
                                     if (!isImg && !isPdf) {
                                         val converted = convertDocToPdfUrl(decryptedUrl)
                                         if (!converted.isNullOrEmpty()) {
@@ -1876,15 +2157,32 @@ class MatterEditViewModel(application: Application) : AndroidViewModel(applicati
                         if (!rawUrl.isNullOrEmpty()) {
                             val lowerUrl = rawUrl.lowercase(Locale.ROOT)
                             val lowerExt = rawFilename.substringAfterLast('.', "").lowercase(Locale.ROOT)
+
+                            if (rawContentType.isEmpty() || rawContentType.equals("application/octet-stream", ignoreCase = true)) {
+                                if (listOf("jpg", "jpeg", "png", "gif", "webp", "bmp", "svg", "apng", "avif").contains(lowerExt)) {
+                                    rawContentType = if (lowerExt == "jpg") "image/jpeg" else "image/$lowerExt"
+                                } else if (lowerExt == "pdf") {
+                                    rawContentType = "application/pdf"
+                                }
+                            }
+
                             val isImage = rawContentType.startsWith("image/", ignoreCase = true) ||
+                                    listOf("jpg", "jpeg", "png", "gif", "webp", "bmp", "svg", "apng", "avif").contains(lowerExt) ||
                                     lowerUrl.contains(".jpg") || lowerUrl.contains(".jpeg") ||
                                     lowerUrl.contains(".png") || lowerUrl.contains(".gif") ||
-                                    lowerUrl.contains(".webp") || listOf("jpg", "jpeg", "png", "gif", "webp", "svg", "avif", "apng").contains(lowerExt)
+                                    lowerUrl.contains(".webp") || lowerUrl.contains("response-content-type=image") ||
+                                    lowerUrl.contains("image%2f")
+
                             val isPdf = rawContentType == "application/pdf" || rawContentType.contains("pdf", ignoreCase = true) ||
-                                    lowerUrl.contains("application/pdf") || lowerUrl.contains(".pdf") || lowerExt == "pdf"
+                                    lowerExt == "pdf" || lowerUrl.contains("application/pdf") || lowerUrl.contains(".pdf")
 
                             var finalUrl = rawUrl
-                            var finalContentType = rawContentType
+                            var finalContentType = if (isImage && !rawContentType.startsWith("image/")) {
+                                if (lowerExt.isNotEmpty()) "image/$lowerExt" else "image/jpeg"
+                            } else {
+                                rawContentType
+                            }
+
                             var conversionCalled = false
                             if (!isImage && !isPdf) {
                                 conversionCalled = true
@@ -1907,7 +2205,7 @@ class MatterEditViewModel(application: Application) : AndroidViewModel(applicati
                             docId = $docId
                             displayName = ${doc.name}
                             originalFilename = $rawFilename
-                            contentType = $rawContentType
+                            contentType = $finalContentType
                             encrypted = $isEncrypted
                             view API called = true
                             decrypt API called = $isEncrypted
@@ -2168,7 +2466,10 @@ class MatterEditViewModel(application: Application) : AndroidViewModel(applicati
                                 val docid = resJson.getString("docid")
                                 val attachedDoc = com.digicoffer.lauditor.Documents.Models.DocumentsModel().apply {
                                     this.docid = docid
-                                    this.name = file.name
+                                    this.name = docModel.name
+                                    this.filename = file.name
+                                    this.contentType = contentType
+                                    this.content_type = contentType
                                     this.user_id = Constants.USER_ID ?: ""
                                     this.doctype = "general"
                                     this.description = docModel.description
@@ -2234,9 +2535,6 @@ class MatterEditViewModel(application: Application) : AndroidViewModel(applicati
                             toastMessage = msg,
                             selectedUploadFiles = emptyList()
                         )
-                    }
-                    if (msg.isNotBlank()) {
-                        AndroidUtils.showToast(msg, getApplication())
                     }
                     delay(1500)
                     onSuccess()

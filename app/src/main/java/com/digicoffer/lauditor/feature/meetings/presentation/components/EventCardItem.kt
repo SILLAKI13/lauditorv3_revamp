@@ -92,6 +92,7 @@ fun EventCardItem(
     onEditClick: () -> Unit,
     onDeleteClick: () -> Unit,
     onMeetingLinkClick: (String) -> Unit,
+    onViewDocument: ((docId: String, docName: String) -> Unit)? = null,
     modifier: Modifier = Modifier
 ) {
     val context = LocalContext.current
@@ -174,13 +175,25 @@ fun EventCardItem(
                     horizontalArrangement = Arrangement.SpaceBetween,
                     verticalAlignment = Alignment.CenterVertically
                 ) {
-                    Text(
-                        text = dateText,
-                        color = activeBlue,
-                        fontSize = 16.sp,
-                        fontWeight = FontWeight.Bold,
-                        fontFamily = FontFamily(Font(R.font.gill_sans_regular))
-                    )
+                    Row(
+                        verticalAlignment = Alignment.CenterVertically,
+                        modifier = Modifier.weight(1f, fill = false)
+                    ) {
+                        Image(
+                            painter = painterResource(id = R.drawable.calendar_icon),
+                            contentDescription = "Calendar",
+                            modifier = Modifier
+                                .size(18.dp)
+                                .padding(end = 6.dp)
+                        )
+                        Text(
+                            text = dateText,
+                            color = activeBlue,
+                            fontSize = 15.sp,
+                            fontWeight = FontWeight.Bold,
+                            fontFamily = FontFamily(Font(R.font.gill_sans_regular))
+                        )
+                    }
 
                     if (isOwner) {
                         Box {
@@ -403,7 +416,7 @@ fun EventCardItem(
                                 modifier = Modifier.padding(vertical = 2.dp)
                             ) {
                                 Image(
-                                    painter = painterResource(id = R.drawable.notify_bell_1),
+                                    painter = painterResource(id = R.drawable.ic_phone),
                                     contentDescription = "Dial-in",
                                     modifier = Modifier.size(16.dp),
                                     colorFilter = ColorFilter.tint(activeBlue)
@@ -426,7 +439,7 @@ fun EventCardItem(
                                 modifier = Modifier.padding(vertical = 2.dp)
                             ) {
                                 Image(
-                                    painter = painterResource(id = R.drawable.notify_bell_1),
+                                    painter = painterResource(id = R.drawable.location_icon),
                                     contentDescription = "Location",
                                     modifier = Modifier.size(16.dp),
                                     colorFilter = ColorFilter.tint(activeBlue)
@@ -590,12 +603,18 @@ fun EventCardItem(
                             Spacer(modifier = Modifier.height(4.dp))
                             for (a in 0 until attachments.length()) {
                                 val attObj = attachments.optJSONObject(a) ?: continue
-                                val docName = attObj.optString("name", "Document")
+                                val docName = attObj.optString("name", attObj.optString("filename", "Document"))
+                                val docId = attObj.optString("docid", attObj.optString("id", attObj.optString("guid", "")))
                                 Row(
                                     modifier = Modifier
                                         .fillMaxWidth()
                                         .padding(vertical = 2.dp)
                                         .background(Color(0xFFF5F5F5), RoundedCornerShape(6.dp))
+                                        .clickable {
+                                            if (docId.isNotEmpty()) {
+                                                onViewDocument?.invoke(docId, docName)
+                                            }
+                                        }
                                         .padding(horizontal = 10.dp, vertical = 6.dp),
                                     verticalAlignment = Alignment.CenterVertically,
                                     horizontalArrangement = Arrangement.SpaceBetween
@@ -610,7 +629,13 @@ fun EventCardItem(
                                     Image(
                                         painter = painterResource(id = R.drawable.eye_open),
                                         contentDescription = "View Doc",
-                                        modifier = Modifier.size(20.dp),
+                                        modifier = Modifier
+                                            .size(20.dp)
+                                            .clickable {
+                                                if (docId.isNotEmpty()) {
+                                                    onViewDocument?.invoke(docId, docName)
+                                                }
+                                            },
                                         colorFilter = ColorFilter.tint(activeBlue)
                                     )
                                 }

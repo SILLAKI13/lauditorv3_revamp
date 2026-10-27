@@ -1,5 +1,7 @@
 package com.digicoffer.lauditor.Dashboard.NewRevampViewModels
 
+import com.digicoffer.lauditor.CommonFiles.GlobalFiles.Constants
+import com.digicoffer.lauditor.CommonFiles.GlobalFiles.SubscriptionAccessManager
 import com.digicoffer.lauditor.Dashboard.DahboardModels.CardDataModels
 import com.digicoffer.lauditor.Notifications.Models.Navigation
 import org.json.JSONArray
@@ -550,6 +552,21 @@ class DashboardParser {
                     ctaData.action = cta.optString("action")
                     s.cta = ctaData
                 }
+
+                val isTrial = (s.model?.contains("three_month", ignoreCase = true) == true) ||
+                              (s.model?.contains("three_months", ignoreCase = true) == true) ||
+                              (s.planLabel?.contains("free trial", ignoreCase = true) == true)
+
+                val statusStr = d.optString("status", "")
+                val badgeLabel = d.optJSONObject("statusBadge")?.optString("label", "") ?: ""
+                val isStatusActive = statusStr.equals("Active", ignoreCase = true) || badgeLabel.equals("Active", ignoreCase = true)
+
+                val effectiveActive = if (isTrial || isStatusActive) true else (s.isActive && !s.isExpired)
+                SubscriptionAccessManager.updateSubscription(
+                    isActive = effectiveActive,
+                    subModel = s.model?.ifEmpty { null },
+                    planName = s.planLabel?.ifEmpty { null }
+                )
             }
 
             val item = DashboardItem(DashboardItem.TYPE_SUBSCRIPTION, s)

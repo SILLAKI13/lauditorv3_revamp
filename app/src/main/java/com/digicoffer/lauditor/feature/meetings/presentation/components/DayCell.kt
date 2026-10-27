@@ -33,15 +33,21 @@ fun DayCell(
     val textAndBorderColor = Color(0xFFC0C0C0)
     val defaultBackground = Color(0xFFF5F5F5)
 
-    val backgroundModifier = if (isSelected || isToday) {
-        Modifier.background(activeBlue, RoundedCornerShape(6.dp))
-    } else {
-        Modifier
+    val backgroundModifier = when {
+        isSelected -> Modifier.background(activeBlue, RoundedCornerShape(6.dp))
+        isToday -> Modifier
+            .background(defaultBackground, RoundedCornerShape(6.dp))
+            .border(1.dp, activeBlue, RoundedCornerShape(6.dp))
+        else -> Modifier
             .background(defaultBackground, RoundedCornerShape(6.dp))
             .border(0.5.dp, textAndBorderColor, RoundedCornerShape(6.dp))
     }
 
-    val textColor = if (isSelected || isToday) Color.White else Color.Black
+    val textColor = when {
+        isSelected -> Color.White
+        isToday -> activeBlue
+        else -> Color.Black
+    }
 
     Column(
         modifier = modifier
@@ -68,12 +74,12 @@ fun DayCell(
             Box(
                 modifier = Modifier
                     .size(18.dp)
-                    .background(Color.White, CircleShape),
+                    .background(if (isSelected) Color.White else activeBlue, CircleShape),
                 contentAlignment = Alignment.Center
             ) {
                 Text(
                     text = eventCount.toString(),
-                    color = activeBlue,
+                    color = if (isSelected) activeBlue else Color.White,
                     fontSize = 10.sp,
                     fontWeight = FontWeight.Bold,
                     fontFamily = FontFamily(Font(R.font.gill_sans_regular)),

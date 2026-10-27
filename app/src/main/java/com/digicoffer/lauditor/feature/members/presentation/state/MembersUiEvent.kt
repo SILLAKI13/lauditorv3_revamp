@@ -31,22 +31,27 @@ sealed interface MembersUiEvent {
 
     data class UpdateGroupAccess(
         val id: String,
+        val memberName: String = "",
         val groups: List<String>,
         val onSuccess: () -> Unit
     ) : MembersUiEvent
 
     data class ResetPassword(
         val memberId: String,
+        val memberName: String = "",
         val onSuccess: () -> Unit
     ) : MembersUiEvent
 
     data class DeleteMember(
         val id: String,
+        val memberName: String = "",
         val onSuccess: () -> Unit
     ) : MembersUiEvent
 
     data class UpgradePracticePartner(
         val id: String,
+        val memberName: String = "",
+        val email: String = "",
         val onSuccess: () -> Unit
     ) : MembersUiEvent
 }

@@ -42,7 +42,9 @@ sealed interface MeetingsUiEvent {
 
     // Dialog dismissal
     object DismissRecurrenceDialog : MeetingsUiEvent
+    data class RecurrenceDeleteChoiceSelected(val choice: String) : MeetingsUiEvent
     object DismissTimesheetConfirm : MeetingsUiEvent
+    object DismissDeleteConfirm : MeetingsUiEvent
 
     // Metadata loading for Form
     data class LoadMatters(val matterType: String) : MeetingsUiEvent
@@ -55,4 +57,8 @@ sealed interface MeetingsUiEvent {
 
     // Alerts Intents
     object DismissDialogs : MeetingsUiEvent
+
+    // Document Viewer
+    data class ViewDocument(val docId: String, val docName: String) : MeetingsUiEvent
+    object DismissDocumentViewer : MeetingsUiEvent
 }

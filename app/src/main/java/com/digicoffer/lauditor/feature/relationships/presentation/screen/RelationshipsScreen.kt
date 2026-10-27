@@ -80,7 +80,16 @@ fun RelationshipsScreen(
 ) {
     val uiState by viewModel.uiState.collectAsState()
 
-    var screenMode by remember { mutableStateOf(ScreenMode.LIST) }
+    var screenMode by remember {
+        mutableStateOf(
+            if (com.digicoffer.lauditor.CommonFiles.GlobalFiles.Constants.create_relationship) {
+                com.digicoffer.lauditor.CommonFiles.GlobalFiles.Constants.create_relationship = false
+                ScreenMode.CREATE
+            } else {
+                ScreenMode.LIST
+            }
+        )
+    }
 
     BackHandler(enabled = screenMode != ScreenMode.LIST) {
         if (screenMode == ScreenMode.SHARE_DOCS) {
@@ -251,7 +260,11 @@ fun RelationshipsScreen(
                             text = "Add Relationships",
                             iconRes = R.drawable.simple_plus_icon,
                             iconContentDescription = "Add",
-                            onClick = { screenMode = ScreenMode.CREATE }
+                            onClick = {
+                                if (!com.digicoffer.lauditor.CommonFiles.GlobalFiles.AndroidUtils.checkSubPlanValidation(context as? android.app.Activity, "relationships")) {
+                                    screenMode = ScreenMode.CREATE
+                                }
+                            }
                         )
                     }
 
