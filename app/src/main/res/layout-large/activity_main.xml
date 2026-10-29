@@ -124,19 +124,29 @@
                             android:id="@+id/sm_notification"
                             layout="@layout/menu_layout" />
 
-                        <!-- 12. Audit Trails -->
+                        <!-- 12. Settings -->
+                        <include
+                            android:id="@+id/sm_settings"
+                            layout="@layout/menu_layout" />
+
+                        <!-- 13. Audit Trails -->
                         <include
                             android:id="@+id/sm_audit"
                             layout="@layout/menu_layout" />
 
-                        <!-- 13. Groups -->
+                        <!-- 14. Groups -->
                         <include
                             android:id="@+id/sm_groups"
                             layout="@layout/menu_layout" />
 
-                        <!-- 14. Team Members -->
+                        <!-- 15. Team Members -->
                         <include
                             android:id="@+id/sm_team_member"
+                            layout="@layout/menu_layout" />
+
+                        <!-- 16. Invoices -->
+                        <include
+                            android:id="@+id/sm_invoice"
                             layout="@layout/menu_layout" />
 
                         <!-- Divider before logout -->
