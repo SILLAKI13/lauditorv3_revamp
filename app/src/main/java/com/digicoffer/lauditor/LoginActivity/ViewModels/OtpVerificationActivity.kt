@@ -1,6 +1,15 @@
 package com.digicoffer.lauditor.LoginActivity.ViewModels
 
 import android.app.Dialog
+import android.content.ActivityNotFoundException
+import android.content.BroadcastReceiver
+import android.content.IntentFilter
+import androidx.activity.result.ActivityResultLauncher
+import androidx.activity.result.contract.ActivityResultContracts
+import com.google.android.gms.auth.api.phone.SmsRetriever
+import com.google.android.gms.common.api.CommonStatusCodes
+import com.google.android.gms.common.api.Status
+import java.util.regex.Pattern
 import android.content.Context
 import android.content.Intent
 import android.content.SharedPreferences
@@ -48,6 +57,52 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 
 class OtpVerificationActivity : AppCompatActivity(), AsyncTaskCompleteListener, View.OnClickListener {
+    private var isSmsReceiverRegistered = false
+
+    private val smsConsentLauncher: ActivityResultLauncher<Intent> =
+        registerForActivityResult(ActivityResultContracts.StartActivityForResult()) { result ->
+            if (result.resultCode == RESULT_OK && result.data != null) {
+                val message = result.data?.getStringExtra(SmsRetriever.EXTRA_SMS_MESSAGE)
+                Log.d(TAG, "SMS User Consent received message: $message")
+                val extractedOtp = extractOtpFromMessage(message)
+                if (!extractedOtp.isNullOrEmpty() && extractedOtp.length == 6) {
+                    runOnUiThread {
+                        composeOtpValue = extractedOtp
+                        otp = extractedOtp
+                        Log.d(TAG, "Auto-filled OTP from SMS: $extractedOtp")
+                        window.decorView.postDelayed({
+                            verifyOtp()
+                        }, 400)
+                    }
+                }
+            } else {
+                Log.d(TAG, "SMS User Consent cancelled or denied by user")
+            }
+        }
+
+    private val smsVerificationReceiver = object : BroadcastReceiver() {
+        override fun onReceive(context: Context?, intent: Intent?) {
+            if (intent?.action == SmsRetriever.SMS_RETRIEVED_ACTION) {
+                val extras = intent.extras ?: return
+                val smsRetrieverStatus = extras.get(SmsRetriever.EXTRA_STATUS) as? Status
+                when (smsRetrieverStatus?.statusCode) {
+                    CommonStatusCodes.SUCCESS -> {
+                        val consentIntent = extras.getParcelable<Intent>(SmsRetriever.EXTRA_CONSENT_INTENT)
+                        try {
+                            if (consentIntent != null) {
+                                smsConsentLauncher.launch(consentIntent)
+                            }
+                        } catch (e: ActivityNotFoundException) {
+                            Log.e(TAG, "Activity not found for SMS consent intent", e)
+                        }
+                    }
+                    CommonStatusCodes.TIMEOUT -> {
+                        Log.d(TAG, "SMS User Consent retrieval timed out")
+                    }
+                }
+            }
+        }
+    }
 
     var otp = ""
     private var otpBox1: EditText? = null
@@ -143,6 +198,9 @@ class OtpVerificationActivity : AppCompatActivity(), AsyncTaskCompleteListener, 
 
         startResendTimer()
         canResend = false
+
+        registerSmsReceiver()
+        startSmsUserConsent()
     }
 
     private fun initializeViews() {}
@@ -637,6 +695,7 @@ class OtpVerificationActivity : AppCompatActivity(), AsyncTaskCompleteListener, 
                 AndroidUtils.showAlert(message, this)
                 clearOtpBoxes()
                 startResendTimer()
+                startSmsUserConsent()
             } else {
                 val errorMsg = result.optString("msg").ifEmpty { AndroidUtils.extractCleanErrorMessage(result.toString()) }
                 AndroidUtils.showAlert(errorMsg, this)
@@ -762,6 +821,7 @@ class OtpVerificationActivity : AppCompatActivity(), AsyncTaskCompleteListener, 
     }
 
     override fun onDestroy() {
+        unregisterSmsReceiver()
         resendTimer?.cancel()
         dismissDialog()
         super.onDestroy()
@@ -814,6 +874,68 @@ class OtpVerificationActivity : AppCompatActivity(), AsyncTaskCompleteListener, 
             }
             return ""
         }
+    }
+
+    private fun startSmsUserConsent() {
+        try {
+            SmsRetriever.getClient(this).startSmsUserConsent(null)
+                .addOnSuccessListener {
+                    Log.d(TAG, "SMS User Consent listener started successfully")
+                }
+                .addOnFailureListener { e ->
+                    Log.e(TAG, "Failed to start SMS User Consent listener", e)
+                }
+        } catch (e: Exception) {
+            Log.e(TAG, "Error initializing SmsRetriever client", e)
+        }
+    }
+
+    private fun registerSmsReceiver() {
+        if (!isSmsReceiverRegistered) {
+            try {
+                val intentFilter = IntentFilter(SmsRetriever.SMS_RETRIEVED_ACTION)
+                ContextCompat.registerReceiver(
+                    this,
+                    smsVerificationReceiver,
+                    intentFilter,
+                    SmsRetriever.SEND_PERMISSION,
+                    null,
+                    ContextCompat.RECEIVER_EXPORTED
+                )
+                isSmsReceiverRegistered = true
+                Log.d(TAG, "SMS receiver registered")
+            } catch (e: Exception) {
+                Log.e(TAG, "Failed to register SMS receiver", e)
+            }
+        }
+    }
+
+    private fun unregisterSmsReceiver() {
+        if (isSmsReceiverRegistered) {
+            try {
+                unregisterReceiver(smsVerificationReceiver)
+            } catch (e: Exception) {
+                Log.e(TAG, "Failed to unregister SMS receiver", e)
+            }
+            isSmsReceiverRegistered = false
+        }
+    }
+
+    private fun extractOtpFromMessage(message: String?): String? {
+        if (message.isNullOrBlank()) return null
+        // 1. Matches 6 consecutive digits that follow keywords like OTP, code, verification, pin
+        val keywordPattern = Pattern.compile("(?i)(?:otp|code|verification|pin)\\D*(\\d{6})")
+        val keywordMatcher = keywordPattern.matcher(message)
+        if (keywordMatcher.find()) {
+            return keywordMatcher.group(1)
+        }
+        // 2. Matches any standalone 6-digit number
+        val standalonePattern = Pattern.compile("\\b(\\d{6})\\b")
+        val standaloneMatcher = standalonePattern.matcher(message)
+        if (standaloneMatcher.find()) {
+            return standaloneMatcher.group(1)
+        }
+        return null
     }
 
     companion object {
