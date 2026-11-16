@@ -2314,7 +2314,7 @@ class MainActivity : AppCompatActivity(), Dashboard.MenuHighlightListener, Month
                     expandSubMenuIfNeeded(sm_timesheet)
                 }
                 DashboardItem.TYPE_HIRING -> targetMenu = sm_groups
-                DashboardItem.TYPE_SUBSCRIPTION -> targetMenu = sm_firmProfile
+                DashboardItem.TYPE_SUBSCRIPTION -> targetMenu = sm_settings
             }
             if (targetMenu != null) {
                 setActiveParent(targetMenu)

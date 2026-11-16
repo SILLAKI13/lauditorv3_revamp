@@ -24,6 +24,7 @@ import com.digicoffer.lauditor.Meetings.ViewModels.Meetings
 import com.digicoffer.lauditor.Notifications.Models.Navigation
 import com.digicoffer.lauditor.Notifications.Notifications
 import com.digicoffer.lauditor.R
+import com.digicoffer.lauditor.Settings.Settings
 import com.digicoffer.lauditor.TimeSheets.ViewModels.TimeSheets
 import com.digicoffer.lauditor.Webservice.AsyncTaskCompleteListener
 import com.digicoffer.lauditor.Webservice.HttpResultDo
@@ -77,8 +78,8 @@ class Dashboard : Fragment(), AsyncTaskCompleteListener, View.OnClickListener {
                         onCardNavigation = { cardType, nav, subType ->
                             handleNavigation(cardType, nav, subType)
                         },
-                        onPaySubscription = { planLabel, validityText ->
-                            launchPaySubscriptionPage(planLabel, validityText)
+                        onPaySubscription = { _, _ ->
+                            Constants.mainActivity?.navigateToSettings() ?: Page_Navigation(Settings())
                         },
                         modifier = Modifier
                     )
@@ -123,7 +124,7 @@ class Dashboard : Fragment(), AsyncTaskCompleteListener, View.OnClickListener {
                 DashboardItem.TYPE_MEETING -> Page_Navigation(Meetings())
                 DashboardItem.TYPE_APPOINTMENT -> Page_Navigation(Appointments())
                 DashboardItem.TYPE_SUBSCRIPTION -> {
-                    launchPaySubscriptionPage(null, null)
+                    Constants.mainActivity?.navigateToSettings() ?: Page_Navigation(Settings())
                 }
             }
         } catch (e: Exception) {
@@ -143,15 +144,7 @@ class Dashboard : Fragment(), AsyncTaskCompleteListener, View.OnClickListener {
 
     fun launchPaySubscriptionPage(email: String?, userCount: String?) {
         try {
-            val userEmail = email ?: ""
-            val count = userCount ?: ""
-            startActivityForResult(
-                Intent(
-                    Intent.ACTION_VIEW,
-                    Uri.parse("https://staging.payment.digicoffer.com/renew?useremail=$userEmail&users=$count")
-                ),
-                AUTH_REQUEST_CODE
-            )
+            Constants.mainActivity?.navigateToSettings() ?: Page_Navigation(Settings())
         } catch (e: Exception) {
             Log.e(TAG, "launchPaySubscriptionPage error", e)
         }
