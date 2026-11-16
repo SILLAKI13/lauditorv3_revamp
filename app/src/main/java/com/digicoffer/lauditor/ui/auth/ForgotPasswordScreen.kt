@@ -58,6 +58,7 @@ fun ForgotPasswordScreen(
     onFirmSelected: (String) -> Unit,
     awaitingFirmSelection: Boolean,
     isLoading: Boolean,
+    isCorporate: Boolean = com.digicoffer.lauditor.CommonFiles.GlobalFiles.Constants.isCorporate(),
     onSubmitClick: () -> Unit,
     onCancelClick: () -> Unit,
     modifier: Modifier = Modifier
@@ -106,8 +107,8 @@ fun ForgotPasswordScreen(
                 ) {
                     // Logo Image matching logo_layout.xml
                     Image(
-                        painter = painterResource(id = R.drawable.lex_z_lawyer_horizontal_tp),
-                        contentDescription = "Lex-Z Lawyers Logo",
+                        painter = painterResource(id = if (isCorporate) R.drawable.corp_app_logo else R.drawable.lex_z_lawyer_horizontal_tp),
+                        contentDescription = if (isCorporate) "Lex-Z Corporate Logo" else "Lex-Z Lawyers Logo",
                         modifier = Modifier
                             .padding(top = dimensionResource(id = R.dimen.ten_dp))
                             .width(dimensionResource(id = R.dimen.ThreeHundred_dp))

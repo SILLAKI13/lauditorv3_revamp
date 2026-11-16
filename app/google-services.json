@@ -61,6 +61,63 @@
           "other_platform_oauth_client": []
         }
       }
+    },
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:150510681156:android:4843438eb4ee1dc18d9011",
+        "android_client_info": {
+          "package_name": "com.digicoffer.corporate"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyD-JgLZbNTm0H_Jm2OriDo-EmLM8HMfJXo"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    },
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:150510681156:android:4843438eb4ee1dc18d9011",
+        "android_client_info": {
+          "package_name": "com.digicoffer.corporate.staging"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyD-JgLZbNTm0H_Jm2OriDo-EmLM8HMfJXo"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    },
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:150510681156:android:4843438eb4ee1dc18d9011",
+        "android_client_info": {
+          "package_name": "com.digicoffer.corporate.dev"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyD-JgLZbNTm0H_Jm2OriDo-EmLM8HMfJXo"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
     }
   ],
   "configuration_version": "1"

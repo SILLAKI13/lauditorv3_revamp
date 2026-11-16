@@ -194,6 +194,12 @@ class LoginActivity : AppCompatActivity(), AsyncTaskCompleteListener, View.OnCli
         initViews()
         setupListeners()
 
+        if (Constants.isCorporate()) {
+            isLoginMode = true
+            isPasswordMode = true
+            Constants.show_register = false
+        }
+
         Constants.ISPRODUCTION = false
         Constants.IS_STAGING = true
         FirebaseInitHelper.initializeFirebase(this)
@@ -574,7 +580,7 @@ class LoginActivity : AppCompatActivity(), AsyncTaskCompleteListener, View.OnCli
             Constants.base_URL = Constants.PROF_URL
 
             val postData = JSONObject()
-            postData.put("plan", "lauditor")
+            postData.put("plan", Constants.DEFAULT_PLAN)
 
             if (input.contains("@")) {
                 postData.put("email", input.lowercase())
@@ -628,7 +634,7 @@ class LoginActivity : AppCompatActivity(), AsyncTaskCompleteListener, View.OnCli
             val postData = JSONObject()
             postData.put("email", email.lowercase())
             postData.put("password", password)
-            postData.put("plan", "lauditor")
+            postData.put("plan", Constants.DEFAULT_PLAN)
 
             if (selectedFirmId.isNotEmpty()) {
                 postData.put("userid", selectedFirmId)
@@ -790,7 +796,7 @@ class LoginActivity : AppCompatActivity(), AsyncTaskCompleteListener, View.OnCli
             if (!result.getBoolean("error")) {
                 val probizData = JSONObject(result.getString("data"))
                 Constants.jsonObject_dashboard = probizData
-                if (!probizData.getString("plan").equals("lauditor", ignoreCase = true)) {
+                if (!probizData.getString("plan").equals(Constants.DEFAULT_PLAN, ignoreCase = true)) {
                     AndroidUtils.showAlert("Account not found", this)
                     return
                 }
@@ -805,6 +811,7 @@ class LoginActivity : AppCompatActivity(), AsyncTaskCompleteListener, View.OnCli
                     .putBoolean("isLogin", true)
                     .putString("login_method", Constants.LOGIN_METHOD)
                     .putString("proBizType", Constants.PROBIZ_TYPE)
+                    .putString("product_type", Constants.PRODUCT_TYPE)
                     .apply()
 
                 Constants.is_biometric = composeBiometricCheckedState
@@ -992,7 +999,7 @@ class LoginActivity : AppCompatActivity(), AsyncTaskCompleteListener, View.OnCli
         try {
             firmList.clear()
             val firmsObj = result.getJSONObject("firms")
-            val lauditorFirms = firmsObj.optJSONArray("lauditor")
+            val lauditorFirms = firmsObj.optJSONArray(Constants.DEFAULT_PLAN) ?: firmsObj.optJSONArray("lauditor")
 
             if (lauditorFirms != null && lauditorFirms.length() == 1) {
                 val obj = lauditorFirms.getJSONObject(0)
@@ -1006,7 +1013,7 @@ class LoginActivity : AppCompatActivity(), AsyncTaskCompleteListener, View.OnCli
                 postData.put("email", email.lowercase())
                 postData.put("password", password)
                 postData.put("userid", userId)
-                postData.put("plan", "lauditor")
+                postData.put("plan", Constants.DEFAULT_PLAN)
 
                 progressDialog = AndroidUtils.get_progress(this)
 

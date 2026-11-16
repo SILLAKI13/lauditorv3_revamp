@@ -516,7 +516,8 @@ class MainActivity : AppCompatActivity(), Dashboard.MenuHighlightListener, Month
         setupMenuRow(sm_messages, getString(R.string.messages), R.drawable.messages, hasMessagesSubMenu)
         setupMenuRow(sm_notification, getString(R.string.notifications), R.drawable.notifications, false)
         setupMenuRow(sm_audit, getString(R.string.audit_trails), R.drawable.audit_trails, false)
-        setupMenuRow(sm_groups, getString(R.string.groups), R.drawable.groups, false)
+        val groupsLabel = if (Constants.isCorporate()) "Departments" else getString(R.string.groups)
+        setupMenuRow(sm_groups, groupsLabel, R.drawable.groups, false)
         setupMenuRow(sm_team_member, getString(R.string.members), R.drawable.members, false)
         setupMenuRow(sm_invoice, "Invoices", R.drawable.invoices, false)
         setupMenuRow(sm_settings, getString(R.string.settings), R.drawable.ic_settings, false)
@@ -853,7 +854,8 @@ class MainActivity : AppCompatActivity(), Dashboard.MenuHighlightListener, Month
                 } else {
                     tv_pageName.text = item
                     tv_pageName.textSize = DynamicUtils.eighteen.toFloat()
-                    iv_logo_dashboard.setImageDrawable(getDrawable(R.drawable.lawyer_logo_nw))
+                    val logoRes = if (Constants.isCorporate()) R.drawable.corp_logo else R.drawable.lawyer_logo_nw
+                    iv_logo_dashboard.setImageDrawable(getDrawable(logoRes))
                 }
             }
             
@@ -1492,6 +1494,13 @@ class MainActivity : AppCompatActivity(), Dashboard.MenuHighlightListener, Month
                 sm_notification.visibility = View.VISIBLE
             }
         }
+        if (Constants.isCorporate()) {
+            sm_appointments.visibility = View.GONE
+            sm_timesheet.visibility = View.GONE
+            sm_invoice.visibility = View.GONE
+            sm_email.visibility = View.VISIBLE
+            sm_groups.visibility = View.VISIBLE
+        }
         sm_settings.visibility = View.VISIBLE
         updateSidebarUiState()
     }
@@ -1648,7 +1657,7 @@ class MainActivity : AppCompatActivity(), Dashboard.MenuHighlightListener, Month
             val post = JSONObject()
             post.put("email", Constants.Email)
             post.put("userid", Constants.Firm_id)
-            post.put("plan", "lauditor")
+            post.put("plan", Constants.DEFAULT_PLAN)
             WebServiceHelper.callHttpWebService(
                 this, this, WebServiceHelper.RestMethodType.POST, "switch-firm", "SWITCH_FIRM", post.toString()
             )
@@ -2091,7 +2100,8 @@ class MainActivity : AppCompatActivity(), Dashboard.MenuHighlightListener, Month
         setupMenuRow(sm_notification, getString(R.string.notifications), R.drawable.notifications, false)
         setupMenuRow(sm_settings, getString(R.string.settings), R.drawable.ic_settings, false)
         setupMenuRow(sm_audit, getString(R.string.audit_trails), R.drawable.audit_trails, false)
-        setupMenuRow(sm_groups, getString(R.string.groups), R.drawable.groups, false)
+        val groupsLabel = if (Constants.isCorporate()) "Departments" else getString(R.string.groups)
+        setupMenuRow(sm_groups, groupsLabel, R.drawable.groups, false)
         setupMenuRow(sm_team_member, getString(R.string.members), R.drawable.members, false)
         setupMenuRow(sm_invoice, "Invoices", R.drawable.invoices, false)
         setupMenuRow(sm_logout, getString(R.string.logout), R.drawable.logout, false)
@@ -2400,7 +2410,7 @@ class MainActivity : AppCompatActivity(), Dashboard.MenuHighlightListener, Month
             Constants.forgot_pwd_request = false
             val d = JSONObject(result.getString("data"))
             Constants.jsonObject_dashboard = d
-            if (!d.getString("plan").equals("lauditor", ignoreCase = true)) {
+            if (!d.getString("plan").equals(Constants.DEFAULT_PLAN, ignoreCase = true)) {
                 AndroidUtils.showAlert("Account not found", this)
                 isFirmSwitchInProgress = false
                 return

@@ -126,7 +126,7 @@ class UserFormActivity : AppCompatActivity(), AsyncTaskCompleteListener, View.On
             postData.put("contact_person", fullName)
             postData.put("country", DEFAULT_COUNTRY)
             postData.put("category", DEFAULT_CATEGORY)
-            postData.put("plan", DEFAULT_PLAN)
+            postData.put("plan", Constants.DEFAULT_PLAN)
 
             if (input.contains("@")) {
                 postData.put("email", input.lowercase())

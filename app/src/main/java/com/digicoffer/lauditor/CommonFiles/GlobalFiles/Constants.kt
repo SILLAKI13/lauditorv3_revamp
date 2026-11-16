@@ -51,7 +51,15 @@ object Constants {
     @JvmField var ContactName: String? = ""
     @JvmField var Notification_Base_Url: String? = ""
     @JvmField var FCM_TOKEN: String? = ""
-    @JvmField var product: String? = "Lawyers"
+    @JvmField var PRODUCT_TYPE: String = com.digicoffer.lauditor.BuildConfig.PRODUCT_TYPE
+    @JvmField var DEFAULT_PLAN: String = com.digicoffer.lauditor.BuildConfig.DEFAULT_PLAN
+
+    @JvmStatic
+    fun isCorporate(): Boolean {
+        return "corporate".equals(PRODUCT_TYPE, ignoreCase = true)
+    }
+
+    @JvmField var product: String? = if (isCorporate()) "Corporate" else "Lawyers"
 
     @JvmStatic
     fun is24HoursFormat(context: Context): Boolean {
@@ -464,6 +472,10 @@ object Constants {
             Constants.LOGIN_METHOD = prefs.getString("login_method", "email") ?: "email"
             Constants.OLD_PASSWORD = prefs.getString("password", "") ?: ""
             Constants.is_active = true
+            val storedProductType = prefs.getString("product_type", com.digicoffer.lauditor.BuildConfig.PRODUCT_TYPE) ?: com.digicoffer.lauditor.BuildConfig.PRODUCT_TYPE
+            Constants.PRODUCT_TYPE = storedProductType
+            Constants.DEFAULT_PLAN = if (isCorporate()) "corporate" else "lauditor"
+            Constants.product = if (isCorporate()) "Corporate" else "Lawyers"
 
             val namesArray = JSONArray(prefs.getString("firmNames", "[]"))
             val idsArray = JSONArray(prefs.getString("firmIds", "[]"))

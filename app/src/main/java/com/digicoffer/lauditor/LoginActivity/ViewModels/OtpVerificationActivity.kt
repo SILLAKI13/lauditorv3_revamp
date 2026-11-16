@@ -276,7 +276,7 @@ class OtpVerificationActivity : AppCompatActivity(), AsyncTaskCompleteListener, 
 
             val postData = JSONObject()
             postData.put("otp", currentOtp)
-            postData.put("plan", "lauditor")
+            postData.put("plan", Constants.DEFAULT_PLAN)
 
             if (emailOrMobile != null && emailOrMobile!!.contains("@")) {
                 postData.put("email", emailOrMobile!!.lowercase())
@@ -391,7 +391,7 @@ class OtpVerificationActivity : AppCompatActivity(), AsyncTaskCompleteListener, 
                 Constants.forgot_pwd_request = false
                 val probizData = JSONObject(result.getString("data"))
                 Constants.jsonObject_dashboard = probizData
-                if (!probizData.getString("plan").equals("lauditor", ignoreCase = true)) {
+                if (!probizData.getString("plan").equals(Constants.DEFAULT_PLAN, ignoreCase = true)) {
                     AndroidUtils.showAlert("Account not found", this)
                     return
                 }
@@ -403,6 +403,7 @@ class OtpVerificationActivity : AppCompatActivity(), AsyncTaskCompleteListener, 
                     .putString("email", email.lowercase())
                     .putString("password", password)
                     .putBoolean("isLogin", true)
+                    .putString("product_type", Constants.PRODUCT_TYPE)
                     .putString("login_method", Constants.LOGIN_METHOD)
                     .putString("proBizType", Constants.PROBIZ_TYPE)
                     .apply()
@@ -604,7 +605,7 @@ class OtpVerificationActivity : AppCompatActivity(), AsyncTaskCompleteListener, 
                 val list = ArrayList<FirmsDo>()
 
                 val firms = result.getJSONObject("firms")
-                val adminJsonArray = firms.getJSONArray("lauditor")
+                val adminJsonArray = firms.optJSONArray(Constants.DEFAULT_PLAN) ?: firms.optJSONArray("lauditor") ?: JSONArray()
 
                 if (adminJsonArray.length() == 0) {
                     AndroidUtils.showAlert("Account not found", this)
@@ -643,7 +644,7 @@ class OtpVerificationActivity : AppCompatActivity(), AsyncTaskCompleteListener, 
                     )
                 }
             } else {
-                val errorMsg = if (result.has("plan") && result.getString("plan") == "lauditor") {
+                val errorMsg = if (result.has("plan") && result.getString("plan").equals(Constants.DEFAULT_PLAN, ignoreCase = true)) {
                     result.getString("msg")
                 } else {
                     "Account not found"

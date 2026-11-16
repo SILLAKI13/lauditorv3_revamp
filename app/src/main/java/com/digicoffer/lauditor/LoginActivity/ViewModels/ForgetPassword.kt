@@ -131,7 +131,7 @@ class ForgetPassword : AppCompatActivity(), AsyncTaskCompleteListener, View.OnCl
             val postData = JSONObject()
             postData.put("email", email)
             postData.put("userid", firmName)
-            postData.put("plan", "lauditor")
+            postData.put("plan", Constants.DEFAULT_PLAN)
 
             Log.d("FORGOT_PASSWORD", "API Request payload: $postData")
             progressDialog = AndroidUtils.get_progress(this)
@@ -182,7 +182,7 @@ class ForgetPassword : AppCompatActivity(), AsyncTaskCompleteListener, View.OnCl
                             val firms = result.getJSONObject("firms")
                             Log.d("FORGOT_PASSWORD", "firms=$firms")
 
-                            val lauditorFirms = firms.optJSONArray("lauditor")
+                            val lauditorFirms = firms.optJSONArray(Constants.DEFAULT_PLAN) ?: firms.optJSONArray("lauditor")
                             if (lauditorFirms != null && lauditorFirms.length() > 0) {
                                 showFirmDropdown(lauditorFirms)
                             } else {

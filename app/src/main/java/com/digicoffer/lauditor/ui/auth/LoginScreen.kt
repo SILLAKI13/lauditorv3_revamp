@@ -72,6 +72,7 @@ fun LoginScreen(
     onRegisterPhoneChange: (String) -> Unit,
     isLoginMode: Boolean,
     isPasswordMode: Boolean,
+    isCorporate: Boolean = com.digicoffer.lauditor.CommonFiles.GlobalFiles.Constants.isCorporate(),
     onTogglePasswordModeClick: () -> Unit = {},
     onToggleModeClick: () -> Unit = {},
     firmList: List<String> = emptyList(),
@@ -134,8 +135,8 @@ fun LoginScreen(
                 ) {
                     // Logo Image matching logo_layout.xml
                     Image(
-                        painter = painterResource(id = R.drawable.lex_z_lawyer_horizontal_tp),
-                        contentDescription = "Lex-Z Lawyers Logo",
+                        painter = painterResource(id = if (isCorporate) R.drawable.corp_app_logo else R.drawable.lex_z_lawyer_horizontal_tp),
+                        contentDescription = if (isCorporate) "Lex-Z Corporate Logo" else "Lex-Z Lawyers Logo",
                         modifier = Modifier
                             .padding(top = dimensionResource(id = R.dimen.ten_dp))
                             .width(dimensionResource(id = R.dimen.ThreeHundred_dp))
@@ -144,6 +145,7 @@ fun LoginScreen(
 
                     // Title Header matching login_title_layout.xml
                     val titleText = when {
+                        isCorporate -> "Log in with Password"
                         !isLoginMode -> "Register With OTP"
                         isPasswordMode -> "Log in with Password"
                         else -> "Login With OTP"
@@ -168,7 +170,7 @@ fun LoginScreen(
                         AppTextField(
                             value = emailOrMobile,
                             onValueChange = onEmailOrMobileChange,
-                            placeholder = "Email or Mobile Number",
+                            placeholder = if (isCorporate) "Email" else "Email or Mobile Number",
                             shape = inputShape,
                             border = inputBorder,
                             backgroundColor = inputBg,
@@ -240,7 +242,7 @@ fun LoginScreen(
 
                             AppSpacer(height = 4.dp)
 
-                            // Links: Left "Forgot Password ?", Right "Use OTP Instead"
+                            // Links: Left "Forgot Password ?", Right "Use OTP Instead" (if not corporate)
                             Row(
                                 modifier = Modifier
                                     .fillMaxWidth()
@@ -262,23 +264,25 @@ fun LoginScreen(
                                             onForgotPasswordClick()
                                         }
                                 )
-                                Text(
-                                    text = "Use OTP Instead",
-                                    style = TextStyle(
-                                        fontFamily = GillSans,
-                                        fontSize = 13.sp,
-                                        color = colorResource(id = R.color.Primary_new),
-                                        textDecoration = TextDecoration.Underline
-                                    ),
-                                    textAlign = TextAlign.End,
-                                    modifier = Modifier.clickable {
-                                        focusManager.clearFocus(force = true)
-                                        keyboardController?.hide()
-                                        onTogglePasswordModeClick()
-                                    }
-                                )
+                                if (!isCorporate) {
+                                    Text(
+                                        text = "Use OTP Instead",
+                                        style = TextStyle(
+                                            fontFamily = GillSans,
+                                            fontSize = 13.sp,
+                                            color = colorResource(id = R.color.Primary_new),
+                                            textDecoration = TextDecoration.Underline
+                                        ),
+                                        textAlign = TextAlign.End,
+                                        modifier = Modifier.clickable {
+                                            focusManager.clearFocus(force = true)
+                                            keyboardController?.hide()
+                                            onTogglePasswordModeClick()
+                                        }
+                                    )
+                                }
                             }
-                        } else {
+                        } else if (!isCorporate) {
                             // OTP Mode Link: Right "Use Password Instead"
                             Box(
                                 modifier = Modifier
@@ -431,34 +435,35 @@ fun LoginScreen(
                         )
                     )
 
-                    AppSpacer(height = 14.dp)
-
-                    // Account Toggle Link
-                    Row(
-                        verticalAlignment = Alignment.CenterVertically
-                    ) {
-                        Text(
-                            text = if (isLoginMode) "Don't have an account? " else "Already have an account? ",
-                            style = TextStyle(
-                                fontFamily = GillSans,
-                                fontSize = 14.sp,
-                                color = colorResource(id = R.color.black)
+                    // Account Toggle Link (Lawyers only)
+                    if (!isCorporate) {
+                        AppSpacer(height = 14.dp)
+                        Row(
+                            verticalAlignment = Alignment.CenterVertically
+                        ) {
+                            Text(
+                                text = if (isLoginMode) "Don't have an account? " else "Already have an account? ",
+                                style = TextStyle(
+                                    fontFamily = GillSans,
+                                    fontSize = 14.sp,
+                                    color = colorResource(id = R.color.black)
+                                )
                             )
-                        )
-                        Text(
-                            text = if (isLoginMode) "Register Here" else "Log In",
-                            style = TextStyle(
-                                fontFamily = GillSans,
-                                fontSize = 14.sp,
-                                color = colorResource(id = R.color.Primary_new),
-                                textDecoration = TextDecoration.Underline
-                            ),
-                            modifier = Modifier.clickable {
-                                focusManager.clearFocus(force = true)
-                                keyboardController?.hide()
-                                onToggleModeClick()
-                            }
-                        )
+                            Text(
+                                text = if (isLoginMode) "Register Here" else "Log In",
+                                style = TextStyle(
+                                    fontFamily = GillSans,
+                                    fontSize = 14.sp,
+                                    color = colorResource(id = R.color.Primary_new),
+                                    textDecoration = TextDecoration.Underline
+                                ),
+                                modifier = Modifier.clickable {
+                                    focusManager.clearFocus(force = true)
+                                    keyboardController?.hide()
+                                    onToggleModeClick()
+                                }
+                            )
+                        }
                     }
 
                     // Support Information Link (Login Mode Only)
