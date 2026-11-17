@@ -34,6 +34,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.digicoffer.lauditor.CommonFiles.GlobalFiles.Constants
 import com.digicoffer.lauditor.Dashboard.DahboardModels.CardDataModels
 import com.digicoffer.lauditor.R
 
@@ -145,7 +146,8 @@ fun ApproxRevenueCard(
     onClick: () -> Unit,
     modifier: Modifier = Modifier
 ) {
-    val sym = data.currencySymbol ?: "₹"
+    val sym = data.currencySymbol?.takeIf { it.isNotBlank() && it != "₹" }
+        ?: if (Constants.isUSUser()) "$" else (Constants.CurrencySymbol.ifEmpty { "₹" })
     val formattedRevenue = sym + String.format("%,.2f", data.approxRevenue)
     val badgeLabel = data.badge?.label ?: "+0.00%"
 

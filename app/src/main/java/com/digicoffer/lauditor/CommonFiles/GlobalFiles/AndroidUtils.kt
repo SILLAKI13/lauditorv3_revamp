@@ -3966,10 +3966,11 @@ class AndroidUtils {
             maxValue: Int,
             step: Int
         ) {
-            editText.hint = "₹ $defaultValue"
+            val sym = if (Constants.isUSUser()) "$" else (Constants.CurrencySymbol.ifEmpty { "₹" })
+            editText.hint = "$sym $defaultValue"
 
             val getRaw = Supplier {
-                val raw = if (editText.text != null) editText.text.toString().replace("₹", "").trim() else ""
+                val raw = if (editText.text != null) editText.text.toString().replace("₹", "").replace("$", "").trim() else ""
                 raw
             }
 
@@ -3986,11 +3987,11 @@ class AndroidUtils {
                     }
                     if (valNum < minValue) {
                         valNum = minValue
-                        editText.text = "₹ $minValue"
+                        editText.text = "$sym $minValue"
                     }
                     if (valNum > maxValue) {
                         valNum = maxValue
-                        editText.text = "₹ $maxValue"
+                        editText.text = "$sym $maxValue"
                     }
                 }
                 tvMinus.isEnabled = valNum > minValue
@@ -4009,7 +4010,7 @@ class AndroidUtils {
                 } catch (e: NumberFormatException) {
                     valNum = defaultValue
                 }
-                editText.text = "₹ " + Math.max(minValue, valNum - step)
+                editText.text = "$sym " + Math.max(minValue, valNum - step)
                 syncButtons.run()
             }
 
@@ -4018,7 +4019,7 @@ class AndroidUtils {
                 val valNum: Int
                 try {
                     if (TextUtils.isEmpty(raw)) {
-                        editText.text = "₹ $minValue"
+                        editText.text = "$sym $minValue"
                         syncButtons.run()
                         return@setOnClickListener
                     }
@@ -4026,7 +4027,7 @@ class AndroidUtils {
                 } catch (e: NumberFormatException) {
                     return@setOnClickListener
                 }
-                editText.text = "₹ " + Math.min(maxValue, valNum + step)
+                editText.text = "$sym " + Math.min(maxValue, valNum + step)
                 syncButtons.run()
             }
 
@@ -4036,14 +4037,14 @@ class AndroidUtils {
                 override fun afterTextChanged(s: Editable?) {
                     if (s == null) return
                     val current = s.toString()
-                    if (current.isEmpty() || current.startsWith("₹")) {
+                    if (current.isEmpty() || current.startsWith("₹") || current.startsWith("$")) {
                         syncButtons.run()
                         return
                     }
-                    val digits = current.replace("₹", "").trim()
+                    val digits = current.replace("₹", "").replace("$", "").trim()
                     if (digits.isNotEmpty()) {
                         editText.removeTextChangedListener(this)
-                        editText.text = "₹ $digits"
+                        editText.text = "$sym $digits"
                         editText.addTextChangedListener(this)
                     }
                     syncButtons.run()

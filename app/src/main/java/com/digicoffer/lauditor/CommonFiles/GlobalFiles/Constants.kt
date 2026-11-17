@@ -52,6 +52,120 @@ object Constants {
     @JvmField var Notification_Base_Url: String? = ""
     @JvmField var FCM_TOKEN: String? = ""
     @JvmField var product: String? = "Lawyers"
+    @JvmField var Country: String = "India"
+    @JvmField var CountryCode: String = "+91"
+    @JvmField var CurrencySymbol: String = "₹"
+    @JvmField var HiddenModules: MutableList<String> = ArrayList()
+
+    @JvmStatic
+    fun isUSCountry(c: String?): Boolean {
+        if (c.isNullOrBlank()) return false
+        val trimmed = c.trim()
+        return trimmed.equals("USA", ignoreCase = true) ||
+                trimmed.equals("United States", ignoreCase = true) ||
+                trimmed.equals("United States of America", ignoreCase = true) ||
+                trimmed.equals("US", ignoreCase = true)
+    }
+
+    @JvmStatic
+    fun isIndiaCountry(c: String?): Boolean {
+        if (c.isNullOrBlank()) return false
+        val trimmed = c.trim()
+        return trimmed.equals("India", ignoreCase = true) ||
+                trimmed.equals("IN", ignoreCase = true)
+    }
+
+    @JvmStatic
+    fun isUSUser(): Boolean {
+        if (isIndiaCountry(Country)) return false
+        if (isUSCountry(Country)) return true
+        if (CountryCode == "+1" && !isIndiaCountry(Country)) return true
+        if (CurrencySymbol == "$" && !isIndiaCountry(Country)) return true
+        return false
+    }
+
+    @JvmStatic
+    fun resetToIndia(context: Context? = null) {
+        Country = "India"
+        CountryCode = "+91"
+        CurrencySymbol = "₹"
+        HiddenModules.remove("timesheets")
+        HiddenModules.remove("appointments")
+        HiddenModules.remove("matters")
+        HiddenModules.remove("matter")
+        if (context != null) {
+            try {
+                val prefs = context.getSharedPreferences("MyPrefs", Context.MODE_PRIVATE)
+                prefs.edit()
+                    .putString("country", "India")
+                    .putString("country_code", "+91")
+                    .putString("currency_symbol", "₹")
+                    .putString("hidden_modules", "[]")
+                    .apply()
+            } catch (e: Exception) {}
+        }
+    }
+
+    @JvmStatic
+    fun updateCountryAndCurrency(country: String?, billingCurrency: String?, context: Context? = null) {
+        val isUS = isUSCountry(country) || billingCurrency?.contains("USD", ignoreCase = true) == true
+        val isIndia = isIndiaCountry(country) || billingCurrency?.contains("INR", ignoreCase = true) == true
+
+        if (isIndia) {
+            Country = "India"
+            CountryCode = "+91"
+            CurrencySymbol = "₹"
+            HiddenModules.remove("timesheets")
+            HiddenModules.remove("appointments")
+            HiddenModules.remove("matters")
+            HiddenModules.remove("matter")
+        } else if (isUS) {
+            Country = "USA"
+            CountryCode = "+1"
+            CurrencySymbol = "$"
+            if (!HiddenModules.contains("timesheets")) HiddenModules.add("timesheets")
+            if (!HiddenModules.contains("appointments")) HiddenModules.add("appointments")
+            HiddenModules.remove("matters")
+            HiddenModules.remove("matter")
+        } else {
+            Country = "India"
+            CountryCode = "+91"
+            CurrencySymbol = "₹"
+            HiddenModules.remove("timesheets")
+            HiddenModules.remove("appointments")
+            HiddenModules.remove("matters")
+            HiddenModules.remove("matter")
+        }
+
+        if (context != null) {
+            try {
+                val prefs = context.getSharedPreferences("MyPrefs", Context.MODE_PRIVATE)
+                prefs.edit()
+                    .putString("country", Country)
+                    .putString("country_code", CountryCode)
+                    .putString("currency_symbol", CurrencySymbol)
+                    .putString("hidden_modules", JSONArray(HiddenModules).toString())
+                    .apply()
+            } catch (e: Exception) {}
+        }
+    }
+
+    @JvmStatic
+    fun parseCountryConfig(userJson: JSONObject?) {
+        if (userJson == null) return
+        val config = userJson.optJSONObject("country_config")
+        if (config != null) {
+            val c = config.optString("country", "").ifEmpty { userJson.optString("country", "") }
+            val currObj = config.optJSONObject("currency")
+            val sym = currObj?.optString("symbol", "") ?: ""
+            updateCountryAndCurrency(c, sym)
+        } else {
+            val c = userJson.optString("country", "")
+            if (c.isNotEmpty()) {
+                updateCountryAndCurrency(c, "")
+            }
+        }
+    }
 
     @JvmStatic
     fun is24HoursFormat(context: Context): Boolean {
@@ -515,6 +629,12 @@ object Constants {
             }
 
             Constants.firm_image = prefs.getString("firm_image", "") ?: ""
+
+            val savedCountry = prefs.getString("country", "India") ?: "India"
+            val savedCurrency = prefs.getString("currency_symbol", "₹") ?: "₹"
+            updateCountryAndCurrency(savedCountry, if (savedCurrency == "$") "USD" else "INR")
+
+            parseCountryConfig(userJson)
 
             true
         } catch (e: Exception) {

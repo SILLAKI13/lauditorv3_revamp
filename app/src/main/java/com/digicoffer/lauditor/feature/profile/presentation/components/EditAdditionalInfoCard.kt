@@ -297,8 +297,10 @@ private fun PracticeDetailsEditSection(
         // Consultation Fee (My Profile only)
         if (isMyProfile) {
             AppSpacer(height = 12.dp)
+            val currSymbol = if (Constants.isUSUser()) "$" else "₹"
             ProfileConsultationFeeStepper(
                 fee = state.consultationFee,
+                currencySymbol = currSymbol,
                 onFeeChange = { onEvent(ProfileUiEvent.UpdateConsultationFee(it)) },
                 modifier = Modifier.fillMaxWidth()
             )

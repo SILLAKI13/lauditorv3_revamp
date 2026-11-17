@@ -169,7 +169,8 @@ class DashboardParser {
                 t.defaultRange = d.optString("defaultRange", "7days")
 
                 val currency = d.optJSONObject("currency")
-                if (currency != null) t.currencySymbol = currency.optString("symbol")
+                val sym = currency?.optString("symbol", "") ?: ""
+                t.currencySymbol = if (sym.isNotEmpty() && sym != "₹") sym else (if (Constants.isUSUser()) "$" else "₹")
 
                 val ranges = d.optJSONObject("ranges")
                 if (ranges != null) {
@@ -336,7 +337,8 @@ class DashboardParser {
                 t.defaultRange = d.optString("defaultRange", "7days")
 
                 val currency = d.optJSONObject("currency")
-                if (currency != null) t.currencySymbol = currency.optString("symbol")
+                val sym = currency?.optString("symbol", "") ?: ""
+                t.currencySymbol = if (sym.isNotEmpty() && sym != "₹") sym else (if (Constants.isUSUser()) "$" else "₹")
 
                 val ranges = d.optJSONObject("ranges")
                 if (ranges != null) {
@@ -506,7 +508,10 @@ class DashboardParser {
                 val currency = d.optJSONObject("currency")
                 if (currency != null) {
                     r.currencyCode = currency.optString("code", "")
-                    r.currencySymbol = currency.optString("symbol", "₹")
+                    val sym = currency.optString("symbol", "")
+                    r.currencySymbol = if (sym.isNotEmpty() && sym != "₹") sym else (if (Constants.isUSUser()) "$" else "₹")
+                } else {
+                    r.currencySymbol = if (Constants.isUSUser()) "$" else "₹"
                 }
 
                 r.averageBillingRate = 0.0

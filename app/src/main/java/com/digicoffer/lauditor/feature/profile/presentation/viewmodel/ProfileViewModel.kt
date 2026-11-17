@@ -1762,7 +1762,7 @@ class ProfileViewModel(application: Application) : AndroidViewModel(application)
                     if (form.bio.isNotBlank()) {
                         root.put("bio_description", form.bio)
                     }
-                    val feeClean = form.consultationFee.replace("₹", "").filter { it.isDigit() }
+                    val feeClean = form.consultationFee.replace("₹", "").replace("$", "").filter { it.isDigit() }
                     if (feeClean.isNotBlank()) {
                         val feeObj = JSONObject().apply {
                             put("amount", feeClean)
@@ -1939,7 +1939,7 @@ class ProfileViewModel(application: Application) : AndroidViewModel(application)
                     root.put("years_of_experience", expVal)
 
                     if (form.consultationFee.isNotBlank()) {
-                        val feeClean = form.consultationFee.replace("₹", "").filter { it.isDigit() }
+                        val feeClean = form.consultationFee.replace("₹", "").replace("$", "").filter { it.isDigit() }
                         val feeVal = feeClean.toIntOrNull() ?: 500
                         val curVal = if (form.billingCurrency.contains("USD", ignoreCase = true)) "USD" else "INR"
                         root.put("consultation_fee", JSONObject().apply {
@@ -2463,7 +2463,8 @@ class ProfileViewModel(application: Application) : AndroidViewModel(application)
             if (feeObj != null) {
                 val cf = FirmProfileModel.ConsultationFee()
                 cf.amount = feeObj.optString("amount", "")
-                cf.symbol = feeObj.optString("symbol", "₹")
+                val sym = feeObj.optString("symbol", "")
+                cf.symbol = if (sym.isNotEmpty() && sym != "₹") sym else if (Constants.isUSUser()) "$" else (Constants.CurrencySymbol.ifEmpty { "₹" })
                 profile.consultation_fee = cf
             }
 
@@ -2506,8 +2507,9 @@ class ProfileViewModel(application: Application) : AndroidViewModel(application)
                     plan.amount = planObj.optInt("amount", 0)
                     plan.cycle = planObj.optString("cycle", "")
                     plan.name = planObj.optString("name", "")
-                    plan.currencySymbol = planObj.optString("currencySymbol", "₹")
-                    plan.currencyCode = planObj.optString("currencyCode", "INR")
+                    val pSym = planObj.optString("currencySymbol", "")
+                    plan.currencySymbol = if (pSym.isNotEmpty() && pSym != "₹") pSym else (if (Constants.isUSUser()) "$" else "₹")
+                    plan.currencyCode = planObj.optString("currencyCode", if (Constants.isUSUser()) "USD" else "INR")
                     sub.plan = plan
                 }
 
@@ -2746,6 +2748,18 @@ class ProfileViewModel(application: Application) : AndroidViewModel(application)
                 }
 
                 profile.firm = firm
+            }
+
+            val addrObj = firmObj?.optJSONObject("address")
+            val country = addrObj?.optString("country")
+                ?: profileObj.optString("country")
+                ?: firmObj?.optString("country")
+                ?: profileObj.optString("nationality")
+            val billingCurr = firmObj?.optString("billing_currency", "") ?: ""
+
+            Constants.updateCountryAndCurrency(country, billingCurr, getApplication<Application>())
+            Constants.mainActivity?.runOnUiThread {
+                Constants.mainActivity?.setMenuList()
             }
 
             data.profile = profile

@@ -20,6 +20,7 @@ import androidx.compose.material.icons.filled.Close
 import androidx.compose.material.icons.filled.Edit
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
+import com.digicoffer.lauditor.CommonFiles.GlobalFiles.Constants
 import com.digicoffer.lauditor.core.ui.common.foundation.AppSpacer
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -523,7 +524,7 @@ fun ProfileMultiSelectDropdown(
 @Composable
 fun ProfileConsultationFeeStepper(
     fee: String,
-    currencySymbol: String = "₹",
+    currencySymbol: String = if (Constants.isUSUser()) "$" else (Constants.CurrencySymbol.ifEmpty { "₹" }),
     onFeeChange: (String) -> Unit,
     modifier: Modifier = Modifier,
     isRequired: Boolean = true

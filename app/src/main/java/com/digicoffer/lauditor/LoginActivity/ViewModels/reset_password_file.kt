@@ -15,6 +15,7 @@ import androidx.core.view.WindowCompat
 import com.digicoffer.lauditor.CommonFiles.GlobalFiles.AndroidUtils
 import com.digicoffer.lauditor.CommonFiles.GlobalFiles.Constants
 import com.digicoffer.lauditor.CommonFiles.GlobalFiles.Constants.check_url
+import com.digicoffer.lauditor.MainActivity
 import com.digicoffer.lauditor.R
 import com.digicoffer.lauditor.Webservice.AsyncTaskCompleteListener
 import com.digicoffer.lauditor.Webservice.HttpResultDo
@@ -37,6 +38,8 @@ class reset_password_file : AppCompatActivity(), AsyncTaskCompleteListener, View
         loadSessionData()
 
         Log.d("RESET_PASSWORD", "onCreate Session Audit: PK=${Constants.PK}, USER_ID=${Constants.USER_ID}, OLD_PASSWORD=${Constants.OLD_PASSWORD}, TOKEN=${Constants.TOKEN?.take(10)}...")
+
+        val isFromRegister = intent.getBooleanExtra("is_register", false)
 
         val composeView = androidx.compose.ui.platform.ComposeView(this).apply {
             setContent {
@@ -61,6 +64,9 @@ class reset_password_file : AppCompatActivity(), AsyncTaskCompleteListener, View
                         requirements = reqList,
                         isSubmitEnabled = canSubmit,
                         isLoading = isLoadingState,
+                        titleText = if (isFromRegister) "Set Password" else getString(R.string.reset_password),
+                        subtitleText = if (isFromRegister) "Please set your password to continue" else "Please reset your password!",
+                        submitButtonText = if (isFromRegister) "Set Password" else getString(R.string.submit),
                         onSubmitClick = {
                             Log.d("RESET_PASSWORD", "Submit pressed: canSubmit=$canSubmit, p1State='$p1State', p2State='$p2State'")
                             if (!isValidPassword(p1State)) {
@@ -94,9 +100,11 @@ class reset_password_file : AppCompatActivity(), AsyncTaskCompleteListener, View
     private fun loadSessionData() {
         val intentPk = intent.getStringExtra("pk")
         val intentUserId = intent.getStringExtra("user_id")
+        val intentOldPwd = intent.getStringExtra("old_password")
 
         if (!intentPk.isNullOrEmpty()) Constants.PK = intentPk
         if (!intentUserId.isNullOrEmpty()) Constants.USER_ID = intentUserId
+        if (!intentOldPwd.isNullOrEmpty()) Constants.OLD_PASSWORD = intentOldPwd
 
         val prefs = getSharedPreferences("MyPrefs", Context.MODE_PRIVATE)
         if (Constants.PK.isNullOrEmpty()) Constants.PK = prefs.getString("pk", "") ?: ""
@@ -108,7 +116,8 @@ class reset_password_file : AppCompatActivity(), AsyncTaskCompleteListener, View
     private fun resetPwd() {
         loadSessionData()
 
-        if (Constants.PK.isNullOrEmpty() || Constants.USER_ID.isNullOrEmpty()) {
+        val isFromRegister = intent.getBooleanExtra("is_register", false)
+        if (!isFromRegister && (Constants.PK.isNullOrEmpty() || Constants.USER_ID.isNullOrEmpty())) {
             Log.e("RESET_PASSWORD", "Exit Point: Session Error - PK or USER_ID is null/empty. PK='${Constants.PK}', USER_ID='${Constants.USER_ID}'")
             AndroidUtils.showAlert("Session expired. Please sign in again.", this)
             return
@@ -120,20 +129,26 @@ class reset_password_file : AppCompatActivity(), AsyncTaskCompleteListener, View
             Constants.PROBIZ_TYPE = "PROFESSIONAL"
             Constants.base_URL = Constants.PROF_URL
 
-            val postData = JSONObject()
+            val postData = JSONObject().apply {
+                if (isFromRegister) {
+                    put("new_password", p1State)
+                    put("confirm_password", p2State)
+                } else {
+                    put("old_password", Constants.OLD_PASSWORD ?: "")
+                    put("field", "password")
+                    put("password", p1State)
+                }
+            }
             progressDialog = AndroidUtils.get_progress(this)
-            postData.put("old_password", Constants.OLD_PASSWORD ?: "")
-            postData.put("field", "password")
-            postData.put("password", p1State)
 
-            val urlpath = "password/${Constants.PK}/user/${Constants.USER_ID}/update"
+            val urlpath = if (isFromRegister) "v3/settings/change-password" else "password/${Constants.PK}/user/${Constants.USER_ID}/update"
             Log.d("RESET_PASSWORD", "API Execution: Endpoint=${Constants.base_URL}$urlpath")
             Log.d("RESET_PASSWORD", "API Execution: Request Payload=$postData")
 
             WebServiceHelper.callHttpWebService(
                 this,
                 this,
-                WebServiceHelper.RestMethodType.PUT,
+                if (isFromRegister) WebServiceHelper.RestMethodType.POST else WebServiceHelper.RestMethodType.PUT,
                 urlpath,
                 "UPDATE",
                 postData.toString()
@@ -164,19 +179,42 @@ class reset_password_file : AppCompatActivity(), AsyncTaskCompleteListener, View
                         val message = result.optString("msg").ifEmpty { "Password set successfully." }
 
                         AndroidUtils.showAlert(message, this, "Success") {
-                            val prefs = getSharedPreferences("MyPrefs", Context.MODE_PRIVATE)
-                            prefs.edit()
-                                .remove("pk")
-                                .remove("user_id")
-                                .remove("old_password")
-                                .apply()
+                            val isFromRegister = intent.getBooleanExtra("is_register", false)
+                            if (isFromRegister) {
+                                val prefs = getSharedPreferences("MyPrefs", Context.MODE_PRIVATE)
+                                prefs.edit()
+                                    .putString("password", p1State)
+                                    .putBoolean("isLogin", true)
+                                    .apply()
 
-                            val intent = Intent(this@reset_password_file, LoginActivity::class.java).apply {
-                                putExtra("password_reset_success", true)
-                                flags = Intent.FLAG_ACTIVITY_CLEAR_TOP or Intent.FLAG_ACTIVITY_SINGLE_TOP
+                                val defaultPrefs = android.preference.PreferenceManager.getDefaultSharedPreferences(applicationContext)
+                                defaultPrefs.edit()
+                                    .putString("password", p1State)
+                                    .putBoolean("isLogin", true)
+                                    .apply()
+
+                                Constants.OLD_PASSWORD = p1State
+
+                                val intent = Intent(this@reset_password_file, MainActivity::class.java).apply {
+                                    flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK
+                                }
+                                startActivity(intent)
+                                finish()
+                            } else {
+                                val prefs = getSharedPreferences("MyPrefs", Context.MODE_PRIVATE)
+                                prefs.edit()
+                                    .remove("pk")
+                                    .remove("user_id")
+                                    .remove("old_password")
+                                    .apply()
+
+                                val intent = Intent(this@reset_password_file, LoginActivity::class.java).apply {
+                                    putExtra("password_reset_success", true)
+                                    flags = Intent.FLAG_ACTIVITY_CLEAR_TOP or Intent.FLAG_ACTIVITY_SINGLE_TOP
+                                }
+                                startActivity(intent)
+                                finish()
                             }
-                            startActivity(intent)
-                            finish()
                         }
                     } else {
                         val errorMsg = result.optString("msg").ifEmpty { AndroidUtils.extractCleanErrorMessage(result.toString()) }

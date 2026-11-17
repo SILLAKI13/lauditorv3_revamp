@@ -69,6 +69,9 @@ fun ResetPasswordScreen(
     onSubmitClick: () -> Unit,
     onCancelClick: () -> Unit,
     isLoading: Boolean = false,
+    titleText: String = stringResource(id = R.string.reset_password),
+    subtitleText: String = "Please reset your password!",
+    submitButtonText: String = stringResource(id = R.string.submit),
     modifier: Modifier = Modifier
 ) {
     var isP1Visible by remember { mutableStateOf(false) }
@@ -126,7 +129,7 @@ fun ResetPasswordScreen(
 
                     // Title Header
                     Text(
-                        text = stringResource(id = R.string.reset_password),
+                        text = titleText,
                         style = TextStyle(
                             fontFamily = GillSansBold,
                             fontSize = 20.sp,
@@ -138,9 +141,9 @@ fun ResetPasswordScreen(
                         )
                     )
 
-                    // Warning Text: "Please reset your password!"
+                    // Subtitle / Instruction Text
                     Text(
-                        text = "Please reset your password!",
+                        text = subtitleText,
                         style = TextStyle(
                             fontFamily = GillSansBold,
                             fontSize = 15.sp,
@@ -256,7 +259,7 @@ fun ResetPasswordScreen(
                         AppSpacer(width = dimensionResource(id = R.dimen.ten_dp))
 
                         AppButton(
-                            text = stringResource(id = R.string.submit),
+                            text = submitButtonText,
                             onClick = {
                                 focusManager.clearFocus(force = true)
                                 keyboardController?.hide()

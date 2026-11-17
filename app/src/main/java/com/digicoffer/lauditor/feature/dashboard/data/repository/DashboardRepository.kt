@@ -264,6 +264,20 @@ class DashboardRepository(private val context: Context) {
     }
 
     private fun shouldShowCard(type: Int, role: String?, category: String?): Boolean {
+        if (Constants.isUSUser() || Constants.HiddenModules.contains("appointments")) {
+            if (type == DashboardItem.TYPE_APPOINTMENT ||
+                type == DashboardItem.TYPE_APPOINTMENT_TREND ||
+                type == DashboardItem.TYPE_APPOINTMENT_REVENUE_TREND) {
+                return false
+            }
+        }
+        if (Constants.isUSUser() || Constants.HiddenModules.contains("timesheets")) {
+            if (type == DashboardItem.TYPE_BILLABLE ||
+                type == DashboardItem.TYPE_APPROX_REVENUE) {
+                return false
+            }
+        }
+
         val allowed = ArrayList<Int>()
         when (role) {
             "SU" -> {

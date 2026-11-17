@@ -3,7 +3,9 @@ package com.digicoffer.lauditor.ui.auth
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
+import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
@@ -13,16 +15,22 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.imePadding
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.statusBarsPadding
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.foundation.verticalScroll
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.ArrowDropDown
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.Checkbox
 import androidx.compose.material3.CheckboxDefaults
+import androidx.compose.material3.DropdownMenu
+import androidx.compose.material3.DropdownMenuItem
+import androidx.compose.material3.Icon
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
@@ -70,6 +78,9 @@ fun LoginScreen(
     onRegisterEmailChange: (String) -> Unit,
     registerPhoneValue: String,
     onRegisterPhoneChange: (String) -> Unit,
+    selectedCountry: String = "India",
+    selectedCountryCode: String = "+91",
+    onCountrySelected: (String, String) -> Unit = { _, _ -> },
     isLoginMode: Boolean,
     isPasswordMode: Boolean,
     onTogglePasswordModeClick: () -> Unit = {},
@@ -369,7 +380,7 @@ fun LoginScreen(
                         AppTextField(
                             value = registerEmailValue,
                             onValueChange = onRegisterEmailChange,
-                            placeholder = "Enter the Email",
+                            placeholder = "Email Address",
                             shape = inputShape,
                             border = inputBorder,
                             backgroundColor = inputBg,
@@ -385,32 +396,129 @@ fun LoginScreen(
 
                         AppSpacer(height = 4.dp)
 
-                        AppTextField(
-                            value = registerPhoneValue,
-                            onValueChange = onRegisterPhoneChange,
-                            placeholder = "Enter the Mobile Number",
-                            shape = inputShape,
-                            border = inputBorder,
-                            backgroundColor = inputBg,
-                            height = inputHeight,
-                            contentPadding = inputPadding,
-                            textStyle = inputTextStyle,
-                            keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Phone),
-                            singleLine = true,
+                        // Country Dropdown
+                        var isCountryDropdownExpanded by remember { mutableStateOf(false) }
+
+                        Box(
                             modifier = Modifier
                                 .fillMaxWidth()
                                 .padding(vertical = 4.dp, horizontal = 4.dp)
-                        )
+                        ) {
+                            Row(
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .height(inputHeight)
+                                    .background(inputBg, inputShape)
+                                    .border(inputBorder, inputShape)
+                                    .clickable {
+                                        focusManager.clearFocus(force = true)
+                                        keyboardController?.hide()
+                                        isCountryDropdownExpanded = !isCountryDropdownExpanded
+                                    }
+                                    .padding(horizontal = 12.dp),
+                                verticalAlignment = Alignment.CenterVertically,
+                                horizontalArrangement = Arrangement.SpaceBetween
+                            ) {
+                                val displayCountry = if (selectedCountry.contains("United States", ignoreCase = true) || selectedCountry.equals("US", ignoreCase = true)) {
+                                    "🇺🇸  United States"
+                                } else {
+                                    "🇮🇳  India"
+                                }
+                                Text(
+                                    text = displayCountry,
+                                    style = inputTextStyle
+                                )
+                                Icon(
+                                    imageVector = Icons.Default.ArrowDropDown,
+                                    contentDescription = "Select Country",
+                                    tint = colorResource(id = R.color.blue)
+                                )
+                            }
+
+                            DropdownMenu(
+                                expanded = isCountryDropdownExpanded,
+                                onDismissRequest = { isCountryDropdownExpanded = false },
+                                modifier = Modifier
+                                    .background(colorResource(id = R.color.white))
+                                    .fillMaxWidth(0.85f)
+                            ) {
+                                DropdownMenuItem(
+                                    text = {
+                                        Text(
+                                            text = "🇮🇳  India",
+                                            style = inputTextStyle
+                                        )
+                                    },
+                                    onClick = {
+                                        onCountrySelected("India", "+91")
+                                        isCountryDropdownExpanded = false
+                                    }
+                                )
+                                DropdownMenuItem(
+                                    text = {
+                                        Text(
+                                            text = "🇺🇸  United States",
+                                            style = inputTextStyle
+                                        )
+                                    },
+                                    onClick = {
+                                        onCountrySelected("United States", "+1")
+                                        isCountryDropdownExpanded = false
+                                    }
+                                )
+                            }
+                        }
+
+                        AppSpacer(height = 4.dp)
+
+                        // Mobile Number with Country Code prefix
+                        Row(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .padding(vertical = 4.dp, horizontal = 4.dp),
+                            verticalAlignment = Alignment.CenterVertically
+                        ) {
+                            Box(
+                                modifier = Modifier
+                                    .width(54.dp)
+                                    .height(inputHeight)
+                                    .background(inputBg, inputShape)
+                                    .border(inputBorder, inputShape),
+                                contentAlignment = Alignment.Center
+                            ) {
+                                Text(
+                                    text = selectedCountryCode,
+                                    style = TextStyle(
+                                        fontFamily = GillSansBold,
+                                        fontSize = 14.sp,
+                                        color = colorResource(id = R.color.black)
+                                    )
+                                )
+                            }
+
+                            AppSpacer(width = 6.dp)
+
+                            AppTextField(
+                                value = registerPhoneValue,
+                                onValueChange = onRegisterPhoneChange,
+                                placeholder = "Mobile Number",
+                                shape = inputShape,
+                                border = inputBorder,
+                                backgroundColor = inputBg,
+                                height = inputHeight,
+                                contentPadding = inputPadding,
+                                textStyle = inputTextStyle,
+                                keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Phone),
+                                singleLine = true,
+                                modifier = Modifier.weight(1f)
+                            )
+                        }
                     }
 
                     AppSpacer(height = 14.dp)
 
                     // Action Button using common AppButton with exact XML sizing
-                    val btnText = when {
-                        !isLoginMode -> "Register"
-                        isPasswordMode -> "Login"
-                        else -> "Send OTP"
-                    }
+                    val btnText = if (isLoginMode && isPasswordMode) "Login" else "Send OTP"
                     AppButton(
                         text = btnText,
                         onClick = {

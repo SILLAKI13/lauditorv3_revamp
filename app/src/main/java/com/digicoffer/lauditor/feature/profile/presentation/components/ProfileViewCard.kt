@@ -84,7 +84,8 @@ fun ProfileViewCard(
         pc?.completion_percentage ?: firm?.profile_completion_percentage ?: profile?.profile_completion_percentage ?: 0
     }
 
-    val shouldShowBanner = !isBannerDismissed && completionPercentage in 1..99
+    // Profile completion status is hidden in both versions per requirement (preserved, not removed)
+    val shouldShowBanner = false // !isBannerDismissed && completionPercentage in 1..89
 
     val cardTitle = if (isMyProfile) {
         "Profile Information"
@@ -213,7 +214,7 @@ fun ProfileViewCard(
                     ProfileFieldRow(label = "Email", value = profile?.email ?: firm?.email)
                     val country = firm?.address?.country ?: profile?.nationality ?: "India"
                     ProfileFieldRow(label = "Country", value = country)
-                    ProfileFieldRow(label = "Phone Number", value = profile?.mobile ?: firm?.contact_phone)
+                    ProfileFieldRow(label = "Phone Number", value = formatPhoneWithCountryCode(profile?.mobile ?: firm?.contact_phone, country))
                     val dobFormatted = formatDobForDisplay(profile?.date_of_birth)
                     if (dobFormatted.isNotBlank()) {
                         ProfileFieldRow(label = "Date of Birth", value = dobFormatted)
@@ -238,7 +239,7 @@ fun ProfileViewCard(
                     ProfileFieldRow(label = "Email", value = profile?.email)
                     val country = firm?.address?.country ?: profile?.nationality ?: "India"
                     ProfileFieldRow(label = "Country", value = country)
-                    ProfileFieldRow(label = "Phone Number", value = profile?.mobile)
+                    ProfileFieldRow(label = "Phone Number", value = formatPhoneWithCountryCode(profile?.mobile, country))
                     val dobFormatted = formatDobForDisplay(profile?.date_of_birth)
                     if (dobFormatted.isNotBlank()) {
                         ProfileFieldRow(label = "Date of Birth", value = dobFormatted)
@@ -260,7 +261,7 @@ fun ProfileViewCard(
                     ProfileFieldRow(label = "Email", value = firm?.email ?: profile?.email)
                     val country = firm?.address?.country ?: profile?.nationality ?: "India"
                     ProfileFieldRow(label = "Country", value = country)
-                    ProfileFieldRow(label = "Phone Number", value = firm?.contact_phone ?: profile?.mobile)
+                    ProfileFieldRow(label = "Phone Number", value = formatPhoneWithCountryCode(firm?.contact_phone ?: profile?.mobile, country))
                     if (!profile?.nationality.isNullOrBlank()) {
                         ProfileFieldRow(label = "Nationality", value = profile?.nationality)
                     }
@@ -452,6 +453,24 @@ private fun ProfileCompletionBanner(
 }
 
 // ── Profile Field Row ────────────────────────────────────────────────────────
+private fun formatPhoneWithCountryCode(phone: String?, country: String?): String? {
+    if (phone.isNullOrBlank()) return phone
+    val trimmed = phone.trim()
+    if (trimmed.startsWith("+")) return trimmed
+    val isIndia = Constants.isIndiaCountry(country)
+    val isUS = !isIndia && (Constants.isUSCountry(country) || Constants.isUSUser())
+    val code = if (isUS) "+1" else "+91"
+    return "$code $trimmed"
+}
+
+private fun getFeeCurrencySymbol(feeSymbol: String?, billingCurrency: String?, country: String?): String {
+    val isIndia = Constants.isIndiaCountry(country) || billingCurrency?.contains("INR", ignoreCase = true) == true
+    val isUS = !isIndia && (Constants.isUSCountry(country) || billingCurrency?.contains("USD", ignoreCase = true) == true || Constants.isUSUser())
+    if (isUS) return "$"
+    if (!feeSymbol.isNullOrBlank() && feeSymbol != "₹" && !feeSymbol.contains("USD", ignoreCase = true)) return feeSymbol
+    return "₹"
+}
+
 @Composable
 private fun ProfileFieldRow(label: String, value: String?) {
     if (value.isNullOrBlank() || value.equals("null", ignoreCase = true)) return
@@ -548,7 +567,8 @@ private fun PracticeDetailsSubTab(
             }
             val fee = profile?.consultation_fee
             if (fee != null && !fee.amount.isNullOrBlank()) {
-                ProfileFieldRow(label = "Consultation fee", value = "${fee.symbol ?: "₹"} ${fee.amount}")
+                val feeSym = getFeeCurrencySymbol(fee.symbol, firm?.billing_currency, firm?.address?.country ?: profile.nationality)
+                ProfileFieldRow(label = "Consultation fee", value = "$feeSym ${fee.amount}")
             }
         } else {
             ProfileFieldRow(label = "Registration Id", value = firm?.reg_id)

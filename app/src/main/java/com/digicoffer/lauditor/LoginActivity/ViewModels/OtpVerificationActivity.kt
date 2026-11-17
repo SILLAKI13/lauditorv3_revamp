@@ -391,6 +391,7 @@ class OtpVerificationActivity : AppCompatActivity(), AsyncTaskCompleteListener, 
                 Constants.forgot_pwd_request = false
                 val probizData = JSONObject(result.getString("data"))
                 Constants.jsonObject_dashboard = probizData
+                Constants.parseCountryConfig(probizData)
                 if (!probizData.getString("plan").equals("lauditor", ignoreCase = true)) {
                     AndroidUtils.showAlert("Account not found", this)
                     return
@@ -495,6 +496,17 @@ class OtpVerificationActivity : AppCompatActivity(), AsyncTaskCompleteListener, 
                     list.add(firmsDo)
                 }
                 val myPrefs = getSharedPreferences("MyPrefs", Context.MODE_PRIVATE)
+
+                val intentCountry = intent.getStringExtra("country") ?: ""
+                val probizCountry = probizData.optString("country").ifEmpty {
+                    probizData.optJSONObject("address")?.optString("country") ?: ""
+                }
+                val finalCountry = if (intentCountry.isNotBlank()) intentCountry else probizCountry
+                val probizCurrency = probizData.optString("billing_currency").ifEmpty {
+                    probizData.optJSONObject("firm")?.optString("billing_currency") ?: ""
+                }
+                Constants.updateCountryAndCurrency(finalCountry, probizCurrency, this)
+
                 val loginPic = probizData.optString("profile_pic_url").ifEmpty {
                     probizData.optString("profile_pic").ifEmpty {
                         probizData.optString("imageUrl", "")
@@ -506,8 +518,20 @@ class OtpVerificationActivity : AppCompatActivity(), AsyncTaskCompleteListener, 
                 }
 
                 BioMetricAccess()
-                Dashboard()
-                Constants.IS_MyDay = true
+                if (isRegister) {
+                    val intent = Intent(this, reset_password_file::class.java).apply {
+                        putExtra("is_register", true)
+                        putExtra("pk", Constants.PK)
+                        putExtra("user_id", Constants.USER_ID)
+                        putExtra("email", Constants.Email)
+                        putExtra("old_password", otp)
+                    }
+                    startActivity(intent)
+                    finish()
+                } else {
+                    Dashboard()
+                    Constants.IS_MyDay = true
+                }
 
             } else if (result.getBoolean("error") && !result.has("firms")) {
                 val errorMsg = result.getString("msg")
@@ -584,6 +608,8 @@ class OtpVerificationActivity : AppCompatActivity(), AsyncTaskCompleteListener, 
         val password = otp
         val sharedPreferences = getSharedPreferences("MyPrefs", Context.MODE_PRIVATE)
         sharedPreferences.edit().apply {
+            putString("pk", Constants.PK)
+            putString("user_id", Constants.USER_ID)
             putString("email", email?.lowercase())
             putString("password", password)
             putString("Token", token)
@@ -591,6 +617,10 @@ class OtpVerificationActivity : AppCompatActivity(), AsyncTaskCompleteListener, 
             putString("login_method", Constants.LOGIN_METHOD)
             putString("firm_id", Constants.Firm_id)
             putString("Json_key", Constants.jsonObject_dashboard?.toString() ?: "")
+            putString("country", Constants.Country)
+            putString("country_code", Constants.CountryCode)
+            putString("currency_symbol", Constants.CurrencySymbol)
+            putString("hidden_modules", JSONArray(Constants.HiddenModules).toString())
             putBoolean("Check_box", Constants.is_biometric)
         }.apply()
     }

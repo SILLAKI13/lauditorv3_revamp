@@ -417,12 +417,7 @@ open class ViewPracticePartnerAdapter(
             holder.ll_subcription?.visibility = View.GONE
             holder.ll_basicprofile?.visibility = View.VISIBLE
             holder.ll_additional_inform?.visibility = View.VISIBLE
-            if (percentage == 100) {
-                profileCompletionBanner?.visibility = View.GONE
-            } else {
-                profileCompletionBanner?.visibility = View.VISIBLE
-                updateCompletionBanner(holder, model)
-            }
+            profileCompletionBanner?.visibility = View.GONE
         } else if (Constants.issubscription) {
             holder.ll_basicprofile?.visibility = View.GONE
             holder.ll_subcription?.visibility = View.VISIBLE
@@ -431,10 +426,7 @@ open class ViewPracticePartnerAdapter(
         } else {
             holder.ll_basicprofile?.visibility = View.VISIBLE
             holder.ll_subcription?.visibility = View.GONE
-            profileCompletionBanner?.visibility = if (percentage == 100) View.GONE else View.VISIBLE
-            if (percentage != 100) {
-                updateCompletionBanner(holder, model)
-            }
+            profileCompletionBanner?.visibility = View.GONE
             holder.ll_additional_inform?.visibility = View.VISIBLE
         }
 
@@ -1047,7 +1039,8 @@ open class ViewPracticePartnerAdapter(
             tvConFeeValue.visibility = if (fp || isAMMorSU) View.GONE else View.VISIBLE
             if (!fp && !isAMMorSU) {
                 val cf = profile.consultation_fee
-                val sym = cf?.symbol ?: "₹"
+                val rawSym = cf?.symbol ?: ""
+                val sym = if (rawSym.isNotEmpty() && rawSym != "₹") rawSym else if (Constants.isUSUser()) "$" else "₹"
                 val fee = cf?.amount ?: ""
                 tvConFeeValue.text = "$sym $fee"
             }
@@ -2070,7 +2063,7 @@ open class ViewPracticePartnerAdapter(
 
         if (showBanner) {
             holder.tvCompleteNow?.setText(R.string.complete_now)
-            profileCompletionBanner?.visibility = View.VISIBLE
+            profileCompletionBanner?.visibility = View.GONE
         } else {
             profileCompletionBanner?.visibility = View.GONE
         }
@@ -2121,7 +2114,7 @@ open class ViewPracticePartnerAdapter(
             e.printStackTrace()
         }
 
-        if (pct >= 100) {
+        if (pct >= 90) {
             val rv = recyclerView
             if (rv != null) {
                 val vh = rv.findViewHolderForAdapterPosition(0) as? MyViewHolder

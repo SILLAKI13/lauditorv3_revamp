@@ -105,6 +105,8 @@ class LoginActivity : AppCompatActivity(), AsyncTaskCompleteListener, View.OnCli
     private var composeFullNameValue by mutableStateOf("")
     private var composeRegisterEmailValue by mutableStateOf("")
     private var composeRegisterPhoneValue by mutableStateOf("")
+    private var composeCountryValue by mutableStateOf("India")
+    private var composeCountryCodeValue by mutableStateOf("+91")
     private var composeSelectedFirmState by mutableStateOf<String?>(null)
     private var composeBiometricCheckedState by mutableStateOf(false)
     private var composeTermsAcceptedState by mutableStateOf(false)
@@ -131,10 +133,18 @@ class LoginActivity : AppCompatActivity(), AsyncTaskCompleteListener, View.OnCli
                         onRegisterEmailChange = { composeRegisterEmailValue = it },
                         registerPhoneValue = composeRegisterPhoneValue,
                         onRegisterPhoneChange = { input ->
-                            val filtered = input.filter { it.isDigit() || it == '+' }
+                            val filtered = input.filter { it.isDigit() }
                             if (filtered.length <= 10) {
                                 composeRegisterPhoneValue = filtered
                             }
+                        },
+                        selectedCountry = composeCountryValue,
+                        selectedCountryCode = composeCountryCodeValue,
+                        onCountrySelected = { country, code ->
+                            composeCountryValue = country
+                            composeCountryCodeValue = code
+                            Constants.Country = country
+                            Constants.CountryCode = code
                         },
                         isLoginMode = isLoginMode,
                         isPasswordMode = isPasswordMode,
@@ -195,7 +205,7 @@ class LoginActivity : AppCompatActivity(), AsyncTaskCompleteListener, View.OnCli
         setupListeners()
 
         Constants.ISPRODUCTION = false
-        Constants.IS_STAGING = true
+        Constants.IS_STAGING = false
         FirebaseInitHelper.initializeFirebase(this)
         DynamicUtils.loadRefreshDynamicSizes(applicationContext)
 
@@ -684,19 +694,23 @@ class LoginActivity : AppCompatActivity(), AsyncTaskCompleteListener, View.OnCli
 
             val currentDate = java.text.SimpleDateFormat("dd/MM/yyyy", java.util.Locale.getDefault()).format(java.util.Date())
 
-            val postData = JSONObject()
-            postData.put("fullname", fullName)
-            postData.put("country", "India")
-            postData.put("contact_person", fullName)
-            postData.put("product", "lauditor")
-            postData.put("sub_model", "three_month_free")
-            postData.put("is_active_sub", true)
-            postData.put("sub_start_date", currentDate)
-            postData.put("category", "solo")
-            postData.put("reg_city", "")
-            postData.put("reg_platform", "android")
-            postData.put("email", email.lowercase())
-            postData.put("mobile", phone)
+            val postData = JSONObject().apply {
+                put("fullname", fullName)
+                put("country", composeCountryValue)
+                put("country_code", composeCountryCodeValue)
+                put("contact_person", fullName)
+                put("product", "lauditor")
+                put("sub_model", "three_month_free")
+                put("is_active_sub", true)
+                put("accepted_terms", false)
+                put("sub_start_date", currentDate)
+                put("category", "solo")
+                put("email", email.lowercase())
+                put("phone", phone)
+                put("mobile", phone)
+                put("reg_city", "Puducherry")
+                put("reg_platform", "android")
+            }
 
             progressDialog = AndroidUtils.get_progress(this)
 
@@ -790,6 +804,7 @@ class LoginActivity : AppCompatActivity(), AsyncTaskCompleteListener, View.OnCli
             if (!result.getBoolean("error")) {
                 val probizData = JSONObject(result.getString("data"))
                 Constants.jsonObject_dashboard = probizData
+                Constants.parseCountryConfig(probizData)
                 if (!probizData.getString("plan").equals("lauditor", ignoreCase = true)) {
                     AndroidUtils.showAlert("Account not found", this)
                     return
@@ -825,6 +840,14 @@ class LoginActivity : AppCompatActivity(), AsyncTaskCompleteListener, View.OnCli
                 Constants.Email = email.lowercase()
                 Constants.Refresh_token = probizData.optString("refresh_token")
                 Constants.TOKEN = probizData.optString("access_token")
+
+                val probizCountry = probizData.optString("country").ifEmpty {
+                    probizData.optJSONObject("address")?.optString("country") ?: ""
+                }
+                val probizCurrency = probizData.optString("billing_currency").ifEmpty {
+                    probizData.optJSONObject("firm")?.optString("billing_currency") ?: ""
+                }
+                Constants.updateCountryAndCurrency(probizCountry, probizCurrency, this)
 
                 val subscription = probizData.optJSONObject("subscription")
                 if (subscription != null) {
@@ -898,6 +921,10 @@ class LoginActivity : AppCompatActivity(), AsyncTaskCompleteListener, View.OnCli
                     .putString("firmIds", JSONArray(Constants.Firm_ids).toString())
                     .putBoolean("requiresTermsAcceptance", Constants.requiresTermsAcceptance)
                     .putString("termsVersion", Constants.termsVersion)
+                    .putString("country", Constants.Country)
+                    .putString("country_code", Constants.CountryCode)
+                    .putString("currency_symbol", Constants.CurrencySymbol)
+                    .putString("hidden_modules", JSONArray(Constants.HiddenModules).toString())
                     .apply()
 
                 checkPasswordResetMode(probizData)
@@ -942,12 +969,16 @@ class LoginActivity : AppCompatActivity(), AsyncTaskCompleteListener, View.OnCli
             Constants.Mobile = phone
 
             if (!result.optBoolean("error", true)) {
+                Constants.updateCountryAndCurrency(composeCountryValue, "", this)
+
                 val message = result.optString("msg", "Registration successful! OTP sent to your email.")
                 AndroidUtils.showAlert(message, this, "Success", Runnable {
                     val intent = Intent(this, OtpVerificationActivity::class.java).apply {
                         putExtra("email", email)
                         putExtra("Check_box", false)
                         putExtra("is_register", true)
+                        putExtra("country", composeCountryValue)
+                        putExtra("country_code", composeCountryCodeValue)
                     }
                     startActivity(intent)
                 })
@@ -1086,6 +1117,10 @@ class LoginActivity : AppCompatActivity(), AsyncTaskCompleteListener, View.OnCli
             putString("login_method", Constants.LOGIN_METHOD)
             putString("firm_id", Constants.Firm_id)
             putString("Json_key", Constants.jsonObject_dashboard?.toString() ?: "")
+            putString("country", Constants.Country)
+            putString("country_code", Constants.CountryCode)
+            putString("currency_symbol", Constants.CurrencySymbol)
+            putString("hidden_modules", JSONArray(Constants.HiddenModules).toString())
             putBoolean("Check_box", Constants.is_biometric)
         }.apply()
     }

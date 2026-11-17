@@ -490,7 +490,8 @@ class PracticePartnerView : Fragment(), AsyncTaskCompleteListener, View.OnClickL
                             if (feeObj != null) {
                                 val cf = FirmProfileModel.ConsultationFee()
                                 cf.amount = feeObj.optString("amount", "")
-                                cf.symbol = feeObj.optString("symbol", "₹")
+                                val sym = feeObj.optString("symbol", "")
+                                cf.symbol = if (sym.isNotEmpty() && sym != "₹") sym else if (Constants.isUSUser()) "$" else (Constants.CurrencySymbol.ifEmpty { "₹" })
                                 profile.consultation_fee = cf
                             }
 

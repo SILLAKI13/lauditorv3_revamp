@@ -705,9 +705,12 @@ class MainActivity : AppCompatActivity(), Dashboard.MenuHighlightListener, Month
         
         when (Constants.ROLE) {
             "SU", "GH" -> {
-                center_menu = FloatingActionMenu.Builder(this)
+                val menuBuilder = FloatingActionMenu.Builder(this)
                     .addSubActionView(rLSub.setContentView(matters_bm).setLayoutParams(subParams).build())
-                    .addSubActionView(rLSub.setContentView(timesheets_bm).build())
+                if (!Constants.isUSUser() && !Constants.HiddenModules.contains("timesheets")) {
+                    menuBuilder.addSubActionView(rLSub.setContentView(timesheets_bm).build())
+                }
+                center_menu = menuBuilder
                     .addSubActionView(rLSub.setContentView(documents_bm).build())
                     .addSubActionView(rLSub.setContentView(relationships_bm).build())
                     .addSubActionView(rLSub.setContentView(groups_bm).build())
@@ -722,9 +725,12 @@ class MainActivity : AppCompatActivity(), Dashboard.MenuHighlightListener, Month
                     .attachTo(actionButton).setStartAngle(200).setEndAngle(340).build()
             }
             else -> {
-                center_menu = FloatingActionMenu.Builder(this)
+                val menuBuilder = FloatingActionMenu.Builder(this)
                     .addSubActionView(rLSub.setContentView(matters_bm).setLayoutParams(subParams).build())
-                    .addSubActionView(rLSub.setContentView(timesheets_bm).build())
+                if (!Constants.isUSUser() && !Constants.HiddenModules.contains("timesheets")) {
+                    menuBuilder.addSubActionView(rLSub.setContentView(timesheets_bm).build())
+                }
+                center_menu = menuBuilder
                     .addSubActionView(rLSub.setContentView(documents_bm).build())
                     .addSubActionView(rLSub.setContentView(relationships_bm).build())
                     .addSubActionView(rLSub.setContentView(more_bm).build())
@@ -858,6 +864,9 @@ class MainActivity : AppCompatActivity(), Dashboard.MenuHighlightListener, Month
             }
             
             val myPrefs = getSharedPreferences("MyPrefs", Context.MODE_PRIVATE)
+            val savedCountry = myPrefs.getString("country", "India") ?: "India"
+            val savedCurrency = myPrefs.getString("currency_symbol", "₹") ?: "₹"
+            Constants.updateCountryAndCurrency(savedCountry, if (savedCurrency == "$") "USD" else "INR", this)
             if (Constants.firm_image.isNullOrEmpty()) {
                 Constants.firm_image = myPrefs.getString("firm_image", "")
             }
@@ -873,6 +882,7 @@ class MainActivity : AppCompatActivity(), Dashboard.MenuHighlightListener, Month
             actionButton.visibility = View.GONE
             iv_Drawer.setOnClickListener {
                 if (!dLayout.isDrawerOpen(GravityCompat.START)) {
+                    setMenuList()
                     dLayout.openDrawer(GravityCompat.START)
                     center_menu.close(true)
                     nav_linear_layout.visibility = View.VISIBLE
@@ -1492,11 +1502,15 @@ class MainActivity : AppCompatActivity(), Dashboard.MenuHighlightListener, Month
                 sm_notification.visibility = View.VISIBLE
             }
         }
+        if (Constants.isUSUser()) {
+            sm_appointments.visibility = View.GONE
+            sm_timesheet.visibility = View.GONE
+        }
         sm_settings.visibility = View.VISIBLE
         updateSidebarUiState()
     }
 
-    private fun setMenuList() {
+    fun setMenuList() {
         setDefaultMenuList()
     }
 
@@ -1683,6 +1697,7 @@ class MainActivity : AppCompatActivity(), Dashboard.MenuHighlightListener, Month
         Constants.ContactName = ""
         Constants.firmProfileModel = null
         Constants.is_biometric = false
+        Constants.resetToIndia(this)
         AppImageCache.clearAll()
         try {
             com.bumptech.glide.Glide.get(applicationContext).clearMemory()
@@ -1840,7 +1855,17 @@ class MainActivity : AppCompatActivity(), Dashboard.MenuHighlightListener, Month
                                     Constants.FIRM_NAME = firmName
                                 }
 
+                                val address = firm?.optJSONObject("address")
+                                val country = address?.optString("country")
+                                    ?: profile?.optString("country")
+                                    ?: firm?.optString("country")
+                                    ?: profile?.optString("nationality")
+                                val billingCurrency = firm?.optString("billing_currency", "") ?: ""
+
+                                Constants.updateCountryAndCurrency(country, billingCurrency, this@MainActivity)
+
                                 updateTopBarProfile()
+                                setMenuList()
                             }
                             fetchNotificationCount()
                         }
@@ -2897,12 +2922,20 @@ class MainActivity : AppCompatActivity(), Dashboard.MenuHighlightListener, Month
             R.id.sm_logout to R.drawable.logout
         )
 
+        val isUS = Constants.isUSUser()
+
         val items = parentViews.map { parentView ->
             val id = parentView.id
             val titleTv = parentView.findViewById<TextView>(R.id.title)
             val title = titleTv?.text?.toString() ?: ""
             val iconResId = iconMap[id] ?: 0
-            val isVisible = parentView.visibility == View.VISIBLE
+
+            val isHiddenForCountry = isUS && (id == R.id.sm_appointments || id == R.id.sm_timesheet)
+            if (isHiddenForCountry) {
+                parentView.visibility = View.GONE
+            }
+
+            val isVisible = if (isHiddenForCountry) false else parentView.visibility == View.VISIBLE
 
             val container = parentView.findViewById<LinearLayout>(R.id.submenu_container)
             val hasSubMenu = parentView.findViewById<View>(R.id.iv_arrow)?.visibility == View.VISIBLE
