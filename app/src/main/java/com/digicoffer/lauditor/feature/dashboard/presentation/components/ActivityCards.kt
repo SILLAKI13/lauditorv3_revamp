@@ -34,6 +34,7 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.digicoffer.lauditor.Dashboard.DahboardModels.CardDataModels
+import com.digicoffer.lauditor.Dashboard.NewRevampViewModels.DashboardParser
 import com.digicoffer.lauditor.R
 import com.digicoffer.lauditor.feature.dashboard.data.model.DashboardCardItemModel
 
@@ -92,26 +93,117 @@ fun NotificationCard(
     modifier: Modifier = Modifier
 ) {
     val notifs = data.notifications
-    val first = notifs?.firstOrNull()
-    val hasData = !notifs.isNullOrEmpty()
-    val primary = if (first?.message.isNullOrEmpty()) "New notification" else first?.message ?: ""
-    val secondary = first?.time ?: ""
+    val items = notifs?.take(2) ?: emptyList()
+    val hasData = items.isNotEmpty()
 
-    ActivityCommonCard(
-        iconRes = R.drawable.ic_bell_orange,
-        iconTint = null,
-        iconBgColor = Color(0xFFFFF3E0),
-        label = "Notifications",
-        badge = data.badge,
-        badgeBgColor = Color(0xFFFFF3E0),
-        badgeTextColor = Color(0xFFE65100),
-        hasData = hasData,
-        primaryText = primary,
-        secondaryText = secondary,
-        emptyText = "No new notifications",
-        onClick = onClick,
+    Card(
+        shape = RoundedCornerShape(18.dp),
+        colors = CardDefaults.cardColors(containerColor = Color.White),
+        elevation = CardDefaults.cardElevation(defaultElevation = 4.dp),
         modifier = modifier
-    )
+            .width(300.dp)
+            .height(160.dp)
+            .padding(6.dp)
+            .clickable { onClick() }
+    ) {
+        Column(
+            modifier = Modifier
+                .fillMaxSize()
+                .padding(horizontal = 14.dp, vertical = 8.dp)
+        ) {
+            // Header Row: Bell Icon + Badge
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                Box(
+                    modifier = Modifier
+                        .size(32.dp)
+                        .clip(CircleShape)
+                        .background(Color(0xFFFFF3E0)),
+                    contentAlignment = Alignment.Center
+                ) {
+                    Image(
+                        painter = painterResource(id = R.drawable.ic_bell_orange),
+                        contentDescription = "Notifications",
+                        modifier = Modifier.size(16.dp)
+                    )
+                }
+
+                Spacer(modifier = Modifier.weight(1f))
+
+                val badgeCount = data.badge?.label ?: data.badge?.count?.toInt()?.toString() ?: "0"
+                Box(
+                    modifier = Modifier
+                        .clip(RoundedCornerShape(12.dp))
+                        .background(Color(0xFFFFF3E0))
+                        .padding(horizontal = 8.dp, vertical = 3.dp),
+                    contentAlignment = Alignment.Center
+                ) {
+                    Text(
+                        text = badgeCount,
+                        style = TextStyle(
+                            fontFamily = GillSansRegular,
+                            fontSize = 12.sp,
+                            fontWeight = FontWeight.Bold,
+                            color = Color(0xFFE65100)
+                        )
+                    )
+                }
+            }
+
+            Spacer(modifier = Modifier.height(6.dp))
+
+            if (hasData) {
+                items.forEachIndexed { index, item ->
+                    if (index > 0) {
+                        Spacer(modifier = Modifier.height(6.dp))
+                    }
+
+                    val message = item.message.orEmpty().ifEmpty { "New notification" }
+                    val time = DashboardParser.formatNotificationTime(item.time)
+
+                    Text(
+                        text = message,
+                        style = TextStyle(
+                            fontFamily = GillSansRegular,
+                            fontSize = 12.sp,
+                            fontWeight = FontWeight.Normal,
+                            color = Color.Black
+                        ),
+                        lineHeight = 15.sp,
+                        maxLines = 2,
+                        overflow = TextOverflow.Ellipsis
+                    )
+
+                    if (time.isNotBlank()) {
+                        Text(
+                            text = time,
+                            style = TextStyle(
+                                fontFamily = GillSansRegular,
+                                fontSize = 10.5.sp,
+                                color = Color(0xFF757575)
+                            ),
+                            lineHeight = 13.sp,
+                            maxLines = 1,
+                            overflow = TextOverflow.Ellipsis,
+                            modifier = Modifier.padding(top = 1.dp)
+                        )
+                    }
+                }
+            } else {
+                Text(
+                    text = "No new notifications",
+                    style = TextStyle(
+                        fontFamily = GillSansRegular,
+                        fontSize = 12.sp,
+                        color = Color(0xFF757575)
+                    ),
+                    modifier = Modifier.padding(top = 10.dp)
+                )
+            }
+        }
+    }
 }
 
 @Composable
