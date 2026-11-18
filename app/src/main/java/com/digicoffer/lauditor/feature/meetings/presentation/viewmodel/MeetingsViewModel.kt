@@ -232,7 +232,7 @@ class MeetingsViewModel(
                 loadMatters(event.matterType)
             }
             is MeetingsUiEvent.LoadCorporateTeamMembers -> {
-                loadCorporateTeamMembers(event.corporateId)
+                loadCorporateTeamMembers(event.corporateClients, event.corporateId)
             }
             is MeetingsUiEvent.GenerateMeetingLink -> {
                 generateMeetingLink()
@@ -693,30 +693,56 @@ class MeetingsViewModel(
         }
     }
 
-    private fun loadCorporateTeamMembers(corporateId: String) {
+    private fun loadCorporateTeamMembers(
+        corporateClients: List<RelationshipsDO> = emptyList(),
+        corporateId: String = ""
+    ) {
         viewModelScope.launch {
-            val result = repository.fetchEntityTeamMembers(corporateId)
-            if (result.result == WebServiceHelper.ServiceCallStatus.Success) {
-                try {
-                    val json = JSONObject(result.responseContent ?: "")
-                    if (!json.optBoolean("error", false)) {
-                        val usersArray = json.optJSONArray("users") ?: JSONArray()
-                        val list = mutableListOf<RelationshipsDO>()
-                        for (i in 0 until usersArray.length()) {
-                            val obj = usersArray.getJSONObject(i)
-                            val model = RelationshipsDO().apply {
-                                id = obj.optString("id")
-                                name = obj.optString("name")
-                                type = "corporate_tm"
+            val targets = if (corporateClients.isNotEmpty()) {
+                corporateClients
+            } else if (corporateId.isNotEmpty()) {
+                val foundName = _uiState.value.corporateClients.find { it.id == corporateId }?.name.orEmpty()
+                listOf(RelationshipsDO().apply {
+                    id = corporateId
+                    name = foundName
+                    type = "corporate"
+                })
+            } else {
+                emptyList()
+            }
+
+            if (targets.isEmpty()) {
+                _uiState.update { it.copy(corporateTeamMembers = emptyList()) }
+                return@launch
+            }
+
+            val allTeamMembers = mutableListOf<RelationshipsDO>()
+            for (corp in targets) {
+                val cId = corp.id ?: continue
+                val cName = corp.name.orEmpty()
+                val result = repository.fetchEntityTeamMembers(cId)
+                if (result.result == WebServiceHelper.ServiceCallStatus.Success) {
+                    try {
+                        val json = JSONObject(result.responseContent ?: "")
+                        if (!json.optBoolean("error", false)) {
+                            val usersArray = json.optJSONArray("users") ?: JSONArray()
+                            for (i in 0 until usersArray.length()) {
+                                val obj = usersArray.getJSONObject(i)
+                                val rawId = obj.optString("id")
+                                val tmName = obj.optString("name")
+                                allTeamMembers.add(RelationshipsDO().apply {
+                                    id = if (rawId.contains("_")) rawId else "${cId}_$rawId"
+                                    name = if (cName.isNotEmpty()) "$cName - $tmName" else tmName
+                                    type = "corporate_tm"
+                                })
                             }
-                            list.add(model)
                         }
-                        _uiState.update { it.copy(corporateTeamMembers = list) }
+                    } catch (e: Exception) {
+                        e.printStackTrace()
                     }
-                } catch (e: Exception) {
-                    e.printStackTrace()
                 }
             }
+            _uiState.update { it.copy(corporateTeamMembers = allTeamMembers) }
         }
     }
 

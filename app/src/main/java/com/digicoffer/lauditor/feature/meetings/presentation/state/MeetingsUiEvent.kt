@@ -1,6 +1,7 @@
 package com.digicoffer.lauditor.feature.meetings.presentation.state
 
 import com.digicoffer.lauditor.Meetings.Models.Event_Details_DO
+import com.digicoffer.lauditor.Meetings.Models.RelationshipsDO
 import org.json.JSONObject
 
 sealed interface MeetingsUiEvent {
@@ -48,7 +49,10 @@ sealed interface MeetingsUiEvent {
 
     // Metadata loading for Form
     data class LoadMatters(val matterType: String) : MeetingsUiEvent
-    data class LoadCorporateTeamMembers(val corporateId: String) : MeetingsUiEvent
+    data class LoadCorporateTeamMembers(
+        val corporateClients: List<RelationshipsDO> = emptyList(),
+        val corporateId: String = ""
+    ) : MeetingsUiEvent
     object GenerateMeetingLink : MeetingsUiEvent
 
     // Detail Modal Intents

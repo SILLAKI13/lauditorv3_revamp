@@ -6,8 +6,11 @@ import com.digicoffer.lauditor.Dashboard.DahboardModels.CardDataModels
 import com.digicoffer.lauditor.Notifications.Models.Navigation
 import org.json.JSONArray
 import org.json.JSONObject
+import java.text.SimpleDateFormat
 import java.util.ArrayList
 import java.util.LinkedHashMap
+import java.util.Locale
+import java.util.TimeZone
 
 class DashboardParser {
     companion object {
@@ -138,7 +141,8 @@ class DashboardParser {
                         val ni = CardDataModels.NotificationCardData.NotificationItem()
                         ni.id = obj.optString("id")
                         ni.message = obj.optString("message")
-                        ni.time = obj.optString("time")
+                        val rawTime = obj.optString("time").ifEmpty { obj.optString("date") }
+                        ni.time = formatNotificationTime(rawTime)
                         ni.date = obj.optString("date")
                         ni.isRead = obj.optBoolean("isRead")
                         notifs.add(ni)
@@ -649,6 +653,63 @@ class DashboardParser {
                 list.add(arr.optDouble(i).toFloat())
             }
             return list
+        }
+
+        @JvmStatic
+        fun formatNotificationTime(rawTime: String?): String {
+            if (rawTime.isNullOrBlank()) return ""
+            val trimmed = rawTime.trim()
+
+            val utcPatterns = listOf(
+                "yyyy-MM-dd'T'HH:mm:ss.SSS'Z'",
+                "yyyy-MM-dd'T'HH:mm:ss.SSS",
+                "yyyy-MM-dd'T'HH:mm:ss'Z'",
+                "yyyy-MM-dd'T'HH:mm:ss",
+                "yyyy-MM-dd HH:mm:ss",
+                "yyyy-MM-dd'T'HH:mm",
+                "yyyy-MM-dd"
+            )
+            for (pattern in utcPatterns) {
+                try {
+                    val parser = SimpleDateFormat(pattern, Locale.US).apply {
+                        timeZone = TimeZone.getTimeZone("UTC")
+                    }
+                    val date = parser.parse(trimmed)
+                    if (date != null) {
+                        val outputFormat = SimpleDateFormat("MMM dd, yyyy | hh:mm a", Locale.US).apply {
+                            timeZone = TimeZone.getDefault()
+                        }
+                        return outputFormat.format(date)
+                    }
+                } catch (_: Exception) {
+                    // continue
+                }
+            }
+
+            val localPatterns = listOf(
+                "MMM dd, yyyy | hh:mm a",
+                "MMM dd yyyy | hh:mm a",
+                "MMM dd, yyyy hh:mm a",
+                "MMM dd yyyy hh:mm a"
+            )
+            for (pattern in localPatterns) {
+                try {
+                    val parser = SimpleDateFormat(pattern, Locale.US).apply {
+                        timeZone = TimeZone.getDefault()
+                    }
+                    val date = parser.parse(trimmed)
+                    if (date != null) {
+                        val outputFormat = SimpleDateFormat("MMM dd, yyyy | hh:mm a", Locale.US).apply {
+                            timeZone = TimeZone.getDefault()
+                        }
+                        return outputFormat.format(date)
+                    }
+                } catch (_: Exception) {
+                    // continue
+                }
+            }
+
+            return trimmed
         }
     }
 }

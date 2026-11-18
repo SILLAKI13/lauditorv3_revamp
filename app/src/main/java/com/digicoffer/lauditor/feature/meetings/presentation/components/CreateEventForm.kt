@@ -618,9 +618,24 @@ fun CreateEventForm(
     // Attendees & Attachments selections
     var selectedTeamMembers by remember { mutableStateOf<List<TeamDo>>(emptyList()) }
     var selectedCorporateClients by remember { mutableStateOf<List<RelationshipsDO>>(emptyList()) }
+    var selectedCorporateTeamMembers by remember { mutableStateOf<List<RelationshipsDO>>(emptyList()) }
     var selectedEntityClients by remember { mutableStateOf<List<RelationshipsDO>>(emptyList()) }
     var selectedIndividuals by remember { mutableStateOf<List<RelationshipsDO>>(emptyList()) }
     var selectedDocuments by remember { mutableStateOf<List<DocumentsDo>>(emptyList()) }
+
+    LaunchedEffect(selectedCorporateClients) {
+        if (selectedCorporateClients.isNotEmpty()) {
+            viewModel.onEvent(MeetingsUiEvent.LoadCorporateTeamMembers(corporateClients = selectedCorporateClients))
+            val currentCorpIds = selectedCorporateClients.mapNotNull { it.id }.toSet()
+            selectedCorporateTeamMembers = selectedCorporateTeamMembers.filter { tm ->
+                val prefix = tm.id?.substringBefore("_") ?: ""
+                currentCorpIds.contains(prefix)
+            }
+        } else {
+            viewModel.onEvent(MeetingsUiEvent.LoadCorporateTeamMembers(corporateClients = emptyList<RelationshipsDO>()))
+            selectedCorporateTeamMembers = emptyList()
+        }
+    }
 
     // Notifications: Pair of (Unit, Value) e.g. ("Minutes", "10")
     var notificationsList by remember { mutableStateOf(listOf(Pair("Minutes", "10"))) }
@@ -745,20 +760,35 @@ fun CreateEventForm(
             selectedEntityClients = extList
 
             val corpList = mutableListOf<RelationshipsDO>()
+            val corpTmList = mutableListOf<RelationshipsDO>()
             val corpArray = editing.corporate
             if (corpArray != null) {
                 for (j in 0 until corpArray.length()) {
                     val obj = corpArray.optJSONObject(j) ?: continue
                     val entId = obj.optString("entityId").ifEmpty { obj.optString("id") }
                     val entName = obj.optString("entityName").ifEmpty { obj.optString("name", obj.optString("tmName")) }
-                    corpList.add(RelationshipsDO().apply {
-                        id = entId
-                        name = entName
-                        this.type = "corporate"
-                    })
+                    val tmId = obj.optString("tmId")
+                    val tmName = obj.optString("tmName")
+                    if (entId.isNotEmpty() && corpList.none { it.id == entId }) {
+                        corpList.add(RelationshipsDO().apply {
+                            id = entId
+                            name = entName
+                            this.type = "corporate"
+                        })
+                    }
+                    if (tmId.isNotEmpty()) {
+                        val memberId = if (entId.isNotEmpty() && !tmId.contains("_")) "${entId}_$tmId" else tmId
+                        val memberName = if (entName.isNotEmpty() && tmName.isNotEmpty()) "$entName - $tmName" else tmName.ifEmpty { entName }
+                        corpTmList.add(RelationshipsDO().apply {
+                            id = memberId
+                            name = memberName
+                            this.type = "corporate_tm"
+                        })
+                    }
                 }
             }
             selectedCorporateClients = corpList
+            selectedCorporateTeamMembers = corpTmList
 
             val docList = mutableListOf<DocumentsDo>()
             val docArray = editing.attachments
@@ -893,8 +923,14 @@ fun CreateEventForm(
         }
 
         val selectedCorpArray = JSONArray()
-        selectedCorporateClients.forEach { corp ->
-            if (!corp.id.isNullOrEmpty()) selectedCorpArray.put(corp.id)
+        if (selectedCorporateTeamMembers.isNotEmpty()) {
+            selectedCorporateTeamMembers.forEach { tm ->
+                if (!tm.id.isNullOrEmpty()) selectedCorpArray.put(tm.id)
+            }
+        } else {
+            selectedCorporateClients.forEach { corp ->
+                if (!corp.id.isNullOrEmpty()) selectedCorpArray.put(corp.id)
+            }
         }
 
         val selectedExternalArray = JSONArray()
@@ -1241,6 +1277,7 @@ fun CreateEventForm(
                         taskName = ""
                         selectedTeamMembers = emptyList()
                         selectedCorporateClients = emptyList()
+                        selectedCorporateTeamMembers = emptyList()
                         selectedEntityClients = emptyList()
                         selectedIndividuals = emptyList()
                         selectedDocuments = emptyList()
@@ -1256,6 +1293,7 @@ fun CreateEventForm(
                         taskName = ""
                         selectedTeamMembers = emptyList()
                         selectedCorporateClients = emptyList()
+                        selectedCorporateTeamMembers = emptyList()
                         selectedEntityClients = emptyList()
                         selectedIndividuals = emptyList()
                         selectedDocuments = emptyList()
@@ -1276,6 +1314,7 @@ fun CreateEventForm(
                             selectedMatter = uiState.matters.firstOrNull { it.title == matterTitle }
                             selectedTeamMembers = emptyList()
                             selectedCorporateClients = emptyList()
+                            selectedCorporateTeamMembers = emptyList()
                             selectedEntityClients = emptyList()
                             selectedIndividuals = emptyList()
                             selectedDocuments = emptyList()
@@ -1284,6 +1323,7 @@ fun CreateEventForm(
                             selectedMatter = null
                             selectedTeamMembers = emptyList()
                             selectedCorporateClients = emptyList()
+                            selectedCorporateTeamMembers = emptyList()
                             selectedEntityClients = emptyList()
                             selectedIndividuals = emptyList()
                             selectedDocuments = emptyList()
@@ -1406,7 +1446,7 @@ fun CreateEventForm(
                     Image(
                         painter = painterResource(id = R.drawable.calendar_icon),
                         contentDescription = "Select Date",
-                        modifier = Modifier.size(20.dp)
+                        modifier = Modifier.size(26.dp)
                     )
                 }
 
@@ -1458,7 +1498,7 @@ fun CreateEventForm(
                         Image(
                             painter = painterResource(id = R.drawable.calendar_icon),
                             contentDescription = "Start Time",
-                            modifier = Modifier.size(20.dp)
+                            modifier = Modifier.size(26.dp)
                         )
                     }
 
@@ -1498,7 +1538,7 @@ fun CreateEventForm(
                         Image(
                             painter = painterResource(id = R.drawable.calendar_icon),
                             contentDescription = "End Time",
-                            modifier = Modifier.size(20.dp)
+                            modifier = Modifier.size(26.dp)
                         )
                     }
                 }
@@ -1731,18 +1771,33 @@ fun CreateEventForm(
                         )
                     }
 
-                    // 2. Add Corporate
+                    // 2. Add Corporate Client
                     if (Constants.ROLE != "AAM" && availableCorporateClients.isNotEmpty()) {
                         Spacer(modifier = Modifier.height(16.dp))
                         AttendeesMultiSelectDropdown(
-                            label = "Add Corporate",
-                            placeholder = "Select Corporate",
-                            searchPlaceholder = "Search Corporate",
+                            label = "Add Corporate Client",
+                            placeholder = "Select Corporate Client",
+                            searchPlaceholder = "Search Corporate Client",
                             items = availableCorporateClients,
                             selectedItems = selectedCorporateClients,
                             itemLabel = { it.name.orEmpty() },
                             itemId = { it.id.orEmpty() },
                             onSelectionChanged = { selectedCorporateClients = it }
+                        )
+                    }
+
+                    // 2b. Corporate Team Member(s) (Visible when Corporate Client is selected)
+                    if (Constants.ROLE != "AAM" && selectedCorporateClients.isNotEmpty()) {
+                        Spacer(modifier = Modifier.height(16.dp))
+                        AttendeesMultiSelectDropdown(
+                            label = "Corporate Team Member(s)",
+                            placeholder = "Select Corporate Team Member(s)",
+                            searchPlaceholder = "Search Corporate Team Member(s)",
+                            items = uiState.corporateTeamMembers,
+                            selectedItems = selectedCorporateTeamMembers,
+                            itemLabel = { it.name.orEmpty() },
+                            itemId = { it.id.orEmpty() },
+                            onSelectionChanged = { selectedCorporateTeamMembers = it }
                         )
                     }
 
