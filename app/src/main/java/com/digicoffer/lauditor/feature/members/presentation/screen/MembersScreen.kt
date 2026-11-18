@@ -503,7 +503,7 @@ fun MembersScreen(
                                                             MembersUiEvent.UpdateGroupAccess(
                                                                 id = member.id ?: "",
                                                                 groups = list,
-                                                                memberName = member.name.orEmpty(),
+                                                                memberName = formName.trim().ifEmpty { member.name.orEmpty() },
                                                                 onSuccess = { screenMode = MembersScreenMode.LISTING }
                                                             )
                                                         )

@@ -434,8 +434,7 @@ class MainActivity : AppCompatActivity(), Dashboard.MenuHighlightListener, Month
             collapseAllSubMenus()
             setActiveParent(sm_email)
             doNavigate(Email())
-            tv_pageName.textSize = DynamicUtils.eighteen.toFloat()
-            tv_pageName.setText(R.string.emails)
+            viewModel?.setData(getString(R.string.emails))
         }
         
         if (Constants.ROLE == "AAM") {
@@ -846,14 +845,28 @@ class MainActivity : AppCompatActivity(), Dashboard.MenuHighlightListener, Month
             
             viewModel = ViewModelProvider(this).get(NewModel::class.java)
             viewModel?.getselectedItem()?.observe(this) { item: String ->
-                if (item == getString(R.string.lauditor)) {
-                    tv_pageName.textSize = DynamicUtils.twentyFive.toFloat()
-                    tv_pageName.setText(R.string.appname)
-                    iv_logo_dashboard.setImageDrawable(getDrawable(R.drawable.loading_animation_new))
+                if (item == getString(R.string.lauditor) || item.equals("Dashboard", ignoreCase = true) || item.equals("Lauditor", ignoreCase = true) || item == getString(R.string.appname)) {
+                    tv_pageName.visibility = View.GONE
+                    tv_pageName.text = ""
+                    iv_logo_dashboard.adjustViewBounds = true
+                    iv_logo_dashboard.scaleType = ImageView.ScaleType.FIT_CENTER
+                    val heightInPx = (46 * resources.displayMetrics.density).toInt()
+                    val widthInPx = (heightInPx * 1024) / 452
+                    iv_logo_dashboard.layoutParams.height = heightInPx
+                    iv_logo_dashboard.layoutParams.width = widthInPx
+                    iv_logo_dashboard.setImageDrawable(ContextCompat.getDrawable(this, R.drawable.lex_z_lawyer_horizontal_tp))
+                    iv_logo_dashboard.requestLayout()
                 } else {
+                    tv_pageName.visibility = View.VISIBLE
                     tv_pageName.text = item
                     tv_pageName.textSize = DynamicUtils.eighteen.toFloat()
-                    iv_logo_dashboard.setImageDrawable(getDrawable(R.drawable.lawyer_logo_nw))
+                    iv_logo_dashboard.adjustViewBounds = true
+                    iv_logo_dashboard.scaleType = ImageView.ScaleType.FIT_CENTER
+                    val sizeInPx = (36 * resources.displayMetrics.density).toInt()
+                    iv_logo_dashboard.layoutParams.height = sizeInPx
+                    iv_logo_dashboard.layoutParams.width = sizeInPx
+                    iv_logo_dashboard.setImageDrawable(ContextCompat.getDrawable(this, R.drawable.lawyer_logo_nw))
+                    iv_logo_dashboard.requestLayout()
                 }
             }
             
@@ -1993,8 +2006,7 @@ class MainActivity : AppCompatActivity(), Dashboard.MenuHighlightListener, Month
             collapseAllSubMenus()
             setActiveParent(sm_email)
             doNavigate(Email())
-            tv_pageName.textSize = DynamicUtils.eighteen.toFloat()
-            tv_pageName.setText(R.string.emails)
+            viewModel?.setData(getString(R.string.emails))
         }
 
         if ("AAM" == Constants.ROLE) {
@@ -2732,6 +2744,7 @@ class MainActivity : AppCompatActivity(), Dashboard.MenuHighlightListener, Month
         collapseAllSubMenus()
         clearAllParentStyles()
         clearActiveSubItem()
+        viewModel?.setData(getString(R.string.lauditor))
         if (dLayout.isDrawerOpen(GravityCompat.START)) dLayout.closeDrawer(GravityCompat.START)
     }
 

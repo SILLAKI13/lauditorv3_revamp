@@ -268,18 +268,16 @@ class MembersViewModel(private val repository: MembersRepository) : ViewModel() 
                 }
             }
 
-            if (isSuccess) {
-                // If backend msg is generic, empty, or unhelpful, use action-specific Web message
-                val finalMsg = if (msg.isEmpty() ||
-                    msg.equals("Data updated successfully", ignoreCase = true) ||
-                    msg.equals("Member updated", ignoreCase = true) ||
-                    msg.equals("User updated successfully", ignoreCase = true) ||
-                    msg.equals("Member updated successfully", ignoreCase = true) ||
-                    msg.equals("Success", ignoreCase = true) ||
-                    msg.equals("Successful", ignoreCase = true)) {
+            val hasBackendError = result?.optBoolean("error", false) == true ||
+                    (result?.has("errors") == true && (result.optJSONArray("errors")?.length() ?: 0) > 0)
+
+            if (isSuccess && !hasBackendError) {
+                val finalMsg = if (defaultSuccessMsg.isNotBlank()) {
                     defaultSuccessMsg
-                } else {
+                } else if (msg.isNotEmpty()) {
                     msg
+                } else {
+                    "Operation completed successfully."
                 }
                 _uiState.update { it.copy(toastMessage = finalMsg, isToastSuccess = true) }
                 onSuccess()

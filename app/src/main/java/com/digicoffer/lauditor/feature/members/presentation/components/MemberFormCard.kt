@@ -54,7 +54,6 @@ import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import com.digicoffer.lauditor.CommonFiles.GlobalFiles.AndroidUtils
 import com.digicoffer.lauditor.R
 
 @Composable
@@ -220,9 +219,10 @@ fun MemberFormCard(
 
             Spacer(modifier = Modifier.height(16.dp))
 
-            // Phone Number (Optional)
+            // Phone Number *
             Row(verticalAlignment = Alignment.CenterVertically) {
                 Text(text = "Phone Number", color = activeBlue, fontWeight = FontWeight.SemiBold, fontSize = 15.sp, fontFamily = FontFamily(Font(R.font.gill_sans_regular)))
+                Text(text = " *", color = Color.Red, fontWeight = FontWeight.Bold, fontSize = 15.sp)
             }
             Spacer(modifier = Modifier.height(6.dp))
             CustomTextField(
@@ -331,11 +331,15 @@ fun MemberFormCard(
                         if (cleanName.isEmpty()) missingFields.add("Name")
                         if (cleanDesg.isEmpty()) missingFields.add("Designation")
                         if (cleanRate.isEmpty()) missingFields.add("Default Rate")
+                        if (cleanPhone.isEmpty()) missingFields.add("Phone Number")
                         if (cleanEmail.isEmpty()) missingFields.add("Email")
                         if (cleanConfirm.isEmpty()) missingFields.add("Confirm Email")
 
                         if (missingFields.isNotEmpty()) {
                             validationErrorMessage = "Please check the " + missingFields.joinToString(", ")
+                            showValidationErrorAlert = true
+                        } else if (cleanPhone.length != 10 || !cleanPhone.all { it.isDigit() }) {
+                            validationErrorMessage = "Please enter a 10 digit valid mobile number"
                             showValidationErrorAlert = true
                         } else if (!android.util.Patterns.EMAIL_ADDRESS.matcher(cleanEmail).matches() ||
                             !android.util.Patterns.EMAIL_ADDRESS.matcher(cleanConfirm).matches()) {
@@ -343,9 +347,6 @@ fun MemberFormCard(
                             showValidationErrorAlert = true
                         } else if (!cleanEmail.equals(cleanConfirm, ignoreCase = true)) {
                             validationErrorMessage = "Email and Confirm Email do not match"
-                            showValidationErrorAlert = true
-                        } else if (cleanPhone.isNotEmpty() && (cleanPhone.length != 10 || !cleanPhone.all { it.isDigit() })) {
-                            validationErrorMessage = "Please enter a 10 digit valid mobile number"
                             showValidationErrorAlert = true
                         } else {
                             onAssignGroupsClick()
@@ -414,11 +415,15 @@ fun MemberFormCard(
                             if (cleanName.isEmpty()) missingFields.add("Name")
                             if (cleanDesg.isEmpty()) missingFields.add("Designation")
                             if (cleanRate.isEmpty()) missingFields.add("Default Rate")
+                            if (cleanPhone.isEmpty()) missingFields.add("Phone Number")
                             if (cleanEmail.isEmpty()) missingFields.add("Email")
                             if (cleanConfirm.isEmpty()) missingFields.add("Confirm Email")
 
                             if (missingFields.isNotEmpty()) {
                                 validationErrorMessage = "Please check the " + missingFields.joinToString(", ")
+                                showValidationErrorAlert = true
+                            } else if (cleanPhone.length != 10 || !cleanPhone.all { it.isDigit() }) {
+                                validationErrorMessage = "Please enter a 10 digit valid mobile number"
                                 showValidationErrorAlert = true
                             } else if (!android.util.Patterns.EMAIL_ADDRESS.matcher(cleanEmail).matches() ||
                                 !android.util.Patterns.EMAIL_ADDRESS.matcher(cleanConfirm).matches()) {
@@ -426,9 +431,6 @@ fun MemberFormCard(
                                 showValidationErrorAlert = true
                             } else if (!cleanEmail.equals(cleanConfirm, ignoreCase = true)) {
                                 validationErrorMessage = "Email and Confirm Email do not match"
-                                showValidationErrorAlert = true
-                            } else if (cleanPhone.isNotEmpty() && (cleanPhone.length != 10 || !cleanPhone.all { it.isDigit() })) {
-                                validationErrorMessage = "Please enter a 10 digit valid mobile number"
                                 showValidationErrorAlert = true
                             } else {
                                 onSaveClick()

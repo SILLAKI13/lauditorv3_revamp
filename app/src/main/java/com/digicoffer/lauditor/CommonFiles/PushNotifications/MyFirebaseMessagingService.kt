@@ -47,9 +47,34 @@ class MyFirebaseMessagingService : FirebaseMessagingService(), AsyncTaskComplete
         }
 
         if (remoteMessage.data.isNotEmpty()) {
-            remoteMessage.data["title"]?.let { title = it }
-            remoteMessage.data["body"]?.let { body = it }
+            remoteMessage.data["title"]?.let { if (it.isNotEmpty()) title = it }
+            remoteMessage.data["body"]?.let { if (it.isNotEmpty()) body = it }
             remoteMessage.data["navigation"]?.let { navigation = it }
+
+            if (title.isEmpty()) {
+                title = remoteMessage.data["sender_name"]
+                    ?: remoteMessage.data["sender"]
+                    ?: remoteMessage.data["name"]
+                    ?: remoteMessage.data["subject"]
+                    ?: ""
+            }
+            if (body.isEmpty()) {
+                body = remoteMessage.data["message"]
+                    ?: remoteMessage.data["text"]
+                    ?: remoteMessage.data["msg"]
+                    ?: remoteMessage.data["description"]
+                    ?: remoteMessage.data["content"]
+                    ?: ""
+            }
+        }
+
+        if (title.isEmpty() && body.isEmpty() && remoteMessage.data.isNotEmpty()) {
+            title = "Lex-Z Lawyers"
+            body = "New Message"
+        } else if (title.isEmpty() && body.isNotEmpty()) {
+            title = "Lex-Z Lawyers"
+        } else if (body.isEmpty() && title.isNotEmpty()) {
+            body = "New Message"
         }
         val parseDuration = System.currentTimeMillis() - parseStart
         Log.d("PUSH_DEBUG", "PUSH_DEBUG | parsePayload END | duration = ${parseDuration}ms | title = $title | navigation = $navigation")
@@ -78,12 +103,12 @@ class MyFirebaseMessagingService : FirebaseMessagingService(), AsyncTaskComplete
             intent.putExtra("fcm_navigation", navigation)
         }
 
-        val requestCode = System.currentTimeMillis().toInt()
+        val requestCode = (System.currentTimeMillis() % 100000).toInt()
         val pendingIntent = PendingIntent.getActivity(
             this,
             requestCode,
             intent,
-            PendingIntent.FLAG_ONE_SHOT or PendingIntent.FLAG_IMMUTABLE
+            PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE
         )
 
         initNotificationChannel(this)
@@ -93,6 +118,9 @@ class MyFirebaseMessagingService : FirebaseMessagingService(), AsyncTaskComplete
             Log.e(TAG, "NotificationManager is null — cannot show notification")
             return
         }
+
+        val soundUri = RingtoneManager.getDefaultUri(RingtoneManager.TYPE_NOTIFICATION)
+        val vibrationPattern = longArrayOf(0, 250, 250, 250)
 
         val builder = NotificationCompat.Builder(this, CHANNEL_ID)
             .setSmallIcon(R.drawable.notification_sm_icon)
@@ -104,13 +132,17 @@ class MyFirebaseMessagingService : FirebaseMessagingService(), AsyncTaskComplete
                     .setBigContentTitle(title)
             )
             .setAutoCancel(true)
-            .setPriority(NotificationCompat.PRIORITY_DEFAULT)
+            .setPriority(NotificationCompat.PRIORITY_MAX)
+            .setCategory(NotificationCompat.CATEGORY_MESSAGE)
+            .setDefaults(NotificationCompat.DEFAULT_ALL)
+            .setSound(soundUri)
+            .setVibrate(vibrationPattern)
             .setVisibility(NotificationCompat.VISIBILITY_PUBLIC)
             .setContentIntent(pendingIntent)
 
         val notificationId = (System.currentTimeMillis() % 100000).toInt()
         manager.notify(notificationId, builder.build())
-        Log.d(TAG, "Notification displayed with ID: $notificationId on channel: $CHANNEL_ID")
+        Log.d(TAG, "Notification displayed with ID: $notificationId on channel: $CHANNEL_ID (Heads-Up enabled)")
     }
 
     private fun saveTokenLocally(token: String) {
@@ -163,7 +195,7 @@ class MyFirebaseMessagingService : FirebaseMessagingService(), AsyncTaskComplete
 
     companion object {
         private const val TAG = "FCM_Service"
-        const val CHANNEL_ID = "lauditor_notifications_v3"
+        const val CHANNEL_ID = "lauditor_notifications_v4"
         private const val CHANNEL_NAME = "Lauditor Notifications"
         private const val PREFS_NAME = "MyPrefs"
         private const val TOKEN_KEY = "fcm_token"
@@ -174,6 +206,7 @@ class MyFirebaseMessagingService : FirebaseMessagingService(), AsyncTaskComplete
             try {
                 manager.deleteNotificationChannel("lauditor_channel")
                 manager.deleteNotificationChannel("lauditor_notifications_v2")
+                manager.deleteNotificationChannel("lauditor_notifications_v3")
             } catch (e: Exception) {
                 // ignore
             }
@@ -188,17 +221,19 @@ class MyFirebaseMessagingService : FirebaseMessagingService(), AsyncTaskComplete
                 val channel = NotificationChannel(
                     CHANNEL_ID,
                     CHANNEL_NAME,
-                    NotificationManager.IMPORTANCE_DEFAULT
+                    NotificationManager.IMPORTANCE_HIGH
                 ).apply {
                     description = "Push notifications for Lex-Z Lawyers App"
-                    enableLights(false)
+                    enableLights(true)
+                    lightColor = Color.BLUE
                     enableVibration(true)
+                    vibrationPattern = longArrayOf(0, 250, 250, 250)
                     setSound(soundUri, audioAttributes)
                     setShowBadge(true)
                     lockscreenVisibility = NotificationCompat.VISIBILITY_PUBLIC
                 }
                 manager.createNotificationChannel(channel)
-                Log.d(TAG, "Notification channel created: $CHANNEL_ID ✅")
+                Log.d(TAG, "Notification channel created: $CHANNEL_ID with IMPORTANCE_HIGH ✅")
             }
         }
 

@@ -68,7 +68,12 @@ import com.github.mikephil.charting.interfaces.datasets.IBarDataSet
 import com.github.mikephil.charting.interfaces.datasets.ILineDataSet
 import com.github.mikephil.charting.listener.OnChartValueSelectedListener
 
-private val GillSansRegular = FontFamily(Font(R.font.gill_sans_regular))
+private val GillSansRegular = FontFamily(
+    Font(R.font.gill_sans_regular, FontWeight.Normal),
+    Font(R.font.gill_sans_bold, FontWeight.Bold),
+    Font(R.font.gill_sans, FontWeight.Medium),
+    Font(R.font.gill_sans_bold, FontWeight.SemiBold)
+)
 
 @Composable
 fun RevenueTrendCard(
