@@ -78,7 +78,7 @@ class Clients : Fragment(), AsyncTaskCompleteListener, ChatAdapter.EventListener
         et_Search?.setHint(R.string.type_to_search)
         et_Search?.addTextChangedListener(DescriptionValidation(et_Search))
 
-        callCorporateWebservice()
+        callWebservice()
         return view
     }
 
@@ -228,7 +228,6 @@ class Clients : Fragment(), AsyncTaskCompleteListener, ChatAdapter.EventListener
                 Clientlist.add(clientRelationshipsDo)
             }
 
-            Clientlist.addAll(Corporate_Client_list)
             loadRecycleView()
         } catch (e: Exception) {
             e.fillInStackTrace()

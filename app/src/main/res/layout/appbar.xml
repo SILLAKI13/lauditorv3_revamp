@@ -19,9 +19,11 @@
         android:paddingEnd="12dp">
 
         <LinearLayout
-            android:layout_width="match_parent"
+            android:layout_width="0dp"
             android:layout_height="wrap_content"
-            android:layout_weight="1">
+            android:layout_weight="1"
+            android:gravity="center_vertical"
+            android:orientation="horizontal">
             <!-- ── Hamburger toggle ── -->
             <!-- ── App Logo ── -->
             <LinearLayout
@@ -34,11 +36,12 @@
 
                 <ImageView
                     android:id="@+id/logo_dashboard"
-                    android:layout_width="@dimen/forty_dp"
-                    android:layout_height="@dimen/forty_dp"
+                    android:layout_width="104dp"
+                    android:layout_height="46dp"
+                    android:adjustViewBounds="true"
                     android:contentDescription="Logo"
                     android:scaleType="fitCenter"
-                    android:src="@drawable/lex_z_lawyer_vertical_tp" />
+                    android:src="@drawable/lex_z_lawyer_horizontal_tp" />
 
             </LinearLayout>
 
@@ -56,11 +59,10 @@
                 android:fontFamily="@font/gill_sans"
                 android:gravity="center_vertical"
                 android:maxLines="1"
-                android:text="@string/are_you_sure_you_want_send_relationship_request_to"
                 android:textColor="@color/Blue_text_color"
                 android:textSize="@dimen/seventeen_dp"
                 android:textStyle="bold"
-                android:visibility="visible" />
+                android:visibility="gone" />
         </LinearLayout>
         <!-- ── Spacer ── -->
 
@@ -74,10 +76,9 @@
         ══════════════════════════════════════════ -->
 
         <LinearLayout
-            android:layout_width="match_parent"
+            android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_gravity="center"
-            android:layout_weight="1"
             android:gravity="end">
             <ImageView
                 android:id="@+id/reminders"

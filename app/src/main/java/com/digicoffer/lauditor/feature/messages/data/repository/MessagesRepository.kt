@@ -32,6 +32,30 @@ import kotlin.coroutines.resume
 
 class MessagesRepository(private val context: Context) {
 
+    suspend fun fetchChatUsers(): HttpResultDo = suspendCancellableCoroutine { continuation ->
+        try {
+            WebServiceHelper.callHttpWebService(
+                object : AsyncTaskCompleteListener {
+                    override fun onAsyncTaskComplete(httpResult: HttpResultDo) {
+                        continuation.resume(httpResult)
+                    }
+                    override fun onClick(view: View) {}
+                },
+                context,
+                WebServiceHelper.RestMethodType.GET,
+                "chat/users/list",
+                "CHAT_USERS_LIST",
+                JSONObject().toString()
+            )
+        } catch (e: Exception) {
+            val failedResult = HttpResultDo().apply {
+                result = WebServiceHelper.ServiceCallStatus.Exception
+                responseContent = e.message ?: ""
+            }
+            continuation.resume(failedResult)
+        }
+    }
+
     suspend fun fetchClientRelationships(): HttpResultDo = suspendCancellableCoroutine { continuation ->
         try {
             WebServiceHelper.callHttpWebService(

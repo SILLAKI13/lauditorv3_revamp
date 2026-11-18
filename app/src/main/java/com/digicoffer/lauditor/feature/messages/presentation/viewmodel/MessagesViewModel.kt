@@ -365,12 +365,10 @@ class MessagesViewModel(application: Application) : AndroidViewModel(application
     }
 
     private suspend fun loadClientsInternal() = withContext(Dispatchers.IO) {
-        val corporateDeferred = async { repository.fetchCorporateRelationships() }
-        val clientDeferred = async { repository.fetchClientRelationships() }
+        val chatUsersDeferred = async { repository.fetchChatUsers() }
         val appointmentsDeferred = async { repository.fetchAppointments() }
 
-        val corporateResult = corporateDeferred.await()
-        val clientResult = clientDeferred.await()
+        val chatUsersResult = chatUsersDeferred.await()
         val appointmentsResult = appointmentsDeferred.await()
 
         val parsedAppointments = mutableListOf<AppointmentModel>()
@@ -402,79 +400,48 @@ class MessagesViewModel(application: Application) : AndroidViewModel(application
         cachedAppointments = parsedAppointments
 
         val clients = mutableListOf<ConversationItem>()
-        val firmMap = mutableMapOf<String, String>()
 
-        // 1. Parse Corporate List
-        if (corporateResult.result == WebServiceHelper.ServiceCallStatus.Success) {
+        // 1. Parse Chat Users List (matching Web & iOS: /professional/chat/users/list)
+        var chatUsersLoaded = false
+        if (chatUsersResult.result == WebServiceHelper.ServiceCallStatus.Success) {
             try {
-                val json = JSONObject(corporateResult.responseContent ?: "{}")
+                val json = JSONObject(chatUsersResult.responseContent ?: "{}")
                 if (!json.optBoolean("error")) {
+                    chatUsersLoaded = true
                     val array = json.optJSONArray("relationships") ?: JSONArray()
-                    for (i in 0 until array.length()) {
-                        val obj = array.getJSONObject(i)
-                        val guid = obj.optString("client_id").ifEmpty { obj.optString("guid") }
-                        if (guid.isNotEmpty()) {
-                            clients.add(
-                                ConversationItem(
-                                    guid = guid,
-                                    id = obj.optString("id"),
-                                    name = obj.optString("name"),
-                                    clientType = obj.optString("type", "corporate"),
-                                    source = obj.optString("source")
-                                )
-                            )
-                        }
-                    }
-                }
-            } catch (e: Exception) {
-                Log.e("MessagesViewModel", "Corporate parse error: ${e.message}")
-            }
-        }
-
-        // 2. Parse Individual / Entity Client List
-        if (clientResult.result == WebServiceHelper.ServiceCallStatus.Success) {
-            try {
-                val json = JSONObject(clientResult.responseContent ?: "{}")
-                if (!json.optBoolean("error")) {
-                    val data = json.optJSONObject("data")
-                    val array = data?.optJSONArray("relationships") ?: JSONArray()
                     for (i in 0 until array.length()) {
                         val obj = array.getJSONObject(i)
                         val clientType = obj.optString("type")
                         val relId = obj.optString("rel_id")
                         val name = obj.optString("name")
                         val guid = obj.optString("guid").ifEmpty { obj.optString("client_id") }
+                        val canChat = obj.optBoolean("can_chat", true)
+                        val members = obj.optJSONArray("members")
 
-                        if ("entity".equals(clientType, ignoreCase = true) && relId.isNotEmpty()) {
-                            firmMap[relId] = name
-                            // Fetch sub-users of entity
-                            val usersRes = repository.fetchRelationshipUsers(relId)
-                            if (usersRes.result == WebServiceHelper.ServiceCallStatus.Success) {
-                                try {
-                                    val uJson = JSONObject(usersRes.responseContent ?: "{}")
-                                    if (!uJson.optBoolean("error")) {
-                                        val uArray = uJson.optJSONObject("data")?.optJSONArray("users") ?: JSONArray()
-                                        for (j in 0 until uArray.length()) {
-                                            val uObj = uArray.getJSONObject(j)
-                                            val uGuid = uObj.optString("guid")
-                                            if (uGuid.isNotEmpty() && clients.none { it.guid == uGuid }) {
-                                                clients.add(
-                                                    ConversationItem(
-                                                        guid = uGuid,
-                                                        name = uObj.optString("name"),
-                                                        firmName = name,
-                                                        clientType = "consumer",
-                                                        source = "relationship"
-                                                    )
-                                                )
-                                            }
-                                        }
-                                    }
-                                } catch (e: Exception) {
-                                    Log.e("MessagesViewModel", "Entity users parse error: ${e.message}")
+                        // If relationship has corporate/entity members, add those chat-eligible members
+                        if (members != null && members.length() > 0) {
+                            for (j in 0 until members.length()) {
+                                val mObj = members.getJSONObject(j)
+                                val mGuid = mObj.optString("guid").ifEmpty { mObj.optString("client_id") }
+                                val mCanChat = mObj.optBoolean("can_chat", true)
+                                if (mGuid.isNotEmpty() && mCanChat && clients.none { it.guid == mGuid }) {
+                                    clients.add(
+                                        ConversationItem(
+                                            guid = mGuid,
+                                            id = mObj.optString("id"),
+                                            name = mObj.optString("name"),
+                                            firmName = name,
+                                            clientType = "consumer",
+                                            source = "relationship"
+                                        )
+                                    )
                                 }
                             }
-                        } else if (guid.isNotEmpty() && clients.none { it.guid == guid }) {
+                        } else if (guid.isNotEmpty() && canChat && clients.none { it.guid == guid }) {
+                            // Exclude corporate entities directly (they are firms, not individual chat contacts)
+                            if ("entity".equals(clientType, ignoreCase = true) || "corporate".equals(clientType, ignoreCase = true)) {
+                                continue
+                            }
                             val directApptFrom = obj.optString("appointment_from").ifEmpty {
                                 obj.optJSONObject("appointment")?.optString("appointment_from") ?: ""
                             }
@@ -504,7 +471,85 @@ class MessagesViewModel(application: Application) : AndroidViewModel(application
                     }
                 }
             } catch (e: Exception) {
-                Log.e("MessagesViewModel", "Client list parse error: ${e.message}")
+                Log.e("MessagesViewModel", "Chat users parse error: ${e.message}")
+            }
+        }
+
+        // 2. Fallback to Individual Client Relationships if chat/users/list was not available
+        if (!chatUsersLoaded) {
+            val clientResult = repository.fetchClientRelationships()
+            if (clientResult.result == WebServiceHelper.ServiceCallStatus.Success) {
+                try {
+                    val json = JSONObject(clientResult.responseContent ?: "{}")
+                    if (!json.optBoolean("error")) {
+                        val data = json.optJSONObject("data")
+                        val array = data?.optJSONArray("relationships") ?: JSONArray()
+                        for (i in 0 until array.length()) {
+                            val obj = array.getJSONObject(i)
+                            val clientType = obj.optString("type")
+                            val relId = obj.optString("rel_id")
+                            val name = obj.optString("name")
+                            val guid = obj.optString("guid").ifEmpty { obj.optString("client_id") }
+
+                            if ("entity".equals(clientType, ignoreCase = true) && relId.isNotEmpty()) {
+                                val usersRes = repository.fetchRelationshipUsers(relId)
+                                if (usersRes.result == WebServiceHelper.ServiceCallStatus.Success) {
+                                    try {
+                                        val uJson = JSONObject(usersRes.responseContent ?: "{}")
+                                        if (!uJson.optBoolean("error")) {
+                                            val uArray = uJson.optJSONObject("data")?.optJSONArray("users") ?: JSONArray()
+                                            for (j in 0 until uArray.length()) {
+                                                val uObj = uArray.getJSONObject(j)
+                                                val uGuid = uObj.optString("guid")
+                                                if (uGuid.isNotEmpty() && clients.none { it.guid == uGuid }) {
+                                                    clients.add(
+                                                        ConversationItem(
+                                                            guid = uGuid,
+                                                            name = uObj.optString("name"),
+                                                            firmName = name,
+                                                            clientType = "consumer",
+                                                            source = "relationship"
+                                                        )
+                                                    )
+                                                }
+                                            }
+                                        }
+                                    } catch (e: Exception) {
+                                        Log.e("MessagesViewModel", "Entity users parse error: ${e.message}")
+                                    }
+                                }
+                            } else if (guid.isNotEmpty() && clients.none { it.guid == guid }) {
+                                val directApptFrom = obj.optString("appointment_from").ifEmpty {
+                                    obj.optJSONObject("appointment")?.optString("appointment_from") ?: ""
+                                }
+                                val (isRestricted, restrictionMsg) = evaluateChatRestriction(
+                                    clientGuid = guid,
+                                    clientId = obj.optString("id"),
+                                    clientName = name,
+                                    clientSource = obj.optString("source"),
+                                    clientType = clientType,
+                                    directAppointmentFrom = directApptFrom,
+                                    appointments = cachedAppointments
+                                )
+
+                                clients.add(
+                                    ConversationItem(
+                                        guid = guid,
+                                        id = obj.optString("id"),
+                                        name = name,
+                                        clientType = clientType,
+                                        source = obj.optString("source"),
+                                        isChatRestricted = isRestricted,
+                                        chatRestrictionMessage = restrictionMsg,
+                                        appointmentFrom = directApptFrom
+                                    )
+                                )
+                            }
+                        }
+                    }
+                } catch (e: Exception) {
+                    Log.e("MessagesViewModel", "Client list fallback parse error: ${e.message}")
+                }
             }
         }
 
@@ -861,6 +906,8 @@ class MessagesViewModel(application: Application) : AndroidViewModel(application
             return
         }
 
+        sendPausedIfWasComposing()
+
         viewModelScope.launch {
             val isConnected = (ChatConnection.mConnection != null && ChatConnection.mConnection!!.isAuthenticated) ||
                     (ChatConnectionService.getState() == ChatConnection.ConnectionState.CONNECTED)
@@ -979,6 +1026,7 @@ class MessagesViewModel(application: Application) : AndroidViewModel(application
                 val body = intent.getStringExtra(ChatConnectionService.BUNDLE_MESSAGE_BODY) ?: ""
                 val incomingMessageId = intent.getStringExtra("message_id") ?: ""
                 val fromGuid = if (fromJidRaw.contains("@")) fromJidRaw.split("@")[0] else fromJidRaw
+                TypingStateManager.clearTypingFor(fromGuid)
 
                 val active = _uiState.value.activeConversation
                 val timeFormat = SimpleDateFormat("hh:mm a", Locale.ENGLISH)
@@ -999,7 +1047,8 @@ class MessagesViewModel(application: Application) : AndroidViewModel(application
                     _uiState.update { state ->
                         state.copy(
                             chatMessages = state.chatMessages + incoming,
-                            lastSeenMessageId = incomingMessageId
+                            lastSeenMessageId = incomingMessageId,
+                            isPartnerTyping = false
                         )
                     }
                     if (incomingMessageId.isNotEmpty()) {

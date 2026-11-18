@@ -38,7 +38,12 @@ import com.digicoffer.lauditor.Dashboard.NewRevampViewModels.DashboardParser
 import com.digicoffer.lauditor.R
 import com.digicoffer.lauditor.feature.dashboard.data.model.DashboardCardItemModel
 
-private val GillSansRegular = FontFamily(Font(R.font.gill_sans_regular))
+private val GillSansRegular = FontFamily(
+    Font(R.font.gill_sans_regular, FontWeight.Normal),
+    Font(R.font.gill_sans_bold, FontWeight.Bold),
+    Font(R.font.gill_sans, FontWeight.Medium),
+    Font(R.font.gill_sans_bold, FontWeight.SemiBold)
+)
 
 @Composable
 fun MeetingCard(
@@ -286,7 +291,8 @@ fun MessagesCard(
                 style = TextStyle(
                     fontFamily = GillSansRegular,
                     fontSize = 15.sp,
-                    color = Color(0xFF757575)
+                    fontWeight = FontWeight.Bold,
+                    color = Color.Black
                 ),
                 modifier = Modifier.padding(top = 2.dp)
             )
@@ -478,7 +484,8 @@ private fun ActivityCommonCard(
                 style = TextStyle(
                     fontFamily = GillSansRegular,
                     fontSize = 15.sp,
-                    color = Color(0xFF757575)
+                    fontWeight = FontWeight.Bold,
+                    color = Color.Black
                 ),
                 modifier = Modifier.padding(top = 4.dp)
             )

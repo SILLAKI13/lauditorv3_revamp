@@ -299,8 +299,8 @@ class ChatConnection : ConnectionListener {
             ChatManager.getInstanceFor(mConnection).addIncomingListener(incomingListener)
 
             mConnection!!.addAsyncStanzaListener({ stanza ->
-                val msg = stanza as Message
-                if (msg.from == null) return@addAsyncStanzaListener
+                val msg = stanza as? Message ?: return@addAsyncStanzaListener
+                if (msg.from == null || msg.type == Message.Type.error) return@addAsyncStanzaListener
 
                 val from = msg.from.toString()
                 val bareJid = if (from.contains("/")) from.split("/")[0] else from
@@ -608,8 +608,8 @@ class ChatConnection : ConnectionListener {
                     ChatManager.getInstanceFor(mConnection).addIncomingListener(incomingListener)
 
                     mConnection!!.addAsyncStanzaListener({ stanza ->
-                        val msg = stanza as Message
-                        if (msg.from == null) return@addAsyncStanzaListener
+                        val msg = stanza as? Message ?: return@addAsyncStanzaListener
+                        if (msg.from == null || msg.type == Message.Type.error) return@addAsyncStanzaListener
 
                         val from2 = msg.from.toString()
                         val bareJid2 = if (from2.contains("/")) from2.split("/")[0] else from2

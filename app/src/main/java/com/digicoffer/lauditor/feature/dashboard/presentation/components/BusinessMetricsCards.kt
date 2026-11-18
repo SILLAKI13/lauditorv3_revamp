@@ -38,7 +38,12 @@ import com.digicoffer.lauditor.CommonFiles.GlobalFiles.Constants
 import com.digicoffer.lauditor.Dashboard.DahboardModels.CardDataModels
 import com.digicoffer.lauditor.R
 
-private val GillSansRegular = FontFamily(Font(R.font.gill_sans_regular))
+private val GillSansRegular = FontFamily(
+    Font(R.font.gill_sans_regular, FontWeight.Normal),
+    Font(R.font.gill_sans_bold, FontWeight.Bold),
+    Font(R.font.gill_sans, FontWeight.Medium),
+    Font(R.font.gill_sans_bold, FontWeight.SemiBold)
+)
 
 @Composable
 fun BillableHoursCard(
@@ -111,8 +116,9 @@ fun BillableHoursCard(
                 text = "Total Billable Hours",
                 style = TextStyle(
                     fontFamily = GillSansRegular,
-                    fontSize = 12.sp,
-                    color = Color(0xFF757575)
+                    fontSize = 13.sp,
+                    fontWeight = FontWeight.Bold,
+                    color = Color.Black
                 )
             )
 
@@ -212,8 +218,9 @@ fun ApproxRevenueCard(
                 text = "Approximate Revenue",
                 style = TextStyle(
                     fontFamily = GillSansRegular,
-                    fontSize = 12.sp,
-                    color = Color(0xFF757575)
+                    fontSize = 13.sp,
+                    fontWeight = FontWeight.Bold,
+                    color = Color.Black
                 )
             )
 
