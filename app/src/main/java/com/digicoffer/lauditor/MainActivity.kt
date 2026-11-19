@@ -434,6 +434,8 @@ class MainActivity : AppCompatActivity(), Dashboard.MenuHighlightListener, Month
             collapseAllSubMenus()
             setActiveParent(sm_email)
             doNavigate(Email())
+            tv_pageName.textSize = DynamicUtils.eighteen.toFloat()
+            tv_pageName.setText(R.string.emails)
             viewModel?.setData(getString(R.string.emails))
         }
         
@@ -1458,7 +1460,7 @@ class MainActivity : AppCompatActivity(), Dashboard.MenuHighlightListener, Month
             "AAM" -> {
                 sm_firmProfile.visibility = View.VISIBLE
                 sm_meetings.visibility = View.VISIBLE
-                sm_email.visibility = View.GONE
+                sm_email.visibility = View.VISIBLE
                 sm_messages.visibility = View.VISIBLE
                 sm_notification.visibility = View.VISIBLE
                 sm_audit.visibility = View.VISIBLE
@@ -1475,11 +1477,11 @@ class MainActivity : AppCompatActivity(), Dashboard.MenuHighlightListener, Month
                 sm_relationships.visibility = View.VISIBLE
                 sm_timesheet.visibility = View.VISIBLE
                 sm_meetings.visibility = View.VISIBLE
-                sm_email.visibility = View.GONE
+                sm_email.visibility = View.VISIBLE
                 sm_messages.visibility = View.VISIBLE
                 sm_notification.visibility = View.VISIBLE
                 sm_audit.visibility = View.VISIBLE
-                if (DynamicUtils.isTablet(this)) sm_invoice.visibility = View.VISIBLE
+                sm_invoice.visibility = View.VISIBLE
                 if (!solo) {
                     sm_groups.visibility = View.VISIBLE
                     sm_team_member.visibility = View.VISIBLE
@@ -1493,7 +1495,7 @@ class MainActivity : AppCompatActivity(), Dashboard.MenuHighlightListener, Month
                 sm_relationships.visibility = View.VISIBLE
                 sm_timesheet.visibility = View.VISIBLE
                 sm_meetings.visibility = View.VISIBLE
-                sm_email.visibility = View.GONE
+                sm_email.visibility = View.VISIBLE
                 sm_messages.visibility = View.VISIBLE
                 sm_notification.visibility = View.VISIBLE
                 sm_audit.visibility = View.VISIBLE
@@ -1510,7 +1512,7 @@ class MainActivity : AppCompatActivity(), Dashboard.MenuHighlightListener, Month
                 sm_relationships.visibility = View.VISIBLE
                 sm_timesheet.visibility = View.VISIBLE
                 sm_meetings.visibility = View.VISIBLE
-                sm_email.visibility = View.GONE
+                sm_email.visibility = View.VISIBLE
                 sm_messages.visibility = View.VISIBLE
                 sm_notification.visibility = View.VISIBLE
             }
@@ -2031,6 +2033,8 @@ class MainActivity : AppCompatActivity(), Dashboard.MenuHighlightListener, Month
             collapseAllSubMenus()
             setActiveParent(sm_email)
             doNavigate(Email())
+            tv_pageName.textSize = DynamicUtils.eighteen.toFloat()
+            tv_pageName.setText(R.string.emails)
             viewModel?.setData(getString(R.string.emails))
         }
 
