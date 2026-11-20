@@ -287,8 +287,11 @@ class AuditTrails : Fragment(), AsyncTaskCompleteListener, DateUtils.OnDateSelec
 
     private fun loadSpinnerData() {
         categoryList.clear()
+        val isUS = Constants.isUSUser()
+        val isSolo = "solo" == Constants.CATEGORY
+
         categoryList.add(SpinnerItemModal("Authorization"))
-        if ("solo" != Constants.CATEGORY) {
+        if (!isSolo) {
             categoryList.add(SpinnerItemModal("Groups"))
             categoryList.add(SpinnerItemModal("Team Members"))
         }
@@ -298,7 +301,9 @@ class AuditTrails : Fragment(), AsyncTaskCompleteListener, DateUtils.OnDateSelec
         categoryList.add(SpinnerItemModal("Documents"))
         categoryList.add(SpinnerItemModal("Merge PDF"))
         categoryList.add(SpinnerItemModal("Legal Matters"))
-        categoryList.add(SpinnerItemModal("General Matters"))
+        if (!isUS) {
+            categoryList.add(SpinnerItemModal("General Matters"))
+        }
 
         if (autentication_list.isEmpty() && groups_list.isEmpty() && relationship_invite_list.isEmpty() && tm_list.isEmpty() && relationships_list.isEmpty() && share_list.isEmpty() && documents_list.isEmpty() && merge_pdf_list.isEmpty() && legal_matter_list.isEmpty() && general_matter_list.isEmpty()) {
             callAuditWebservice()
@@ -398,8 +403,21 @@ class AuditTrails : Fragment(), AsyncTaskCompleteListener, DateUtils.OnDateSelec
                 auditsModel.timestamp = formattedTimestamp
 
                 if (auditsModel.message != "PROFILE UPDATE" && auditsModel.message != "DOCS COLLABORATION") {
-                    auditsList.add(auditsModel)
+                    val isUS = Constants.isUSUser()
+                    val isSolo = "solo" == Constants.CATEGORY
                     val name = jsonObject.getString("name")
+
+                    val shouldExcludeInUS = isUS && (
+                        name.equals("GENERAL MATTER", ignoreCase = true) ||
+                        name.contains("APPOINTMENT", ignoreCase = true) ||
+                        name.contains("TIMESHEET", ignoreCase = true) ||
+                        (isSolo && (name.equals("GROUPS", ignoreCase = true) || name.equals("TEAM MEMBER", ignoreCase = true)))
+                    )
+
+                    if (!shouldExcludeInUS) {
+                        auditsList.add(auditsModel)
+                    }
+
                     when (name) {
                         "AUTH" -> autentication_list.add(auditsModel)
                         "GROUPS" -> groups_list.add(auditsModel)

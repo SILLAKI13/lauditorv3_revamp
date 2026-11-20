@@ -232,7 +232,13 @@ fun GctScreen(
 
                     // Suggestions Overlay Box
                     val filteredSearchResults = uiState.searchResults.filter { result ->
-                        !uiState.selectedClients.any { it.client_id == result.client_id }
+                        val notSelected = !uiState.selectedClients.any { it.client_id == result.client_id }
+                        val isConsumerOnly = if (Constants.isUSUser()) {
+                            result.client_type.equals("consumer", ignoreCase = true)
+                        } else {
+                            true
+                        }
+                        notSelected && isConsumerOnly
                     }
                     if (showSearchSuggestionsDropdown && filteredSearchResults.isNotEmpty()) {
                         Card(
@@ -289,15 +295,15 @@ fun GctScreen(
                     }
                 }
 
-                // Client Not Found Banner & Add New Client Form
-                if (uiState.clientNotFoundQuery != null && uiState.isAddClientFormVisible) {
+                // Client Not Found Banner & Add New Client Form (US version only)
+                if (Constants.isUSUser() && uiState.clientNotFoundQuery != null && uiState.isAddClientFormVisible) {
                     var selectedClientType by remember { mutableStateOf("consumer") }
                     var tempFirstName by remember(uiState.clientNotFoundQuery) { mutableStateOf(uiState.clientNotFoundQuery ?: "") }
                     var tempLastName by remember(uiState.clientNotFoundQuery) { mutableStateOf("") }
                     var tempEmail by remember(uiState.clientNotFoundQuery) { mutableStateOf("") }
                     var tempConfirmEmail by remember(uiState.clientNotFoundQuery) { mutableStateOf("") }
                     var tempPhone by remember(uiState.clientNotFoundQuery) { mutableStateOf("") }
-                    var tempCountry by remember(uiState.clientNotFoundQuery) { mutableStateOf("") }
+                    var tempCountry by remember(uiState.clientNotFoundQuery) { mutableStateOf(if (Constants.isUSUser()) "USA" else "") }
                     var countryDropdownExpanded by remember { mutableStateOf(false) }
 
                     Column(modifier = Modifier.fillMaxWidth()) {
@@ -311,61 +317,63 @@ fun GctScreen(
                         )
 
                         // 2. Client Type Toggle
-                        Text(
-                            text = "Client Type",
-                            fontFamily = GillSansBold,
-                            fontSize = 15.sp,
-                            color = ColorTokens.BluePrimary,
-                            modifier = Modifier.padding(bottom = 6.dp)
-                        )
+                        if (!Constants.isUSUser()) {
+                            Text(
+                                text = "Client Type",
+                                fontFamily = GillSansBold,
+                                fontSize = 15.sp,
+                                color = ColorTokens.BluePrimary,
+                                modifier = Modifier.padding(bottom = 6.dp)
+                            )
 
-                        Row(
-                            modifier = Modifier
-                                .width(200.dp)
-                                .height(38.dp)
-                                .background(Color(0xFFECEFF1), RoundedCornerShape(20.dp))
-                                .padding(2.dp),
-                            verticalAlignment = Alignment.CenterVertically
-                        ) {
-                            Box(
+                            Row(
                                 modifier = Modifier
-                                    .weight(1f)
-                                    .fillMaxHeight()
-                                    .background(
-                                        if (selectedClientType == "consumer") ColorTokens.BluePrimary else Color.Transparent,
-                                        RoundedCornerShape(18.dp)
-                                    )
-                                    .clickable { selectedClientType = "consumer" },
-                                contentAlignment = Alignment.Center
+                                    .width(200.dp)
+                                    .height(38.dp)
+                                    .background(Color(0xFFECEFF1), RoundedCornerShape(20.dp))
+                                    .padding(2.dp),
+                                verticalAlignment = Alignment.CenterVertically
                             ) {
-                                Text(
-                                    text = "Individual",
-                                    fontFamily = if (selectedClientType == "consumer") GillSansBold else GillSans,
-                                    fontSize = 14.sp,
-                                    color = if (selectedClientType == "consumer") Color.White else Color.Black
-                                )
-                            }
-                            Box(
-                                modifier = Modifier
-                                    .weight(1f)
-                                    .fillMaxHeight()
-                                    .background(
-                                        if (selectedClientType == "entity") ColorTokens.BluePrimary else Color.Transparent,
-                                        RoundedCornerShape(18.dp)
+                                Box(
+                                    modifier = Modifier
+                                        .weight(1f)
+                                        .fillMaxHeight()
+                                        .background(
+                                            if (selectedClientType == "consumer") ColorTokens.BluePrimary else Color.Transparent,
+                                            RoundedCornerShape(18.dp)
+                                        )
+                                        .clickable { selectedClientType = "consumer" },
+                                    contentAlignment = Alignment.Center
+                                ) {
+                                    Text(
+                                        text = "Individual",
+                                        fontFamily = if (selectedClientType == "consumer") GillSansBold else GillSans,
+                                        fontSize = 14.sp,
+                                        color = if (selectedClientType == "consumer") Color.White else Color.Black
                                     )
-                                    .clickable { selectedClientType = "entity" },
-                                contentAlignment = Alignment.Center
-                            ) {
-                                Text(
-                                    text = "Entity",
-                                    fontFamily = if (selectedClientType == "entity") GillSansBold else GillSans,
-                                    fontSize = 14.sp,
-                                    color = if (selectedClientType == "entity") Color.White else Color.Black
-                                )
+                                }
+                                Box(
+                                    modifier = Modifier
+                                        .weight(1f)
+                                        .fillMaxHeight()
+                                        .background(
+                                            if (selectedClientType == "entity") ColorTokens.BluePrimary else Color.Transparent,
+                                            RoundedCornerShape(18.dp)
+                                        )
+                                        .clickable { selectedClientType = "entity" },
+                                    contentAlignment = Alignment.Center
+                                ) {
+                                    Text(
+                                        text = "Entity",
+                                        fontFamily = if (selectedClientType == "entity") GillSansBold else GillSans,
+                                        fontSize = 14.sp,
+                                        color = if (selectedClientType == "entity") Color.White else Color.Black
+                                    )
+                                }
                             }
+
+                            Spacer(modifier = Modifier.height(12.dp))
                         }
-
-                        Spacer(modifier = Modifier.height(12.dp))
 
                         if (selectedClientType == "consumer") {
                             // First Name

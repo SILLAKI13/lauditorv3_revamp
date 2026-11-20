@@ -285,99 +285,332 @@
                 android:visibility="gone" />
         </LinearLayout>
 
+        <!-- ======================================================== -->
+        <!-- US Banking Fields (US version only)                          -->
+        <!-- ======================================================== -->
+
+        <!-- Routing Number (ABA) -->
+        <LinearLayout
+            android:id="@+id/ll_routing_number"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            android:visibility="gone">
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="12dp"
+                android:gravity="center_vertical"
+                android:orientation="horizontal">
+
+                <TextView
+                    android:id="@+id/tv_label_routing_number"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:textColor="@color/grey_light"
+                    android:fontFamily="@font/gill_sans"
+                    android:textSize="16sp" />
+
+                <ImageView
+                    android:id="@+id/iv_info_routing_number"
+                    android:layout_width="14dp"
+                    android:layout_height="14dp"
+                    android:layout_marginStart="6dp"
+                    android:src="@drawable/info_icon"
+                    app:tint="@color/grey_light" />
+            </LinearLayout>
+
+            <EditText
+                android:id="@+id/et_routing_number"
+                android:layout_width="match_parent"
+                android:layout_height="44dp"
+                android:layout_marginTop="@dimen/four_dp"
+                android:background="@drawable/edittext_bg"
+                android:hint="Enter routing number"
+                android:inputType="number"
+                android:maxLength="9"
+                android:fontFamily="@font/gill_sans"
+                android:paddingStart="@dimen/ten_dp"
+                android:paddingEnd="@dimen/ten_dp"
+                android:textColor="@color/black"
+                android:textColorHint="@color/grey_text"
+                android:textSize="15sp" />
+
+            <TextView
+                android:id="@+id/tv_error_routing_number"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="Routing number must be 9 digits"
+                android:textColor="@color/red"
+                android:textSize="11sp"
+                android:fontFamily="@font/gill_sans"
+                android:visibility="gone" />
+        </LinearLayout>
+
+        <!-- Account Type -->
+        <LinearLayout
+            android:id="@+id/ll_account_type"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            android:visibility="gone">
+
+            <TextView
+                android:id="@+id/tv_label_account_type"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="12dp"
+                android:textColor="@color/grey_light"
+                android:fontFamily="@font/gill_sans"
+                android:textSize="16sp" />
+
+            <FrameLayout
+                android:id="@+id/fl_account_type"
+                android:layout_width="match_parent"
+                android:layout_height="44dp"
+                android:layout_marginTop="@dimen/four_dp">
+
+                <EditText
+                    android:id="@+id/et_account_type"
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent"
+                    android:background="@drawable/edittext_bg"
+                    android:hint="Select account type"
+                    android:fontFamily="@font/gill_sans"
+                    android:focusable="false"
+                    android:cursorVisible="false"
+                    android:paddingStart="@dimen/ten_dp"
+                    android:paddingEnd="40dp"
+                    android:textColor="@color/black"
+                    android:textColorHint="@color/grey_text"
+                    android:textSize="15sp" />
+
+                <ImageView
+                    android:id="@+id/iv_account_type_arrow"
+                    android:layout_width="16dp"
+                    android:layout_height="16dp"
+                    android:layout_gravity="center_vertical|end"
+                    android:layout_marginEnd="@dimen/ten_dp"
+                    android:src="@drawable/down_arrow"
+                    app:tint="@color/grey_light" />
+            </FrameLayout>
+
+            <TextView
+                android:id="@+id/tv_error_account_type"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="Account type is required"
+                android:textColor="@color/red"
+                android:textSize="11sp"
+                android:fontFamily="@font/gill_sans"
+                android:visibility="gone" />
+        </LinearLayout>
+
+        <!-- SWIFT/BIC Code (Optional) -->
+        <LinearLayout
+            android:id="@+id/ll_swift_code"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            android:visibility="gone">
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="12dp"
+                android:gravity="center_vertical"
+                android:orientation="horizontal">
+
+                <TextView
+                    android:id="@+id/tv_label_swift_code"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:textColor="@color/grey_light"
+                    android:fontFamily="@font/gill_sans"
+                    android:textSize="16sp" />
+
+                <ImageView
+                    android:id="@+id/iv_info_swift_code"
+                    android:layout_width="14dp"
+                    android:layout_height="14dp"
+                    android:layout_marginStart="6dp"
+                    android:src="@drawable/info_icon"
+                    app:tint="@color/grey_light" />
+            </LinearLayout>
+
+            <EditText
+                android:id="@+id/et_swift_code"
+                android:layout_width="match_parent"
+                android:layout_height="44dp"
+                android:layout_marginTop="@dimen/four_dp"
+                android:background="@drawable/edittext_bg"
+                android:hint="Enter SWIFT/BIC code"
+                android:inputType="textCapCharacters"
+                android:maxLength="11"
+                android:fontFamily="@font/gill_sans"
+                android:paddingStart="@dimen/ten_dp"
+                android:paddingEnd="@dimen/ten_dp"
+                android:textColor="@color/black"
+                android:textColorHint="@color/grey_text"
+                android:textSize="15sp" />
+
+            <TextView
+                android:id="@+id/tv_error_swift_code"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="SWIFT/BIC code must be 8 or 11 characters"
+                android:textColor="@color/red"
+                android:textSize="11sp"
+                android:fontFamily="@font/gill_sans"
+                android:visibility="gone" />
+        </LinearLayout>
+
+        <!-- Bank Address (Optional) -->
+        <LinearLayout
+            android:id="@+id/ll_bank_address"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            android:visibility="gone">
+
+            <TextView
+                android:id="@+id/tv_label_bank_address"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="12dp"
+                android:textColor="@color/grey_light"
+                android:fontFamily="@font/gill_sans"
+                android:textSize="16sp" />
+
+            <EditText
+                android:id="@+id/et_bank_address"
+                android:layout_width="match_parent"
+                android:layout_height="44dp"
+                android:layout_marginTop="@dimen/four_dp"
+                android:background="@drawable/edittext_bg"
+                android:hint="Enter bank address"
+                android:inputType="textPostalAddress"
+                android:fontFamily="@font/gill_sans"
+                android:paddingStart="@dimen/ten_dp"
+                android:paddingEnd="@dimen/ten_dp"
+                android:textColor="@color/black"
+                android:textColorHint="@color/grey_text"
+                android:textSize="15sp" />
+        </LinearLayout>
+
+        <!-- ======================================================== -->
+        <!-- India Banking Fields (India version only)                   -->
+        <!-- ======================================================== -->
+
         <!-- IFSC Code -->
-        <TextView
-            android:id="@+id/tv_label_ifsc_code"
+        <LinearLayout
+            android:id="@+id/ll_ifsc_container"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_marginTop="12dp"
-            android:textColor="@color/grey_light"
-            android:fontFamily="@font/gill_sans"
-            android:textSize="16sp"/> <!-- TEXT REMOVED FROM HERE -->
+            android:orientation="vertical">
 
-        <EditText
-            android:id="@+id/et_ifsc_code"
-            android:layout_width="match_parent"
-            android:layout_height="44dp"
-            android:layout_marginTop="@dimen/four_dp"
-            android:background="@drawable/edittext_bg"
-            android:hint="Enter IFSC code (eg: HDFC0001234)"
-            android:inputType="textCapCharacters"
-            android:maxLength="11"
-            android:fontFamily="@font/gill_sans"
-            android:paddingStart="@dimen/ten_dp"
-            android:paddingEnd="@dimen/ten_dp"
-            android:textColor="@color/black"
-            android:textColorHint="@color/grey_text"
-            android:textSize="15sp" />
+            <TextView
+                android:id="@+id/tv_label_ifsc_code"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="12dp"
+                android:textColor="@color/grey_light"
+                android:fontFamily="@font/gill_sans"
+                android:textSize="16sp"/>
 
-        <TextView
-            android:id="@+id/tv_error_ifsc_code"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:text="Enter a valid IFSC code"
-            android:textColor="@color/red"
-            android:textSize="11sp"
-            android:fontFamily="@font/gill_sans"
-            android:visibility="gone" />
+            <EditText
+                android:id="@+id/et_ifsc_code"
+                android:layout_width="match_parent"
+                android:layout_height="44dp"
+                android:layout_marginTop="@dimen/four_dp"
+                android:background="@drawable/edittext_bg"
+                android:hint="Enter IFSC code (eg: HDFC0001234)"
+                android:inputType="textCapCharacters"
+                android:maxLength="11"
+                android:fontFamily="@font/gill_sans"
+                android:paddingStart="@dimen/ten_dp"
+                android:paddingEnd="@dimen/ten_dp"
+                android:textColor="@color/black"
+                android:textColorHint="@color/grey_text"
+                android:textSize="15sp" />
+
+            <TextView
+                android:id="@+id/tv_error_ifsc_code"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="Enter a valid IFSC code"
+                android:textColor="@color/red"
+                android:textSize="11sp"
+                android:fontFamily="@font/gill_sans"
+                android:visibility="gone" />
+        </LinearLayout>
 
         <!-- Branch Name (read-only always; edit icon appears only after
              verification, and ONLY inside the field itself — never on
              this label). No icon of any kind belongs on this TextView. -->
-        <TextView
-            android:id="@+id/tv_label_branch_name"
+        <LinearLayout
+            android:id="@+id/ll_branch_container"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_marginTop="12dp"
-            android:text="Branch Name"
-            android:drawableStart="@null"
-            android:drawableEnd="@null"
-            android:textColor="@color/grey_light"
-            android:fontFamily="@font/gill_sans"
-            android:textSize="16dp"/>
+            android:orientation="vertical">
 
-        <FrameLayout
-            android:layout_width="match_parent"
-            android:layout_height="44dp"
-            android:layout_marginTop="@dimen/four_dp">
-
-            <EditText
-                android:id="@+id/et_branch_name"
+            <TextView
+                android:id="@+id/tv_label_branch_name"
                 android:layout_width="match_parent"
-                android:layout_height="match_parent"
-                android:background="@drawable/edittext_bg_disabled"
-                android:enabled="false"
-                android:focusable="false"
-                android:fontFamily="@font/gill_sans"
-                android:hint="Will appear after verification"
-                android:paddingStart="@dimen/ten_dp"
-                android:paddingEnd="40dp"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="12dp"
+                android:text="Branch Name"
+                android:drawableStart="@null"
+                android:drawableEnd="@null"
                 android:textColor="@color/grey_light"
-                android:textColorHint="@color/grey_text"
-                android:textSize="15sp" />
+                android:fontFamily="@font/gill_sans"
+                android:textSize="16dp"/>
 
-            <!-- The ONLY icon that may appear anywhere near Branch Name.
-                 Lives inside the field (right-aligned), never next to the
-                 label above. Hidden by default; shown only after a
-                 successful IFSC verify, controlled entirely from Java
-                 (bindViews() forces it gone at bind time, applyModeUi()
-                 and the Verify_IFSC success callback are the only places
-                 that turn it back on). -->
-            <ImageView
-                android:id="@+id/iv_edit_branch_name"
-                android:layout_width="20dp"
-                android:layout_height="20dp"
-                android:layout_gravity="center_vertical|end"
-                android:layout_marginEnd="@dimen/ten_dp"
-                android:src="@drawable/edit__icon"
-                android:visibility="gone"
-                app:tint="@color/blue" />
-        </FrameLayout>
+            <FrameLayout
+                android:layout_width="match_parent"
+                android:layout_height="44dp"
+                android:layout_marginTop="@dimen/four_dp">
+
+                <EditText
+                    android:id="@+id/et_branch_name"
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent"
+                    android:background="@drawable/edittext_bg_disabled"
+                    android:enabled="false"
+                    android:focusable="false"
+                    android:fontFamily="@font/gill_sans"
+                    android:hint="Will appear after verification"
+                    android:paddingStart="@dimen/ten_dp"
+                    android:paddingEnd="40dp"
+                    android:textColor="@color/grey_light"
+                    android:textColorHint="@color/grey_text"
+                    android:textSize="15sp" />
+
+                <!-- The ONLY icon that may appear anywhere near Branch Name.
+                     Lives inside the field (right-aligned), never next to the
+                     label above. Hidden by default; shown only after a
+                     successful IFSC verify, controlled entirely from Java
+                     (bindViews() forces it gone at bind time, applyModeUi()
+                     and the Verify_IFSC success callback are the only places
+                     that turn it back on). -->
+                <ImageView
+                    android:id="@+id/iv_edit_branch_name"
+                    android:layout_width="20dp"
+                    android:layout_height="20dp"
+                    android:layout_gravity="center_vertical|end"
+                    android:layout_marginEnd="@dimen/ten_dp"
+                    android:src="@drawable/edit__icon"
+                    android:visibility="gone"
+                    app:tint="@color/blue" />
+            </FrameLayout>
+        </LinearLayout>
 
         <!-- Verify button + Edit action, side by side (Edit switches the whole dialog into Edit Mode).
              These two are mutually exclusive — exactly one is visible at a time, driven entirely by
              applyModeUi() in Java based on isVerified. -->
         <LinearLayout
+            android:id="@+id/ll_verify_container"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_marginTop="12dp"

@@ -415,7 +415,8 @@ class DocumentsRepository(private val context: Context) {
             } else {
                 put("clients", "")
                 put("matters", "")
-                put("groups", groups ?: JSONObject.NULL)
+                put("groups", groups ?: JSONArray())
+                put("subcategories", "")
             }
         }
         WebServiceHelper.callHttpWebService(

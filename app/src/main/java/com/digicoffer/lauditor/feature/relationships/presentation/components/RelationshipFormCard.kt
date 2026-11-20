@@ -42,6 +42,7 @@ import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.graphics.SolidColor
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
+import com.digicoffer.lauditor.CommonFiles.GlobalFiles.Constants
 import com.digicoffer.lauditor.R
 import com.digicoffer.lauditor.Relationships.Model.CountriesDO
 import com.digicoffer.lauditor.Relationships.Model.IndividualModel
@@ -132,11 +133,38 @@ fun RelationshipFormCard(
     onTitleChange: (String) -> Unit = {}
 ) {
     val context = LocalContext.current
+    val isUS = Constants.isUSUser()
+    val isIndia = Constants.isIndiaCountry(Constants.Country)
+
+    fun getResolvedDefaultCountry(): CountriesDO {
+        if (isUS) {
+            val found = countriesList.find { 
+                Constants.isUSCountry(it.name) || Constants.isUSCountry(it.value)
+            }
+            return found ?: CountriesDO().apply {
+                name = "USA"
+                value = "US"
+            }
+        } else {
+            val found = countriesList.find { 
+                Constants.isIndiaCountry(it.name) || Constants.isIndiaCountry(it.value)
+            }
+            return found ?: CountriesDO().apply {
+                name = "India"
+                value = "IN"
+            }
+        }
+    }
+
     val startTab = remember(initialTab) {
-        when (initialTab.lowercase()) {
-            "entity", "business" -> "Entity"
-            "corporate" -> "Corporate"
-            else -> "Individual"
+        if (isUS) {
+            "Individual"
+        } else {
+            when (initialTab.lowercase()) {
+                "entity", "business" -> "Entity"
+                "corporate" -> "Corporate"
+                else -> "Individual"
+            }
         }
     }
     var activeTab by remember(startTab) { mutableStateOf(startTab) } // "Individual", "Entity", "Corporate"
@@ -152,6 +180,16 @@ fun RelationshipFormCard(
     var mobile by remember { mutableStateOf("") }
     var selectedCountry by remember { mutableStateOf<CountriesDO?>(null) }
     var countryMenuExpanded by remember { mutableStateOf(false) }
+
+    LaunchedEffect(countriesList) {
+        if (selectedCountry != null) {
+            val matched = countriesList.find { 
+                it.name?.trim()?.equals(selectedCountry?.name?.trim() ?: "", ignoreCase = true) == true || 
+                it.value?.trim()?.equals(selectedCountry?.value?.trim() ?: "", ignoreCase = true) == true 
+            }
+            if (matched != null) selectedCountry = matched
+        }
+    }
 
     // Entity & Corporate Fields
     var entityName by remember { mutableStateOf("") }
@@ -239,7 +277,7 @@ fun RelationshipFormCard(
                                 email = ""
                                 confirmEmail = ""
                                 mobile = ""
-                                selectedCountry = null
+                                selectedCountry = if (isUS || isIndia) getResolvedDefaultCountry() else null
                                 searchStatusMessage = "$query - not found. Please fill in the details below to send relationship invite."
                                 isSearchStatusSuccess = false
                             }
@@ -410,7 +448,7 @@ fun RelationshipFormCard(
         entity_id = ""
 
         when (activeTab) {
-            "Individual" -> onTitleChange("Add Relationships")
+            "Individual" -> onTitleChange(if (isUS) "Add Individual Relationship" else "Add Relationships")
             "Entity" -> {
                 onTitleChange("Entity")
                 fetchEntityCorporateList("Entity")
@@ -432,48 +470,50 @@ fun RelationshipFormCard(
                 .verticalScroll(scrollState)
         ) {
             // 1. Separate Tabs (Segmented Control style at the very top)
-            Row(
-                modifier = Modifier
-                    .fillMaxWidth(),
-                horizontalArrangement = Arrangement.Center,
-                verticalAlignment = Alignment.CenterVertically
-            ) {
-                val tabs = listOf("Individual", "Entity", "Corporate")
-                tabs.forEachIndexed { index, tab ->
-                    val isSelected = activeTab == tab
-                    val shape = when (index) {
-                        0 -> RoundedCornerShape(topStart = 8.dp, bottomStart = 8.dp)
-                        tabs.size - 1 -> RoundedCornerShape(topEnd = 8.dp, bottomEnd = 8.dp)
-                        else -> RoundedCornerShape(0.dp)
-                    }
-                    Box(
-                        modifier = Modifier
-                            .width(90.dp)
-                            .height(36.dp)
-                            .border(
-                                width = 0.5.dp,
-                                color = if (isSelected) Color(0xFF004D87) else Color(0xFFC0C0C0),
-                                shape = shape
+            if (!isUS) {
+                Row(
+                    modifier = Modifier
+                        .fillMaxWidth(),
+                    horizontalArrangement = Arrangement.Center,
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    val tabs = listOf("Individual", "Entity", "Corporate")
+                    tabs.forEachIndexed { index, tab ->
+                        val isSelected = activeTab == tab
+                        val shape = when (index) {
+                            0 -> RoundedCornerShape(topStart = 8.dp, bottomStart = 8.dp)
+                            tabs.size - 1 -> RoundedCornerShape(topEnd = 8.dp, bottomEnd = 8.dp)
+                            else -> RoundedCornerShape(0.dp)
+                        }
+                        Box(
+                            modifier = Modifier
+                                .width(90.dp)
+                                .height(36.dp)
+                                .border(
+                                    width = 0.5.dp,
+                                    color = if (isSelected) Color(0xFF004D87) else Color(0xFFC0C0C0),
+                                    shape = shape
+                                )
+                                .background(
+                                    color = if (isSelected) Color(0xFF004D87) else Color.White,
+                                    shape = shape
+                                )
+                                .clickable { activeTab = tab },
+                            contentAlignment = Alignment.Center
+                        ) {
+                            Text(
+                                text = tab,
+                                color = if (isSelected) Color.White else Color.Black,
+                                fontFamily = GillSans,
+                                fontWeight = FontWeight.Normal,
+                                fontSize = 14.sp
                             )
-                            .background(
-                                color = if (isSelected) Color(0xFF004D87) else Color.White,
-                                shape = shape
-                            )
-                            .clickable { activeTab = tab },
-                        contentAlignment = Alignment.Center
-                    ) {
-                        Text(
-                            text = tab,
-                            color = if (isSelected) Color.White else Color.Black,
-                            fontFamily = GillSans,
-                            fontWeight = FontWeight.Normal,
-                            fontSize = 14.sp
-                        )
+                        }
                     }
                 }
-            }
 
-            Spacer(modifier = Modifier.height(10.dp))
+                Spacer(modifier = Modifier.height(10.dp))
+            }
 
             // Top Page Title and View Relationships trigger button (outside card container)
             Row(
@@ -482,7 +522,7 @@ fun RelationshipFormCard(
                 verticalAlignment = Alignment.CenterVertically
             ) {
                 Text(
-                    text = "Add Relationships - $activeTab",
+                    text = if (isUS) "Add Individual Relationship" else "Add Relationships - $activeTab",
                     color = Color(0xFF004D87),
                     fontFamily = GillSans,
                     fontWeight = FontWeight.Bold,
@@ -654,7 +694,7 @@ fun RelationshipFormCard(
                                                 confirmEmail = ""
                                                 contactPerson = ""
                                                 contactPhone = ""
-                                                selectedCountry = null
+                                                selectedCountry = if (isUS || isIndia) getResolvedDefaultCountry() else null
                                                 searchStatusMessage = "$searchQuery - not found. Please fill in the details below to send relationship invite."
                                                 isSearchStatusSuccess = false
                                                 showEntityCorporateSuggestions = false
@@ -817,14 +857,18 @@ fun RelationshipFormCard(
                     // Reusable Country Selector component
                     @Composable
                     fun CountrySelector() {
+                        val isCountryEditable = isFormEnabled && isFieldsEditable && !isUS && !isIndia
+                        val displayCountryName = selectedCountry?.name ?: "Select Country"
+                        val hasCountrySelected = selectedCountry != null
+
                         FormLabel(text = "Country", isMandatory = true)
                         Spacer(modifier = Modifier.height(6.dp))
                         Box(
                             modifier = Modifier
                                 .fillMaxWidth()
-                                .background(if (isFormEnabled && isFieldsEditable) Color(0xFFF9FAFB) else Color(0xFFEEEEEE), shape = RoundedCornerShape(6.dp))
+                                .background(if (isCountryEditable) Color(0xFFF9FAFB) else Color(0xFFEEEEEE), shape = RoundedCornerShape(6.dp))
                                 .border(width = 0.5.dp, color = Color(0xFFC0C0C0), shape = RoundedCornerShape(6.dp))
-                                .clickable(enabled = isFormEnabled && isFieldsEditable) { countryMenuExpanded = !countryMenuExpanded }
+                                .clickable(enabled = isCountryEditable) { countryMenuExpanded = !countryMenuExpanded }
                                 .padding(10.dp),
                             contentAlignment = Alignment.CenterStart
                         ) {
@@ -834,27 +878,29 @@ fun RelationshipFormCard(
                                 verticalAlignment = Alignment.CenterVertically
                             ) {
                                 Text(
-                                    text = selectedCountry?.name ?: "Select Country",
-                                    color = if (selectedCountry != null) Color.Black else Color(0xFFA0A0A0),
+                                    text = displayCountryName,
+                                    color = if (hasCountrySelected) Color.Black else Color(0xFFA0A0A0),
                                     fontFamily = GillSans,
                                     fontSize = 15.sp
                                 )
-                                Icon(
-                                    painter = painterResource(
-                                        id = if (selectedCountry != null) R.drawable.cancel_red_icon else R.drawable.drop_down_blue
-                                    ),
-                                    contentDescription = "Country selector icon",
-                                    tint = Color(0xFF004D87),
-                                    modifier = Modifier
-                                        .size(20.dp)
-                                        .clickable(enabled = isFormEnabled && isFieldsEditable && selectedCountry != null) {
-                                            selectedCountry = null
-                                        }
-                                )
+                                if (isCountryEditable) {
+                                    Icon(
+                                        painter = painterResource(
+                                            id = if (selectedCountry != null) R.drawable.cancel_red_icon else R.drawable.drop_down_blue
+                                        ),
+                                        contentDescription = "Country selector icon",
+                                        tint = Color(0xFF004D87),
+                                        modifier = Modifier
+                                            .size(20.dp)
+                                            .clickable(enabled = selectedCountry != null) {
+                                                selectedCountry = null
+                                            }
+                                    )
+                                }
                             }
                         }
 
-                        if (countryMenuExpanded && isFormEnabled && isFieldsEditable) {
+                        if (countryMenuExpanded && isCountryEditable) {
                             Spacer(modifier = Modifier.height(4.dp))
                             Box(
                                 modifier = Modifier

@@ -353,7 +353,8 @@ fun DocumentsScreen(
                                 )
                             }
                             "firm" -> {
-                                Text(
+                                if (uiState.hasUserGeneratedGroups) {
+                                    Text(
                                     text = buildAnnotatedString {
                                         withStyle(SpanStyle(color = Color(0xFF004D87), fontWeight = FontWeight.Normal, fontFamily = GillSans)) {
                                             append("Select Group(s)")
@@ -485,6 +486,7 @@ fun DocumentsScreen(
                                             }
                                         }
                                     }
+                                }
                                 }
                             }
                             "delete" -> {

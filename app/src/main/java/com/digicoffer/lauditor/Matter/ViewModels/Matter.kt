@@ -114,6 +114,10 @@ class Matter : Fragment(), AsyncTaskCompleteListener, View.OnClickListener, Bott
 
         Constants.is_CreateMatter = Constants.isCreate
 
+        if (Constants.isUSUser()) {
+            Constants.MATTER_TYPE = "Legal"
+        }
+
         if (Constants.create_matter) {
             Constants.create_matter = false
             Constants.Matter_CreateOrViewDetails = "Create"
@@ -123,12 +127,12 @@ class Matter : Fragment(), AsyncTaskCompleteListener, View.OnClickListener, Bott
             if (!filterType.isNullOrEmpty()) {
                 Constants.matterFilterType = ""
                 matter_arraylist.clear()
-                if (filterType.equals("General", ignoreCase = true)) {
+                if (filterType.equals("General", ignoreCase = true) && !Constants.isUSUser()) {
                     loadGeneralMatter()
                 } else {
                     loadLegalMatter()
                 }
-            } else if (Constants.MATTER_TYPE == "General") {
+            } else if (Constants.MATTER_TYPE == "General" && !Constants.isUSUser()) {
                 matter_arraylist.clear()
                 loadGeneralMatter()
             } else {
@@ -1088,6 +1092,10 @@ class Matter : Fragment(), AsyncTaskCompleteListener, View.OnClickListener, Bott
     }
 
     fun loadGeneralMatter() {
+        if (Constants.isUSUser()) {
+            loadLegalMatter()
+            return
+        }
         Constants.MATTER_TYPE = "General"
         matterTypeState.value = "General"
         if (isCreateModeState.value) {

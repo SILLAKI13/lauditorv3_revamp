@@ -42,21 +42,30 @@ fun GroupCardItem(
     // 1. SuperUser or AAM: only Update Group Members List & Activity Log are visible.
     // 2. Role GH (Group Head): only Edit Group Info & Activity Log are visible.
     // 3. Admin / Practice Head: all 5 actions are visible.
-    val menuItems = remember(role, groupName) {
+    val isUS = Constants.isUSUser()
+    val menuItems = remember(role, groupName, isUS) {
         val list = mutableListOf<Pair<String, () -> Unit>>()
         if (groupName.equals("SuperUser", ignoreCase = true) || groupName.equals("AAM", ignoreCase = true)) {
             list.add("Update Group Members List" to onUpdateMembersClick)
-            list.add("Group Activity Log" to onActivityLogClick)
+            if (!isUS) {
+                list.add("Group Activity Log" to onActivityLogClick)
+            }
         } else {
             if (role.equals("GH", ignoreCase = true)) {
                 list.add("Edit Group Info" to onEditClick)
-                list.add("Group Activity Log" to onActivityLogClick)
+                if (!isUS) {
+                    list.add("Group Activity Log" to onActivityLogClick)
+                }
             } else {
                 list.add("Edit Group Info" to onEditClick)
                 list.add("Update Group Members List" to onUpdateMembersClick)
-                list.add("Update Group Head" to onUpdateGroupHeadClick)
+                if (!isUS) {
+                    list.add("Update Group Head" to onUpdateGroupHeadClick)
+                }
                 list.add("Delete Group" to onDeleteClick)
-                list.add("Group Activity Log" to onActivityLogClick)
+                if (!isUS) {
+                    list.add("Group Activity Log" to onActivityLogClick)
+                }
             }
         }
         list

@@ -103,6 +103,8 @@ class LoginActivity : AppCompatActivity(), AsyncTaskCompleteListener, View.OnCli
     private var composeEmailValue by mutableStateOf("")
     private var composePasswordValue by mutableStateOf("")
     private var composeFullNameValue by mutableStateOf("")
+    private var composeFirmNameValue by mutableStateOf("")
+    private var composeLicensesValue by mutableStateOf(1)
     private var composeRegisterEmailValue by mutableStateOf("")
     private var composeRegisterPhoneValue by mutableStateOf("")
     private var composeCountryValue by mutableStateOf("India")
@@ -129,6 +131,8 @@ class LoginActivity : AppCompatActivity(), AsyncTaskCompleteListener, View.OnCli
                         onPasswordChange = { composePasswordValue = it },
                         fullNameValue = composeFullNameValue,
                         onFullNameChange = { composeFullNameValue = it },
+                        firmNameValue = composeFirmNameValue,
+                        onFirmNameChange = { composeFirmNameValue = it },
                         registerEmailValue = composeRegisterEmailValue,
                         onRegisterEmailChange = { composeRegisterEmailValue = it },
                         registerPhoneValue = composeRegisterPhoneValue,
@@ -137,6 +141,11 @@ class LoginActivity : AppCompatActivity(), AsyncTaskCompleteListener, View.OnCli
                             if (filtered.length <= 10) {
                                 composeRegisterPhoneValue = filtered
                             }
+                        },
+                        licensesValue = composeLicensesValue,
+                        onLicensesChange = { composeLicensesValue = it },
+                        onContactSalesClick = {
+                            launchSalesContactEmail()
                         },
                         selectedCountry = composeCountryValue,
                         selectedCountryCode = composeCountryCodeValue,
@@ -544,10 +553,51 @@ class LoginActivity : AppCompatActivity(), AsyncTaskCompleteListener, View.OnCli
         }
     }
 
+    private fun launchSalesContactEmail() {
+        val displayName = composeFullNameValue.trim().ifEmpty { "User" }
+        val displayFirm = composeFirmNameValue.trim().ifEmpty { "N/A" }
+        val displayEmail = composeRegisterEmailValue.trim().ifEmpty { "N/A" }
+        val displayMobile = if (composeRegisterPhoneValue.trim().isNotEmpty()) {
+            "$composeCountryCodeValue ${composeRegisterPhoneValue.trim()}"
+        } else {
+            "N/A"
+        }
+
+        val subject = "Request for Additional User Licenses – Lex-Z Lawyers"
+        val body = "Hello Sales Team,\n\n" +
+                "I am interested in obtaining additional user licenses for my Lex-Z Lawyers account.\n\n" +
+                "The standard registration currently supports up to 10 users. However, my organization requires additional licenses.\n\n" +
+                "Please get in touch with me to discuss the available licensing options, pricing, and the process for onboarding additional users.\n\n" +
+                "My registration details are provided below:\n\n" +
+                "Name: $displayName\n" +
+                "Firm Name: $displayFirm\n" +
+                "Email Address: $displayEmail\n" +
+                "Mobile Number: $displayMobile\n" +
+                "Required Licenses: More than 10\n\n" +
+                "Thank you.\n\n" +
+                "Regards,\n" +
+                displayName
+
+        try {
+            val mailtoUri = Uri.parse("mailto:sales@lexiz.ai,raksha.s@digicoffer.com?subject=${Uri.encode(subject)}&body=${Uri.encode(body)}")
+            val emailIntent = Intent(Intent.ACTION_SENDTO, mailtoUri)
+            startActivity(emailIntent)
+        } catch (e: Exception) {
+            val webGmailUrl = "https://mail.google.com/mail/u/0/?fs=1" +
+                    "&to=" + Uri.encode("sales@lexiz.ai,raksha.s@digicoffer.com") +
+                    "&su=" + Uri.encode(subject) +
+                    "&body=" + Uri.encode(body) +
+                    "&tf=cm"
+            openUrl(webGmailUrl)
+        }
+    }
+
     private fun toggleMode() {
         composeEmailValue = ""
         composePasswordValue = ""
         composeFullNameValue = ""
+        composeFirmNameValue = ""
+        composeLicensesValue = 1
         composeRegisterEmailValue = ""
         composeRegisterPhoneValue = ""
         hideFirmSelection()
@@ -663,11 +713,17 @@ class LoginActivity : AppCompatActivity(), AsyncTaskCompleteListener, View.OnCli
 
     fun handleRegisterOTP() {
         val fullName = composeFullNameValue.ifEmpty { et_full_name?.text?.toString() ?: "" }.trim()
+        val firmName = composeFirmNameValue.trim()
         val email = composeRegisterEmailValue.ifEmpty { et_register_email?.text?.toString() ?: "" }.trim()
         val phone = composeRegisterPhoneValue.ifEmpty { et_register_phone?.text?.toString() ?: "" }.trim()
+        val licenses = composeLicensesValue
 
         if (fullName.isEmpty()) {
-            AndroidUtils.showAlert("Please enter your full name", this)
+            AndroidUtils.showAlert("Please enter your name", this)
+            return
+        }
+        if (firmName.isEmpty()) {
+            AndroidUtils.showAlert("Please enter firm name", this)
             return
         }
         if (email.isEmpty()) {
@@ -695,21 +751,21 @@ class LoginActivity : AppCompatActivity(), AsyncTaskCompleteListener, View.OnCli
             val currentDate = java.text.SimpleDateFormat("dd/MM/yyyy", java.util.Locale.getDefault()).format(java.util.Date())
 
             val postData = JSONObject().apply {
-                put("fullname", fullName)
+                put("fullname", firmName)
                 put("country", composeCountryValue)
                 put("country_code", composeCountryCodeValue)
                 put("contact_person", fullName)
                 put("product", "lauditor")
-                put("sub_model", "three_month_free")
                 put("is_active_sub", true)
-                put("accepted_terms", false)
+                put("accepted_terms", true)
                 put("sub_start_date", currentDate)
                 put("category", "solo")
                 put("email", email.lowercase())
                 put("phone", phone)
                 put("mobile", phone)
-                put("reg_city", "Puducherry")
+                put("reg_city", "Delhi")
                 put("reg_platform", "android")
+                put("users_allowed", licenses)
             }
 
             progressDialog = AndroidUtils.get_progress(this)

@@ -907,10 +907,16 @@ class GCT_En : Fragment(), View.OnClickListener, AsyncTaskCompleteListener {
                             val entity = result.getJSONArray("clients")
                             Log.i("Tag", "Info:$entity")
                             if (entity.length() == 0) {
-                                tv_warning_msg?.visibility = View.VISIBLE
-                                val negative_msg = "${ac_search_entity?.text} - not found. Please fill in the details below to send relationship invite."
-                                tv_warning_msg?.text = negative_msg
-                                AddTemp()
+                                if (Constants.isUSUser()) {
+                                    tv_warning_msg?.visibility = View.VISIBLE
+                                    val negative_msg = "${ac_search_entity?.text} - not found. Please fill in the details below to send relationship invite."
+                                    tv_warning_msg?.text = negative_msg
+                                    AddTemp()
+                                } else {
+                                    tv_warning_msg?.visibility = View.GONE
+                                    temp_client_layout?.visibility = View.GONE
+                                    AndroidUtils.showAlert("No clients found", activity)
+                                }
                             } else {
                                 ac_search_entity?.setText("")
                                 loadEntityData(entity)

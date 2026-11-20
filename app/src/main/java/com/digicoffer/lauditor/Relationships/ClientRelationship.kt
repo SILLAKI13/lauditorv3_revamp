@@ -25,6 +25,11 @@ class ClientRelationship : Fragment() {
         container: ViewGroup?,
         savedInstanceState: Bundle?
     ): View {
+        if (com.digicoffer.lauditor.CommonFiles.GlobalFiles.Constants.isUSUser() && 
+            com.digicoffer.lauditor.CommonFiles.GlobalFiles.Constants.Rel_Type != "Deleted") {
+            com.digicoffer.lauditor.CommonFiles.GlobalFiles.Constants.Rel_Type = "Individual"
+        }
+
         mViewModel?.setData("Relationships")
         requireActivity().title = "Relationships"
 

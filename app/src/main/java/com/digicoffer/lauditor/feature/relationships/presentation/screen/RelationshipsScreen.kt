@@ -103,7 +103,10 @@ fun RelationshipsScreen(
     var shareCategory by remember { mutableStateOf("client") }
 
     // Read category from Constants.Rel_Type
-    val currentRelType = remember { Constants.Rel_Type ?: "Individual" }
+    val currentRelType = remember {
+        val type = Constants.Rel_Type ?: "Individual"
+        if (Constants.isUSUser() && type != "Deleted") "Individual" else type
+    }
 
     // Search query on main directory
     var searchDraft by remember { mutableStateOf("") }

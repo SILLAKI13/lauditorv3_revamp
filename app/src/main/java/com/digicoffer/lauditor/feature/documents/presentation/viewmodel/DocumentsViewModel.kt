@@ -45,7 +45,7 @@ class DocumentsViewModel(
 
     init {
         // Initial setup matching bundle parameters
-        val initialTab = "matter"
+        val initialTab = if (Constants.isUSUser()) "firm" else "matter"
         switchTab(initialTab)
     }
 
@@ -336,7 +336,9 @@ class DocumentsViewModel(
             for (i in 0 until arr.length()) {
                 val obj = arr.getJSONObject(i)
                 val name = obj.optString("name")
-                if (name.equals("AAM", ignoreCase = true) || name.equals("SuperUser", ignoreCase = true)) {
+                if (name.equals("AAM", ignoreCase = true) || 
+                    name.equals("SuperUser", ignoreCase = true) || 
+                    name.equals("SU", ignoreCase = true)) {
                     continue
                 }
                 list.add(GroupsModel().apply {
@@ -345,28 +347,32 @@ class DocumentsViewModel(
                 })
             }
             
-            if (list.isNotEmpty()) {
-                val allIds = list.joinToString(",") { it.id ?: "" }
+            val hasUserGroups = list.isNotEmpty()
+            if (hasUserGroups) {
                 val allGroupsModel = GroupsModel().apply {
-                    id = allIds
+                    id = "all"
                     name = "All Groups"
                 }
                 list.add(0, allGroupsModel)
                 _uiState.update { 
                     it.copy(
                         groupsList = list,
+                        hasUserGeneratedGroups = true,
                         selectedFilterGroup = allGroupsModel,
                         selectedFilterGroups = listOf(allGroupsModel)
                     )
                 }
-                fetchFilteredList()
             } else {
-                val allGroupsModel = GroupsModel().apply {
-                    id = "all"
-                    name = "All Groups"
+                _uiState.update { 
+                    it.copy(
+                        groupsList = emptyList(),
+                        hasUserGeneratedGroups = false,
+                        selectedFilterGroup = null,
+                        selectedFilterGroups = emptyList()
+                    )
                 }
-                _uiState.update { it.copy(groupsList = listOf(allGroupsModel), selectedFilterGroup = allGroupsModel, selectedFilterGroups = listOf(allGroupsModel)) }
             }
+            fetchFilteredList()
         }
     }
 
@@ -481,17 +487,26 @@ class DocumentsViewModel(
                 } else {
                     emptyList()
                 }
-                JSONArray().apply {
-                    selected.forEach { grp ->
-                        val groupId = grp.id ?: ""
-                        if (groupId.contains(",")) {
-                            groupId.split(",").forEach { id ->
-                                if (id.trim().isNotEmpty()) {
-                                    put(id.trim())
+                val isAllSelected = selected.isEmpty() || 
+                                    selected.any { it.name == "All Groups" || it.id == "all" } || 
+                                    !_uiState.value.hasUserGeneratedGroups
+                if (isAllSelected) {
+                    JSONArray()
+                } else {
+                    JSONArray().apply {
+                        selected.forEach { grp ->
+                            val groupId = grp.id ?: ""
+                            if (groupId.isNotEmpty() && groupId != "all") {
+                                if (groupId.contains(",")) {
+                                    groupId.split(",").forEach { id ->
+                                        if (id.trim().isNotEmpty()) {
+                                            put(id.trim())
+                                        }
+                                    }
+                                } else {
+                                    put(groupId)
                                 }
                             }
-                        } else if (groupId.isNotEmpty()) {
-                            put(groupId)
                         }
                     }
                 }
@@ -672,7 +687,7 @@ class DocumentsViewModel(
                 return
             }
         }
-        if (currentTab == "firm" && _uiState.value.selectedUploadGroups.isEmpty()) {
+        if (currentTab == "firm" && _uiState.value.hasUserGeneratedGroups && _uiState.value.selectedUploadGroups.isEmpty()) {
             _uiState.update { it.copy(alertMessage = "Please select at least one group.") }
             return
         }
@@ -749,19 +764,21 @@ class DocumentsViewModel(
                         put("clients", "")
                     }
 
-                    // Groups (only populated for firm documents)
+                    // Groups (only populated for firm documents when user generated groups exist)
                     val groupsArr = JSONArray().apply {
-                        if (currentTab == "firm") {
+                        if (currentTab == "firm" && _uiState.value.hasUserGeneratedGroups) {
                             _uiState.value.selectedUploadGroups.forEach { grp ->
                                 val groupId = grp.id ?: ""
-                                if (groupId.contains(",")) {
-                                    groupId.split(",").forEach { id ->
-                                        if (id.trim().isNotEmpty()) {
-                                            put(id.trim())
+                                if (grp.name != "All Groups" && groupId != "all") {
+                                    if (groupId.contains(",")) {
+                                        groupId.split(",").forEach { id ->
+                                            if (id.trim().isNotEmpty()) {
+                                                put(id.trim())
+                                            }
                                         }
+                                    } else if (groupId.isNotEmpty()) {
+                                        put(groupId)
                                     }
-                                } else if (groupId.isNotEmpty()) {
-                                    put(groupId)
                                 }
                             }
                         }

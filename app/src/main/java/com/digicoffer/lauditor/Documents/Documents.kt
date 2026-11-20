@@ -3478,9 +3478,14 @@ class Documents : Fragment(), BottomSheetUploadFile.OnPhotoSelectedListner,
                 }
             } else if (CATEGORY_TAG == "firm") {
                 val groups = JSONArray()
-                for (k in 0 until selected_groups_list.size) {
-                    val documentsModel1 = selected_groups_list[k]
-                    groups.put(documentsModel1.group_id)
+                val isAllGroups = selected_groups_list.isEmpty() || selected_groups_list.any { it.group_name == "All Groups" }
+                if (!isAllGroups) {
+                    for (k in 0 until selected_groups_list.size) {
+                        val documentsModel1 = selected_groups_list[k]
+                        if (!documentsModel1.group_id.isNullOrEmpty() && documentsModel1.group_name != "All Groups") {
+                            groups.put(documentsModel1.group_id)
+                        }
+                    }
                 }
                 jsonObject.put("category", "firm")
                 jsonObject.put("clients", "")

@@ -130,8 +130,8 @@ fun DocumentsUploadTab(
                     )
                 }
 
-                // 2. Select Groups (Only shown for Firm Upload)
-                if (uiState.currentTab == "firm") {
+                // 2. Select Groups (Only shown for Firm Upload when user generated groups exist)
+                if (uiState.currentTab == "firm" && uiState.hasUserGeneratedGroups) {
                     Text(
                         text = buildAnnotatedString {
                             withStyle(SpanStyle(color = Color(0xFF004D87), fontWeight = FontWeight.Normal, fontFamily = GillSans)) {

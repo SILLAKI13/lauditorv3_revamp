@@ -98,19 +98,21 @@ fun MemberActionMenu(
                     .padding(horizontal = 16.dp, vertical = 12.dp)
             )
 
-            // Upgrade as Practice Partner
-            HorizontalDivider(thickness = 0.5.dp, color = Color(0xFFE0E0E0))
-            Text(
-                text = "Upgrade as Practice Partner",
-                fontSize = 15.sp,
-                fontFamily = FontFamily(Font(R.font.gill_sans_regular)),
-                color = Color.Black,
-                textAlign = TextAlign.Start,
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .clickable { onUpgradeClick() }
-                    .padding(horizontal = 16.dp, vertical = 12.dp)
-            )
+            // Upgrade as Practice Partner (India only)
+            if (!Constants.isUSUser()) {
+                HorizontalDivider(thickness = 0.5.dp, color = Color(0xFFE0E0E0))
+                Text(
+                    text = "Upgrade as Practice Partner",
+                    fontSize = 15.sp,
+                    fontFamily = FontFamily(Font(R.font.gill_sans_regular)),
+                    color = Color.Black,
+                    textAlign = TextAlign.Start,
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .clickable { onUpgradeClick() }
+                        .padding(horizontal = 16.dp, vertical = 12.dp)
+                )
+            }
         }
     }
 }

@@ -1179,7 +1179,8 @@ class MatterEditViewModel(application: Application) : AndroidViewModel(applicati
     fun searchClients() {
         val query = _uiState.value.searchQuery.trim()
         if (query.isEmpty()) {
-            AndroidUtils.showToast("Please enter an Entity to Search", getApplication())
+            val msg = if (Constants.isUSUser()) "Please enter a Client to Search" else "Please enter an Entity to Search"
+            AndroidUtils.showToast(msg, getApplication())
             return
         }
 
@@ -1193,6 +1194,7 @@ class MatterEditViewModel(application: Application) : AndroidViewModel(applicati
                     if (!json.optBoolean("error", false)) {
                         val clientsJson = json.optJSONArray("clients") ?: JSONArray()
                         val list = mutableListOf<ClientsModel>()
+                        val isUS = Constants.isUSUser()
                         for (i in 0 until clientsJson.length()) {
                             val obj = clientsJson.optJSONObject(i) ?: continue
                             val id = obj.optString("client_id").ifEmpty {
@@ -1210,6 +1212,10 @@ class MatterEditViewModel(application: Application) : AndroidViewModel(applicati
                             }
                             val sendRequest = obj.optBoolean("send_request", false)
 
+                            if (isUS && !type.equals("consumer", ignoreCase = true)) {
+                                continue
+                            }
+
                             val model = ClientsModel().apply {
                                 this.client_id = id
                                 this.client_name = name
@@ -1219,13 +1225,25 @@ class MatterEditViewModel(application: Application) : AndroidViewModel(applicati
                             list.add(model)
                         }
                         if (list.isEmpty()) {
-                            _uiState.update { 
-                                it.copy(
-                                    searchResults = emptyList(), 
-                                    isSearchingClient = false,
-                                    clientNotFoundQuery = query,
-                                    isAddClientFormVisible = true
-                                ) 
+                            if (Constants.isUSUser()) {
+                                _uiState.update { 
+                                    it.copy(
+                                        searchResults = emptyList(), 
+                                        isSearchingClient = false,
+                                        clientNotFoundQuery = query,
+                                        isAddClientFormVisible = true
+                                    ) 
+                                }
+                            } else {
+                                _uiState.update { 
+                                    it.copy(
+                                        searchResults = emptyList(), 
+                                        isSearchingClient = false,
+                                        clientNotFoundQuery = null,
+                                        isAddClientFormVisible = false
+                                    ) 
+                                }
+                                AndroidUtils.showToast("No clients found", getApplication())
                             }
                         } else {
                             _uiState.update { 

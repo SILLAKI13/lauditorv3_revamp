@@ -244,11 +244,14 @@ fun ResetPasswordScreen(
                                 onCancelClick()
                             },
                             modifier = Modifier
-                                .width(dimensionResource(id = R.dimen.module_btn_size))
+                                .width(120.dp)
                                 .height(dimensionResource(id = R.dimen.forty_dp)),
                             shape = RoundedCornerShape(dimensionResource(id = R.dimen.eight_dp)),
                             containerColor = colorResource(id = R.color.dark_grey),
                             contentColor = colorResource(id = R.color.black),
+                            contentPadding = PaddingValues(horizontal = 8.dp, vertical = 0.dp),
+                            maxLines = 1,
+                            softWrap = false,
                             textStyle = TextStyle(
                                 fontFamily = GillSansBold,
                                 fontSize = 13.sp,
@@ -267,11 +270,14 @@ fun ResetPasswordScreen(
                             },
                             enabled = isSubmitEnabled,
                             modifier = Modifier
-                                .width(dimensionResource(id = R.dimen.module_btn_size))
+                                .width(120.dp)
                                 .height(dimensionResource(id = R.dimen.forty_dp)),
                             shape = RoundedCornerShape(dimensionResource(id = R.dimen.eight_dp)),
                             containerColor = colorResource(id = R.color.blue),
                             contentColor = colorResource(id = R.color.white),
+                            contentPadding = PaddingValues(horizontal = 8.dp, vertical = 0.dp),
+                            maxLines = 1,
+                            softWrap = false,
                             textStyle = TextStyle(
                                 fontFamily = GillSansBold,
                                 fontSize = 13.sp,

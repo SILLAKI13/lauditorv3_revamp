@@ -64,7 +64,8 @@ class MembersViewModel(private val repository: MembersRepository) : ViewModel() 
                             name = clean("name")
                             isdisabled = jsonObject.optBoolean("isdisabled", false)
                             val curr = clean("currency")
-                            currency = if (curr.isEmpty() || curr.equals("null", ignoreCase = true)) "IndianRupee(INR)" else curr
+                            val defaultCurr = if (Constants.isUSUser()) "USDollar(USD)" else "IndianRupee(INR)"
+                            currency = if (curr.isEmpty() || curr.equals("null", ignoreCase = true)) defaultCurr else curr
                             defaultRate = clean("defaultRate")
                             designation = clean("designation")
                             email = clean("email")

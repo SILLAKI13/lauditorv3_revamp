@@ -27,6 +27,7 @@ import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.digicoffer.lauditor.CommonFiles.GlobalFiles.Constants
 import com.digicoffer.lauditor.Groups.Models.GroupModel
 import com.digicoffer.lauditor.R
 import com.digicoffer.lauditor.core.ui.common.search.AppSearchField
@@ -131,6 +132,7 @@ fun GroupFormCard(
 
     val activeBlue = Color(0xFF004D87)
     val labelColor = Color(0xFF004D87)
+    val isUS = Constants.isUSUser()
 
     Column(
         modifier = Modifier
@@ -421,28 +423,30 @@ fun GroupFormCard(
                             fontFamily = FontFamily(Font(R.font.gill_sans_regular))
                         )
                     }
-                    Box(
-                        modifier = Modifier
-                            .weight(1f)
-                            .background(if (!isAddTeamMemberTab) activeBlue else Color.White)
-                            .clickable { 
-                                if (selectedMemberIds.isEmpty()) {
-                                    onValidationError("Please check the member selection")
-                                } else {
-                                    onTabChange(false)
-                                    searchQuery = ""
+                    if (!isUS) {
+                        Box(
+                            modifier = Modifier
+                                .weight(1f)
+                                .background(if (!isAddTeamMemberTab) activeBlue else Color.White)
+                                .clickable { 
+                                    if (selectedMemberIds.isEmpty()) {
+                                        onValidationError("Please check the member selection")
+                                    } else {
+                                        onTabChange(false)
+                                        searchQuery = ""
+                                    }
                                 }
-                            }
-                            .padding(vertical = 10.dp),
-                        contentAlignment = Alignment.Center
-                    ) {
-                        Text(
-                            text = "Add Group Head",
-                            color = if (!isAddTeamMemberTab) Color.White else Color.Black,
-                            fontWeight = FontWeight.SemiBold,
-                            fontSize = 14.sp,
-                            fontFamily = FontFamily(Font(R.font.gill_sans_regular))
-                        )
+                                .padding(vertical = 10.dp),
+                            contentAlignment = Alignment.Center
+                        ) {
+                            Text(
+                                text = "Add Group Head",
+                                color = if (!isAddTeamMemberTab) Color.White else Color.Black,
+                                fontWeight = FontWeight.SemiBold,
+                                fontSize = 14.sp,
+                                fontFamily = FontFamily(Font(R.font.gill_sans_regular))
+                            )
+                        }
                     }
                 }
 
@@ -670,15 +674,15 @@ fun GroupFormCard(
                     onValidationError("Please check Name")
                 } else if (description.isBlank()) {
                     onValidationError("Please check Description")
-                } else if (selectedMemberIds.isNotEmpty() && isAddTeamMemberTab) {
+                } else if (!isUS && selectedMemberIds.isNotEmpty() && isAddTeamMemberTab) {
                     // If team members are selected and user is currently on Add Team Member tab, prompt/advance to choose Head
                     onTabChange(false)
-                } else if (selectedMemberIds.isNotEmpty() && selectedGroupHeadId.isEmpty()) {
+                } else if (!isUS && selectedMemberIds.isNotEmpty() && selectedGroupHeadId.isEmpty()) {
                     // If team members are selected, group head is required
                     onValidationError("Please select Head of the Group")
                 } else {
-                    // If no team members are selected, groupHead is empty string (""), member list is empty
-                    val head = if (selectedMemberIds.isEmpty()) "" else selectedGroupHeadId
+                    // If no team members are selected or US version, groupHead is empty string (""), member list is empty or selected members
+                    val head = if (isUS || selectedMemberIds.isEmpty()) "" else selectedGroupHeadId
                     onSave(name, description, head, selectedMemberIds.toList())
                 }
             },

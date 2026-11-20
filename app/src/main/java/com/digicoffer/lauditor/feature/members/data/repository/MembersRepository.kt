@@ -2,6 +2,7 @@ package com.digicoffer.lauditor.feature.members.data.repository
 
 import android.content.Context
 import android.view.View
+import com.digicoffer.lauditor.CommonFiles.GlobalFiles.Constants
 import com.digicoffer.lauditor.Webservice.AsyncTaskCompleteListener
 import com.digicoffer.lauditor.Webservice.HttpResultDo
 import com.digicoffer.lauditor.Webservice.CommonApiHelper.WebServiceHelper
@@ -71,7 +72,8 @@ class MembersRepository(private val context: Context) {
         groups: List<String>
     ): HttpResultDo = suspendCancellableCoroutine { continuation ->
         try {
-            val currencyValue = if (currency.isEmpty()) "IndianRupee(INR)" else currency
+            val defaultCurrency = if (Constants.isUSUser()) "USDollar(USD)" else "IndianRupee(INR)"
+            val currencyValue = if (currency.isEmpty()) defaultCurrency else currency
             val postData = JSONObject().apply {
                 put("name", name.trim())
                 put("designation", designation.trim())
@@ -115,7 +117,8 @@ class MembersRepository(private val context: Context) {
         emailConfirm: String
     ): HttpResultDo = suspendCancellableCoroutine { continuation ->
         try {
-            val currencyValue = if (currency.isEmpty()) "IndianRupee(INR)" else currency
+            val defaultCurrency = if (Constants.isUSUser()) "USDollar(USD)" else "IndianRupee(INR)"
+            val currencyValue = if (currency.isEmpty()) defaultCurrency else currency
             val postData = JSONObject().apply {
                 put("name", name.trim())
                 put("designation", designation.trim())

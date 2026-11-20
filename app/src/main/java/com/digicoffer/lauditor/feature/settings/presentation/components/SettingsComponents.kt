@@ -40,6 +40,7 @@ import androidx.compose.ui.unit.sp
 import androidx.compose.ui.window.Dialog
 import androidx.compose.ui.window.DialogProperties
 import com.digicoffer.lauditor.R
+import com.digicoffer.lauditor.CommonFiles.GlobalFiles.Constants
 import com.digicoffer.lauditor.core.ui.common.feedback.AppPasswordRequirements
 import com.digicoffer.lauditor.core.ui.common.foundation.AppSpacer
 import com.digicoffer.lauditor.feature.settings.data.model.LoggedInDevice
@@ -456,36 +457,38 @@ fun SubscriptionSection(
                 val isAnyLoading = checkoutLoading || cancelSubscriptionLoading
 
                 Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-                    // Change Plan / Subscribe Button
-                    val planActionText = subscription?.actions?.primary?.label ?: "Change Plan"
-                    Surface(
-                        onClick = onInitiateChangePlan,
-                        enabled = !isAnyLoading,
-                        shape = RoundedCornerShape(8.dp),
-                        color = SettingsNavy,
-                        modifier = Modifier
-                            .height(30.dp)
-                            .defaultMinSize(minWidth = 84.dp)
-                    ) {
-                        Box(
+                    // Change Plan / Subscribe Button (Hidden for US version)
+                    if (!Constants.isUSUser()) {
+                        val planActionText = subscription?.actions?.primary?.label ?: "Change Plan"
+                        Surface(
+                            onClick = onInitiateChangePlan,
+                            enabled = !isAnyLoading,
+                            shape = RoundedCornerShape(8.dp),
+                            color = SettingsNavy,
                             modifier = Modifier
+                                .height(30.dp)
                                 .defaultMinSize(minWidth = 84.dp)
-                                .padding(horizontal = 10.dp, vertical = 3.dp),
-                            contentAlignment = Alignment.Center
                         ) {
-                            Text(
-                                text = planActionText,
-                                color = if (checkoutLoading) Color.Transparent else Color.White,
-                                fontSize = 12.sp,
-                                fontFamily = GillSansBold,
-                                maxLines = 1
-                            )
-                            if (checkoutLoading) {
-                                CircularProgressIndicator(
-                                    color = Color.White,
-                                    modifier = Modifier.size(14.dp),
-                                    strokeWidth = 2.dp
+                            Box(
+                                modifier = Modifier
+                                    .defaultMinSize(minWidth = 84.dp)
+                                    .padding(horizontal = 10.dp, vertical = 3.dp),
+                                contentAlignment = Alignment.Center
+                            ) {
+                                Text(
+                                    text = planActionText,
+                                    color = if (checkoutLoading) Color.Transparent else Color.White,
+                                    fontSize = 12.sp,
+                                    fontFamily = GillSansBold,
+                                    maxLines = 1
                                 )
+                                if (checkoutLoading) {
+                                    CircularProgressIndicator(
+                                        color = Color.White,
+                                        modifier = Modifier.size(14.dp),
+                                        strokeWidth = 2.dp
+                                    )
+                                }
                             }
                         }
                     }

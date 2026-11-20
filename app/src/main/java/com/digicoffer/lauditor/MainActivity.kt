@@ -537,10 +537,12 @@ class MainActivity : AppCompatActivity(), Dashboard.MenuHighlightListener, Month
                 setActiveSubItem(v as TextView)
                 navigateFromSub(sm_firmProfile, FirmProfile())
             }
-            addSubItem(sm_firmProfile, "Practice Partner") { v ->
-                Constants.Profile_View = "Pp"
-                setActiveSubItem(v as TextView)
-                navigateFromSub(sm_firmProfile, FirmProfile())
+            if (!Constants.isUSUser()) {
+                addSubItem(sm_firmProfile, "Practice Partner") { v ->
+                    Constants.Profile_View = "Pp"
+                    setActiveSubItem(v as TextView)
+                    navigateFromSub(sm_firmProfile, FirmProfile())
+                }
             }
         }
         
@@ -552,24 +554,28 @@ class MainActivity : AppCompatActivity(), Dashboard.MenuHighlightListener, Month
             Constants.create_matter = false
             navigateFromSub(sm_matter, Matter())
         }
-        addSubItem(sm_matter, "General Matters") { v ->
-            setActiveSubItem(v as TextView)
-            Constants.Matter_CreateOrViewDetails = "View"
-            Constants.MATTER_TYPE = "General"
-            Constants.is_CreateMatter = false
-            Constants.create_matter = false
-            navigateFromSub(sm_matter, Matter())
+        if (!Constants.isUSUser()) {
+            addSubItem(sm_matter, "General Matters") { v ->
+                setActiveSubItem(v as TextView)
+                Constants.Matter_CreateOrViewDetails = "View"
+                Constants.MATTER_TYPE = "General"
+                Constants.is_CreateMatter = false
+                Constants.create_matter = false
+                navigateFromSub(sm_matter, Matter())
+            }
         }
         
-        addSubItem(sm_documents, "Matter") { v ->
-            setActiveSubItem(v as TextView)
-            navigateFromSub(sm_documents, newDocumentFragment("matter"))
+        if (!Constants.isUSUser()) {
+            addSubItem(sm_documents, "Matter") { v ->
+                setActiveSubItem(v as TextView)
+                navigateFromSub(sm_documents, newDocumentFragment("matter"))
+            }
+            addSubItem(sm_documents, "Client") { v ->
+                setActiveSubItem(v as TextView)
+                navigateFromSub(sm_documents, newDocumentFragment("client"))
+            }
         }
-        addSubItem(sm_documents, "Client") { v ->
-            setActiveSubItem(v as TextView)
-            navigateFromSub(sm_documents, newDocumentFragment("client"))
-        }
-        if (!isSolo) {
+        if (!isSolo || Constants.isUSUser()) {
             addSubItem(sm_documents, "Firm") { v ->
                 setActiveSubItem(v as TextView)
                 navigateFromSub(sm_documents, newDocumentFragment("firm"))
@@ -587,15 +593,17 @@ class MainActivity : AppCompatActivity(), Dashboard.MenuHighlightListener, Month
             Constants.Rel_Type = "Individual"
             navigateFromSub(sm_relationships, ClientRelationship())
         }
-        addSubItem(sm_relationships, "Business") { v ->
-            setActiveSubItem(v as TextView)
-            Constants.Rel_Type = "Entity"
-            navigateFromSub(sm_relationships, ClientRelationship())
-        }
-        addSubItem(sm_relationships, "Corporate") { v ->
-            setActiveSubItem(v as TextView)
-            Constants.Rel_Type = "Corporate"
-            navigateFromSub(sm_relationships, ClientRelationship())
+        if (!Constants.isUSUser()) {
+            addSubItem(sm_relationships, "Business") { v ->
+                setActiveSubItem(v as TextView)
+                Constants.Rel_Type = "Entity"
+                navigateFromSub(sm_relationships, ClientRelationship())
+            }
+            addSubItem(sm_relationships, "Corporate") { v ->
+                setActiveSubItem(v as TextView)
+                Constants.Rel_Type = "Corporate"
+                navigateFromSub(sm_relationships, ClientRelationship())
+            }
         }
         if (Constants.ROLE == "SU") {
             addSubItem(sm_relationships, "Deleted") { v ->
@@ -1520,6 +1528,48 @@ class MainActivity : AppCompatActivity(), Dashboard.MenuHighlightListener, Month
         if (Constants.isUSUser()) {
             sm_appointments.visibility = View.GONE
             sm_timesheet.visibility = View.GONE
+            val matterContainer = sm_matter.findViewById<LinearLayout>(R.id.submenu_container)
+            if (matterContainer != null) {
+                for (i in 0 until matterContainer.childCount) {
+                    val child = matterContainer.getChildAt(i)
+                    if (child is TextView && child.text.toString().contains("General", ignoreCase = true)) {
+                        child.visibility = View.GONE
+                    }
+                }
+            }
+            val relContainer = sm_relationships.findViewById<LinearLayout>(R.id.submenu_container)
+            if (relContainer != null) {
+                for (i in 0 until relContainer.childCount) {
+                    val child = relContainer.getChildAt(i)
+                    if (child is TextView) {
+                        val text = child.text.toString()
+                        if (text.contains("Business", ignoreCase = true) || text.contains("Corporate", ignoreCase = true)) {
+                            child.visibility = View.GONE
+                        }
+                    }
+                }
+            }
+            val profileContainer = sm_firmProfile.findViewById<LinearLayout>(R.id.submenu_container)
+            if (profileContainer != null) {
+                for (i in 0 until profileContainer.childCount) {
+                    val child = profileContainer.getChildAt(i)
+                    if (child is TextView && child.text.toString().contains("Practice Partner", ignoreCase = true)) {
+                        child.visibility = View.GONE
+                    }
+                }
+            }
+            val docContainer = sm_documents.findViewById<LinearLayout>(R.id.submenu_container)
+            if (docContainer != null) {
+                for (i in 0 until docContainer.childCount) {
+                    val child = docContainer.getChildAt(i)
+                    if (child is TextView) {
+                        val text = child.text.toString()
+                        if (text.contains("Matter", ignoreCase = true) || text.contains("Client", ignoreCase = true)) {
+                            child.visibility = View.GONE
+                        }
+                    }
+                }
+            }
         }
         sm_settings.visibility = View.VISIBLE
         updateSidebarUiState()
@@ -2151,10 +2201,12 @@ class MainActivity : AppCompatActivity(), Dashboard.MenuHighlightListener, Month
                 setActiveSubItem(v as TextView)
                 navigateFromSub(sm_firmProfile, FirmProfile())
             }
-            addSubItem(sm_firmProfile, "Practice Partner") { v ->
-                Constants.Profile_View = "Pp"
-                setActiveSubItem(v as TextView)
-                navigateFromSub(sm_firmProfile, FirmProfile())
+            if (!Constants.isUSUser()) {
+                addSubItem(sm_firmProfile, "Practice Partner") { v ->
+                    Constants.Profile_View = "Pp"
+                    setActiveSubItem(v as TextView)
+                    navigateFromSub(sm_firmProfile, FirmProfile())
+                }
             }
         }
 
@@ -2166,24 +2218,28 @@ class MainActivity : AppCompatActivity(), Dashboard.MenuHighlightListener, Month
             Constants.create_matter = false
             navigateFromSub(sm_matter, Matter())
         }
-        addSubItem(sm_matter, "General Matters") { v ->
-            setActiveSubItem(v as TextView)
-            Constants.Matter_CreateOrViewDetails = "View"
-            Constants.MATTER_TYPE = "General"
-            Constants.is_CreateMatter = false
-            Constants.create_matter = false
-            navigateFromSub(sm_matter, Matter())
+        if (!Constants.isUSUser()) {
+            addSubItem(sm_matter, "General Matters") { v ->
+                setActiveSubItem(v as TextView)
+                Constants.Matter_CreateOrViewDetails = "View"
+                Constants.MATTER_TYPE = "General"
+                Constants.is_CreateMatter = false
+                Constants.create_matter = false
+                navigateFromSub(sm_matter, Matter())
+            }
         }
 
-        addSubItem(sm_documents, "Matter") { v ->
-            setActiveSubItem(v as TextView)
-            navigateFromSub(sm_documents, newDocumentFragment("matter"))
+        if (!Constants.isUSUser()) {
+            addSubItem(sm_documents, "Matter") { v ->
+                setActiveSubItem(v as TextView)
+                navigateFromSub(sm_documents, newDocumentFragment("matter"))
+            }
+            addSubItem(sm_documents, "Client") { v ->
+                setActiveSubItem(v as TextView)
+                navigateFromSub(sm_documents, newDocumentFragment("client"))
+            }
         }
-        addSubItem(sm_documents, "Client") { v ->
-            setActiveSubItem(v as TextView)
-            navigateFromSub(sm_documents, newDocumentFragment("client"))
-        }
-        if (!isSolo) {
+        if (!isSolo || Constants.isUSUser()) {
             addSubItem(sm_documents, "Firm") { v ->
                 setActiveSubItem(v as TextView)
                 navigateFromSub(sm_documents, newDocumentFragment("firm"))
@@ -2201,15 +2257,17 @@ class MainActivity : AppCompatActivity(), Dashboard.MenuHighlightListener, Month
             Constants.Rel_Type = "Individual"
             navigateFromSub(sm_relationships, ClientRelationship())
         }
-        addSubItem(sm_relationships, "Business") { v ->
-            setActiveSubItem(v as TextView)
-            Constants.Rel_Type = "Entity"
-            navigateFromSub(sm_relationships, ClientRelationship())
-        }
-        addSubItem(sm_relationships, "Corporate") { v ->
-            setActiveSubItem(v as TextView)
-            Constants.Rel_Type = "Corporate"
-            navigateFromSub(sm_relationships, ClientRelationship())
+        if (!Constants.isUSUser()) {
+            addSubItem(sm_relationships, "Business") { v ->
+                setActiveSubItem(v as TextView)
+                Constants.Rel_Type = "Entity"
+                navigateFromSub(sm_relationships, ClientRelationship())
+            }
+            addSubItem(sm_relationships, "Corporate") { v ->
+                setActiveSubItem(v as TextView)
+                Constants.Rel_Type = "Corporate"
+                navigateFromSub(sm_relationships, ClientRelationship())
+            }
         }
         if (Constants.ROLE == "SU") {
             addSubItem(sm_relationships, "Deleted") { v ->
@@ -2964,13 +3022,34 @@ class MainActivity : AppCompatActivity(), Dashboard.MenuHighlightListener, Month
                 for (i in 0 until container.childCount) {
                     val child = container.getChildAt(i)
                     if (child is TextView) {
-                        subItems.add(
-                            SidebarSubItemState(
-                                index = i,
-                                label = child.text.toString(),
-                                isHighlighted = child === currentActiveSubItem
+                        val text = child.text.toString()
+                        if (isUS && parentView.id == R.id.sm_matters && text.contains("General", ignoreCase = true)) {
+                            child.visibility = View.GONE
+                            continue
+                        }
+                        if (isUS && parentView.id == R.id.sm_relationships && 
+                            (text.contains("Business", ignoreCase = true) || text.contains("Corporate", ignoreCase = true))) {
+                            child.visibility = View.GONE
+                            continue
+                        }
+                        if (isUS && parentView.id == R.id.sm_firmProfile && text.contains("Practice Partner", ignoreCase = true)) {
+                            child.visibility = View.GONE
+                            continue
+                        }
+                        if (isUS && parentView.id == R.id.sm_documents && 
+                            (text.contains("Matter", ignoreCase = true) || text.contains("Client", ignoreCase = true))) {
+                            child.visibility = View.GONE
+                            continue
+                        }
+                        if (child.visibility == View.VISIBLE) {
+                            subItems.add(
+                                SidebarSubItemState(
+                                    index = i,
+                                    label = text,
+                                    isHighlighted = child === currentActiveSubItem
+                                )
                             )
-                        )
+                        }
                     }
                 }
             }

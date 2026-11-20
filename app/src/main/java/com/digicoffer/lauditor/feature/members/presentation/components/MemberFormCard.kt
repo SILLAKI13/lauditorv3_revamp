@@ -54,6 +54,7 @@ import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.digicoffer.lauditor.CommonFiles.GlobalFiles.Constants
 import com.digicoffer.lauditor.R
 
 @Composable
@@ -131,7 +132,8 @@ fun MemberFormCard(
     var showValidationErrorAlert by remember { mutableStateOf(false) }
     var validationErrorMessage by remember { mutableStateOf("") }
 
-    val displayCurrency = if (currency.isEmpty() || currency.equals("null", ignoreCase = true)) "IndianRupee(INR)" else currency
+    val defaultCurrency = if (Constants.isUSUser()) "USDollar(USD)" else "IndianRupee(INR)"
+    val displayCurrency = if (currency.isEmpty() || currency.equals("null", ignoreCase = true)) defaultCurrency else currency
 
     Card(
         shape = RoundedCornerShape(8.dp),

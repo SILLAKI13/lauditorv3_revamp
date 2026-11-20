@@ -48,7 +48,7 @@ class FirmProfile : Fragment() {
         container: ViewGroup?,
         savedInstanceState: Bundle?
     ): View {
-        val isPp = "Pp".equals(Constants.Profile_View, ignoreCase = true)
+        val isPp = "Pp".equals(Constants.Profile_View, ignoreCase = true) && !Constants.isUSUser()
 
         val title = when {
             isPp -> getString(R.string.practice_partners)

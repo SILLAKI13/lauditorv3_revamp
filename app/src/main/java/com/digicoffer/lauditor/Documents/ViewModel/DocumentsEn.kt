@@ -36,7 +36,8 @@ class DocumentsEn : Fragment(), BottomSheetUploadFile.OnPhotoSelectedListner {
         viewModel = ViewModelProvider(this, factory).get(DocumentsViewModel::class.java)
 
         // Parse arguments matching legacy drawer click bundle parameter
-        val docType = arguments?.getString("document_type") ?: "matter"
+        val defaultDocType = if (com.digicoffer.lauditor.CommonFiles.GlobalFiles.Constants.isUSUser()) "firm" else "matter"
+        val docType = arguments?.getString("document_type") ?: defaultDocType
         viewModel.onEvent(DocumentsUiEvent.SwitchTab(docType))
 
         val titleViewModel = try {

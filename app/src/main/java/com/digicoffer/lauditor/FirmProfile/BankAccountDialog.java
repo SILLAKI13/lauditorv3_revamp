@@ -32,12 +32,16 @@ import androidx.appcompat.widget.AppCompatButton;
 import androidx.core.content.ContextCompat;
 
 import com.digicoffer.lauditor.CommonFiles.GlobalFiles.AndroidUtils;
+import com.digicoffer.lauditor.CommonFiles.GlobalFiles.Constants;
 import com.digicoffer.lauditor.R;
 import com.digicoffer.lauditor.Webservice.AsyncTaskCompleteListener;
 import com.digicoffer.lauditor.Webservice.HttpResultDo;
 import com.digicoffer.lauditor.Webservice.CommonApiHelper.WebServiceHelper;
 
 import org.json.JSONObject;
+
+import android.widget.FrameLayout;
+import android.widget.Toast;
 
 import java.net.URLEncoder;
 import java.util.regex.Pattern;
@@ -86,6 +90,13 @@ public class BankAccountDialog implements AsyncTaskCompleteListener {
     private String snapshotIfsc = "";
     private String snapshotBranchName = "";
 
+    // US snapshots and state
+    private String snapshotRoutingNumber = "";
+    private String snapshotAccountType = "Checking";
+    private String snapshotSwiftCode = "";
+    private String snapshotBankAddress = "";
+    private String selectedAccountType = "Checking";
+
     private boolean suppressVerificationReset = false;
 
     private EditText etAccountHolderName, etBankName, etAccountNumber,
@@ -100,6 +111,15 @@ public class BankAccountDialog implements AsyncTaskCompleteListener {
             tvLabelConfirmAccountNumber, tvLabelIfscCode;
     private CheckBox cbTerms;
     private AppCompatButton btnVerify, btnSubmit, btnCancel, btnClose, btnEdit;
+
+    // US containers and views
+    private LinearLayout llIfscContainer, llBranchContainer, llVerifyContainer;
+    private LinearLayout llRoutingNumber, llAccountType, llSwiftCode, llBankAddress;
+    private EditText etRoutingNumber, etAccountType, etSwiftCode, etBankAddress;
+    private TextView tvLabelRoutingNumber, tvLabelAccountType, tvLabelSwiftCode, tvLabelBankAddress;
+    private TextView tvErrorRoutingNumber, tvErrorAccountType, tvErrorSwiftCode;
+    private ImageView ivInfoRoutingNumber, ivInfoSwiftCode, ivAccountTypeArrow;
+    private FrameLayout flAccountType;
 
     public BankAccountDialog(Activity activity, Context context,
                              BankAccountModel.AccountDetails existingDetails,
@@ -140,6 +160,10 @@ public class BankAccountDialog implements AsyncTaskCompleteListener {
         } else {
             currentMode = Mode.ADD;
             etAccountHolderName.setText(prefillHolderName != null ? prefillHolderName : "");
+            if (Constants.isUSUser()) {
+                selectedAccountType = "Checking";
+                if (etAccountType != null) etAccountType.setText(selectedAccountType);
+            }
             applyModeUi();
         }
 
@@ -166,13 +190,46 @@ public class BankAccountDialog implements AsyncTaskCompleteListener {
         etIfscCode = view.findViewById(R.id.et_ifsc_code);
         etBranchName = view.findViewById(R.id.et_branch_name);
 
+        // US containers and views
+        llIfscContainer = view.findViewById(R.id.ll_ifsc_container);
+        llBranchContainer = view.findViewById(R.id.ll_branch_container);
+        llVerifyContainer = view.findViewById(R.id.ll_verify_container);
+
+        llRoutingNumber = view.findViewById(R.id.ll_routing_number);
+        llAccountType = view.findViewById(R.id.ll_account_type);
+        llSwiftCode = view.findViewById(R.id.ll_swift_code);
+        llBankAddress = view.findViewById(R.id.ll_bank_address);
+
+        etRoutingNumber = view.findViewById(R.id.et_routing_number);
+        etAccountType = view.findViewById(R.id.et_account_type);
+        etSwiftCode = view.findViewById(R.id.et_swift_code);
+        etBankAddress = view.findViewById(R.id.et_bank_address);
+
+        flAccountType = view.findViewById(R.id.fl_account_type);
+        ivAccountTypeArrow = view.findViewById(R.id.iv_account_type_arrow);
+        ivInfoRoutingNumber = view.findViewById(R.id.iv_info_routing_number);
+        ivInfoSwiftCode = view.findViewById(R.id.iv_info_swift_code);
+
+        tvLabelRoutingNumber = view.findViewById(R.id.tv_label_routing_number);
+        tvLabelAccountType = view.findViewById(R.id.tv_label_account_type);
+        tvLabelSwiftCode = view.findViewById(R.id.tv_label_swift_code);
+        tvLabelBankAddress = view.findViewById(R.id.tv_label_bank_address);
+
+        tvErrorRoutingNumber = view.findViewById(R.id.tv_error_routing_number);
+        tvErrorAccountType = view.findViewById(R.id.tv_error_account_type);
+        tvErrorSwiftCode = view.findViewById(R.id.tv_error_swift_code);
+
         int hintColor = ContextCompat.getColor(activity, R.color.grey_text);
         etAccountHolderName.setHintTextColor(hintColor);
         etBankName.setHintTextColor(hintColor);
         etAccountNumber.setHintTextColor(hintColor);
         etConfirmAccountNumber.setHintTextColor(hintColor);
-        etIfscCode.setHintTextColor(hintColor);
-        etBranchName.setHintTextColor(hintColor);
+        if (etIfscCode != null) etIfscCode.setHintTextColor(hintColor);
+        if (etBranchName != null) etBranchName.setHintTextColor(hintColor);
+        if (etRoutingNumber != null) etRoutingNumber.setHintTextColor(hintColor);
+        if (etAccountType != null) etAccountType.setHintTextColor(hintColor);
+        if (etSwiftCode != null) etSwiftCode.setHintTextColor(hintColor);
+        if (etBankAddress != null) etBankAddress.setHintTextColor(hintColor);
 
         tvErrorAccountHolderName = view.findViewById(R.id.tv_error_account_holder_name);
         tvErrorBankName = view.findViewById(R.id.tv_error_bank_name);
@@ -236,6 +293,10 @@ public class BankAccountDialog implements AsyncTaskCompleteListener {
     // Called from applyModeUi()'s isModeEntry blocks so it re-runs exactly once
     // per mode switch, same pattern as the other structural UI setup in this file.
     private void updateFieldLabels(boolean showAsterisk) {
+        if (Constants.isUSUser()) {
+            updateUSFieldLabels(showAsterisk);
+            return;
+        }
         if (showAsterisk) {
             setRedAsteriskLabel(tvLabelAccountHolder, "Account Holder Name");
             setRedAsteriskLabel(tvLabelBankName, "Bank Name");
@@ -248,6 +309,28 @@ public class BankAccountDialog implements AsyncTaskCompleteListener {
             tvLabelAccountNumber.setText("Account Number");
             tvLabelConfirmAccountNumber.setText("Confirm Account Number");
             tvLabelIfscCode.setText("IFSC Code");
+        }
+    }
+
+    private void updateUSFieldLabels(boolean showAsterisk) {
+        if (showAsterisk) {
+            setRedAsteriskLabel(tvLabelAccountHolder, "Account Holder Name");
+            setRedAsteriskLabel(tvLabelBankName, "Bank Name");
+            setRedAsteriskLabel(tvLabelAccountNumber, "Account Number");
+            setRedAsteriskLabel(tvLabelConfirmAccountNumber, "Confirm Account Number");
+            if (tvLabelRoutingNumber != null) setRedAsteriskLabel(tvLabelRoutingNumber, "Routing Number (ABA)");
+            if (tvLabelAccountType != null) setRedAsteriskLabel(tvLabelAccountType, "Account Type");
+            if (tvLabelSwiftCode != null) tvLabelSwiftCode.setText("SWIFT/BIC Code (Optional)");
+            if (tvLabelBankAddress != null) tvLabelBankAddress.setText("Bank Address (Optional)");
+        } else {
+            if (tvLabelAccountHolder != null) tvLabelAccountHolder.setText("Account Holder Name");
+            if (tvLabelBankName != null) tvLabelBankName.setText("Bank Name");
+            if (tvLabelAccountNumber != null) tvLabelAccountNumber.setText("Account Number");
+            if (tvLabelConfirmAccountNumber != null) tvLabelConfirmAccountNumber.setText("Confirm Account Number");
+            if (tvLabelRoutingNumber != null) tvLabelRoutingNumber.setText("Routing Number (ABA)");
+            if (tvLabelAccountType != null) tvLabelAccountType.setText("Account Type");
+            if (tvLabelSwiftCode != null) tvLabelSwiftCode.setText("SWIFT/BIC Code");
+            if (tvLabelBankAddress != null) tvLabelBankAddress.setText("Bank Address");
         }
     }
 
@@ -352,7 +435,7 @@ public class BankAccountDialog implements AsyncTaskCompleteListener {
 
             @Override
             public void onTextChanged(CharSequence s, int start, int before, int count) {
-                if (suppressVerificationReset) {
+                if (suppressVerificationReset || Constants.isUSUser()) {
                     updateSubmitButtonState();
                     return;
                 }
@@ -365,11 +448,69 @@ public class BankAccountDialog implements AsyncTaskCompleteListener {
         };
 
         etAccountNumber.addTextChangedListener(resetVerificationWatcher);
-        etIfscCode.addTextChangedListener(resetVerificationWatcher);
+        if (etIfscCode != null) etIfscCode.addTextChangedListener(resetVerificationWatcher);
 
         etAccountHolderName.addTextChangedListener(simpleWatcher());
         etConfirmAccountNumber.addTextChangedListener(simpleWatcher());
         etBankName.addTextChangedListener(simpleWatcher());
+
+        if (Constants.isUSUser()) {
+            if (llIfscContainer != null) llIfscContainer.setVisibility(View.GONE);
+            if (llBranchContainer != null) llBranchContainer.setVisibility(View.GONE);
+            if (llVerifyContainer != null) llVerifyContainer.setVisibility(View.GONE);
+
+            if (llRoutingNumber != null) llRoutingNumber.setVisibility(View.VISIBLE);
+            if (llAccountType != null) llAccountType.setVisibility(View.VISIBLE);
+            if (llSwiftCode != null) llSwiftCode.setVisibility(View.VISIBLE);
+            if (llBankAddress != null) llBankAddress.setVisibility(View.VISIBLE);
+
+            if (etRoutingNumber != null) etRoutingNumber.addTextChangedListener(simpleWatcher());
+            if (etSwiftCode != null) etSwiftCode.addTextChangedListener(simpleWatcher());
+            if (etBankAddress != null) etBankAddress.addTextChangedListener(simpleWatcher());
+
+            View.OnClickListener accountTypeClick = v -> {
+                if (currentMode != Mode.VIEW) {
+                    showAccountTypeDialog();
+                }
+            };
+            if (etAccountType != null) etAccountType.setOnClickListener(accountTypeClick);
+            if (ivAccountTypeArrow != null) ivAccountTypeArrow.setOnClickListener(accountTypeClick);
+            if (flAccountType != null) flAccountType.setOnClickListener(accountTypeClick);
+
+            if (ivInfoRoutingNumber != null) {
+                ivInfoRoutingNumber.setOnClickListener(v ->
+                        AndroidUtils.showAlert("A 9-digit ABA routing transit number identifying your financial institution in the United States.", activity));
+            }
+            if (ivInfoSwiftCode != null) {
+                ivInfoSwiftCode.setOnClickListener(v ->
+                        AndroidUtils.showAlert("An 8 or 11-character code identifying your bank internationally.", activity));
+            }
+        } else {
+            if (llIfscContainer != null) llIfscContainer.setVisibility(View.VISIBLE);
+            if (llBranchContainer != null) llBranchContainer.setVisibility(View.VISIBLE);
+            if (llVerifyContainer != null) llVerifyContainer.setVisibility(View.VISIBLE);
+
+            if (llRoutingNumber != null) llRoutingNumber.setVisibility(View.GONE);
+            if (llAccountType != null) llAccountType.setVisibility(View.GONE);
+            if (llSwiftCode != null) llSwiftCode.setVisibility(View.GONE);
+            if (llBankAddress != null) llBankAddress.setVisibility(View.GONE);
+        }
+    }
+
+    private void showAccountTypeDialog() {
+        if (currentMode == Mode.VIEW) return;
+        final String[] options = new String[]{"Checking", "Savings"};
+        int selectedIndex = "Savings".equalsIgnoreCase(selectedAccountType) ? 1 : 0;
+        new AlertDialog.Builder(activity)
+                .setTitle("Select Account Type")
+                .setSingleChoiceItems(options, selectedIndex, (d, which) -> {
+                    selectedAccountType = options[which];
+                    if (etAccountType != null) etAccountType.setText(selectedAccountType);
+                    updateSubmitButtonState();
+                    d.dismiss();
+                })
+                .setNegativeButton("Cancel", null)
+                .show();
     }
 
     // FIX: this now runs on EVERY keystroke in etAccountNumber/etIfscCode (via the
@@ -587,14 +728,28 @@ public class BankAccountDialog implements AsyncTaskCompleteListener {
         suppressVerificationReset = true;
         etAccountHolderName.setText(existingDetails.accountHolderName);
         etBankName.setText(existingDetails.bankName);
-        etIfscCode.setText(existingDetails.ifscCode);
-        etBranchName.setText(existingDetails.branchName);
         actualAccountNumber = existingDetails.accountNumber;
 
         etAccountNumber.setInputType(InputType.TYPE_CLASS_TEXT | InputType.TYPE_TEXT_VARIATION_VISIBLE_PASSWORD);
         etAccountNumber.setText(maskAccountNumber(actualAccountNumber));
         etConfirmAccountNumber.setInputType(InputType.TYPE_CLASS_TEXT | InputType.TYPE_TEXT_VARIATION_VISIBLE_PASSWORD);
         etConfirmAccountNumber.setText(maskAccountNumber(actualAccountNumber));
+
+        if (Constants.isUSUser()) {
+            if (etRoutingNumber != null) etRoutingNumber.setText(existingDetails.routingNumber != null ? existingDetails.routingNumber : "");
+            String type = (existingDetails.accountType != null && !existingDetails.accountType.isEmpty())
+                    ? existingDetails.accountType.trim() : "Checking";
+            if (!type.isEmpty()) {
+                type = type.substring(0, 1).toUpperCase() + (type.length() > 1 ? type.substring(1) : "");
+            }
+            selectedAccountType = type;
+            if (etAccountType != null) etAccountType.setText(selectedAccountType);
+            if (etSwiftCode != null) etSwiftCode.setText(existingDetails.swiftCode != null ? existingDetails.swiftCode : "");
+            if (etBankAddress != null) etBankAddress.setText(existingDetails.bankAddress != null ? existingDetails.bankAddress : "");
+        } else {
+            if (etIfscCode != null) etIfscCode.setText(existingDetails.ifscCode);
+            if (etBranchName != null) etBranchName.setText(existingDetails.branchName);
+        }
         suppressVerificationReset = false;
 
         isVerified = existingDetails.verificationStatus;
@@ -608,10 +763,25 @@ public class BankAccountDialog implements AsyncTaskCompleteListener {
         snapshotBankName = existingDetails != null && existingDetails.bankName != null
                 ? existingDetails.bankName.trim() : "";
         snapshotAccountNumber = actualAccountNumber != null ? actualAccountNumber.trim() : "";
-        snapshotIfsc = existingDetails != null && existingDetails.ifscCode != null
-                ? existingDetails.ifscCode.trim().toUpperCase() : "";
-        snapshotBranchName = existingDetails != null && existingDetails.branchName != null
-                ? existingDetails.branchName.trim() : "";
+        if (Constants.isUSUser()) {
+            snapshotRoutingNumber = existingDetails != null && existingDetails.routingNumber != null
+                    ? existingDetails.routingNumber.trim() : "";
+            String type = existingDetails != null && existingDetails.accountType != null
+                    ? existingDetails.accountType.trim() : "Checking";
+            if (!type.isEmpty()) {
+                type = type.substring(0, 1).toUpperCase() + (type.length() > 1 ? type.substring(1) : "");
+            }
+            snapshotAccountType = type;
+            snapshotSwiftCode = existingDetails != null && existingDetails.swiftCode != null
+                    ? existingDetails.swiftCode.trim() : "";
+            snapshotBankAddress = existingDetails != null && existingDetails.bankAddress != null
+                    ? existingDetails.bankAddress.trim() : "";
+        } else {
+            snapshotIfsc = existingDetails != null && existingDetails.ifscCode != null
+                    ? existingDetails.ifscCode.trim().toUpperCase() : "";
+            snapshotBranchName = existingDetails != null && existingDetails.branchName != null
+                    ? existingDetails.branchName.trim() : "";
+        }
     }
 
     private boolean isEditFormDirty() {
@@ -621,18 +791,37 @@ public class BankAccountDialog implements AsyncTaskCompleteListener {
                 ? etAccountHolderName.getText().toString().trim() : "";
         String currentBank = etBankName.getText() != null
                 ? etBankName.getText().toString().trim() : "";
-        String currentIfsc = etIfscCode.getText() != null
-                ? etIfscCode.getText().toString().trim().toUpperCase() : "";
         String currentAccountNumber = etAccountNumber.getText() != null
                 ? etAccountNumber.getText().toString().trim() : "";
-        String currentBranch = etBranchName.getText() != null
-                ? etBranchName.getText().toString().trim() : "";
 
-        return !currentHolder.equals(snapshotHolderName)
-                || !currentBank.equals(snapshotBankName)
-                || !currentIfsc.equals(snapshotIfsc)
-                || !currentAccountNumber.equals(snapshotAccountNumber)
-                || !currentBranch.equals(snapshotBranchName);
+        if (Constants.isUSUser()) {
+            String currentRouting = etRoutingNumber != null && etRoutingNumber.getText() != null
+                    ? etRoutingNumber.getText().toString().trim() : "";
+            String currentType = selectedAccountType;
+            String currentSwift = etSwiftCode != null && etSwiftCode.getText() != null
+                    ? etSwiftCode.getText().toString().trim() : "";
+            String currentAddress = etBankAddress != null && etBankAddress.getText() != null
+                    ? etBankAddress.getText().toString().trim() : "";
+
+            return !currentHolder.equals(snapshotHolderName)
+                    || !currentBank.equals(snapshotBankName)
+                    || !currentAccountNumber.equals(snapshotAccountNumber)
+                    || !currentRouting.equals(snapshotRoutingNumber)
+                    || !currentType.equalsIgnoreCase(snapshotAccountType)
+                    || !currentSwift.equals(snapshotSwiftCode)
+                    || !currentAddress.equals(snapshotBankAddress);
+        } else {
+            String currentIfsc = etIfscCode.getText() != null
+                    ? etIfscCode.getText().toString().trim().toUpperCase() : "";
+            String currentBranch = etBranchName.getText() != null
+                    ? etBranchName.getText().toString().trim() : "";
+
+            return !currentHolder.equals(snapshotHolderName)
+                    || !currentBank.equals(snapshotBankName)
+                    || !currentIfsc.equals(snapshotIfsc)
+                    || !currentAccountNumber.equals(snapshotAccountNumber)
+                    || !currentBranch.equals(snapshotBranchName);
+        }
     }
 
     private void requestClose() {
@@ -687,14 +876,42 @@ public class BankAccountDialog implements AsyncTaskCompleteListener {
                     makeNonEditable(etBankName);
                     makeNonEditable(etAccountNumber);
                     makeNonEditable(etConfirmAccountNumber);
-                    makeNonEditable(etIfscCode);
-                    makeNonEditable(etBranchName);
 
-                    // View mode is read-only, so the mandatory-field asterisks
-                    // (which only make sense while filling out a form) are hidden.
-                    updateFieldLabels(false);
+                    if (Constants.isUSUser()) {
+                        makeNonEditable(etRoutingNumber);
+                        makeNonEditable(etAccountType);
+                        makeNonEditable(etSwiftCode);
+                        makeNonEditable(etBankAddress);
+                        if (ivAccountTypeArrow != null) ivAccountTypeArrow.setVisibility(View.GONE);
 
-                    llConfirmAccountNumber.setVisibility(View.GONE);
+                        if (llIfscContainer != null) llIfscContainer.setVisibility(View.GONE);
+                        if (llBranchContainer != null) llBranchContainer.setVisibility(View.GONE);
+                        if (llVerifyContainer != null) llVerifyContainer.setVisibility(View.GONE);
+
+                        if (llRoutingNumber != null) llRoutingNumber.setVisibility(View.VISIBLE);
+                        if (llAccountType != null) llAccountType.setVisibility(View.VISIBLE);
+                        if (llSwiftCode != null) llSwiftCode.setVisibility(View.VISIBLE);
+                        if (llBankAddress != null) llBankAddress.setVisibility(View.VISIBLE);
+
+                        // In US View mode, Confirm Account Number is visible (masked) like web
+                        llConfirmAccountNumber.setVisibility(View.VISIBLE);
+                        updateFieldLabels(false);
+                    } else {
+                        makeNonEditable(etIfscCode);
+                        makeNonEditable(etBranchName);
+
+                        if (llRoutingNumber != null) llRoutingNumber.setVisibility(View.GONE);
+                        if (llAccountType != null) llAccountType.setVisibility(View.GONE);
+                        if (llSwiftCode != null) llSwiftCode.setVisibility(View.GONE);
+                        if (llBankAddress != null) llBankAddress.setVisibility(View.GONE);
+
+                        if (llIfscContainer != null) llIfscContainer.setVisibility(View.VISIBLE);
+                        if (llBranchContainer != null) llBranchContainer.setVisibility(View.VISIBLE);
+
+                        llConfirmAccountNumber.setVisibility(View.GONE);
+                        updateFieldLabels(false);
+                    }
+
                     llTerms.setVisibility(View.GONE);
                     llActionButtonsEdit.setVisibility(View.GONE);
                     llActionButtonsView.setVisibility(View.VISIBLE);
@@ -715,7 +932,7 @@ public class BankAccountDialog implements AsyncTaskCompleteListener {
                 }
 
                 btnVerify.setVisibility(View.GONE);
-                llVerifiedBadge.setVisibility(isVerified ? View.VISIBLE : View.GONE);
+                llVerifiedBadge.setVisibility((!Constants.isUSUser() && isVerified) ? View.VISIBLE : View.GONE);
 
                 lastStructuralMode = currentMode;
                 break;
@@ -729,17 +946,54 @@ public class BankAccountDialog implements AsyncTaskCompleteListener {
                     setFieldEditableNoFocus(etAccountHolderName);
                     setFieldEditableNoFocus(etBankName);
                     setFieldEditableNoFocus(etAccountNumber);
-
                     setFieldEditableNoFocus(etConfirmAccountNumber);
-                    setFieldEditableNoFocus(etIfscCode);
-                    setFieldEditableNoFocus(etBranchName);
 
-                    // ADD mode is a form being filled out, so the mandatory-field
-                    // asterisks are shown.
-                    updateFieldLabels(true);
+                    if (Constants.isUSUser()) {
+                        setFieldEditableNoFocus(etRoutingNumber);
+                        setFieldEditableNoFocus(etSwiftCode);
+                        setFieldEditableNoFocus(etBankAddress);
 
-                    ivEditBranchName.setVisibility(View.GONE);
-                    setBranchNameEditable(false);
+                        if (etAccountType != null) {
+                            etAccountType.setEnabled(true);
+                            etAccountType.setFocusable(false);
+                            etAccountType.setClickable(true);
+                            etAccountType.setBackgroundResource(R.drawable.edittext_bg);
+                            etAccountType.setTextColor(ContextCompat.getColor(context, R.color.black));
+                        }
+                        if (ivAccountTypeArrow != null) ivAccountTypeArrow.setVisibility(View.VISIBLE);
+
+                        if (llIfscContainer != null) llIfscContainer.setVisibility(View.GONE);
+                        if (llBranchContainer != null) llBranchContainer.setVisibility(View.GONE);
+                        if (llVerifyContainer != null) llVerifyContainer.setVisibility(View.GONE);
+
+                        if (llRoutingNumber != null) llRoutingNumber.setVisibility(View.VISIBLE);
+                        if (llAccountType != null) llAccountType.setVisibility(View.VISIBLE);
+                        if (llSwiftCode != null) llSwiftCode.setVisibility(View.VISIBLE);
+                        if (llBankAddress != null) llBankAddress.setVisibility(View.VISIBLE);
+
+                        if (TextUtils.isEmpty(selectedAccountType)) {
+                            selectedAccountType = "Checking";
+                        }
+                        if (etAccountType != null) etAccountType.setText(selectedAccountType);
+
+                        updateFieldLabels(true);
+                    } else {
+                        setFieldEditableNoFocus(etIfscCode);
+                        setFieldEditableNoFocus(etBranchName);
+
+                        if (llRoutingNumber != null) llRoutingNumber.setVisibility(View.GONE);
+                        if (llAccountType != null) llAccountType.setVisibility(View.GONE);
+                        if (llSwiftCode != null) llSwiftCode.setVisibility(View.GONE);
+                        if (llBankAddress != null) llBankAddress.setVisibility(View.GONE);
+
+                        if (llIfscContainer != null) llIfscContainer.setVisibility(View.VISIBLE);
+                        if (llBranchContainer != null) llBranchContainer.setVisibility(View.VISIBLE);
+
+                        ivEditBranchName.setVisibility(View.GONE);
+                        setBranchNameEditable(false);
+
+                        updateFieldLabels(true);
+                    }
 
                     ivToggleAccountNumber.setVisibility(View.VISIBLE);
                     ivToggleConfirmAccountNumber.setVisibility(View.VISIBLE);
@@ -764,18 +1018,16 @@ public class BankAccountDialog implements AsyncTaskCompleteListener {
                     llActionButtonsView.setVisibility(View.GONE);
                 }
 
-                // FIX: previously these three lines were hardcoded (llVerifiedBadge always
-                // GONE, btnVerify always VISIBLE, llEditBankDetails always GONE) regardless
-                // of isVerified - so after a successful Verify in ADD mode, the button never
-                // switched to the "Edit" link like it does in EDIT mode. Now mirrors the
-                // EDIT case's isVerified-driven visibility.
-                llVerifiedBadge.setVisibility(isVerified ? View.VISIBLE : View.GONE);
-                btnVerify.setVisibility(isVerified ? View.GONE : View.VISIBLE);
-                llEditBankDetails.setVisibility(isVerified ? View.VISIBLE : View.GONE);
-
-                // Lock Account Number / Confirm Account Number / IFSC Code once
-                // verified; unlock them again once the user taps "Edit".
-                applyVerifiedFieldLockState();
+                if (Constants.isUSUser()) {
+                    llVerifiedBadge.setVisibility(View.GONE);
+                    btnVerify.setVisibility(View.GONE);
+                    llEditBankDetails.setVisibility(View.GONE);
+                } else {
+                    llVerifiedBadge.setVisibility(isVerified ? View.VISIBLE : View.GONE);
+                    btnVerify.setVisibility(isVerified ? View.GONE : View.VISIBLE);
+                    llEditBankDetails.setVisibility(isVerified ? View.VISIBLE : View.GONE);
+                    applyVerifiedFieldLockState();
+                }
 
                 updateSubmitButtonState();
 
@@ -787,22 +1039,57 @@ public class BankAccountDialog implements AsyncTaskCompleteListener {
                 btnSubmit.setText("Save Changes");
 
                 if (isModeEntry) {
-                    // Make ALL fields editable (no focus stealing here - the deliberate
-                    // focus move onto etAccountNumber happens below, once, when we
-                    // populate it from actualAccountNumber)
                     setFieldEditableNoFocus(etAccountHolderName);
                     setFieldEditableNoFocus(etBankName);
                     setFieldEditableNoFocus(etAccountNumber);
                     setFieldEditableNoFocus(etConfirmAccountNumber);
-                    setFieldEditableNoFocus(etIfscCode);
-                    setFieldEditableNoFocus(etBranchName);
 
-                    // EDIT mode is a form being filled out, so the mandatory-field
-                    // asterisks are shown.
-                    updateFieldLabels(true);
+                    if (Constants.isUSUser()) {
+                        setFieldEditableNoFocus(etRoutingNumber);
+                        setFieldEditableNoFocus(etSwiftCode);
+                        setFieldEditableNoFocus(etBankAddress);
 
-                    ivEditBranchName.setVisibility(View.GONE);
-                    setBranchNameEditable(true);
+                        if (etAccountType != null) {
+                            etAccountType.setEnabled(true);
+                            etAccountType.setFocusable(false);
+                            etAccountType.setClickable(true);
+                            etAccountType.setBackgroundResource(R.drawable.edittext_bg);
+                            etAccountType.setTextColor(ContextCompat.getColor(context, R.color.black));
+                        }
+                        if (ivAccountTypeArrow != null) ivAccountTypeArrow.setVisibility(View.VISIBLE);
+
+                        if (llIfscContainer != null) llIfscContainer.setVisibility(View.GONE);
+                        if (llBranchContainer != null) llBranchContainer.setVisibility(View.GONE);
+                        if (llVerifyContainer != null) llVerifyContainer.setVisibility(View.GONE);
+
+                        if (llRoutingNumber != null) llRoutingNumber.setVisibility(View.VISIBLE);
+                        if (llAccountType != null) llAccountType.setVisibility(View.VISIBLE);
+                        if (llSwiftCode != null) llSwiftCode.setVisibility(View.VISIBLE);
+                        if (llBankAddress != null) llBankAddress.setVisibility(View.VISIBLE);
+
+                        if (TextUtils.isEmpty(selectedAccountType)) {
+                            selectedAccountType = "Checking";
+                        }
+                        if (etAccountType != null) etAccountType.setText(selectedAccountType);
+
+                        updateFieldLabels(true);
+                    } else {
+                        setFieldEditableNoFocus(etIfscCode);
+                        setFieldEditableNoFocus(etBranchName);
+
+                        if (llRoutingNumber != null) llRoutingNumber.setVisibility(View.GONE);
+                        if (llAccountType != null) llAccountType.setVisibility(View.GONE);
+                        if (llSwiftCode != null) llSwiftCode.setVisibility(View.GONE);
+                        if (llBankAddress != null) llBankAddress.setVisibility(View.GONE);
+
+                        if (llIfscContainer != null) llIfscContainer.setVisibility(View.VISIBLE);
+                        if (llBranchContainer != null) llBranchContainer.setVisibility(View.VISIBLE);
+
+                        ivEditBranchName.setVisibility(View.GONE);
+                        setBranchNameEditable(true);
+
+                        updateFieldLabels(true);
+                    }
 
                     ivToggleAccountNumber.setVisibility(View.VISIBLE);
                     ivToggleConfirmAccountNumber.setVisibility(View.VISIBLE);
@@ -815,14 +1102,6 @@ public class BankAccountDialog implements AsyncTaskCompleteListener {
                     llActionButtonsView.setVisibility(View.GONE);
                 }
 
-                // This part stays gated on editModeMaskingApplied (not isModeEntry)
-                // on purpose: llEditBankDetails ("Edit" link, shown after verification)
-                // now calls resetVerificationStateForReEdit(), which clears
-                // editModeMaskingApplied so the account number gets re-populated
-                // from actualAccountNumber here without a full mode re-entry. The
-                // per-keystroke watcher no longer clears this flag, so this block
-                // only runs once when entering EDIT mode (or after an explicit
-                // "Edit" link tap) - never mid-typing.
                 if (!TextUtils.isEmpty(actualAccountNumber) && !editModeMaskingApplied) {
                     accountNumberMaskModeActive = false;
                     confirmAccountNumberMaskModeActive = false;
@@ -837,18 +1116,19 @@ public class BankAccountDialog implements AsyncTaskCompleteListener {
                     suppressVerificationReset = false;
                     editModeMaskingApplied = true;
 
-                    // Force focus on account number field - only right after we've
-                    // just (re)populated it, not on every keystroke.
                     etAccountNumber.requestFocus();
                 }
 
-                llVerifiedBadge.setVisibility(isVerified ? View.VISIBLE : View.GONE);
-                btnVerify.setVisibility(isVerified ? View.GONE : View.VISIBLE);
-                llEditBankDetails.setVisibility(isVerified ? View.VISIBLE : View.GONE);
-
-                // Lock Account Number / Confirm Account Number / IFSC Code once
-                // verified; unlock them again once the user taps "Edit".
-                applyVerifiedFieldLockState();
+                if (Constants.isUSUser()) {
+                    llVerifiedBadge.setVisibility(View.GONE);
+                    btnVerify.setVisibility(View.GONE);
+                    llEditBankDetails.setVisibility(View.GONE);
+                } else {
+                    llVerifiedBadge.setVisibility(isVerified ? View.VISIBLE : View.GONE);
+                    btnVerify.setVisibility(isVerified ? View.GONE : View.VISIBLE);
+                    llEditBankDetails.setVisibility(isVerified ? View.VISIBLE : View.GONE);
+                    applyVerifiedFieldLockState();
+                }
 
                 updateSubmitButtonState();
 
@@ -907,9 +1187,32 @@ public class BankAccountDialog implements AsyncTaskCompleteListener {
         if (currentMode == Mode.EDIT && v.contains("*")) {
             v = actualAccountNumber != null ? actualAccountNumber.trim() : "";
         }
-        boolean valid = v.matches("\\d{9,18}");
+        boolean valid = Constants.isUSUser() ? v.matches("\\d{4,18}") : v.matches("\\d{9,18}");
         tvErrorAccountNumber.setVisibility(valid ? View.GONE : View.VISIBLE);
         return valid;
+    }
+
+    private boolean validateBankName() {
+        String v = etBankName.getText() != null ? etBankName.getText().toString().trim() : "";
+        boolean valid = !TextUtils.isEmpty(v);
+        tvErrorBankName.setVisibility(valid ? View.GONE : View.VISIBLE);
+        return valid;
+    }
+
+    private boolean validateRoutingNumber() {
+        String v = etRoutingNumber != null && etRoutingNumber.getText() != null
+                ? etRoutingNumber.getText().toString().trim() : "";
+        boolean valid = v.matches("\\d{9}");
+        if (tvErrorRoutingNumber != null) {
+            tvErrorRoutingNumber.setVisibility(valid ? View.GONE : View.VISIBLE);
+        }
+        return valid;
+    }
+
+    private boolean validateUSForm() {
+        return validateAccountHolderName() && validateBankName()
+                && validateAccountNumber() && validateConfirmAccountNumber()
+                && validateRoutingNumber();
     }
 
     private boolean validateConfirmAccountNumber() {
@@ -941,6 +1244,38 @@ public class BankAccountDialog implements AsyncTaskCompleteListener {
     }
 
     private void updateSubmitButtonState() {
+        if (Constants.isUSUser()) {
+            boolean holderOk = etAccountHolderName.getText() != null
+                    && etAccountHolderName.getText().toString().trim().length() >= 3
+                    && etAccountHolderName.getText().toString().trim().length() <= 100;
+            boolean bankOk = etBankName.getText() != null
+                    && !TextUtils.isEmpty(etBankName.getText().toString().trim());
+
+            String accText = etAccountNumber.getText() != null ? etAccountNumber.getText().toString().trim() : "";
+            if (currentMode == Mode.EDIT && accText.contains("*")) {
+                accText = actualAccountNumber != null ? actualAccountNumber.trim() : "";
+            }
+            boolean accOk = accText.matches("\\d{4,18}");
+
+            String confirmText = etConfirmAccountNumber.getText() != null ? etConfirmAccountNumber.getText().toString().trim() : "";
+            if (currentMode == Mode.EDIT && confirmText.contains("*")) {
+                confirmText = actualAccountNumber != null ? actualAccountNumber.trim() : "";
+            }
+            boolean confirmOk = !TextUtils.isEmpty(confirmText) && confirmText.equals(accText);
+
+            String routingText = etRoutingNumber != null && etRoutingNumber.getText() != null
+                    ? etRoutingNumber.getText().toString().trim() : "";
+            boolean routingOk = routingText.matches("\\d{9}");
+
+            boolean typeOk = !TextUtils.isEmpty(selectedAccountType);
+            boolean termsOk = cbTerms.isChecked();
+
+            boolean enable = holderOk && bankOk && accOk && confirmOk && routingOk && typeOk && termsOk;
+            btnSubmit.setEnabled(enable);
+            btnSubmit.setAlpha(enable ? 1f : 0.5f);
+            return;
+        }
+
         boolean holderOk = etAccountHolderName.getText() != null
                 && etAccountHolderName.getText().toString().trim().length() >= 3
                 && etAccountHolderName.getText().toString().trim().length() <= 100;
@@ -966,6 +1301,7 @@ public class BankAccountDialog implements AsyncTaskCompleteListener {
     }
 
     private void onVerifyClicked() {
+        if (Constants.isUSUser()) return;
         if (!validateFormForVerify()) return;
         String ifsc = etIfscCode.getText().toString().trim().toUpperCase();
         try {
@@ -984,6 +1320,54 @@ public class BankAccountDialog implements AsyncTaskCompleteListener {
     }
 
     private void onSubmitClicked() {
+        if (Constants.isUSUser()) {
+            if (!validateUSForm()) return;
+            if (!cbTerms.isChecked()) {
+                AndroidUtils.showAlert("Please accept the Terms & Conditions to continue.", activity);
+                return;
+            }
+            try {
+                progressDialog = AndroidUtils.get_progress(activity);
+
+                String accountNumberToSend;
+                String accText = etAccountNumber.getText() != null ? etAccountNumber.getText().toString().trim() : "";
+                if (currentMode == Mode.EDIT && accText.contains("*")) {
+                    accountNumberToSend = actualAccountNumber != null ? actualAccountNumber.trim() : "";
+                } else {
+                    accountNumberToSend = accText;
+                }
+
+                String routingToSend = etRoutingNumber != null && etRoutingNumber.getText() != null
+                        ? etRoutingNumber.getText().toString().trim() : "";
+                String swiftToSend = etSwiftCode != null && etSwiftCode.getText() != null
+                        ? etSwiftCode.getText().toString().trim() : "";
+                String bankAddressToSend = etBankAddress != null && etBankAddress.getText() != null
+                        ? etBankAddress.getText().toString().trim() : "";
+                String accountTypeToSend = selectedAccountType != null ? selectedAccountType.toLowerCase().trim() : "checking";
+
+                JSONObject body = new JSONObject();
+                body.put("account_holder_name", etAccountHolderName.getText().toString().trim());
+                body.put("bank_name", etBankName.getText().toString().trim());
+                body.put("account_number", accountNumberToSend);
+                body.put("account_type", accountTypeToSend);
+                body.put("bank_address", bankAddressToSend);
+                body.put("routing_number", routingToSend);
+                body.put("swift_code", swiftToSend);
+                body.put("verification_status", true);
+
+                WebServiceHelper.callHttpWebService(
+                        this,
+                        context,
+                        WebServiceHelper.RestMethodType.POST,
+                        "v3/bank-account",
+                        "Save_Bank_Account",
+                        body.toString());
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
+            return;
+        }
+
         if (!isVerified) {
             AndroidUtils.showAlert("Please verify your IFSC code before submitting.", activity);
             return;
@@ -1080,14 +1464,29 @@ public class BankAccountDialog implements AsyncTaskCompleteListener {
                 if (!err) {
                     String saveMsg = result.optString("msg", "");
                     if (TextUtils.isEmpty(saveMsg)) {
-                        saveMsg = "Bank account verified successfully.";
+                        JSONObject data = result.optJSONObject("data");
+                        if (data != null) {
+                            saveMsg = data.optString("msg", "");
+                        }
+                    }
+                    if (TextUtils.isEmpty(saveMsg)) {
+                        saveMsg = Constants.isUSUser() ? "Bank account details saved successfully." : "Bank account verified successfully.";
                     }
                     AndroidUtils.showAlert(saveMsg, activity, "Success");
                     dismiss();
                     if (listener != null) listener.onBankAccountSaved();
                 } else {
-                    AndroidUtils.showAlert(result.optString("msg",
-                            "Unable to save bank account details. Please try again."), activity, "Alert");
+                    String errMsg = result.optString("msg", "");
+                    if (TextUtils.isEmpty(errMsg)) {
+                        JSONObject data = result.optJSONObject("data");
+                        if (data != null) {
+                            errMsg = data.optString("msg", "");
+                        }
+                    }
+                    if (TextUtils.isEmpty(errMsg)) {
+                        errMsg = "Unable to save bank account details. Please try again.";
+                    }
+                    AndroidUtils.showAlert(errMsg, activity, "Alert");
                 }
             }
         } catch (Exception e) {

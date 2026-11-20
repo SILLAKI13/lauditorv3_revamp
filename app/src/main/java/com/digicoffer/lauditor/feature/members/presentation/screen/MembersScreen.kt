@@ -91,9 +91,10 @@ fun MembersScreen(
     var selectedMemberForUga by remember { mutableStateOf<MembersModel?>(null) }
 
     // Hoisted form state variables
+    val defaultCurrency = remember { if (Constants.isUSUser()) "USDollar(USD)" else "IndianRupee(INR)" }
     var formName by remember { mutableStateOf("") }
     var formDesignation by remember { mutableStateOf("") }
-    var formCurrency by remember { mutableStateOf("IndianRupee(INR)") }
+    var formCurrency by remember { mutableStateOf(defaultCurrency) }
     var formRate by remember { mutableStateOf("") }
     var formPhone by remember { mutableStateOf("") }
     var formEmail by remember { mutableStateOf("") }
@@ -144,7 +145,7 @@ fun MembersScreen(
                 formDesignation = cleanVal(member.designation)
                 formRate = cleanVal(member.defaultRate)
                 val curr = cleanVal(member.currency)
-                formCurrency = if (curr.isEmpty()) "IndianRupee(INR)" else curr
+                formCurrency = if (curr.isEmpty()) defaultCurrency else curr
                 formPhone = cleanVal(member.phone)
                 formEmail = cleanVal(member.email)
                 formConfirmEmail = cleanVal(member.email)
@@ -210,7 +211,7 @@ fun MembersScreen(
                                     formName = ""
                                     formDesignation = ""
                                     formRate = ""
-                                    formCurrency = "IndianRupee(INR)"
+                                    formCurrency = defaultCurrency
                                     formPhone = ""
                                     formEmail = ""
                                     formConfirmEmail = ""

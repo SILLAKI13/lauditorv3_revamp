@@ -14,6 +14,7 @@ data class DocumentsUiState(
     val documentsList: List<ViewDocumentsModel> = emptyList(),
     val filteredDocumentsList: List<ViewDocumentsModel> = emptyList(),
     val groupsList: List<GroupsModel> = emptyList(),
+    val hasUserGeneratedGroups: Boolean = false,
     val clientsList: List<ClientsModel> = emptyList(),
     val mattersList: List<MattersModel> = emptyList(),
     val clientGroupsList: List<GroupsModel> = emptyList(),
