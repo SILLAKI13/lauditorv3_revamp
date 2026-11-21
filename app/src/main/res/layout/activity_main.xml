@@ -95,16 +95,17 @@
                             android:id="@+id/sm_relationships"
                             layout="@layout/menu_layout" />
 
-                        <!-- 7. Timesheets — submenu: Aggregated / My Timesheet -->
-                        <include
-                            android:id="@+id/sm_timesheet"
-                            layout="@layout/menu_layout" />
-
+                        <!-- 7. Invoices -->
                         <include
                             android:id="@+id/sm_invoice"
                             layout="@layout/menu_layout" />
 
-                        <!-- 8. Meetings -->
+                        <!-- 8. Timesheets — submenu: Aggregated / My Timesheet -->
+                        <include
+                            android:id="@+id/sm_timesheet"
+                            layout="@layout/menu_layout" />
+
+                        <!-- 9. Meetings -->
                         <include
                             android:id="@+id/sm_meetings"
                             layout="@layout/menu_layout" />
@@ -142,11 +143,6 @@
                         <!-- 15. Team Members -->
                         <include
                             android:id="@+id/sm_team_member"
-                            layout="@layout/menu_layout" />
-
-                        <!-- 16. Invoices -->
-                        <include
-                            android:id="@+id/sm_invoice"
                             layout="@layout/menu_layout" />
 
                         <!-- Divider before logout -->

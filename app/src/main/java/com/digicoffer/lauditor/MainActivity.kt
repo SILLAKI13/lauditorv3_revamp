@@ -1138,9 +1138,9 @@ class MainActivity : AppCompatActivity(), Dashboard.MenuHighlightListener, Month
     private fun allParents(): Array<View> {
         return arrayOf(
             sm_firmProfile, sm_appointments, sm_matter, sm_documents,
-            sm_docEditor, sm_relationships, sm_timesheet, sm_meetings,
-            sm_email, sm_messages, sm_notification, sm_invoice,
-            sm_audit, sm_groups, sm_team_member, sm_settings, sm_logout
+            sm_docEditor, sm_relationships, sm_invoice, sm_timesheet, sm_meetings,
+            sm_email, sm_messages, sm_notification, sm_settings,
+            sm_audit, sm_groups, sm_team_member, sm_logout
         )
     }
 
@@ -2972,9 +2972,9 @@ class MainActivity : AppCompatActivity(), Dashboard.MenuHighlightListener, Month
 
         val parentViews = arrayOf(
             sm_firmProfile, sm_appointments, sm_matter, sm_documents,
-            sm_docEditor, sm_relationships, sm_timesheet, sm_meetings,
+            sm_docEditor, sm_relationships, sm_invoice, sm_timesheet, sm_meetings,
             sm_email, sm_messages, sm_notification, sm_settings, sm_audit,
-            sm_groups, sm_team_member, sm_invoice, sm_logout
+            sm_groups, sm_team_member, sm_logout
         )
 
         val iconMap = mapOf(

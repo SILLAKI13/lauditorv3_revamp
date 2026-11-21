@@ -698,6 +698,7 @@ class InvoiceRepository(private val context: Context) {
 
     suspend fun getClients(): Result<List<InvoiceClient>> = withContext(Dispatchers.IO) {
         try {
+            val isUS = com.digicoffer.lauditor.CommonFiles.GlobalFiles.Constants.isUSUser()
             val clients = mutableListOf<InvoiceClient>()
 
             // 1. All regular clients
@@ -713,40 +714,46 @@ class InvoiceRepository(private val context: Context) {
                 if (rels != null) {
                     for (i in 0 until rels.length()) {
                         val obj = rels.optJSONObject(i) ?: continue
+                        val rawType = obj.optString("type").ifEmpty { obj.optString("client_type", "consumer") }
+                        if (isUS && !rawType.equals("consumer", ignoreCase = true)) {
+                            continue
+                        }
                         clients.add(
                             InvoiceClient(
                                 id = obj.optString("id"),
                                 name = obj.optString("name"),
-                                type = obj.optString("type", "consumer")
+                                type = if (isUS) "consumer" else rawType
                             )
                         )
                     }
                 }
             }
 
-            // 2. Corporate clients
-            val res2 = executeHttpRequest(
-                method = WebServiceHelper.RestMethodType.GET,
-                url = "v3/corporate/list",
-                requestType = "Corp Clients List"
-            )
-            if (res2.result == WebServiceHelper.ServiceCallStatus.Success) {
-                val json = JSONObject(res2.responseContent)
-                val data = json.optJSONObject("data") ?: json
-                val rels = data.optJSONArray("relationships")
-                if (rels != null) {
-                    for (i in 0 until rels.length()) {
-                        val obj = rels.optJSONObject(i) ?: continue
-                        val id = obj.optString("id")
-                        // Avoid duplicates if already present
-                        if (clients.none { it.id == id }) {
-                            clients.add(
-                                InvoiceClient(
-                                    id = id,
-                                    name = obj.optString("name"),
-                                    type = if (obj.optString("type") == "consumer") "consumer" else "corporate"
+            // 2. Corporate clients (only for non-US users)
+            if (!isUS) {
+                val res2 = executeHttpRequest(
+                    method = WebServiceHelper.RestMethodType.GET,
+                    url = "v3/corporate/list",
+                    requestType = "Corp Clients List"
+                )
+                if (res2.result == WebServiceHelper.ServiceCallStatus.Success) {
+                    val json = JSONObject(res2.responseContent)
+                    val data = json.optJSONObject("data") ?: json
+                    val rels = data.optJSONArray("relationships")
+                    if (rels != null) {
+                        for (i in 0 until rels.length()) {
+                            val obj = rels.optJSONObject(i) ?: continue
+                            val id = obj.optString("id")
+                            // Avoid duplicates if already present
+                            if (clients.none { it.id == id }) {
+                                clients.add(
+                                    InvoiceClient(
+                                        id = id,
+                                        name = obj.optString("name"),
+                                        type = if (obj.optString("type") == "consumer") "consumer" else "corporate"
+                                    )
                                 )
-                            )
+                            }
                         }
                     }
                 }

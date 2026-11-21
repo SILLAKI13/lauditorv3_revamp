@@ -261,42 +261,101 @@ class DocumentsViewModel(
     private fun loadClients() {
         loadClientsJob = viewModelScope.launch {
             _uiState.update { it.copy(isLoading = true) }
-            val res1 = repository.fetchClients()
-            val res2 = repository.fetchCorpClients()
-            _uiState.update { it.copy(isLoading = false) }
+            val isUS = Constants.isUSUser()
             val list = mutableListOf<ClientsModel>()
-            if (res1.result == WebServiceHelper.ServiceCallStatus.Success) {
-                val json = JSONObject(res1.responseContent ?: "{}")
-                val data = json.optJSONObject("data")
-                val clientsArr = data?.optJSONArray("relationships") ?: JSONArray()
-                for (i in 0 until clientsArr.length()) {
-                    val obj = clientsArr.getJSONObject(i)
-                    list.add(ClientsModel().apply {
-                        id = obj.optString("id")
-                        name = obj.optString("name")
-                        type = obj.optString("type")
-                    })
+
+            if (isUS) {
+                // For US version: fetch consumers via v3/relationship/search/consumer
+                val consumerRes = repository.fetchConsumers("")
+                if (consumerRes.result == WebServiceHelper.ServiceCallStatus.Success) {
+                    val json = JSONObject(consumerRes.responseContent ?: "{}")
+                    if (!json.optBoolean("error", false)) {
+                        val dataArray = json.optJSONArray("data")
+                            ?: json.optJSONArray("consumers")
+                            ?: json.optJSONArray("relationships")
+                            ?: JSONArray()
+                        for (i in 0 until dataArray.length()) {
+                            val obj = dataArray.optJSONObject(i) ?: continue
+                            val id = obj.optString("id", obj.optString("_id", ""))
+                            val fName = obj.optString("first_name", "").trim()
+                            val lName = obj.optString("last_name", "").trim()
+                            val rawName = obj.optString("name", "").trim()
+                            val fullName = when {
+                                rawName.isNotEmpty() -> rawName
+                                fName.isNotEmpty() && lName.isNotEmpty() -> "$fName $lName"
+                                fName.isNotEmpty() -> fName
+                                lName.isNotEmpty() -> lName
+                                else -> obj.optString("email", "")
+                            }
+                            if (id.isNotEmpty() || fullName.isNotEmpty()) {
+                                list.add(ClientsModel().apply {
+                                    this.id = id
+                                    this.name = fullName
+                                    this.type = "consumer"
+                                })
+                            }
+                        }
+                    }
+                }
+                // Also check v3/client/all/list for any consumer clients
+                val res1 = repository.fetchClients()
+                if (res1.result == WebServiceHelper.ServiceCallStatus.Success) {
+                    val json = JSONObject(res1.responseContent ?: "{}")
+                    val data = json.optJSONObject("data")
+                    val clientsArr = data?.optJSONArray("relationships") ?: JSONArray()
+                    for (i in 0 until clientsArr.length()) {
+                        val obj = clientsArr.getJSONObject(i)
+                        val rawType = obj.optString("type").ifEmpty { obj.optString("client_type", "consumer") }
+                        if (rawType.equals("consumer", ignoreCase = true)) {
+                            val id = obj.optString("id")
+                            if (list.none { it.id == id }) {
+                                list.add(ClientsModel().apply {
+                                    this.id = id
+                                    this.name = obj.optString("name")
+                                    this.type = "consumer"
+                                })
+                            }
+                        }
+                    }
+                }
+            } else {
+                val res1 = repository.fetchClients()
+                val res2 = repository.fetchCorpClients()
+                if (res1.result == WebServiceHelper.ServiceCallStatus.Success) {
+                    val json = JSONObject(res1.responseContent ?: "{}")
+                    val data = json.optJSONObject("data")
+                    val clientsArr = data?.optJSONArray("relationships") ?: JSONArray()
+                    for (i in 0 until clientsArr.length()) {
+                        val obj = clientsArr.getJSONObject(i)
+                        list.add(ClientsModel().apply {
+                            id = obj.optString("id")
+                            name = obj.optString("name")
+                            type = obj.optString("type")
+                        })
+                    }
+                }
+                if (res2.result == WebServiceHelper.ServiceCallStatus.Success) {
+                    val json = JSONObject(res2.responseContent ?: "{}")
+                    val corpArr = json.optJSONArray("relationships") ?: JSONArray()
+                    for (i in 0 until corpArr.length()) {
+                        val obj = corpArr.getJSONObject(i)
+                        list.add(ClientsModel().apply {
+                            id = obj.optString("id")
+                            name = obj.optString("name")
+                            type = if (obj.optString("type") == "consumer") "consumer" else "corporate"
+                        })
+                    }
                 }
             }
-            if (res2.result == WebServiceHelper.ServiceCallStatus.Success) {
-                val json = JSONObject(res2.responseContent ?: "{}")
-                val corpArr = json.optJSONArray("relationships") ?: JSONArray()
-                for (i in 0 until corpArr.length()) {
-                    val obj = corpArr.getJSONObject(i)
-                    list.add(ClientsModel().apply {
-                        id = obj.optString("id")
-                        name = obj.optString("name")
-                        type = if (obj.optString("type") == "consumer") "consumer" else "corporate"
-                    })
-                }
-            }
+            
+            _uiState.update { it.copy(isLoading = false) }
             
             if (list.isNotEmpty()) {
                 val allIds = list.joinToString(",") { it.id ?: "" }
                 val allClientsModel = ClientsModel().apply {
                     id = allIds
                     name = "All Clients"
-                    type = list[0].type
+                    type = if (isUS) "consumer" else list[0].type
                 }
                 list.add(0, allClientsModel)
                 _uiState.update { 
@@ -726,14 +785,14 @@ class DocumentsViewModel(
                                         if (id.trim().isNotEmpty()) {
                                             clientArr.put(JSONObject().apply {
                                                 put("id", id.trim())
-                                                put("type", client.type ?: "consumer")
+                                                put("type", if (Constants.isUSUser()) "consumer" else (client.type ?: "consumer"))
                                             })
                                         }
                                     }
                                 } else if (clientId.isNotEmpty()) {
                                     clientArr.put(JSONObject().apply {
                                         put("id", clientId)
-                                        put("type", client.type ?: "consumer")
+                                        put("type", if (Constants.isUSUser()) "consumer" else (client.type ?: "consumer"))
                                     })
                                 }
                             }

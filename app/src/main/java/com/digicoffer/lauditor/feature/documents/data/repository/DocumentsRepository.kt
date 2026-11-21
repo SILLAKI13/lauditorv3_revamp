@@ -325,6 +325,26 @@ class DocumentsRepository(private val context: Context) {
         )
     }
 
+    suspend fun fetchConsumers(searchText: String = ""): HttpResultDo = suspendCancellableCoroutine { continuation ->
+        val json = JSONObject().apply {
+            put("search", searchText.trim())
+            put("searchText", searchText.trim())
+        }
+        WebServiceHelper.callHttpWebService(
+            object : AsyncTaskCompleteListener {
+                override fun onAsyncTaskComplete(httpResult: HttpResultDo) {
+                    continuation.resume(httpResult)
+                }
+                override fun onClick(view: View) {}
+            },
+            context,
+            WebServiceHelper.RestMethodType.POST,
+            "v3/relationship/search/consumer",
+            "Search Consumer",
+            json.toString()
+        )
+    }
+
     suspend fun fetchClients(): HttpResultDo = suspendCancellableCoroutine { continuation ->
         WebServiceHelper.callHttpWebService(
             object : AsyncTaskCompleteListener {

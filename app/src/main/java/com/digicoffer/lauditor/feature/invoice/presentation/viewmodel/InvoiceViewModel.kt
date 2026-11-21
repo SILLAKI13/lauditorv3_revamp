@@ -998,7 +998,7 @@ class InvoiceViewModel(
 
             val clientObj = JSONObject().apply {
                 put("id", createdClientId)
-                put("type", s.selectedClient?.type ?: "consumer")
+                put("type", if (s.isUSAccount) "consumer" else (s.selectedClient?.type ?: "consumer"))
             }
             payload.put("client", JSONArray().put(clientObj))
 
