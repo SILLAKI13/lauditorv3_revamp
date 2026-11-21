@@ -46,7 +46,7 @@ class MultiPartHttpExecute(
     override fun doInBackground(vararg params: String?): HttpResultDo {
         var fullUrl = ""
         try {
-            fullUrl = if (requestType == "Label" || requestType == "auth" || requestType == "messages_rows" || URL.contains(Constants.EMAIL_UPLOAD_URL)) {
+            fullUrl = if (URL.startsWith("http") || requestType == "Label" || requestType == "auth" || requestType == "messages_rows" || URL.contains(Constants.EMAIL_UPLOAD_URL)) {
                 URL
             } else {
                 Constants.base_URL + URL

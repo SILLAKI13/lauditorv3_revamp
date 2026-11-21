@@ -83,6 +83,7 @@ fun EmailProviderSelector(
                     )
                 }
 
+                /*
                 // Outlook Option
                 Row(
                     verticalAlignment = Alignment.CenterVertically,
@@ -106,6 +107,7 @@ fun EmailProviderSelector(
                             .height(32.dp)
                     )
                 }
+                */
             }
 
             Spacer(modifier = Modifier.height(12.dp))

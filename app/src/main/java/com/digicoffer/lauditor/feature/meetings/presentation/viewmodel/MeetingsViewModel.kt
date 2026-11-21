@@ -447,6 +447,14 @@ class MeetingsViewModel(
     private fun isSameDay(dateStr: String?, targetDdmmyyyy: String): Boolean {
         if (dateStr.isNullOrEmpty() || targetDdmmyyyy.isEmpty()) return false
         return try {
+            if (Constants.isUSUser()) {
+                val ymd = if (dateStr.contains("T")) dateStr.substringBefore("T") else dateStr
+                val parts = ymd.split("-")
+                if (parts.size == 3 && parts[0].length == 4) {
+                    val ddmmyyyy = "${parts[2]}-${parts[1]}-${parts[0]}"
+                    return ddmmyyyy == targetDdmmyyyy
+                }
+            }
             if (dateStr.contains("T")) {
                 val d = AndroidUtils.stringToDateTimeDefault(dateStr, "yyyy-MM-dd'T'HH:mm:ss")
                 val formatted = AndroidUtils.getDateToString(d, "dd-MM-yyyy")
@@ -490,18 +498,20 @@ class MeetingsViewModel(
                     }
                 }
 
-                // 2. Fetch Appointments
-                val apptResult = repository.fetchAppointments(startDateFormatted, endDateFormatted)
-                if (apptResult.result == WebServiceHelper.ServiceCallStatus.Success) {
-                    try {
-                        val json = JSONObject(apptResult.responseContent ?: "")
-                        if (!json.optBoolean("error", false)) {
-                            val apptsArray = json.optJSONArray("appointments") ?: JSONArray()
-                            val appts = parseAppointments(apptsArray)
-                            _uiState.update { it.copy(weeklyAppointments = appts) }
+                // 2. Fetch Appointments (India only)
+                if (!Constants.isUSUser()) {
+                    val apptResult = repository.fetchAppointments(startDateFormatted, endDateFormatted)
+                    if (apptResult.result == WebServiceHelper.ServiceCallStatus.Success) {
+                        try {
+                            val json = JSONObject(apptResult.responseContent ?: "")
+                            if (!json.optBoolean("error", false)) {
+                                val apptsArray = json.optJSONArray("appointments") ?: JSONArray()
+                                val appts = parseAppointments(apptsArray)
+                                _uiState.update { it.copy(weeklyAppointments = appts) }
+                            }
+                        } catch (e: Exception) {
+                            e.printStackTrace()
                         }
-                    } catch (e: Exception) {
-                        e.printStackTrace()
                     }
                 }
             } else {
@@ -548,6 +558,28 @@ class MeetingsViewModel(
             }
 
             _uiState.update { it.copy(isLoading = false) }
+        }
+    }
+
+    private fun loadDailyEvents(targetDate: String) {
+        viewModelScope.launch {
+            _uiState.update { it.copy(isLoading = true) }
+            val timezoneOffset = getTimezoneOffset()
+            val cleanDate = targetDate.replace("-", "")
+            val eventsResult = repository.fetchDailyEvents(timezoneOffset, cleanDate)
+            _uiState.update { it.copy(isLoading = false) }
+            if (eventsResult.result == WebServiceHelper.ServiceCallStatus.Success) {
+                try {
+                    val json = JSONObject(eventsResult.responseContent ?: "")
+                    if (!json.optBoolean("error", false)) {
+                        val eventsArray = json.optJSONArray("events") ?: JSONArray()
+                        val events = parseEvents(eventsArray)
+                        _uiState.update { it.copy(weeklyEvents = events) }
+                    }
+                } catch (e: Exception) {
+                    e.printStackTrace()
+                }
+            }
         }
     }
 
@@ -791,6 +823,23 @@ class MeetingsViewModel(
                         _uiState.update { it.copy(alertTitle = "Error", alertMessage = json.optString("msg", "Failed to create event")) }
                     } else {
                         val msg = json.optString("msg", "Event created successfully")
+                        if (Constants.isUSUser()) {
+                            val eventDateIso = payload.optString("from_ts").ifEmpty { payload.optString("date") }
+                            if (eventDateIso.isNotEmpty() && eventDateIso.contains("T")) {
+                                val ymd = eventDateIso.substringBefore("T")
+                                val parts = ymd.split("-")
+                                if (parts.size == 3 && parts[0].length == 4) {
+                                    val eventDateDdmmyyyy = "${parts[2]}-${parts[1]}-${parts[0]}"
+                                    val dayIdx = _uiState.value.weekDays.indexOfFirst { it.date == eventDateDdmmyyyy }
+                                    _uiState.update {
+                                        it.copy(
+                                            selectedDate = eventDateDdmmyyyy,
+                                            selectedDayIndex = if (dayIdx != -1) dayIdx else it.selectedDayIndex
+                                        )
+                                    }
+                                }
+                            }
+                        }
                         _uiState.update {
                             it.copy(
                                 toastMessage = msg,
@@ -854,6 +903,23 @@ class MeetingsViewModel(
                         _uiState.update { it.copy(alertTitle = "Error", alertMessage = json.optString("msg", "Failed to update event")) }
                     } else {
                         val msg = json.optString("msg", "Event updated successfully")
+                        if (Constants.isUSUser()) {
+                            val eventDateIso = payload.optString("from_ts").ifEmpty { payload.optString("date") }
+                            if (eventDateIso.isNotEmpty() && eventDateIso.contains("T")) {
+                                val ymd = eventDateIso.substringBefore("T")
+                                val parts = ymd.split("-")
+                                if (parts.size == 3 && parts[0].length == 4) {
+                                    val eventDateDdmmyyyy = "${parts[2]}-${parts[1]}-${parts[0]}"
+                                    val dayIdx = _uiState.value.weekDays.indexOfFirst { it.date == eventDateDdmmyyyy }
+                                    _uiState.update {
+                                        it.copy(
+                                            selectedDate = eventDateDdmmyyyy,
+                                            selectedDayIndex = if (dayIdx != -1) dayIdx else it.selectedDayIndex
+                                        )
+                                    }
+                                }
+                            }
+                        }
                         _uiState.update {
                             it.copy(
                                 toastMessage = msg,
@@ -1187,6 +1253,9 @@ class MeetingsViewModel(
     }
 
     private fun getTimezoneOffset(): Long {
+        if (Constants.isUSUser()) {
+            return 300L
+        }
         val calendar = GregorianCalendar()
         val timeZone = calendar.timeZone
         val offset = timeZone.rawOffset

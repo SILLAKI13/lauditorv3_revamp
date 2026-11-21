@@ -49,6 +49,7 @@ fun AttachDocumentDialog(
     selectedDocs: List<LauditorAttachedDoc>,
     searchQuery: String,
     isLoading: Boolean,
+    isUSUser: Boolean = false,
     onCategoryTabChange: (String) -> Unit,
     onSubTabChange: (Boolean) -> Unit,
     onSelectClient: (ClientsModel) -> Unit,
@@ -62,12 +63,15 @@ fun AttachDocumentDialog(
     val isSolo = Constants.CATEGORY == "solo"
 
     val filteredDocs = remember(availableDocs, searchQuery) {
-        if (searchQuery.trim().isEmpty()) {
+        val query = searchQuery.trim()
+        if (query.isEmpty()) {
             availableDocs
         } else {
             availableDocs.filter {
-                (it.name ?: "").contains(searchQuery.trim(), ignoreCase = true) ||
-                        (it.filename ?: "").contains(searchQuery.trim(), ignoreCase = true)
+                (it.name ?: "").contains(query, ignoreCase = true) ||
+                        (it.filename ?: "").contains(query, ignoreCase = true) ||
+                        (it.description ?: "").contains(query, ignoreCase = true) ||
+                        (it.uploaded_by ?: "").contains(query, ignoreCase = true)
             }
         }
     }
@@ -99,153 +103,155 @@ fun AttachDocumentDialog(
 
                 Spacer(modifier = Modifier.height(10.dp))
 
-                // Category Tabs (Matter/Client vs Firm)
-                Row(
-                    modifier = Modifier.align(Alignment.CenterHorizontally)
-                ) {
-                    val isClientSelected = categoryTab == "client"
-                    // Left Tab: Client / Matter
-                    Box(
-                        modifier = Modifier
-                            .clip(RoundedCornerShape(topStart = 8.dp, bottomStart = 8.dp))
-                            .background(if (isClientSelected) Color(0xFF004D87) else Color(0xFFF1F5F9))
-                            .clickable { onCategoryTabChange("client") }
-                            .padding(horizontal = 24.dp, vertical = 8.dp)
+                if (!isUSUser) {
+                    // Category Tabs (Matter/Client vs Firm)
+                    Row(
+                        modifier = Modifier.align(Alignment.CenterHorizontally)
                     ) {
-                        Text(
-                            text = "Client Documents",
-                            fontFamily = GillSans,
-                            fontSize = 13.sp,
-                            fontWeight = FontWeight.Medium,
-                            color = if (isClientSelected) Color.White else Color(0xFF334155)
-                        )
-                    }
-
-                    if (!isSolo) {
-                        // Right Tab: Firm
+                        val isClientSelected = categoryTab == "client"
+                        // Left Tab: Client / Matter
                         Box(
                             modifier = Modifier
-                                .clip(RoundedCornerShape(topEnd = 8.dp, bottomEnd = 8.dp))
-                                .background(if (!isClientSelected) Color(0xFF004D87) else Color(0xFFF1F5F9))
-                                .clickable { onCategoryTabChange("firm") }
+                                .clip(RoundedCornerShape(topStart = 8.dp, bottomStart = 8.dp))
+                                .background(if (isClientSelected) Color(0xFF004D87) else Color(0xFFF1F5F9))
+                                .clickable { onCategoryTabChange("client") }
                                 .padding(horizontal = 24.dp, vertical = 8.dp)
                         ) {
                             Text(
-                                text = "Firm Documents",
+                                text = "Client Documents",
                                 fontFamily = GillSans,
                                 fontSize = 13.sp,
                                 fontWeight = FontWeight.Medium,
-                                color = if (!isClientSelected) Color.White else Color(0xFF334155)
+                                color = if (isClientSelected) Color.White else Color(0xFF334155)
                             )
+                        }
+
+                        if (!isSolo) {
+                            // Right Tab: Firm
+                            Box(
+                                modifier = Modifier
+                                    .clip(RoundedCornerShape(topEnd = 8.dp, bottomEnd = 8.dp))
+                                    .background(if (!isClientSelected) Color(0xFF004D87) else Color(0xFFF1F5F9))
+                                    .clickable { onCategoryTabChange("firm") }
+                                    .padding(horizontal = 24.dp, vertical = 8.dp)
+                            ) {
+                                Text(
+                                    text = "Firm Documents",
+                                    fontFamily = GillSans,
+                                    fontSize = 13.sp,
+                                    fontWeight = FontWeight.Medium,
+                                    color = if (!isClientSelected) Color.White else Color(0xFF334155)
+                                )
+                            }
                         }
                     }
-                }
 
-                Spacer(modifier = Modifier.height(12.dp))
+                    Spacer(modifier = Modifier.height(12.dp))
 
-                if (categoryTab == "client") {
-                    // Radio button for Matter vs Client
-                    Row(
-                        modifier = Modifier.fillMaxWidth(),
-                        verticalAlignment = Alignment.CenterVertically
-                    ) {
+                    if (categoryTab == "client") {
+                        // Radio button for Matter vs Client
                         Row(
-                            verticalAlignment = Alignment.CenterVertically,
-                            modifier = Modifier
-                                .clickable { onSubTabChange(true) }
-                                .padding(end = 16.dp)
+                            modifier = Modifier.fillMaxWidth(),
+                            verticalAlignment = Alignment.CenterVertically
                         ) {
-                            RadioButton(
-                                selected = isMatterTab,
-                                onClick = { onSubTabChange(true) },
-                                colors = RadioButtonDefaults.colors(selectedColor = Color(0xFF004D87))
-                            )
-                            Text(
-                                text = "Matter",
-                                fontFamily = GillSans,
-                                fontSize = 14.sp,
-                                color = Color.Black
-                            )
+                            Row(
+                                verticalAlignment = Alignment.CenterVertically,
+                                modifier = Modifier
+                                    .clickable { onSubTabChange(true) }
+                                    .padding(end = 16.dp)
+                            ) {
+                                RadioButton(
+                                    selected = isMatterTab,
+                                    onClick = { onSubTabChange(true) },
+                                    colors = RadioButtonDefaults.colors(selectedColor = Color(0xFF004D87))
+                                )
+                                Text(
+                                    text = "Matter",
+                                    fontFamily = GillSans,
+                                    fontSize = 14.sp,
+                                    color = Color.Black
+                                )
+                            }
+
+                            Row(
+                                verticalAlignment = Alignment.CenterVertically,
+                                modifier = Modifier.clickable { onSubTabChange(false) }
+                            ) {
+                                RadioButton(
+                                    selected = !isMatterTab,
+                                    onClick = { onSubTabChange(false) },
+                                    colors = RadioButtonDefaults.colors(selectedColor = Color(0xFF004D87))
+                                )
+                                Text(
+                                    text = "Client",
+                                    fontFamily = GillSans,
+                                    fontSize = 14.sp,
+                                    color = Color.Black
+                                )
+                            }
                         }
 
+                        Spacer(modifier = Modifier.height(8.dp))
+
+                        if (isMatterTab) {
+                            // Matters dropdown
+                            val selectedMatter = mattersList.find { it.id == selectedMatterId }
+                            DropdownSelectorField(
+                                items = mattersList,
+                                selectedItem = selectedMatter,
+                                onItemSelected = onSelectMatter,
+                                itemToLabel = { it.title ?: "" },
+                                placeholder = if (selectedMatterName.isNotEmpty()) selectedMatterName else "Select Matter",
+                                modifier = Modifier.fillMaxWidth()
+                            )
+                        } else {
+                            // Clients dropdown
+                            val selectedClient = clientsList.find { it.id == selectedClientId }
+                            DropdownSelectorField(
+                                items = clientsList,
+                                selectedItem = selectedClient,
+                                onItemSelected = onSelectClient,
+                                itemToLabel = { it.name ?: "" },
+                                placeholder = if (selectedClientName.isNotEmpty()) selectedClientName else "Select Client",
+                                modifier = Modifier.fillMaxWidth()
+                            )
+                        }
+                    } else {
+                        // Firm: Groups selection
+                        Text(
+                            text = "Select Group(s):",
+                            fontFamily = GillSans,
+                            fontSize = 13.sp,
+                            fontWeight = FontWeight.SemiBold,
+                            color = Color(0xFF004D87)
+                        )
+                        Spacer(modifier = Modifier.height(6.dp))
                         Row(
-                            verticalAlignment = Alignment.CenterVertically,
-                            modifier = Modifier.clickable { onSubTabChange(false) }
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .padding(vertical = 4.dp),
+                            horizontalArrangement = Arrangement.spacedBy(6.dp)
                         ) {
-                            RadioButton(
-                                selected = !isMatterTab,
-                                onClick = { onSubTabChange(false) },
-                                colors = RadioButtonDefaults.colors(selectedColor = Color(0xFF004D87))
-                            )
-                            Text(
-                                text = "Client",
-                                fontFamily = GillSans,
-                                fontSize = 14.sp,
-                                color = Color.Black
-                            )
+                            groupsList.take(5).forEach { group ->
+                                val gid = group.group_id ?: ""
+                                val isChecked = selectedGroupIds.contains(gid)
+                                FilterChip(
+                                    selected = isChecked,
+                                    onClick = { onToggleGroup(gid) },
+                                    label = {
+                                        Text(
+                                            text = group.group_name ?: "",
+                                            fontSize = 12.sp,
+                                            fontFamily = GillSans
+                                        )
+                                    }
+                                )
+                            }
                         }
                     }
 
                     Spacer(modifier = Modifier.height(8.dp))
-
-                    if (isMatterTab) {
-                        // Matters dropdown
-                        val selectedMatter = mattersList.find { it.id == selectedMatterId }
-                        DropdownSelectorField(
-                            items = mattersList,
-                            selectedItem = selectedMatter,
-                            onItemSelected = onSelectMatter,
-                            itemToLabel = { it.title ?: "" },
-                            placeholder = if (selectedMatterName.isNotEmpty()) selectedMatterName else "Select Matter",
-                            modifier = Modifier.fillMaxWidth()
-                        )
-                    } else {
-                        // Clients dropdown
-                        val selectedClient = clientsList.find { it.id == selectedClientId }
-                        DropdownSelectorField(
-                            items = clientsList,
-                            selectedItem = selectedClient,
-                            onItemSelected = onSelectClient,
-                            itemToLabel = { it.name ?: "" },
-                            placeholder = if (selectedClientName.isNotEmpty()) selectedClientName else "Select Client",
-                            modifier = Modifier.fillMaxWidth()
-                        )
-                    }
-                } else {
-                    // Firm: Groups selection
-                    Text(
-                        text = "Select Group(s):",
-                        fontFamily = GillSans,
-                        fontSize = 13.sp,
-                        fontWeight = FontWeight.SemiBold,
-                        color = Color(0xFF004D87)
-                    )
-                    Spacer(modifier = Modifier.height(6.dp))
-                    Row(
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .padding(vertical = 4.dp),
-                        horizontalArrangement = Arrangement.spacedBy(6.dp)
-                    ) {
-                        groupsList.take(5).forEach { group ->
-                            val gid = group.group_id ?: ""
-                            val isChecked = selectedGroupIds.contains(gid)
-                            FilterChip(
-                                selected = isChecked,
-                                onClick = { onToggleGroup(gid) },
-                                label = {
-                                    Text(
-                                        text = group.group_name ?: "",
-                                        fontSize = 12.sp,
-                                        fontFamily = GillSans
-                                    )
-                                }
-                            )
-                        }
-                    }
                 }
-
-                Spacer(modifier = Modifier.height(8.dp))
 
                 // Search field for available docs
                 AppSearchField(
@@ -284,7 +290,7 @@ fun AttachDocumentDialog(
                             modifier = Modifier.fillMaxSize(),
                             verticalArrangement = Arrangement.spacedBy(4.dp)
                         ) {
-                            items(filteredDocs, key = { it.id ?: it.name ?: "" }) { doc ->
+                            items(filteredDocs, key = { it.id?.ifEmpty { null } ?: "${it.name}_${it.filename}_${it.hashCode()}" }) { doc ->
                                 val isSelected = selectedDocs.any { it.id == doc.id }
                                 Row(
                                     modifier = Modifier

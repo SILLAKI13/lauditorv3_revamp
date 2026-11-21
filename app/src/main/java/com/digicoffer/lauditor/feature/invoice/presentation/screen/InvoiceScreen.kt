@@ -2,6 +2,7 @@ package com.digicoffer.lauditor.feature.invoice.presentation.screen
 
 import android.content.Intent
 import android.net.Uri
+import android.widget.Toast
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
@@ -30,6 +31,7 @@ import com.digicoffer.lauditor.feature.invoice.presentation.components.InvoiceFo
 import com.digicoffer.lauditor.feature.invoice.presentation.components.InvoiceReplaceConfirmDialog
 import com.digicoffer.lauditor.feature.invoice.presentation.components.InvoiceShareDialog
 import com.digicoffer.lauditor.feature.invoice.presentation.components.InvoiceStatusConfirmDialog
+import com.digicoffer.lauditor.feature.invoice.presentation.components.InvoiceViewDetailsContent
 import com.digicoffer.lauditor.feature.invoice.presentation.state.InvoiceUiEvent
 import com.digicoffer.lauditor.feature.invoice.presentation.state.InvoiceUiState
 import com.digicoffer.lauditor.feature.invoice.presentation.viewmodel.InvoiceViewModel
@@ -69,6 +71,7 @@ fun InvoiceScreen(
     onEvent: (InvoiceUiEvent) -> Unit,
     modifier: Modifier = Modifier
 ) {
+    val context = LocalContext.current
     Box(
         modifier = modifier
             .fillMaxSize()
@@ -160,12 +163,18 @@ fun InvoiceScreen(
                                         onEdit = { onEvent(InvoiceUiEvent.EditInvoice(invoice)) },
                                         onChangeStatus = { onEvent(InvoiceUiEvent.PromptChangeStatus(invoice)) },
                                         onShare = { onEvent(InvoiceUiEvent.PromptShareInvoice(invoice)) },
-                                        onDelete = { onEvent(InvoiceUiEvent.PromptDeleteInvoice(invoice)) }
+                                        onDelete = { onEvent(InvoiceUiEvent.PromptDeleteInvoice(invoice)) },
+                                        onSendReminder = { onEvent(InvoiceUiEvent.SendReminder(invoice)) }
                                     )
                                 }
                             }
                         }
                     }
+                } else if (uiState.mode == InvoiceMode.VIEW) {
+                    InvoiceViewDetailsContent(
+                        uiState = uiState,
+                        onEvent = onEvent
+                    )
                 } else {
                     InvoiceFormContent(
                         uiState = uiState,
@@ -213,12 +222,11 @@ fun InvoiceScreen(
             )
         }
 
-        uiState.alertMessage?.let { msg ->
-            InvoiceFeedbackDialog(
-                title = "Alert",
-                message = msg,
-                onDismiss = { onEvent(InvoiceUiEvent.DismissDialogs) }
-            )
+        LaunchedEffect(uiState.alertMessage) {
+            uiState.alertMessage?.let { msg ->
+                Toast.makeText(context, msg, Toast.LENGTH_LONG).show()
+                onEvent(InvoiceUiEvent.DismissAlert)
+            }
         }
 
         uiState.successMessage?.let { msg ->

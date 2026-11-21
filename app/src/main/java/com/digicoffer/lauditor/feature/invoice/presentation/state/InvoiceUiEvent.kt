@@ -14,6 +14,7 @@ sealed interface InvoiceUiEvent {
 
     data class ViewDetails(val invoice: InvoiceListItem) : InvoiceUiEvent
     data class EditInvoice(val invoice: InvoiceListItem) : InvoiceUiEvent
+    data class SendReminder(val invoice: InvoiceListItem) : InvoiceUiEvent
     data class PromptChangeStatus(val invoice: InvoiceListItem) : InvoiceUiEvent
     object ConfirmChangeStatus : InvoiceUiEvent
     data class PromptDeleteInvoice(val invoice: InvoiceListItem) : InvoiceUiEvent
@@ -38,7 +39,21 @@ sealed interface InvoiceUiEvent {
     data class LogoSelected(val uri: Uri) : InvoiceUiEvent
     object RemoveLogo : InvoiceUiEvent
     data class ClientSelected(val client: InvoiceClient?) : InvoiceUiEvent
+    data class ClientNameChanged(val name: String) : InvoiceUiEvent
     data class MatterSelected(val matter: InvoiceMatter?) : InvoiceUiEvent
+    data class ClientFirstNameChanged(val name: String) : InvoiceUiEvent
+    data class ClientLastNameChanged(val name: String) : InvoiceUiEvent
+    data class ClientEmailChanged(val email: String) : InvoiceUiEvent
+    data class CountryCodeChanged(val code: String) : InvoiceUiEvent
+    data class ClientPhoneChanged(val phone: String) : InvoiceUiEvent
+
+    // Bank Details & Taxes
+    data class BankDetailsChanged(val details: String) : InvoiceUiEvent
+    data class SaveBankDetailsChecked(val checked: Boolean) : InvoiceUiEvent
+    data class BankDetailOptionSelected(val option: Int) : InvoiceUiEvent
+    data class Tax1PercentChanged(val tax: String) : InvoiceUiEvent
+    data class Tax2PercentChanged(val tax: String) : InvoiceUiEvent
+
     object AddLineItem : InvoiceUiEvent
     data class RemoveLineItem(val index: Int) : InvoiceUiEvent
     data class UpdateLineItem(val index: Int, val item: InvoiceLineItem) : InvoiceUiEvent
@@ -49,4 +64,5 @@ sealed interface InvoiceUiEvent {
     data class ConfirmEditChoice(val replaceOriginal: Boolean) : InvoiceUiEvent
 
     object DismissDialogs : InvoiceUiEvent
+    object DismissAlert : InvoiceUiEvent
 }

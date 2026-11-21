@@ -203,41 +203,52 @@ fun InvoiceReplaceConfirmDialog(
 
                 Row(
                     modifier = Modifier.fillMaxWidth(),
-                    horizontalArrangement = Arrangement.End
+                    horizontalArrangement = Arrangement.spacedBy(8.dp)
                 ) {
-                    OutlinedButton(
-                        onClick = onDismiss,
-                        shape = RoundedCornerShape(6.dp),
-                        colors = ButtonDefaults.outlinedButtonColors(contentColor = Color.DarkGray)
-                    ) {
-                        Text("Cancel", fontFamily = GillSans)
-                    }
-
-                    Spacer(modifier = Modifier.width(8.dp))
-
                     Button(
                         onClick = onReplaceOriginal,
+                        modifier = Modifier.weight(1f),
                         shape = RoundedCornerShape(6.dp),
                         colors = ButtonDefaults.buttonColors(
                             containerColor = Color(0xFF757575),
                             contentColor = Color.White
                         )
                     ) {
-                        Text("Replace Original", fontFamily = GillSans, fontSize = 13.sp)
+                        Text(
+                            text = "Replace Original",
+                            fontFamily = GillSans,
+                            fontSize = 13.sp,
+                            maxLines = 1
+                        )
                     }
-
-                    Spacer(modifier = Modifier.width(8.dp))
 
                     Button(
                         onClick = onSaveBoth,
+                        modifier = Modifier.weight(1f),
                         shape = RoundedCornerShape(6.dp),
                         colors = ButtonDefaults.buttonColors(
                             containerColor = Color(0xFF004D87),
                             contentColor = Color.White
                         )
                     ) {
-                        Text("Save Both", fontFamily = GillSans, fontSize = 13.sp)
+                        Text(
+                            text = "Save Both",
+                            fontFamily = GillSans,
+                            fontSize = 13.sp,
+                            maxLines = 1
+                        )
                     }
+                }
+
+                Spacer(modifier = Modifier.height(8.dp))
+
+                OutlinedButton(
+                    onClick = onDismiss,
+                    modifier = Modifier.fillMaxWidth(),
+                    shape = RoundedCornerShape(6.dp),
+                    colors = ButtonDefaults.outlinedButtonColors(contentColor = Color.DarkGray)
+                ) {
+                    Text("Cancel", fontFamily = GillSans, fontSize = 13.sp)
                 }
             }
         }

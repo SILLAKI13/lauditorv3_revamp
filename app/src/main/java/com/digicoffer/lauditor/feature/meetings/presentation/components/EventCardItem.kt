@@ -31,6 +31,8 @@ import com.digicoffer.lauditor.R
 import com.digicoffer.lauditor.core.ui.common.badges.AppStatusBadge
 import com.digicoffer.lauditor.core.ui.common.badges.AppStatusStyle
 import org.json.JSONArray
+import java.text.SimpleDateFormat
+import java.util.Calendar
 import java.util.Locale
 
 private fun getInitials(name: String?): String {
@@ -110,10 +112,27 @@ fun EventCardItem(
         )
         AndroidUtils.getDateToString(dateObj, "dd MMMM yyyy").orEmpty()
     } else {
-        val dateObj = AndroidUtils.stringToDateTimeDefault(
-            event?.from_ts, "yyyy-MM-dd'T'HH:mm:ss"
-        )
-        AndroidUtils.getDateToString(dateObj, "dd MMMM yyyy").orEmpty()
+        if (Constants.isUSUser()) {
+            val fromTs = event?.from_ts.orEmpty()
+            val ymd = if (fromTs.contains("T")) fromTs.substringBefore("T") else fromTs
+            val parts = ymd.split("-")
+            if (parts.size == 3 && parts[0].length == 4) {
+                val cal = Calendar.getInstance().apply {
+                    set(parts[0].toInt(), parts[1].toInt() - 1, parts[2].toInt(), 12, 0, 0)
+                }
+                SimpleDateFormat("dd MMMM yyyy", Locale.US).format(cal.time)
+            } else {
+                val dateObj = AndroidUtils.stringToDateTimeDefault(
+                    event?.from_ts, "yyyy-MM-dd'T'HH:mm:ss"
+                )
+                AndroidUtils.getDateToString(dateObj, "dd MMMM yyyy").orEmpty()
+            }
+        } else {
+            val dateObj = AndroidUtils.stringToDateTimeDefault(
+                event?.from_ts, "yyyy-MM-dd'T'HH:mm:ss"
+            )
+            AndroidUtils.getDateToString(dateObj, "dd MMMM yyyy").orEmpty()
+        }
     }
 
     val timeRangeText = if (isAppointment) {

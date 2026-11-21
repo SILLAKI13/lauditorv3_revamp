@@ -3,6 +3,7 @@ package com.digicoffer.lauditor.feature.meetings.presentation.screen
 import android.content.Intent
 import android.net.Uri
 import android.widget.Toast
+import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
@@ -51,6 +52,14 @@ import java.util.Locale
 private fun isSameDate(dateStr: String?, targetDateDdmmyyyy: String): Boolean {
     if (dateStr.isNullOrEmpty() || targetDateDdmmyyyy.isEmpty()) return false
     try {
+        if (Constants.isUSUser()) {
+            val ymd = if (dateStr.contains("T")) dateStr.substringBefore("T") else dateStr
+            val parts = ymd.split("-")
+            if (parts.size == 3 && parts[0].length == 4) {
+                val ddmmyyyy = "${parts[2]}-${parts[1]}-${parts[0]}"
+                return ddmmyyyy == targetDateDdmmyyyy
+            }
+        }
         if (dateStr.contains("T")) {
             val parsed = AndroidUtils.stringToDateTimeDefault(dateStr, "yyyy-MM-dd'T'HH:mm:ss")
             val formatted = AndroidUtils.getDateToString(parsed, "dd-MM-yyyy")
@@ -213,48 +222,56 @@ fun MeetingsScreen(
                     Box(
                         modifier = Modifier.wrapContentSize(Alignment.TopEnd)
                     ) {
+                        val isUS = Constants.isUSUser() || Constants.HiddenModules.contains("appointments") || Constants.HiddenModules.contains("timesheets")
                         val filterColor = when (uiState.selectedFilter) {
                             "My Meetings" -> activeBlue
                             "Client Bookings" -> Color(0xFFE59E35)
-                            else -> Color(0xFFD9D9D9)
+                            else -> if (isUS) activeBlue else Color(0xFFD9D9D9)
                         }
                         val filterLabel = when (uiState.selectedFilter) {
-                            "My Meetings" -> "My Meetings"
+                            "My Meetings" -> if (isUS) "My meetings" else "My Meetings"
                             "Client Bookings" -> "Client Bookings"
-                            else -> "All Appointments"
+                            else -> if (isUS) "All Events" else "All Appointments"
                         }
 
                         Card(
                             modifier = Modifier
                                 .wrapContentWidth()
                                 .clickable { filterDropdownExpanded = !filterDropdownExpanded },
-                            shape = RoundedCornerShape(12.dp),
+                            shape = if (isUS) RoundedCornerShape(8.dp) else RoundedCornerShape(12.dp),
                             colors = CardDefaults.cardColors(containerColor = Color.White),
-                            elevation = CardDefaults.cardElevation(defaultElevation = 2.dp)
+                            border = if (isUS) BorderStroke(1.dp, Color(0xFFD1D5DB)) else null,
+                            elevation = CardDefaults.cardElevation(defaultElevation = if (isUS) 0.dp else 2.dp)
                         ) {
                             Row(
                                 modifier = Modifier
                                     .wrapContentWidth()
-                                    .padding(horizontal = 12.dp, vertical = 8.dp),
+                                    .padding(
+                                        horizontal = if (isUS) 14.dp else 12.dp,
+                                        vertical = 8.dp
+                                    ),
                                 verticalAlignment = Alignment.CenterVertically,
                                 horizontalArrangement = Arrangement.spacedBy(8.dp)
                             ) {
-                                Box(
-                                    modifier = Modifier
-                                        .size(10.dp)
-                                        .background(filterColor, CircleShape)
-                                )
+                                if (!isUS || uiState.selectedFilter == "My Meetings") {
+                                    Box(
+                                        modifier = Modifier
+                                            .size(if (isUS) 8.dp else 10.dp)
+                                            .background(filterColor, CircleShape)
+                                    )
+                                }
                                 Text(
                                     text = filterLabel,
                                     fontSize = 14.sp,
+                                    fontWeight = if (isUS) FontWeight.Medium else FontWeight.Normal,
                                     fontFamily = FontFamily(Font(R.font.gill_sans_regular)),
-                                    color = Color.Black
+                                    color = if (isUS) Color(0xFF0F3F7A) else Color.Black
                                 )
                                 Image(
                                     painter = painterResource(id = if (filterDropdownExpanded) R.drawable.up_arrow else R.drawable.down_arrow),
                                     contentDescription = "Dropdown filter",
-                                    modifier = Modifier.size(14.dp),
-                                    colorFilter = ColorFilter.tint(activeBlue)
+                                    modifier = Modifier.size(if (isUS) 12.dp else 14.dp),
+                                    colorFilter = ColorFilter.tint(if (isUS) Color(0xFF0F3F7A) else activeBlue)
                                 )
                             }
                         }
@@ -269,89 +286,142 @@ fun MeetingsScreen(
                             ) {
                                 Card(
                                     modifier = Modifier
-                                        .width(220.dp),
-                                    shape = RoundedCornerShape(12.dp),
+                                        .width(if (isUS) 180.dp else 200.dp),
+                                    shape = if (isUS) RoundedCornerShape(8.dp) else RoundedCornerShape(12.dp),
                                     colors = CardDefaults.cardColors(containerColor = Color.White),
-                                    elevation = CardDefaults.cardElevation(defaultElevation = 6.dp)
+                                    border = if (isUS) BorderStroke(1.dp, Color(0xFFE2E8F0)) else null,
+                                    elevation = CardDefaults.cardElevation(defaultElevation = if (isUS) 8.dp else 6.dp)
                                 ) {
                                     Column(
                                         modifier = Modifier
                                             .fillMaxWidth()
                                             .padding(vertical = 4.dp)
                                     ) {
-                                        // 1. My Meetings
-                                        Row(
-                                            modifier = Modifier
-                                                .fillMaxWidth()
-                                                .clickable {
-                                                    filterDropdownExpanded = false
-                                                    viewModel.onEvent(MeetingsUiEvent.FilterChanged("My Meetings"))
-                                                }
-                                                .padding(horizontal = 14.dp, vertical = 10.dp),
-                                            verticalAlignment = Alignment.CenterVertically
-                                        ) {
-                                            Box(
+                                        if (isUS) {
+                                            // US Condition (matches web reference screenshot): 1. All Events, 2. • My meetings
+                                            val isAll = (uiState.selectedFilter == "All")
+                                            Row(
                                                 modifier = Modifier
-                                                    .size(12.dp)
-                                                    .background(activeBlue, CircleShape)
-                                            )
-                                            Spacer(modifier = Modifier.width(10.dp))
-                                            Text(
-                                                text = "My Meetings",
-                                                fontSize = 14.sp,
-                                                fontFamily = FontFamily(Font(R.font.gill_sans_regular)),
-                                                color = Color.Black
-                                            )
-                                        }
+                                                    .fillMaxWidth()
+                                                    .background(if (isAll) Color(0xFFEDF4FD) else Color.Transparent)
+                                                    .clickable {
+                                                        filterDropdownExpanded = false
+                                                        viewModel.onEvent(MeetingsUiEvent.FilterChanged("All"))
+                                                    }
+                                                    .padding(horizontal = 16.dp, vertical = 10.dp),
+                                                verticalAlignment = Alignment.CenterVertically
+                                            ) {
+                                                Text(
+                                                    text = "All Events",
+                                                    fontSize = 14.sp,
+                                                    fontWeight = if (isAll) FontWeight.Medium else FontWeight.Normal,
+                                                    fontFamily = FontFamily(Font(R.font.gill_sans_regular)),
+                                                    color = if (isAll) Color(0xFF0F3F7A) else Color(0xFF1E293B)
+                                                )
+                                            }
 
-                                        // 2. Client Bookings
-                                        Row(
-                                            modifier = Modifier
-                                                .fillMaxWidth()
-                                                .clickable {
-                                                    filterDropdownExpanded = false
-                                                    viewModel.onEvent(MeetingsUiEvent.FilterChanged("Client Bookings"))
-                                                }
-                                                .padding(horizontal = 14.dp, vertical = 10.dp),
-                                            verticalAlignment = Alignment.CenterVertically
-                                        ) {
-                                            Box(
+                                            val isMyMeetings = (uiState.selectedFilter == "My Meetings")
+                                            Row(
                                                 modifier = Modifier
-                                                    .size(12.dp)
-                                                    .background(Color(0xFFE59E35), CircleShape)
-                                            )
-                                            Spacer(modifier = Modifier.width(10.dp))
-                                            Text(
-                                                text = "Client Bookings",
-                                                fontSize = 14.sp,
-                                                fontFamily = FontFamily(Font(R.font.gill_sans_regular)),
-                                                color = Color.Black
-                                            )
-                                        }
+                                                    .fillMaxWidth()
+                                                    .background(if (isMyMeetings) Color(0xFFEDF4FD) else Color.Transparent)
+                                                    .clickable {
+                                                        filterDropdownExpanded = false
+                                                        viewModel.onEvent(MeetingsUiEvent.FilterChanged("My Meetings"))
+                                                    }
+                                                    .padding(horizontal = 16.dp, vertical = 10.dp),
+                                                verticalAlignment = Alignment.CenterVertically
+                                            ) {
+                                                Box(
+                                                    modifier = Modifier
+                                                        .size(8.dp)
+                                                        .background(activeBlue, CircleShape)
+                                                )
+                                                Spacer(modifier = Modifier.width(8.dp))
+                                                Text(
+                                                    text = "My meetings",
+                                                    fontSize = 14.sp,
+                                                    fontWeight = if (isMyMeetings) FontWeight.Medium else FontWeight.Normal,
+                                                    fontFamily = FontFamily(Font(R.font.gill_sans_regular)),
+                                                    color = if (isMyMeetings) Color(0xFF0F3F7A) else Color(0xFF1E293B)
+                                                )
+                                            }
+                                        } else {
+                                            // India Condition: 1. My Meetings, 2. Client Bookings, 3. All Appointments
+                                            // 1. My Meetings
+                                            Row(
+                                                modifier = Modifier
+                                                    .fillMaxWidth()
+                                                    .clickable {
+                                                        filterDropdownExpanded = false
+                                                        viewModel.onEvent(MeetingsUiEvent.FilterChanged("My Meetings"))
+                                                    }
+                                                    .padding(horizontal = 14.dp, vertical = 10.dp),
+                                                verticalAlignment = Alignment.CenterVertically
+                                            ) {
+                                                Box(
+                                                    modifier = Modifier
+                                                        .size(12.dp)
+                                                        .background(activeBlue, CircleShape)
+                                                )
+                                                Spacer(modifier = Modifier.width(10.dp))
+                                                Text(
+                                                    text = "My Meetings",
+                                                    fontSize = 14.sp,
+                                                    fontFamily = FontFamily(Font(R.font.gill_sans_regular)),
+                                                    color = Color.Black
+                                                )
+                                            }
 
-                                        // 3. All Appointments
-                                        Row(
-                                            modifier = Modifier
-                                                .fillMaxWidth()
-                                                .clickable {
-                                                    filterDropdownExpanded = false
-                                                    viewModel.onEvent(MeetingsUiEvent.FilterChanged("All"))
-                                                }
-                                                .padding(horizontal = 14.dp, vertical = 10.dp),
-                                            verticalAlignment = Alignment.CenterVertically
-                                        ) {
-                                            Box(
+                                            // 2. Client Bookings
+                                            Row(
                                                 modifier = Modifier
-                                                    .size(12.dp)
-                                                    .background(Color(0xFFD9D9D9), CircleShape)
-                                            )
-                                            Spacer(modifier = Modifier.width(10.dp))
-                                            Text(
-                                                text = "All Appointments",
-                                                fontSize = 14.sp,
-                                                fontFamily = FontFamily(Font(R.font.gill_sans_regular)),
-                                                color = Color.Black
-                                            )
+                                                    .fillMaxWidth()
+                                                    .clickable {
+                                                        filterDropdownExpanded = false
+                                                        viewModel.onEvent(MeetingsUiEvent.FilterChanged("Client Bookings"))
+                                                    }
+                                                    .padding(horizontal = 14.dp, vertical = 10.dp),
+                                                verticalAlignment = Alignment.CenterVertically
+                                            ) {
+                                                Box(
+                                                    modifier = Modifier
+                                                        .size(12.dp)
+                                                        .background(Color(0xFFE59E35), CircleShape)
+                                                )
+                                                Spacer(modifier = Modifier.width(10.dp))
+                                                Text(
+                                                    text = "Client Bookings",
+                                                    fontSize = 14.sp,
+                                                    fontFamily = FontFamily(Font(R.font.gill_sans_regular)),
+                                                    color = Color.Black
+                                                )
+                                            }
+
+                                            // 3. All Appointments
+                                            Row(
+                                                modifier = Modifier
+                                                    .fillMaxWidth()
+                                                    .clickable {
+                                                        filterDropdownExpanded = false
+                                                        viewModel.onEvent(MeetingsUiEvent.FilterChanged("All"))
+                                                    }
+                                                    .padding(horizontal = 14.dp, vertical = 10.dp),
+                                                verticalAlignment = Alignment.CenterVertically
+                                            ) {
+                                                Box(
+                                                    modifier = Modifier
+                                                        .size(12.dp)
+                                                        .background(Color(0xFFD9D9D9), CircleShape)
+                                                )
+                                                Spacer(modifier = Modifier.width(10.dp))
+                                                Text(
+                                                    text = "All Appointments",
+                                                    fontSize = 14.sp,
+                                                    fontFamily = FontFamily(Font(R.font.gill_sans_regular)),
+                                                    color = Color.Black
+                                                )
+                                            }
                                         }
                                     }
                                 }
@@ -400,13 +470,29 @@ fun MeetingsScreen(
                 val eventsSource = if (uiState.isMonthView) uiState.monthlyEvents else uiState.weeklyEvents
                 val apptsSource = if (uiState.isMonthView) uiState.monthlyAppointments else uiState.weeklyAppointments
 
+                val isUS = Constants.isUSUser() || Constants.HiddenModules.contains("appointments") || Constants.HiddenModules.contains("timesheets")
                 val filteredEvents = if (uiState.selectedFilter == "Client Bookings") {
                     emptyList()
+                } else if (isUS) {
+                    val dayEvents = eventsSource.filter { isSameDate(it.from_ts, targetDate) }
+                    if (uiState.selectedFilter == "My Meetings") {
+                        dayEvents.filter { event ->
+                            val isMyMeeting = event.owner ||
+                                    event.owner_name.equals(Constants.NAME, ignoreCase = true) ||
+                                    (event.team_name != null && (0 until event.team_name!!.length()).any { i ->
+                                        val tm = event.team_name!!.optJSONObject(i)
+                                        tm?.optString("id") == Constants.USER_ID || tm?.optString("name").equals(Constants.NAME, ignoreCase = true)
+                                    })
+                            isMyMeeting
+                        }
+                    } else {
+                        dayEvents
+                    }
                 } else {
                     eventsSource.filter { isSameDate(it.from_ts, targetDate) }
                 }
 
-                val filteredAppts = if (uiState.selectedFilter == "My Meetings") {
+                val filteredAppts = if (isUS || uiState.selectedFilter == "My Meetings") {
                     emptyList()
                 } else {
                     apptsSource.filter { isSameDate(it.appointment_from, targetDate) }

@@ -40,6 +40,7 @@ class ViewInvoice : Fragment() {
         viewModel = ViewModelProvider(this, factory).get(InvoiceViewModel::class.java)
 
         return ComposeView(requireContext()).apply {
+            setViewCompositionStrategy(androidx.compose.ui.platform.ViewCompositionStrategy.DisposeOnViewTreeLifecycleDestroyed)
             setContent {
                 LauditorTheme {
                     InvoiceRoute(viewModel = viewModel)

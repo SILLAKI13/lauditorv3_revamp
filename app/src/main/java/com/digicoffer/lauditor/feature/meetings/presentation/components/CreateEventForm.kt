@@ -8,6 +8,8 @@ import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.interaction.MutableInteractionSource
+import androidx.compose.foundation.interaction.PressInteraction
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyRow
@@ -22,6 +24,7 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.rotate
+import androidx.compose.ui.focus.onFocusChanged
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.ColorFilter
 import androidx.compose.ui.graphics.SolidColor
@@ -261,23 +264,41 @@ private fun FormCustomDropdown(
                                 .heightIn(max = 200.dp)
                         ) {
                             items(filteredOptions) { option ->
+                                val isUS = Constants.isUSUser()
+                                val isSelected = option == selectedText
+                                val rowBg = if (isUS && isSelected) activeBlue else Color.Transparent
+                                val textColor = if (isUS && isSelected) {
+                                    Color.White
+                                } else if (isUS && option == "Select Event Type") {
+                                    Color(0xFFA0A0A0)
+                                } else if (!isUS && isSelected) {
+                                    activeBlue
+                                } else {
+                                    Color.Black
+                                }
+
                                 Row(
                                     modifier = Modifier
                                         .fillMaxWidth()
+                                        .background(rowBg)
                                         .clickable {
                                             expanded = false
                                             searchQuery = ""
-                                            onSelect(option)
+                                            if (isUS && option == "Select Event Type") {
+                                                onClear?.invoke() ?: onSelect("")
+                                            } else {
+                                                onSelect(option)
+                                            }
                                         }
-                                        .padding(horizontal = 8.dp, vertical = 10.dp),
+                                        .padding(horizontal = 10.dp, vertical = 10.dp),
                                     verticalAlignment = Alignment.CenterVertically
                                 ) {
                                     Text(
                                         text = option,
                                         fontFamily = GillSansFont,
                                         fontSize = 14.sp,
-                                        color = if (option == selectedText) activeBlue else Color.Black,
-                                        fontWeight = if (option == selectedText) FontWeight.Bold else FontWeight.Normal
+                                        color = textColor,
+                                        fontWeight = if (isSelected) FontWeight.Bold else FontWeight.Normal
                                     )
                                 }
                                 HorizontalDivider(color = Color(0xFFF5F5F5), thickness = 0.5.dp)
@@ -541,6 +562,333 @@ private fun <T> AttendeesMultiSelectDropdown(
     }
 }
 
+/**
+ * US-only Attendee Card matching Screenshot 2 and Screenshot 3.
+ * Features:
+ * - Card header with light background (Color(0xFFF4F8FA)) and title (Add Team Members / Add Individual)
+ * - Search input field with placeholder ("Search Team Member" / "Search Individual Clients")
+ * - "ADD" button triggering the searchable selection list
+ * - Expandable list with "Select All" and checkboxes
+ * - Selected attendee chips with delete icon
+ */
+@Composable
+private fun <T> USAttendeeCard(
+    title: String,
+    searchPlaceholder: String,
+    items: List<T>,
+    selectedItems: List<T>,
+    itemLabel: (T) -> String,
+    itemId: (T) -> String,
+    onSelectionChanged: (List<T>) -> Unit,
+    modifier: Modifier = Modifier
+) {
+    var isExpanded by remember { mutableStateOf(false) }
+    var searchQuery by remember { mutableStateOf("") }
+    val activeBlue = Color(0xFF004D87)
+    val inputBorderColor = Color(0xFFC0C0C0)
+    val interactionSource = remember { MutableInteractionSource() }
+
+    LaunchedEffect(interactionSource) {
+        interactionSource.interactions.collect { interaction ->
+            if (interaction is PressInteraction.Press || interaction is PressInteraction.Release) {
+                isExpanded = true
+            }
+        }
+    }
+
+    val filteredItems = remember(items, searchQuery) {
+        if (searchQuery.isBlank()) items
+        else items.filter { itemLabel(it).contains(searchQuery, ignoreCase = true) }
+    }
+
+    val isAllSelected = filteredItems.isNotEmpty() && filteredItems.all { item ->
+        selectedItems.any { itemId(it) == itemId(item) }
+    }
+
+    Card(
+        modifier = modifier
+            .border(width = 0.5.dp, color = Color(0xFFDDDDDE), shape = RoundedCornerShape(6.dp)),
+        shape = RoundedCornerShape(6.dp),
+        colors = CardDefaults.cardColors(containerColor = Color.White),
+        elevation = CardDefaults.cardElevation(defaultElevation = 1.dp)
+    ) {
+        Column(modifier = Modifier.fillMaxWidth()) {
+            // Card Header
+            Box(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .background(
+                        Color(0xFFF4F8FA),
+                        shape = RoundedCornerShape(topStart = 6.dp, topEnd = 6.dp)
+                    )
+                    .padding(horizontal = 14.dp, vertical = 10.dp)
+            ) {
+                Text(
+                    text = title,
+                    color = activeBlue,
+                    fontFamily = GillSansFont,
+                    fontWeight = FontWeight.Bold,
+                    fontSize = 14.sp
+                )
+            }
+
+            HorizontalDivider(color = Color(0xFFE2E8F0), thickness = 0.5.dp)
+
+            // Card Body
+            Column(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(12.dp)
+            ) {
+                // Search Field & ADD Button Row
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    Row(
+                        modifier = Modifier
+                            .weight(1f)
+                            .height(38.dp)
+                            .background(Color.White, shape = RoundedCornerShape(4.dp))
+                            .border(width = 0.5.dp, color = inputBorderColor, shape = RoundedCornerShape(4.dp))
+                            .clickable(
+                                interactionSource = interactionSource,
+                                indication = null
+                            ) { isExpanded = true }
+                            .padding(horizontal = 10.dp),
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        BasicTextField(
+                            value = searchQuery,
+                            onValueChange = {
+                                searchQuery = it
+                                isExpanded = true
+                            },
+                            interactionSource = interactionSource,
+                            singleLine = true,
+                            textStyle = TextStyle(
+                                color = Color.Black,
+                                fontSize = 13.sp,
+                                fontFamily = GillSansFont
+                            ),
+                            modifier = Modifier
+                                .weight(1f)
+                                .onFocusChanged { focusState ->
+                                    if (focusState.isFocused) {
+                                        isExpanded = true
+                                    }
+                                },
+                            decorationBox = { innerTextField ->
+                                if (searchQuery.isEmpty()) {
+                                    Text(
+                                        text = searchPlaceholder,
+                                        color = Color(0xFFA0A0A0),
+                                        fontSize = 13.sp,
+                                        fontFamily = GillSansFont,
+                                        maxLines = 1,
+                                        overflow = TextOverflow.Ellipsis
+                                    )
+                                }
+                                innerTextField()
+                            }
+                        )
+                        if (searchQuery.isNotEmpty()) {
+                            Icon(
+                                painter = painterResource(id = R.drawable.outline_close),
+                                contentDescription = "Clear",
+                                tint = activeBlue,
+                                modifier = Modifier
+                                    .size(16.dp)
+                                    .clickable {
+                                        searchQuery = ""
+                                        isExpanded = true
+                                    }
+                            )
+                        }
+                    }
+
+                    Spacer(modifier = Modifier.width(8.dp))
+
+                    Button(
+                        onClick = { isExpanded = !isExpanded },
+                        colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF005FB8)),
+                        shape = RoundedCornerShape(4.dp),
+                        contentPadding = PaddingValues(horizontal = 14.dp, vertical = 0.dp),
+                        modifier = Modifier.height(38.dp)
+                    ) {
+                        Text(
+                            text = "ADD",
+                            color = Color.White,
+                            fontFamily = GillSansFont,
+                            fontWeight = FontWeight.Bold,
+                            fontSize = 13.sp
+                        )
+                    }
+                }
+
+                // Expandable Dropdown List
+                if (isExpanded) {
+                    Spacer(modifier = Modifier.height(6.dp))
+                    Card(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .border(width = 0.5.dp, color = inputBorderColor, shape = RoundedCornerShape(4.dp)),
+                        shape = RoundedCornerShape(4.dp),
+                        colors = CardDefaults.cardColors(containerColor = Color.White),
+                        elevation = CardDefaults.cardElevation(defaultElevation = 2.dp)
+                    ) {
+                        Column(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .padding(6.dp)
+                        ) {
+                            // Select All Row
+                            Row(
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .clickable {
+                                        if (isAllSelected) {
+                                            val idsToRemove = filteredItems.map { itemId(it) }.toSet()
+                                            onSelectionChanged(selectedItems.filter { itemId(it) !in idsToRemove })
+                                        } else {
+                                            val existingIds = selectedItems.map { itemId(it) }.toSet()
+                                            val newItemsToAdd = filteredItems.filter { itemId(it) !in existingIds }
+                                            onSelectionChanged(selectedItems + newItemsToAdd)
+                                        }
+                                    }
+                                    .padding(vertical = 4.dp, horizontal = 2.dp),
+                                verticalAlignment = Alignment.CenterVertically
+                            ) {
+                                Checkbox(
+                                    checked = isAllSelected,
+                                    onCheckedChange = { checked ->
+                                        if (checked) {
+                                            val existingIds = selectedItems.map { itemId(it) }.toSet()
+                                            val newItemsToAdd = filteredItems.filter { itemId(it) !in existingIds }
+                                            onSelectionChanged(selectedItems + newItemsToAdd)
+                                        } else {
+                                            val idsToRemove = filteredItems.map { itemId(it) }.toSet()
+                                            onSelectionChanged(selectedItems.filter { itemId(it) !in idsToRemove })
+                                        }
+                                    },
+                                    colors = CheckboxDefaults.colors(checkedColor = activeBlue)
+                                )
+                                Spacer(modifier = Modifier.width(6.dp))
+                                Text(
+                                    text = "Select All",
+                                    color = activeBlue,
+                                    fontFamily = GillSansFont,
+                                    fontSize = 13.sp,
+                                    fontWeight = FontWeight.Bold
+                                )
+                            }
+
+                            HorizontalDivider(color = Color(0xFFEEEEEE), thickness = 0.5.dp)
+
+                            if (filteredItems.isEmpty()) {
+                                Box(
+                                    modifier = Modifier
+                                        .fillMaxWidth()
+                                        .padding(10.dp),
+                                    contentAlignment = Alignment.Center
+                                ) {
+                                    Text(
+                                        text = "No items found",
+                                        color = Color.Gray,
+                                        fontFamily = GillSansFont,
+                                        fontSize = 13.sp
+                                    )
+                                }
+                            } else {
+                                LazyColumn(
+                                    modifier = Modifier
+                                        .fillMaxWidth()
+                                        .heightIn(max = 160.dp)
+                                ) {
+                                    items(filteredItems) { item ->
+                                        val id = itemId(item)
+                                        val isChecked = selectedItems.any { itemId(it) == id }
+                                        Row(
+                                            modifier = Modifier
+                                                .fillMaxWidth()
+                                                .clickable {
+                                                    if (isChecked) {
+                                                        onSelectionChanged(selectedItems.filter { itemId(it) != id })
+                                                    } else {
+                                                        onSelectionChanged(selectedItems + item)
+                                                    }
+                                                }
+                                                .padding(vertical = 4.dp, horizontal = 2.dp),
+                                            verticalAlignment = Alignment.CenterVertically
+                                        ) {
+                                            Checkbox(
+                                                checked = isChecked,
+                                                onCheckedChange = { checked ->
+                                                    if (checked) {
+                                                        onSelectionChanged(selectedItems + item)
+                                                    } else {
+                                                        onSelectionChanged(selectedItems.filter { itemId(it) != id })
+                                                    }
+                                                },
+                                                colors = CheckboxDefaults.colors(checkedColor = activeBlue)
+                                            )
+                                            Spacer(modifier = Modifier.width(6.dp))
+                                            Text(
+                                                text = itemLabel(item),
+                                                color = Color.Black,
+                                                fontFamily = GillSansFont,
+                                                fontSize = 13.sp
+                                            )
+                                        }
+                                        HorizontalDivider(color = Color(0xFFF8F8F8), thickness = 0.5.dp)
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+
+                // Selected Attendee Chips
+                if (selectedItems.isNotEmpty()) {
+                    Spacer(modifier = Modifier.height(8.dp))
+                    LazyRow(
+                        modifier = Modifier.fillMaxWidth(),
+                        horizontalArrangement = Arrangement.spacedBy(6.dp)
+                    ) {
+                        items(selectedItems) { item ->
+                            AssistChip(
+                                onClick = {
+                                    val id = itemId(item)
+                                    onSelectionChanged(selectedItems.filter { itemId(it) != id })
+                                },
+                                label = {
+                                    Text(
+                                        text = itemLabel(item),
+                                        fontFamily = GillSansFont,
+                                        fontSize = 12.sp,
+                                        color = activeBlue
+                                    )
+                                },
+                                trailingIcon = {
+                                    Icon(
+                                        painter = painterResource(id = R.drawable.outline_close),
+                                        contentDescription = "Remove",
+                                        tint = Color.Red,
+                                        modifier = Modifier.size(14.dp)
+                                    )
+                                },
+                                colors = AssistChipDefaults.assistChipColors(containerColor = Color(0xFFE4F2FF)),
+                                border = BorderStroke(0.5.dp, activeBlue)
+                            )
+                        }
+                    }
+                }
+            }
+        }
+    }
+}
+
+
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun CreateEventForm(
@@ -564,6 +912,7 @@ fun CreateEventForm(
                 "overhead" -> "Overhead"
                 "others" -> "Others"
                 "reminders" -> "Reminders"
+                "meeting" -> "Meeting"
                 else -> ""
             }
         )
@@ -666,6 +1015,7 @@ fun CreateEventForm(
                 "overhead" -> "Overhead"
                 "others" -> "Others"
                 "reminders" -> "Reminders"
+                "meeting" -> "Meeting"
                 else -> ""
             }
 
@@ -674,15 +1024,33 @@ fun CreateEventForm(
                 val parts = title.split(" - ")
                 taskName = if (parts.size > 1) parts[1] else title
             } else {
-                taskName = title
+                taskName = if (Constants.isUSUser() && title == "No event title") "" else title
             }
 
-            if (!editing.date.isNullOrEmpty()) {
-                val parsed = AndroidUtils.stringToDateTimeDefault(editing.date, "dd-MM-yyyy")
-                selectedDate = AndroidUtils.getDateToString(parsed, "MMM dd, yyyy").orEmpty()
-            } else if (!editing.from_ts.isNullOrEmpty()) {
-                val parsed = AndroidUtils.stringToDateTimeDefault(editing.from_ts, "yyyy-MM-dd'T'HH:mm:ss")
-                selectedDate = AndroidUtils.getDateToString(parsed, "MMM dd, yyyy").orEmpty()
+            if (Constants.isUSUser()) {
+                val fromTs = editing.from_ts.orEmpty()
+                val ymd = if (fromTs.contains("T")) fromTs.substringBefore("T") else fromTs
+                val parts = ymd.split("-")
+                if (parts.size == 3 && parts[0].length == 4) {
+                    val cal = Calendar.getInstance().apply {
+                        set(parts[0].toInt(), parts[1].toInt() - 1, parts[2].toInt(), 12, 0, 0)
+                    }
+                    selectedDate = SimpleDateFormat("MMM dd, yyyy", Locale.US).format(cal.time)
+                } else if (!editing.date.isNullOrEmpty()) {
+                    val parsed = AndroidUtils.stringToDateTimeDefault(editing.date, "dd-MM-yyyy")
+                    selectedDate = AndroidUtils.getDateToString(parsed, "MMM dd, yyyy").orEmpty()
+                } else if (!editing.from_ts.isNullOrEmpty()) {
+                    val parsed = AndroidUtils.stringToDateTimeDefault(editing.from_ts, "yyyy-MM-dd'T'HH:mm:ss")
+                    selectedDate = AndroidUtils.getDateToString(parsed, "MMM dd, yyyy").orEmpty()
+                }
+            } else {
+                if (!editing.date.isNullOrEmpty()) {
+                    val parsed = AndroidUtils.stringToDateTimeDefault(editing.date, "dd-MM-yyyy")
+                    selectedDate = AndroidUtils.getDateToString(parsed, "MMM dd, yyyy").orEmpty()
+                } else if (!editing.from_ts.isNullOrEmpty()) {
+                    val parsed = AndroidUtils.stringToDateTimeDefault(editing.from_ts, "yyyy-MM-dd'T'HH:mm:ss")
+                    selectedDate = AndroidUtils.getDateToString(parsed, "MMM dd, yyyy").orEmpty()
+                }
             }
 
             if (!editing.from_ts.isNullOrEmpty()) {
@@ -840,8 +1208,14 @@ fun CreateEventForm(
     // Timezone default selection
     LaunchedEffect(uiState.timezones) {
         if (selectedTimezone == null && uiState.timezones.isNotEmpty()) {
-            val matching = uiState.timezones.firstOrNull {
-                it.NAME?.contains("Kolkata", ignoreCase = true) == true || it.GMT?.contains("+05:30") == true
+            val matching = if (Constants.isUSUser()) {
+                uiState.timezones.firstOrNull {
+                    it.NAME?.contains("New York", ignoreCase = true) == true || it.GMT?.contains("-05:00") == true
+                }
+            } else {
+                uiState.timezones.firstOrNull {
+                    it.NAME?.contains("Kolkata", ignoreCase = true) == true || it.GMT?.contains("+05:30") == true
+                }
             }
             selectedTimezone = matching ?: uiState.timezones.first()
         }
@@ -884,6 +1258,7 @@ fun CreateEventForm(
             "Overhead" -> "overhead"
             "Others" -> "others"
             "Reminders" -> "reminders"
+            "Meeting" -> "meeting"
             else -> ""
         }
 
@@ -897,9 +1272,14 @@ fun CreateEventForm(
             return
         }
 
+        val isUS = Constants.isUSUser()
         if (taskName.trim().isEmpty() && matterLegal != "reminders") {
-            Toast.makeText(context, "Please select a Task", Toast.LENGTH_SHORT).show()
-            return
+            if (isUS && (matterLegal == "meeting" || matterLegal == "others")) {
+                // Event Title is optional for US Meeting & Others; will default to "No event title"
+            } else {
+                Toast.makeText(context, "Please select a Task", Toast.LENGTH_SHORT).show()
+                return
+            }
         }
 
         if (matterLegal == "reminders" && description.trim().isEmpty()) {
@@ -953,19 +1333,20 @@ fun CreateEventForm(
             notifArray.put("$num-$unitStr")
         }
 
-        val tzLocation = selectedTimezone?.NAME ?: "(GMT+05:30) India Standard Time - Kolkata"
-        val gmtStr = selectedTimezone?.GMT ?: "330"
+        val defaultTzName = if (isUS) "(GMT-05:00) Eastern Time - New York" else "(GMT+05:30) India Standard Time - Kolkata"
+        val tzLocation = selectedTimezone?.NAME ?: defaultTzName
+        val gmtStr = selectedTimezone?.GMT ?: if (isUS) "-05:00" else "330"
         val offsetMinutes = if (gmtStr.contains(":")) {
             try {
                 val sign = if (gmtStr.startsWith("-")) -1 else 1
                 val clean = gmtStr.replace("+", "").replace("-", "")
                 val parts = clean.split(":")
                 val h = parts[0].toIntOrNull() ?: 5
-                val m = if (parts.size > 1) parts[1].toIntOrNull() ?: 30 else 0
+                val m = if (parts.size > 1) parts[1].toIntOrNull() ?: 0 else 0
                 sign * (h * 60 + m)
-            } catch (e: Exception) { 330 }
+            } catch (e: Exception) { if (isUS) -300 else 330 }
         } else {
-            gmtStr.toIntOrNull() ?: 330
+            gmtStr.toIntOrNull() ?: if (isUS) -300 else 330
         }
         val multipliedOffset = -1 * offsetMinutes
 
@@ -974,23 +1355,40 @@ fun CreateEventForm(
         if (repVal == "none") repVal = ""
 
         // UTC Date string (yyyy-MM-dd'T'HH:mm:ss.SSS'Z')
-        val inputFormat = SimpleDateFormat("yyyy-MM-dd", Locale.US)
-        inputFormat.timeZone = java.util.TimeZone.getTimeZone("UTC")
-        val parsedDate = try {
-            inputFormat.parse(eventCreationDate)
-        } catch (e: Exception) {
-            Date()
-        }
-        val cal = Calendar.getInstance(java.util.TimeZone.getTimeZone("UTC"))
-        if (parsedDate != null) cal.time = parsedDate
-        cal.set(Calendar.HOUR_OF_DAY, 0)
-        cal.set(Calendar.MINUTE, 0)
-        cal.set(Calendar.SECOND, 0)
-        cal.set(Calendar.MILLISECOND, 0)
+        val finalDate = if (isUS) {
+            // For US accounts: parse eventStartingDate in the selected US timezone (e.g. GMT-05:00) and format to UTC ISO-8601 string,
+            // preventing the date from rolling back to the previous day (00:00:00 UTC - 5h = 19:00 previous day).
+            try {
+                val tz = java.util.TimeZone.getTimeZone("GMT$gmtStr")
+                val localSdf = SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss", Locale.US)
+                localSdf.timeZone = tz
+                val parsed = localSdf.parse(eventStartingDate)
+                val utcFormat = SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSS'Z'", Locale.US)
+                utcFormat.timeZone = java.util.TimeZone.getTimeZone("UTC")
+                utcFormat.format(parsed ?: Date())
+            } catch (e: Exception) {
+                "${eventCreationDate}T12:00:00.000Z"
+            }
+        } else {
+            // India Condition: original flow preserved
+            val inputFormat = SimpleDateFormat("yyyy-MM-dd", Locale.US)
+            inputFormat.timeZone = java.util.TimeZone.getTimeZone("UTC")
+            val parsedDate = try {
+                inputFormat.parse(eventCreationDate)
+            } catch (e: Exception) {
+                Date()
+            }
+            val cal = Calendar.getInstance(java.util.TimeZone.getTimeZone("UTC"))
+            if (parsedDate != null) cal.time = parsedDate
+            cal.set(Calendar.HOUR_OF_DAY, 0)
+            cal.set(Calendar.MINUTE, 0)
+            cal.set(Calendar.SECOND, 0)
+            cal.set(Calendar.MILLISECOND, 0)
 
-        val utcFormat = SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSS'Z'", Locale.US)
-        utcFormat.timeZone = java.util.TimeZone.getTimeZone("UTC")
-        val finalDate = utcFormat.format(cal.time)
+            val utcFormat = SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSS'Z'", Locale.US)
+            utcFormat.timeZone = java.util.TimeZone.getTimeZone("UTC")
+            utcFormat.format(cal.time)
+        }
 
         postData.put("date", finalDate)
         postData.put("invitees_internal", selectedTmsArray)
@@ -1007,8 +1405,12 @@ fun CreateEventForm(
         postData.put("from_ts", eventStartingDate)
         postData.put("to_ts", eventEndDate)
         postData.put("event_type", matterLegal)
+        postData.put("event_update_scope", updateScope ?: "")
+        postData.put("recurrent_edit_choice", recurringChoice ?: "")
 
-        val fullTitle = if (matterLegal == "legal" || matterLegal == "general") {
+        val fullTitle = if (isUS && (matterLegal == "meeting" || matterLegal == "others")) {
+            if (taskName.trim().isEmpty()) "No event title" else taskName.trim()
+        } else if (matterLegal == "legal" || matterLegal == "general") {
             val mName = selectedMatter?.title ?: editing?.matter_name ?: ""
             if (mName.isNotEmpty()) "$mName - $taskName" else taskName
         } else if (matterLegal == "reminders") {
@@ -1020,6 +1422,7 @@ fun CreateEventForm(
 
         // Duration calculation for timesheet formatted as "HH:mm" (e.g. "00:30")
         var durationTimesheet = "00:30"
+        var durationTimesheetSpaced = "0 : 30"
         try {
             val sdf = SimpleDateFormat("HH:mm", Locale.US)
             val stDate = sdf.parse(startTime)
@@ -1029,9 +1432,11 @@ fun CreateEventForm(
                 val diffHours = (diffMs / (60 * 60 * 1000)) % 24
                 val diffMins = (diffMs / (60 * 1000)) % 60
                 durationTimesheet = String.format(Locale.US, "%02d:%02d", diffHours, diffMins)
+                durationTimesheetSpaced = "$diffHours : ${String.format(Locale.US, "%02d", diffMins)}"
             }
         } catch (e: Exception) {
             durationTimesheet = "00:30"
+            durationTimesheetSpaced = "0 : 30"
         }
 
         if (matterLegal != "reminders") {
@@ -1044,12 +1449,19 @@ fun CreateEventForm(
                 val timesheetsArray = JSONArray()
                 val tsObj = JSONObject()
                 tsObj.put("date", eventCreationDate)
-                tsObj.put("duration", if (isAllDay) "23:59" else durationTimesheet)
-                tsObj.put("eventtitle", taskName)
+                val durationVal = if (isAllDay) {
+                    "23:59"
+                } else if (isUS) {
+                    durationTimesheetSpaced
+                } else {
+                    durationTimesheet
+                }
+                tsObj.put("duration", durationVal)
+                tsObj.put("eventtitle", fullTitle)
                 tsObj.put("addedby", Constants.NAME)
                 tsObj.put("user_id", Constants.USER_ID)
                 if (matterLegal != "legal" && matterLegal != "general") {
-                    tsObj.put("matter_id", eventType)
+                    tsObj.put("matter_id", if (isUS && (matterLegal == "meeting" || matterLegal == "others")) "Overhead" else eventType)
                     tsObj.put("matter_type", matterLegal)
                 }
                 timesheetsArray.put(tsObj)
@@ -1229,9 +1641,12 @@ fun CreateEventForm(
     }
 
     val isEventTypeSelected = eventType.isNotEmpty()
+    val isUSEventTypeSelected = eventType.isNotBlank() && eventType != "Select Event Type"
 
     // Attendees card visibility matching exact Java XML parity
-    val isAttendeesCardVisible = if (isMatterType) {
+    val isAttendeesCardVisible = if (Constants.isUSUser()) {
+        isUSEventTypeSelected
+    } else if (isMatterType) {
         isMatterSelected && (availableTeamMembers.isNotEmpty() || availableCorporateClients.isNotEmpty() || availableEntityClients.isNotEmpty() || availableIndividuals.isNotEmpty() || availableDocuments.isNotEmpty())
     } else {
         isEventTypeSelected && (availableTeamMembers.isNotEmpty() || availableCorporateClients.isNotEmpty() || availableEntityClients.isNotEmpty() || availableIndividuals.isNotEmpty())
@@ -1258,7 +1673,10 @@ fun CreateEventForm(
                     .padding(16.dp)
             ) {
                 // Event Type Dropdown
-                val eventTypeOptions = if (Constants.ROLE == "AAM") {
+                val isUS = Constants.isUSUser()
+                val eventTypeOptions = if (isUS) {
+                    listOf("Select Event Type", "Meeting", "Others", "Reminders")
+                } else if (Constants.ROLE == "AAM") {
                     listOf("Overhead", "Others", "Reminders")
                 } else {
                     listOf("Legal Matter", "General Matter", "Overhead", "Others", "Reminders")
@@ -1299,6 +1717,20 @@ fun CreateEventForm(
                         selectedDocuments = emptyList()
                     }
                 )
+
+                // Event Title (if US Meeting or Others)
+                if (isUS && (eventType == "Meeting" || eventType == "Others")) {
+                    Spacer(modifier = Modifier.height(14.dp))
+                    FormLabel(text = "Event Title", isMandatory = false)
+                    Spacer(modifier = Modifier.height(4.dp))
+                    FormCustomTextField(
+                        value = taskName,
+                        onValueChange = { taskName = it },
+                        placeholder = "Enter event title (optional)",
+                        singleLine = true,
+                        height = 38.dp
+                    )
+                }
 
                 // Matter Selector (if Legal or General)
                 if (isMatterType) {
@@ -1356,7 +1788,7 @@ fun CreateEventForm(
                 }
 
                 // Task Selector (if Legal, General, Overhead, Others)
-                if (eventType.isNotEmpty() && eventType != "Reminders") {
+                if (!isUS && eventType.isNotEmpty() && eventType != "Reminders") {
                     val taskOptions = when (eventType) {
                         "Legal Matter" -> listOf("Case Filling", "Consultation", "Creating Legal Briefs", "Meeting with client", "Hearing")
                         "General Matter" -> listOf("Consultation", "Draft agreements", "Filling with authorities", "Meeting with client", "Prepare annual fillings")
@@ -1579,9 +2011,10 @@ fun CreateEventForm(
                 val timezoneFormattedOptions = uiState.timezones.map { tz ->
                     "(${tz.GMT}) ${tz.NAME}"
                 }
+                val defaultTzDisplay = if (Constants.isUSUser()) "(GMT-05:00) Eastern Time - New York" else "(GMT+05:30) India Standard Time - Kolkata"
                 val currentTzFormatted = selectedTimezone?.let { tz ->
                     "(${tz.GMT}) ${tz.NAME}"
-                } ?: "(GMT+05:30) India Standard Time - Kolkata"
+                } ?: defaultTzDisplay
 
                 FormLabel(text = "Time Zone", isMandatory = true)
                 Spacer(modifier = Modifier.height(4.dp))
@@ -1756,94 +2189,168 @@ fun CreateEventForm(
                         )
                     }
 
-                    // 1. Add Team Member(s)
-                    if (Constants.CATEGORY != "solo" && availableTeamMembers.isNotEmpty()) {
+                    if (Constants.isUSUser()) {
                         Spacer(modifier = Modifier.height(16.dp))
-                        AttendeesMultiSelectDropdown(
-                            label = "Add Team Member(s)",
-                            placeholder = "Select Team Member(s)",
-                            searchPlaceholder = "Search Team Members",
-                            items = availableTeamMembers,
-                            selectedItems = selectedTeamMembers,
-                            itemLabel = { it.name.orEmpty() },
-                            itemId = { it.id.orEmpty() },
-                            onSelectionChanged = { selectedTeamMembers = it }
-                        )
-                    }
+                        val isSolo = Constants.CATEGORY.equals("solo", ignoreCase = true)
+                        BoxWithConstraints(modifier = Modifier.fillMaxWidth()) {
+                            val isWide = maxWidth > 500.dp
+                            if (isSolo) {
+                                USAttendeeCard(
+                                    title = "Add Individual",
+                                    searchPlaceholder = "Search Individual Clients",
+                                    items = availableIndividuals,
+                                    selectedItems = selectedIndividuals,
+                                    itemLabel = { it.name.orEmpty() },
+                                    itemId = { it.id.orEmpty() },
+                                    onSelectionChanged = { selectedIndividuals = it },
+                                    modifier = if (isWide) Modifier.fillMaxWidth(0.5f) else Modifier.fillMaxWidth()
+                                )
+                            } else {
+                                if (isWide) {
+                                    Row(
+                                        modifier = Modifier.fillMaxWidth(),
+                                        horizontalArrangement = Arrangement.spacedBy(16.dp)
+                                    ) {
+                                        Box(modifier = Modifier.weight(1f)) {
+                                            USAttendeeCard(
+                                                title = "Add Team Members",
+                                                searchPlaceholder = "Search Team Member",
+                                                items = availableTeamMembers,
+                                                selectedItems = selectedTeamMembers,
+                                                itemLabel = { it.name.orEmpty() },
+                                                itemId = { it.id.orEmpty() },
+                                                onSelectionChanged = { selectedTeamMembers = it }
+                                            )
+                                        }
+                                        Box(modifier = Modifier.weight(1f)) {
+                                            USAttendeeCard(
+                                                title = "Add Individual",
+                                                searchPlaceholder = "Search Individual Clients",
+                                                items = availableIndividuals,
+                                                selectedItems = selectedIndividuals,
+                                                itemLabel = { it.name.orEmpty() },
+                                                itemId = { it.id.orEmpty() },
+                                                onSelectionChanged = { selectedIndividuals = it }
+                                            )
+                                        }
+                                    }
+                                } else {
+                                    Column(
+                                        modifier = Modifier.fillMaxWidth(),
+                                        verticalArrangement = Arrangement.spacedBy(12.dp)
+                                    ) {
+                                        USAttendeeCard(
+                                            title = "Add Team Members",
+                                            searchPlaceholder = "Search Team Member",
+                                            items = availableTeamMembers,
+                                            selectedItems = selectedTeamMembers,
+                                            itemLabel = { it.name.orEmpty() },
+                                            itemId = { it.id.orEmpty() },
+                                            onSelectionChanged = { selectedTeamMembers = it }
+                                        )
+                                        USAttendeeCard(
+                                            title = "Add Individual",
+                                            searchPlaceholder = "Search Individual Clients",
+                                            items = availableIndividuals,
+                                            selectedItems = selectedIndividuals,
+                                            itemLabel = { it.name.orEmpty() },
+                                            itemId = { it.id.orEmpty() },
+                                            onSelectionChanged = { selectedIndividuals = it }
+                                        )
+                                    }
+                                }
+                            }
+                        }
+                    } else {
+                        // 1. Add Team Member(s)
+                        if (Constants.CATEGORY != "solo" && availableTeamMembers.isNotEmpty()) {
+                            Spacer(modifier = Modifier.height(16.dp))
+                            AttendeesMultiSelectDropdown(
+                                label = "Add Team Member(s)",
+                                placeholder = "Select Team Member(s)",
+                                searchPlaceholder = "Search Team Members",
+                                items = availableTeamMembers,
+                                selectedItems = selectedTeamMembers,
+                                itemLabel = { it.name.orEmpty() },
+                                itemId = { it.id.orEmpty() },
+                                onSelectionChanged = { selectedTeamMembers = it }
+                            )
+                        }
 
-                    // 2. Add Corporate Client
-                    if (Constants.ROLE != "AAM" && availableCorporateClients.isNotEmpty()) {
-                        Spacer(modifier = Modifier.height(16.dp))
-                        AttendeesMultiSelectDropdown(
-                            label = "Add Corporate Client",
-                            placeholder = "Select Corporate Client",
-                            searchPlaceholder = "Search Corporate Client",
-                            items = availableCorporateClients,
-                            selectedItems = selectedCorporateClients,
-                            itemLabel = { it.name.orEmpty() },
-                            itemId = { it.id.orEmpty() },
-                            onSelectionChanged = { selectedCorporateClients = it }
-                        )
-                    }
+                        // 2. Add Corporate Client
+                        if (Constants.ROLE != "AAM" && availableCorporateClients.isNotEmpty()) {
+                            Spacer(modifier = Modifier.height(16.dp))
+                            AttendeesMultiSelectDropdown(
+                                label = "Add Corporate Client",
+                                placeholder = "Select Corporate Client",
+                                searchPlaceholder = "Search Corporate Client",
+                                items = availableCorporateClients,
+                                selectedItems = selectedCorporateClients,
+                                itemLabel = { it.name.orEmpty() },
+                                itemId = { it.id.orEmpty() },
+                                onSelectionChanged = { selectedCorporateClients = it }
+                            )
+                        }
 
-                    // 2b. Corporate Team Member(s) (Visible when Corporate Client is selected)
-                    if (Constants.ROLE != "AAM" && selectedCorporateClients.isNotEmpty()) {
-                        Spacer(modifier = Modifier.height(16.dp))
-                        AttendeesMultiSelectDropdown(
-                            label = "Corporate Team Member(s)",
-                            placeholder = "Select Corporate Team Member(s)",
-                            searchPlaceholder = "Search Corporate Team Member(s)",
-                            items = uiState.corporateTeamMembers,
-                            selectedItems = selectedCorporateTeamMembers,
-                            itemLabel = { it.name.orEmpty() },
-                            itemId = { it.id.orEmpty() },
-                            onSelectionChanged = { selectedCorporateTeamMembers = it }
-                        )
-                    }
+                        // 2b. Corporate Team Member(s) (Visible when Corporate Client is selected)
+                        if (Constants.ROLE != "AAM" && selectedCorporateClients.isNotEmpty()) {
+                            Spacer(modifier = Modifier.height(16.dp))
+                            AttendeesMultiSelectDropdown(
+                                label = "Corporate Team Member(s)",
+                                placeholder = "Select Corporate Team Member(s)",
+                                searchPlaceholder = "Search Corporate Team Member(s)",
+                                items = uiState.corporateTeamMembers,
+                                selectedItems = selectedCorporateTeamMembers,
+                                itemLabel = { it.name.orEmpty() },
+                                itemId = { it.id.orEmpty() },
+                                onSelectionChanged = { selectedCorporateTeamMembers = it }
+                            )
+                        }
 
-                    // 3. Add Clients
-                    if (Constants.ROLE != "AAM" && availableEntityClients.isNotEmpty()) {
-                        Spacer(modifier = Modifier.height(16.dp))
-                        AttendeesMultiSelectDropdown(
-                            label = "Add Clients",
-                            placeholder = "Select Clients",
-                            searchPlaceholder = "Search Clients",
-                            items = availableEntityClients,
-                            selectedItems = selectedEntityClients,
-                            itemLabel = { it.name.orEmpty() },
-                            itemId = { it.id.orEmpty() },
-                            onSelectionChanged = { selectedEntityClients = it }
-                        )
-                    }
+                        // 3. Add Clients
+                        if (Constants.ROLE != "AAM" && availableEntityClients.isNotEmpty()) {
+                            Spacer(modifier = Modifier.height(16.dp))
+                            AttendeesMultiSelectDropdown(
+                                label = "Add Clients",
+                                placeholder = "Select Clients",
+                                searchPlaceholder = "Search Clients",
+                                items = availableEntityClients,
+                                selectedItems = selectedEntityClients,
+                                itemLabel = { it.name.orEmpty() },
+                                itemId = { it.id.orEmpty() },
+                                onSelectionChanged = { selectedEntityClients = it }
+                            )
+                        }
 
-                    // 4. Add Individual
-                    if (Constants.ROLE != "AAM" && availableIndividuals.isNotEmpty()) {
-                        Spacer(modifier = Modifier.height(16.dp))
-                        AttendeesMultiSelectDropdown(
-                            label = "Add Individual",
-                            placeholder = "Select Individual",
-                            searchPlaceholder = "Search Individual",
-                            items = availableIndividuals,
-                            selectedItems = selectedIndividuals,
-                            itemLabel = { it.name.orEmpty() },
-                            itemId = { it.id.orEmpty() },
-                            onSelectionChanged = { selectedIndividuals = it }
-                        )
-                    }
+                        // 4. Add Individual
+                        if (Constants.ROLE != "AAM" && availableIndividuals.isNotEmpty()) {
+                            Spacer(modifier = Modifier.height(16.dp))
+                            AttendeesMultiSelectDropdown(
+                                label = "Add Individual",
+                                placeholder = "Select Individual",
+                                searchPlaceholder = "Search Individual",
+                                items = availableIndividuals,
+                                selectedItems = selectedIndividuals,
+                                itemLabel = { it.name.orEmpty() },
+                                itemId = { it.id.orEmpty() },
+                                onSelectionChanged = { selectedIndividuals = it }
+                            )
+                        }
 
-                    // 5. Add Document(s) (Visible if Matter type and documents are available)
-                    if (isMatterType && availableDocuments.isNotEmpty()) {
-                        Spacer(modifier = Modifier.height(16.dp))
-                        AttendeesMultiSelectDropdown(
-                            label = "Add Document(s)",
-                            placeholder = "Select Document(s)",
-                            searchPlaceholder = "Search Documents",
-                            items = availableDocuments,
-                            selectedItems = selectedDocuments,
-                            itemLabel = { it.name.orEmpty() },
-                            itemId = { it.docid.orEmpty() },
-                            onSelectionChanged = { selectedDocuments = it }
-                        )
+                        // 5. Add Document(s) (Visible if Matter type and documents are available)
+                        if (isMatterType && availableDocuments.isNotEmpty()) {
+                            Spacer(modifier = Modifier.height(16.dp))
+                            AttendeesMultiSelectDropdown(
+                                label = "Add Document(s)",
+                                placeholder = "Select Document(s)",
+                                searchPlaceholder = "Search Documents",
+                                items = availableDocuments,
+                                selectedItems = selectedDocuments,
+                                itemLabel = { it.name.orEmpty() },
+                                itemId = { it.docid.orEmpty() },
+                                onSelectionChanged = { selectedDocuments = it }
+                            )
+                        }
                     }
                 }
             }
@@ -1971,11 +2478,11 @@ fun CreateEventForm(
             modifier = Modifier
                 .fillMaxWidth()
                 .padding(bottom = 24.dp),
-            horizontalArrangement = Arrangement.SpaceAround
+            horizontalArrangement = if (Constants.isUSUser()) Arrangement.spacedBy(12.dp, Alignment.End) else Arrangement.SpaceAround
         ) {
             Button(
                 onClick = onCancelClick,
-                colors = ButtonDefaults.buttonColors(containerColor = Color(0xFFEEEEEE)),
+                colors = ButtonDefaults.buttonColors(containerColor = if (Constants.isUSUser()) Color.White else Color(0xFFEEEEEE)),
                 border = BorderStroke(1.dp, Color(0xFFDDDDDE)),
                 shape = RoundedCornerShape(8.dp),
                 modifier = Modifier
@@ -1994,7 +2501,14 @@ fun CreateEventForm(
             Button(
                 onClick = {
                     if (isEditMode) {
-                        if (editing?.isRecurring == true) {
+                        if (Constants.isUSUser()) {
+                            // US Condition: US account does not currently have Timesheet functionality. Bypass confirmation popup and save directly.
+                            if (editing?.isRecurring == true) {
+                                showEditRecurrenceDialog = true
+                            } else {
+                                buildAndSubmitPayload(updateScope = "UPDATE_EVENT_ONLY")
+                            }
+                        } else if (editing?.isRecurring == true) {
                             showEditRecurrenceDialog = true
                         } else if ((editing?.is_linked_with_timesheet == true || editing?.timesheet_added == true) && isAddTimesheet) {
                             showEditTimesheetDialog = true
@@ -2008,11 +2522,11 @@ fun CreateEventForm(
                 colors = ButtonDefaults.buttonColors(containerColor = activeBlue),
                 shape = RoundedCornerShape(8.dp),
                 modifier = Modifier
-                    .width(120.dp)
+                    .width(if (Constants.isUSUser() && !isEditMode) 130.dp else 120.dp)
                     .height(40.dp)
             ) {
                 Text(
-                    text = if (isEditMode) "Update" else "Save",
+                    text = if (isEditMode) "Update" else if (Constants.isUSUser()) "Save Event" else "Save",
                     color = Color.White,
                     fontFamily = GillSansFont,
                     fontSize = 13.sp,
@@ -2033,7 +2547,7 @@ fun CreateEventForm(
                     "This and following events" -> "following"
                     else -> "all"
                 }
-                if ((editing?.is_linked_with_timesheet == true || editing?.timesheet_added == true) && isAddTimesheet) {
+                if (!Constants.isUSUser() && (editing?.is_linked_with_timesheet == true || editing?.timesheet_added == true) && isAddTimesheet) {
                     pendingRecurringEditChoice = mappedChoice
                     showEditTimesheetDialog = true
                 } else {

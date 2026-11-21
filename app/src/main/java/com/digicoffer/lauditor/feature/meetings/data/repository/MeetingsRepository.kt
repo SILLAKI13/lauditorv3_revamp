@@ -37,6 +37,30 @@ class MeetingsRepository(private val context: Context) {
         }
     }
 
+    suspend fun fetchDailyEvents(timezoneOffset: Long, dateStr: String): HttpResultDo = suspendCancellableCoroutine { continuation ->
+        try {
+            WebServiceHelper.callHttpWebService(
+                object : AsyncTaskCompleteListener {
+                    override fun onAsyncTaskComplete(httpResult: HttpResultDo) {
+                        continuation.resume(httpResult)
+                    }
+                    override fun onClick(view: View) {}
+                },
+                context,
+                WebServiceHelper.RestMethodType.GET,
+                "v3/events/$timezoneOffset/D$dateStr",
+                "Events_List",
+                JSONObject().toString()
+            )
+        } catch (e: Exception) {
+            val failedResult = HttpResultDo().apply {
+                result = WebServiceHelper.ServiceCallStatus.Exception
+                responseContent = e.message ?: ""
+            }
+            continuation.resume(failedResult)
+        }
+    }
+
     suspend fun fetchMonthlyEvents(timezoneOffset: Long, dateStr: String): HttpResultDo = suspendCancellableCoroutine { continuation ->
         try {
             WebServiceHelper.callHttpWebService(

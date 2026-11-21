@@ -12,7 +12,7 @@ import com.digicoffer.lauditor.feature.email.data.model.LauditorAttachedDoc
 
 data class EmailUiState(
     val provider: EmailProvider = EmailProvider.GOOGLE,
-    val showProviderSelector: Boolean = true,
+    val showProviderSelector: Boolean = false,
     val labelInfo: EmailLabelInfo? = null,
     val messages: List<EmailMessageItem> = emptyList(),
     val filteredMessages: List<EmailMessageItem> = emptyList(),
@@ -37,6 +37,7 @@ data class EmailUiState(
 
     // Attach Lauditor Document inside Compose
     val showAttachDocDialog: Boolean = false,
+    val isUSUser: Boolean = false,
     val attachCategoryTab: String = "client", // "client" | "firm"
     val attachIsMatterTab: Boolean = true, // true = Matter, false = Client
     val clientsList: List<ClientsModel> = emptyList(),

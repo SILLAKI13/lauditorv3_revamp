@@ -24,12 +24,62 @@ class EmailViewModel(
     private val repository: EmailRepository
 ) : ViewModel() {
 
+    private val isIndiaAccount: Boolean
+        get() = Constants.isIndiaCountry(Constants.Country) ||
+                Constants.CurrencySymbol == "₹" ||
+                Constants.CountryCode == "+91"
+
+    private val isUSUser: Boolean
+        get() = Constants.isUSUser() || !isIndiaAccount
+
     private val _uiState = MutableStateFlow(EmailUiState())
     val uiState: StateFlow<EmailUiState> = _uiState.asStateFlow()
 
     init {
-        val initialProvider = if (Constants.isGmail) EmailProvider.GOOGLE else EmailProvider.OUTLOOK
-        _uiState.update { it.copy(provider = initialProvider) }
+        Constants.isGmail = true
+        Constants.check_url()
+        _uiState.update { it.copy(provider = EmailProvider.GOOGLE, showProviderSelector = false, isUSUser = isUSUser) }
+        loadInitialEmailData()
+    }
+
+    private fun loadInitialEmailData() {
+        viewModelScope.launch {
+            _uiState.update { it.copy(isLoading = true, errorMessage = null) }
+
+            // 1. Trigger GET https://apidev2.digicoffer.com/professional/v2/matter/list
+            launch {
+                val mattersResult = repository.fetchMatters()
+                mattersResult.onSuccess { list ->
+                    _uiState.update { it.copy(mattersList = list) }
+                }
+            }
+
+            // 2. Trigger GET https://dev.utils.mail.digicoffer.com/api/v1/mail/status
+            val statusResult = repository.checkMailStatus()
+
+            statusResult.fold(
+                onSuccess = { json ->
+                    val dataObj = json.optJSONObject("data")
+                    val isGmailAuth = json.optBoolean("gmail", false) ||
+                            (dataObj?.optBoolean("gmail", false) ?: false)
+
+                    if (isGmailAuth) {
+                        // Once user is authenticated in Google, automatically list mails without selecting Google and clicking Continue
+                        _uiState.update { it.copy(showProviderSelector = false, provider = EmailProvider.GOOGLE) }
+                        Constants.isGmail = true
+                        Constants.check_url()
+                        loadInboxData()
+                    } else {
+                        // User not authenticated: show provider selector (with Google only)
+                        _uiState.update { it.copy(isLoading = false, showProviderSelector = true, provider = EmailProvider.GOOGLE) }
+                    }
+                },
+                onFailure = {
+                    // Fall back to showing provider selector on failure
+                    _uiState.update { it.copy(isLoading = false, showProviderSelector = true, provider = EmailProvider.GOOGLE) }
+                }
+            )
+        }
     }
 
     fun onEvent(event: EmailUiEvent) {
@@ -121,6 +171,7 @@ class EmailViewModel(
     }
 
     private fun checkAuthReturn() {
+        _uiState.update { it.copy(showProviderSelector = false) }
         loadInboxData()
     }
 
@@ -314,9 +365,11 @@ class EmailViewModel(
 
     // Attach Document from Lauditor Picker
     private fun openAttachDocPicker() {
+        val isUS = isUSUser
         _uiState.update {
             it.copy(
                 showAttachDocDialog = true,
+                isUSUser = isUS,
                 attachCategoryTab = "client",
                 attachIsMatterTab = true,
                 selectedAttachClientId = null,
@@ -329,7 +382,24 @@ class EmailViewModel(
                 attachDocSearchQuery = ""
             )
         }
-        loadMetadataForAttach()
+        if (isUS) {
+            loadAllDocumentsForAttach()
+        } else {
+            loadMetadataForAttach()
+        }
+    }
+
+    private fun loadAllDocumentsForAttach() {
+        viewModelScope.launch {
+            _uiState.update { it.copy(isLoadingAttachDocs = true) }
+            val result = repository.fetchAllDocuments()
+            _uiState.update {
+                it.copy(
+                    availableAttachDocs = result.getOrDefault(emptyList()),
+                    isLoadingAttachDocs = false
+                )
+            }
+        }
     }
 
     private fun loadMetadataForAttach() {

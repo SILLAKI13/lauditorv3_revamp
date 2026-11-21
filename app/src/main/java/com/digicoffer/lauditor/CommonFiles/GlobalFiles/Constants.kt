@@ -77,6 +77,7 @@ object Constants {
 
     @JvmStatic
     fun isUSUser(): Boolean {
+        if (HiddenModules.contains("appointments") || HiddenModules.contains("timesheets")) return true
         if (isIndiaCountry(Country)) return false
         if (isUSCountry(Country)) return true
         if (CountryCode == "+1" && !isIndiaCountry(Country)) return true

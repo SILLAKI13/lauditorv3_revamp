@@ -14,7 +14,9 @@ import com.digicoffer.lauditor.feature.email.data.model.EmailAttachmentItem
 import com.digicoffer.lauditor.feature.email.data.model.EmailLabelInfo
 import com.digicoffer.lauditor.feature.email.data.model.EmailMessageItem
 import com.digicoffer.lauditor.feature.email.data.model.LauditorAttachedDoc
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.suspendCancellableCoroutine
+import kotlinx.coroutines.withContext
 import org.json.JSONArray
 import org.json.JSONObject
 import kotlin.coroutines.resume
@@ -74,6 +76,24 @@ class EmailRepository(private val context: Context) {
                 result = WebServiceHelper.ServiceCallStatus.Exception
                 responseContent = e.message ?: "Network error"
             })
+        }
+    }
+
+    suspend fun checkMailStatus(): Result<JSONObject> {
+        val result = executeHttpRequest(
+            method = WebServiceHelper.RestMethodType.GET,
+            url = "https://dev.utils.mail.digicoffer.com/api/v1/mail/status",
+            requestType = "Mail Status"
+        )
+        return if (result.result == WebServiceHelper.ServiceCallStatus.Success) {
+            try {
+                val json = JSONObject(result.responseContent ?: "{}")
+                Result.success(json)
+            } catch (e: Exception) {
+                Result.failure(e)
+            }
+        } else {
+            Result.failure(Exception(result.responseContent ?: "Failed to check mail status"))
         }
     }
 
@@ -282,43 +302,48 @@ class EmailRepository(private val context: Context) {
         body: String,
         documents: List<LauditorAttachedDoc>
     ): Result<String> {
-        val url = if (isGmail) {
-            "${Constants.EMAIL_BASE_URL}${Constants.sending_mail}${Constants.TOKEN}"
-        } else {
-            "${Constants.EMAIL_GET_URL}${Constants.sending_mail}${Constants.TOKEN}"
-        }
+        val providerPath = if (isGmail) "gmail" else "outlook"
+        val url = "https://dev.utils.mail.digicoffer.com/api/v1/$providerPath/sendmail/attach/documents/${Constants.TOKEN}"
 
         val emailJson = JSONObject().apply {
-            val toArray = JSONArray()
-            toEmails.forEach { toArray.put(it.trim()) }
-            put("toEmail", toArray)
-            put("subject", if (subject.isEmpty()) "(no Subject)" else subject)
+            val toStr = toEmails.joinToString(", ").trim()
+            put("toEmail", toStr)
+            put("subject", subject)
             put("body", body)
 
-            val docsArray = JSONArray()
-            documents.forEach { doc ->
-                docsArray.put(JSONObject().apply {
-                    put("id", doc.id)
-                    put("name", doc.name)
-                    put("filename", doc.filename)
-                    put("path", doc.pathUrl)
-                })
+            if (documents.isEmpty()) {
+                put("documents", JSONObject.NULL)
+            } else {
+                val docsArray = JSONArray()
+                documents.forEach { doc ->
+                    docsArray.put(JSONObject().apply {
+                        put("id", doc.id)
+                        put("name", doc.name)
+                        put("filename", doc.filename)
+                        put("path", doc.pathUrl)
+                    })
+                }
+                put("documents", docsArray)
             }
-            put("documents", docsArray)
         }
 
-        val result = executeEmailHttpRequest(
-            WebServiceHelper.RestMethodType.POST,
-            url,
-            "sending_email",
-            emailJson.toString()
+        val result = executeHttpRequest(
+            method = WebServiceHelper.RestMethodType.POST,
+            url = url,
+            requestType = "Send Email",
+            payload = emailJson.toString()
         )
 
         return if (result.result == WebServiceHelper.ServiceCallStatus.Success) {
             try {
                 val json = JSONObject(result.responseContent ?: "{}")
-                val msg = json.optString("message", "Email sent successfully")
-                Result.success(msg)
+                if (json.optBoolean("error", false)) {
+                    val errMsg = json.optString("msg", json.optString("message", "Failed to send email"))
+                    Result.failure(Exception(errMsg))
+                } else {
+                    val msg = json.optString("message", json.optString("msg", "Email sent successfully"))
+                    Result.success(msg)
+                }
             } catch (e: Exception) {
                 Result.success("Email sent successfully")
             }
@@ -424,7 +449,12 @@ class EmailRepository(private val context: Context) {
     }
 
     suspend fun fetchMatters(): Result<List<MattersModel>> {
-        val result = executeHttpRequest(WebServiceHelper.RestMethodType.GET, "v2/matter/list", "Legal Matter")
+        val url = if (Constants.PROF_URL.isNullOrBlank()) {
+            "https://apidev2.digicoffer.com/professional/v2/matter/list"
+        } else {
+            "${Constants.PROF_URL}v2/matter/list"
+        }
+        val result = executeHttpRequest(WebServiceHelper.RestMethodType.GET, url, "Legal Matter")
         return if (result.result == WebServiceHelper.ServiceCallStatus.Success) {
             try {
                 val json = JSONObject(result.responseContent ?: "{}")
@@ -582,6 +612,83 @@ class EmailRepository(private val context: Context) {
         } else {
             Result.failure(Exception(result.responseContent ?: "Failed to filter documents"))
         }
+    }
+
+    suspend fun fetchAllDocuments(): Result<List<ViewDocumentsModel>> = withContext(Dispatchers.IO) {
+        val allDocs = mutableListOf<ViewDocumentsModel>()
+        val seenIds = mutableSetOf<String>()
+
+        fun addDocsFromList(list: List<ViewDocumentsModel>) {
+            for (doc in list) {
+                val id = doc.id ?: ""
+                val name = doc.name ?: doc.filename ?: ""
+                val key = if (id.isNotEmpty()) id else name
+                if (key.isNotEmpty() && seenIds.add(key)) {
+                    allDocs.add(doc)
+                }
+            }
+        }
+
+        fun parseJsonArrayToDocs(arr: JSONArray) {
+            for (i in 0 until arr.length()) {
+                val obj = arr.optJSONObject(i) ?: continue
+                val id = obj.optString("id", obj.optString("_id", ""))
+                val name = if (obj.has("name") && obj.optString("name").isNotEmpty()) obj.optString("name") else obj.optString("filename", "")
+                val key = if (id.isNotEmpty()) id else name
+                if (key.isNotEmpty() && seenIds.add(key)) {
+                    allDocs.add(
+                        ViewDocumentsModel().apply {
+                            this.id = id
+                            this.name = name
+                            filename = obj.optString("filename")
+                            description = obj.optString("description")
+                            uploaded_by = obj.optString("uploaded_by")
+                            created = obj.optString("created")
+                            expiration_date = obj.optString("expiration_date")
+                            content_type = obj.optString("content_type")
+                            is_disabled = obj.optBoolean("is_disabled", obj.optBoolean("isdisabled", false))
+                            is_encrypted = obj.optBoolean("is_encrypted")
+                            is_password = obj.optBoolean("is_password")
+                        }
+                    )
+                }
+            }
+        }
+
+        // 1. Fetch both client and firm documents via GET v3/documents/$type
+        for (type in listOf("client", "firm")) {
+            try {
+                val res = executeHttpRequest(
+                    WebServiceHelper.RestMethodType.GET,
+                    "v3/documents/$type",
+                    "View $type Documents"
+                )
+                if (res.result == WebServiceHelper.ServiceCallStatus.Success) {
+                    val json = JSONObject(res.responseContent ?: "{}")
+                    val arr = json.optJSONArray("docs")
+                        ?: json.optJSONArray("data")
+                        ?: json.optJSONArray("documents")
+                    if (arr != null) {
+                        parseJsonArrayToDocs(arr)
+                    }
+                }
+            } catch (e: Exception) {
+                e.printStackTrace()
+            }
+        }
+
+        // 2. Also query filterDocuments as fallback / supplement
+        try {
+            val firmRes = filterDocuments("firm", null, null, emptyList())
+            firmRes.getOrNull()?.let { addDocsFromList(it) }
+        } catch (_: Exception) {}
+
+        try {
+            val clientRes = filterDocuments("client", "", null, null)
+            clientRes.getOrNull()?.let { addDocsFromList(it) }
+        } catch (_: Exception) {}
+
+        Result.success(allDocs)
     }
 
     suspend fun fetchDocumentViewUrl(docId: String): Result<String> {

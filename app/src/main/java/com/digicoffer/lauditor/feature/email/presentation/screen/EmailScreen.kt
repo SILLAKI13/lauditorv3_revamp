@@ -140,10 +140,11 @@ fun EmailScreen(
                             .clickable { onEvent(EmailUiEvent.OpenCompose) },
                         contentAlignment = Alignment.Center
                     ) {
-                        Image(
+                        Icon(
                             painter = painterResource(id = R.drawable.compose),
                             contentDescription = "Compose",
-                            modifier = Modifier.size(24.dp)
+                            tint = Color(0xFF004D87),
+                            modifier = Modifier.size(22.dp)
                         )
                     }
 
@@ -297,6 +298,7 @@ fun EmailScreen(
                 selectedDocs = uiState.selectedAttachDocs,
                 searchQuery = uiState.attachDocSearchQuery,
                 isLoading = uiState.isLoadingAttachDocs,
+                isUSUser = uiState.isUSUser,
                 onCategoryTabChange = { onEvent(EmailUiEvent.AttachCategoryTabChanged(it)) },
                 onSubTabChange = { onEvent(EmailUiEvent.AttachSubTabChanged(it)) },
                 onSelectClient = { onEvent(EmailUiEvent.SelectAttachClient(it)) },
