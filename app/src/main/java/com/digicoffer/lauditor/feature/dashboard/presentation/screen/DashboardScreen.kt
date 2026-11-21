@@ -24,6 +24,7 @@ import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.digicoffer.lauditor.CommonFiles.GlobalFiles.Constants
 import com.digicoffer.lauditor.Dashboard.DahboardModels.CardDataModels
 import com.digicoffer.lauditor.Notifications.Models.Navigation
 import com.digicoffer.lauditor.R
@@ -221,10 +222,22 @@ private fun DashboardCardItem(
             )
         }
         DashboardCardItemModel.TYPE_MESSAGES -> {
+            val messagesData = cardItem.data as CardDataModels.MessagesCardData
+            val clientCount = when {
+                uiState.clientChatCount > 0 -> uiState.clientChatCount
+                messagesData.clientMessages > 0 -> messagesData.clientMessages
+                else -> Constants.clientChat_count.toString().toIntOrNull() ?: 0
+            }
+            val teamCount = when {
+                uiState.teamChatCount > 0 -> uiState.teamChatCount
+                messagesData.teamMessages > 0 -> messagesData.teamMessages
+                else -> Constants.teamChat_count.toString().toIntOrNull() ?: 0
+            }
+
             MessagesCard(
-                data = cardItem.data as CardDataModels.MessagesCardData,
-                clientCount = uiState.clientChatCount,
-                teamCount = uiState.teamChatCount,
+                data = messagesData,
+                clientCount = clientCount,
+                teamCount = teamCount,
                 userRole = uiState.userRole,
                 userCategory = uiState.userCategory,
                 onCardClick = {

@@ -183,16 +183,30 @@ class DashboardRepository(private val context: Context) {
                 Constants.unreadList.clear()
                 unreadcount_from_list.clear()
 
+                var totalClientUnread = 0
+                var totalTeamUnread = 0
+
                 for (jid in totalChatList) {
                     val guid = if (ext.isNotEmpty()) jid.replace(ext, "") else jid
-                    val meta = metaMap[guid] ?: continue
+                    val meta = metaMap[guid] ?: metaMap[jid] ?: continue
 
                     val unreadCountModel = UnreadCountModel()
                     unreadCountModel.fromjid = guid
                     unreadCountModel.count = meta.unreadCount
                     Constants.unreadList.add(unreadCountModel)
                     unreadcount_from_list.add(unreadCountModel)
+
+                    val count = meta.unreadCount.toIntOrNull() ?: 0
+                    if (clientChatList.any { it.equals(guid, ignoreCase = true) || it.equals(jid, ignoreCase = true) }) {
+                        totalClientUnread += count
+                    } else if (teamChatList.any { it.equals(guid, ignoreCase = true) || it.equals(jid, ignoreCase = true) }) {
+                        totalTeamUnread += count
+                    }
                 }
+
+                Constants.clientChat_count = totalClientUnread.toString()
+                Constants.teamChat_count = totalTeamUnread.toString()
+
                 onComplete()
             }
         })

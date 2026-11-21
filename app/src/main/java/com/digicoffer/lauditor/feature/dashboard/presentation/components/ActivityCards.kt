@@ -338,7 +338,7 @@ fun MessagesCard(
                                 )
                             )
                             Text(
-                                text = "Client",
+                                text = if (isSolo) "Client Messages" else "Client",
                                 style = TextStyle(
                                     fontFamily = GillSansRegular,
                                     fontSize = 12.sp,
